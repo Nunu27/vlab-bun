@@ -1,0 +1,59 @@
+{
+    "title": "Kanban",
+    "cols": [
+        {
+            "title": "Bugs",
+            "tasks": [],
+            "id": "o4x0r403uqgjddc49w08q8az",
+            "color": "#eb144c"
+        },
+        {
+            "title": "To-Do",
+            "tasks": [
+                {
+                    "text": "Lab Access",
+                    "id": "o9ivjqa6uukm9uo4wwy4ao15"
+                },
+                {
+                    "text": "CRUD Lab",
+                    "id": "gus0tl2s8tcmi2kt4780tj5b"
+                },
+                {
+                    "text": "CRUD Device",
+                    "id": "uaqubgfsndqyyk0flrjre4nm"
+                },
+                {
+                    "text": "CRUD User",
+                    "id": "g7jq1zzrgxzls3xf6ibzq56l"
+                }
+            ],
+            "id": "v29x67aeud6wsrex3bp68yln",
+            "color": "#fcb900"
+        },
+        {
+            "title": "Doing",
+            "tasks": [
+                {
+                    "text": "Caching",
+                    "id": "bp1y2t8rclamszbyp75ggoc1"
+                }
+            ],
+            "id": "ppj2h8a0u0o1d4cyw3jf9ifh",
+            "color": "#0693e3"
+        },
+        {
+            "title": "Done",
+            "tasks": [
+                {
+                    "text": "Auth",
+                    "id": "wxpbyreabymr0qti790011yp"
+                }
+            ],
+            "id": "evooddvl4dgf4mputmvav45v",
+            "color": "#00d084"
+        }
+    ],
+    "autosave": true,
+    "saveToFile": true,
+    "timestamp": 1760029863379
+}
