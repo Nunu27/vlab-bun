@@ -1,5 +1,5 @@
-import db from "../db";
-import logger from "../services/logger";
+import db from "@/db";
+import logger from "@/services/logger";
 import admin from "./admin";
 
 try {

@@ -1,13 +1,14 @@
-import env from "./env";
+import env from "@/env";
 
+import routes from "@/routes";
+import services from "@/services";
+import logger from "@/services/logger";
 import { Elysia } from "elysia";
-import services from "./services";
-import logger from "./services/logger";
-import routes from "./routes";
-import openapi from "@elysiajs/openapi";
+import { syncDBListeners } from "./db/listener";
+
+await syncDBListeners();
 
 new Elysia()
-	.use(openapi())
 	.use(services)
 	.use(routes)
 	.listen(env.PORT, (app) => {

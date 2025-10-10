@@ -15,15 +15,6 @@ const base = {
 	updatedAt: timestamp({ withTimezone: true })
 };
 
-export const DRIZZLE_META = {
-	name: Symbol.for("drizzle:Name"),
-	schema: Symbol.for("drizzle:Schema"),
-	columns: Symbol.for("drizzle:Columns"),
-	tableName: Symbol.for("drizzle:TableName"),
-	table: Symbol.for("drizzle:Table"),
-	primaryKeys: Symbol.for("drizzle:PrimaryKeys")
-};
-
 // Auth tables
 export const departments = pgTable("department", {
 	...base,

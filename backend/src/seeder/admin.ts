@@ -1,6 +1,6 @@
-import { users } from "../db/schema";
-import logger from "../services/logger";
-import { Transaction } from "../types/seeder";
+import { users } from "@/db/schema";
+import logger from "@/services/logger";
+import { Transaction } from "@/types/seeder";
 
 export default {
 	seed: async (tx: Transaction) => {

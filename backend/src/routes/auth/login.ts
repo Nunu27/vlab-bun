@@ -1,10 +1,11 @@
+import db from "@/db";
+import { users } from "@/db/schema";
+import env from "@/env";
+import { AppWithServices } from "@/services";
+import redis from "@/services/redis";
+import { failure, success } from "@/utils/response";
 import { eq } from "drizzle-orm";
 import { status, t } from "elysia";
-import db from "../../db";
-import { users } from "../../db/schema";
-import { App } from "../../services";
-import redis from "../../services/redis";
-import { failure, success } from "../../utils/response";
 
 const LoginRequest = t.Object({
 	email: t.String({ format: "email" }),
@@ -14,7 +15,7 @@ const LoginRequest = t.Object({
 	})
 });
 
-export default (app: App) =>
+export default (app: AppWithServices) =>
 	app.post(
 		"/login",
 		async ({ cookie, body }) => {
@@ -29,7 +30,7 @@ export default (app: App) =>
 					id: user.id,
 					role: user.role
 				};
-				await redis.set(cookie.session.value!, session, 60 * 60 * 24 * 7);
+				await redis.set(cookie.session.value!, session, env.SESSION_TTL);
 				return success({ data: session, message: "Login successful" });
 			} else {
 				return status(401, failure({ message: "Invalid password" }));

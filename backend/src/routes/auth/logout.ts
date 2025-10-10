@@ -1,8 +1,8 @@
-import { App } from "../../services";
-import redis from "../../services/redis";
-import { success } from "../../utils/response";
+import { AppWithServices } from "@/services";
+import redis from "@/services/redis";
+import { success } from "@/utils/response";
 
-export default (app: App) =>
+export default (app: AppWithServices) =>
 	app.post(
 		"/logout",
 		({ cookie }) => {

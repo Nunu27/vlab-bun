@@ -1,5 +1,5 @@
+import env from "@/env";
 import { RedisClient } from "bun";
-import env from "../env";
 import logger from "./logger";
 
 const client = new RedisClient(env.REDIS_URL);
@@ -18,6 +18,9 @@ export default {
 		if (ttl) {
 			await client.expire(key, ttl);
 		}
+	},
+	expire: async (key: string, ttl: number): Promise<void> => {
+		await client.expire(key, ttl);
 	},
 	del: async (key: string): Promise<void> => {
 		await client.del(key);

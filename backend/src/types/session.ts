@@ -1,4 +1,4 @@
-import { Role } from "../db/schema";
+import { Role } from "@/db/schema";
 
 export type Session = {
 	id: string;
