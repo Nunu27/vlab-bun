@@ -10,13 +10,13 @@ const EnvSchema = t.Object({
 		t.Literal("test")
 	]),
 
-	PORT: t.Optional(t.Number({ default: 3000 })),
+	PORT: t.Number({ default: 3000 }),
 
 	DATABASE_URL: t.String({ format: "uri" }),
 	REDIS_URL: t.String({ format: "uri" }),
 
-	SESSION_TTL: t.Optional(t.Number({ default: 60 * 60 * 3 })),
-	BATCH_SIZE: t.Optional(t.Number({ default: 100 }))
+	SESSION_TTL: t.Number({ default: 60 * 60 * 3 }),
+	BATCH_SIZE: t.Number({ default: 100 })
 });
 
 export type Env = Static<typeof EnvSchema>;

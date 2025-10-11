@@ -5,8 +5,8 @@ import { success } from "@/utils/response";
 export default (app: AppWithServices) =>
 	app.post(
 		"/logout",
-		async ({ cookie }) => {
-			await redis.del(cookie.session.value!);
+		async ({ sessionId }) => {
+			await redis.del(sessionId);
 
 			return success({ message: "Logout successful" });
 		},

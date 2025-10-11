@@ -16,7 +16,7 @@ const LoginRequest = t.Object({
 export default (app: AppWithServices) =>
 	app.post(
 		"/login",
-		async ({ cookie, body }) => {
+		async ({ sessionId, body }) => {
 			const user = await db.query.users.findFirst({
 				where: (user, { eq }) => eq(user.email, body.email),
 				columns: { passwordHash: true, id: true, role: true }
@@ -29,7 +29,7 @@ export default (app: AppWithServices) =>
 					id: user.id,
 					role: user.role
 				};
-				await redis.set(cookie.session.value!, session, env.SESSION_TTL);
+				await redis.set(sessionId, session, env.SESSION_TTL);
 				return success({ data: session, message: "Login successful" });
 			} else {
 				return status(401, failure({ message: "Invalid password" }));

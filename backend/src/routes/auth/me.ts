@@ -6,7 +6,7 @@ export default (app: AppWithServices) =>
 		"/me",
 		async ({ session, db, status }) => {
 			const user = await db.query.users.findFirst({
-				where: (user, { eq }) => eq(user.id, session!.id),
+				where: (user, { eq }) => eq(user.id, session.id),
 				columns: { passwordHash: false }
 			});
 

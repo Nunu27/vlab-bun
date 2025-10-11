@@ -12,5 +12,5 @@ new Elysia()
 	.use(services)
 	.use(routes)
 	.listen(env.PORT, (app) => {
-		logger.info(`Server running on http://${app.hostname}:${app.port}`);
+		logger.info(`Server running on ${app.url.origin}`);
 	});

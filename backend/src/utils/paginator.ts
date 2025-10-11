@@ -141,21 +141,27 @@ const buildPaginationSchema = (table: PgTable) => {
 
 		if (singleValueOps.length > 0) {
 			filterItems.push(
-				t.Object({
-					field: t.Literal(column.name),
-					op: t.UnionEnum(singleValueOps as [FilterOp, ...FilterOp[]]),
-					value: columnSchema
-				})
+				t.Object(
+					{
+						field: t.Literal(column.name),
+						op: t.UnionEnum(singleValueOps as [FilterOp, ...FilterOp[]]),
+						value: columnSchema
+					},
+					{ title: `${column.name} filter` }
+				)
 			);
 		}
 
 		if (hasRangeOps) {
 			filterItems.push(
-				t.Object({
-					field: t.Literal(column.name),
-					op: t.UnionEnum([FilterOp.BT, FilterOp.NB] as [FilterOp, FilterOp]),
-					value: t.Array(columnSchema, { minItems: 2, maxItems: 2 })
-				})
+				t.Object(
+					{
+						field: t.Literal(column.name),
+						op: t.UnionEnum([FilterOp.BT, FilterOp.NB] as [FilterOp, FilterOp]),
+						value: t.Array(columnSchema, { minItems: 2, maxItems: 2 })
+					},
+					{ title: `${column.name} range filter` }
+				)
 			);
 		}
 	}

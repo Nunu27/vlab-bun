@@ -242,9 +242,11 @@ export const syncDBListeners = async () => {
 		droppedTriggers: dropSQL ? (dropSQL.match(/DROP TRIGGER/g) || []).length : 0
 	};
 
-	logger.info(
-		`DB Listener Sync: +${stats.addedTriggers}/-${stats.droppedTriggers}`
-	);
+	if (stats.addedTriggers || stats.droppedTriggers) {
+		logger.info(
+			`DB Listener Sync: +${stats.addedTriggers}/-${stats.droppedTriggers}`
+		);
+	}
 };
 
 async function _getDBState() {

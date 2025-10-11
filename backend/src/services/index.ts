@@ -1,34 +1,39 @@
 import { name, version } from "@/../package.json";
 import db from "@/db";
+import env from "@/env";
+import { failure } from "@/utils/response";
 import { wrap } from "@bogeychan/elysia-logger";
 import openapi from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import logger from "./logger";
 import session from "./session";
-import { failure } from "@/utils/response";
-import env from "@/env";
 
 const services = new Elysia()
 	.use(wrap(logger, { autoLogging: false }))
 	.use(
 		openapi({
+			enabled: env.NODE_ENV !== "production",
 			documentation: {
 				info: { title: name, version }
 			}
 		})
 	)
 	.onError(({ code, error, path }) => {
-		if (code === "VALIDATION") {
-			return failure({ message: "Validation error", errors: error.all });
-		}
+		switch (code) {
+			case "VALIDATION":
+				return failure({ message: "Validation error", errors: error.all });
+			case "NOT_FOUND":
+				return failure({ message: "Resource not found" });
 
-		logger.error(error, path);
-		return failure({
-			message:
-				env.NODE_ENV === "development"
-					? error.toString()
-					: "Internal server error"
-		});
+			default:
+				logger.error(error, path);
+				return failure({
+					message:
+						env.NODE_ENV !== "production"
+							? error.toString()
+							: "Internal server error"
+				});
+		}
 	})
 	.decorate("db", db)
 	.use(session)

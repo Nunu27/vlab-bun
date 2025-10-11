@@ -12,27 +12,30 @@ export default new Elysia()
 		})
 	})
 	.resolve(async ({ cookie: { session } }) => {
-		if (!session.value) {
-			session.value = Bun.randomUUIDv7();
+		session.value ??= Bun.randomUUIDv7();
 
-			return {};
-		} else {
-			return {
-				session: await redis.get<Session>(session.value)
-			};
-		}
+		return {
+			sessionId: session.value,
+			session: await redis.get<Session>(session.value)
+		};
 	})
 	.macro({
 		guest: {
 			beforeHandle({ session, status }) {
 				if (!session) return;
 				return status(400, failure({ message: "Already logged in" }));
+			},
+			resolve() {
+				return { session: null };
 			}
 		},
 		protected: {
 			async beforeHandle({ cookie, session, status }) {
 				if (!session) return status(401, failure({ message: "Unauthorized" }));
 				await redis.expire(cookie.session.value!, env.SESSION_TTL);
+			},
+			resolve({ session }) {
+				return { session: session! };
 			}
 		},
 		private(roles: Role[]) {
@@ -44,6 +47,9 @@ export default new Elysia()
 					}
 
 					return status(403, failure({ message: "Forbidden" }));
+				},
+				resolve({ session }) {
+					return { session: session! };
 				}
 			};
 		}
