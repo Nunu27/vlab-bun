@@ -11,12 +11,12 @@ export default (app: AppWithServices) =>
 
 			await db.delete(users).where(eq(users.id, id));
 
-			return success({ message: "Student deleted" });
+			return success({ message: "Lecturer deleted" });
 		},
 		{
 			private: ["admin"],
 			detail: {
-				description: "Delete a student"
+				description: "Delete a lecturer"
 			}
 		}
 	);

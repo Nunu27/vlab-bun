@@ -3,7 +3,7 @@ import { AppWithServices } from "@/services";
 import { success } from "@/utils/response";
 import { t } from "elysia";
 
-const StudentRequest = t.Object({
+const CreateStudentRequest = t.Object({
 	name: t.String(),
 	email: t.String({ format: "email" }),
 	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
@@ -45,7 +45,7 @@ export default (app: AppWithServices) =>
 		},
 		{
 			private: ["admin"],
-			body: StudentRequest,
+			body: CreateStudentRequest,
 			detail: {
 				description: "Create a new student"
 			}

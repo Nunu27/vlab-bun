@@ -3,7 +3,7 @@ import { AppWithServices } from "@/services";
 import { eq } from "drizzle-orm";
 import { t } from "elysia";
 
-const StudentRequest = t.Object({
+const UpdateStudentRequest = t.Object({
 	name: t.String(),
 	email: t.String({ format: "email" }),
 	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
@@ -11,6 +11,7 @@ const StudentRequest = t.Object({
 	degreeLevel: t.UnionEnum(degreeLevelEnum.enumValues),
 	studyProgramId: t.String({ format: "uuid" })
 });
+
 export default (app: AppWithServices) =>
 	app.put(
 		"/:id",
@@ -26,7 +27,7 @@ export default (app: AppWithServices) =>
 		},
 		{
 			private: ["admin"],
-			body: StudentRequest,
+			body: UpdateStudentRequest,
 			detail: {
 				description: "Update a student"
 			}

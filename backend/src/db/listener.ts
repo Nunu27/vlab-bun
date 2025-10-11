@@ -1,12 +1,15 @@
 import env from "@/env";
 import logger from "@/services/logger";
-import { PgTable, getTableConfig } from "drizzle-orm/pg-core";
 import { createHash } from "crypto";
-import db from ".";
+import { ExtractTablesWithRelations, InferSelectModel } from "drizzle-orm";
 import { toSnakeCase } from "drizzle-orm/casing";
-import { InferSelectModel } from "drizzle-orm";
+import { PgTable, getTableConfig } from "drizzle-orm/pg-core";
+import db from ".";
 
 const client = await db.$client.connect();
+type DB = typeof db;
+type TFullSchema = DB["_"]["fullSchema"];
+type TSchema = ExtractTablesWithRelations<TFullSchema>;
 
 const MANAGED_PREFIX = "on_change";
 const TRIGGER_PREFIX = "trg_onchg_";
@@ -94,14 +97,15 @@ client.on("notification", async ({ channel, payload }) => {
 });
 
 export const addDBListener = <
-	T extends PgTable,
-	K extends keyof T["$inferSelect"]
+	TEntity extends keyof TSchema,
+	K extends keyof InferSelectModel<PgTable>
 >(
-	table: T,
+	entity: TEntity,
 	columns: K[],
-	listener: ListenerCallback<T, K>,
+	listener: ListenerCallback<PgTable, K>,
 	opts?: { ops?: Array<Operations> }
 ) => {
+	const table = (db._.fullSchema as any)[entity] as PgTable;
 	const channel = getChannelForTable(table, columns);
 	const listeners = registry.get(channel) ?? [];
 
@@ -145,34 +149,34 @@ function buildFunctionSQL(channel: string, columns: string[]): string {
 	const colsArray = columns.map(qLiteral).join(", ");
 
 	return `
-    CREATE OR REPLACE FUNCTION ${qIdent(fnName)}() RETURNS trigger AS $$
-    DECLARE
-      row_data jsonb;
-      payload jsonb;
-      data_obj jsonb;
-    BEGIN
-      -- On DELETE, NEW is null, so we must use OLD.
-      row_data := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
+		CREATE OR REPLACE FUNCTION ${qIdent(fnName)}() RETURNS trigger AS $$
+		DECLARE
+		row_data jsonb;
+		payload jsonb;
+		data_obj jsonb;
+		BEGIN
+		-- On DELETE, NEW is null, so we must use OLD.
+		row_data := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
 
-      -- Build a JSON object containing only the listened-to columns.
-      data_obj := (
-          SELECT jsonb_object_agg(key, value)
-          FROM jsonb_each(row_data)
-          WHERE key = ANY(ARRAY[${colsArray}]::text[])
-      );
+		-- Build a JSON object containing only the listened-to columns.
+		data_obj := (
+			SELECT jsonb_object_agg(key, value)
+			FROM jsonb_each(row_data)
+			WHERE key = ANY(ARRAY[${colsArray}]::text[])
+		);
 
-      payload := jsonb_build_object(
-        'op', TG_OP,
-        'table', TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME,
-        'data', COALESCE(data_obj, '{}'::jsonb)
-      );
+		payload := jsonb_build_object(
+			'op', TG_OP,
+			'table', TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME,
+			'data', COALESCE(data_obj, '{}'::jsonb)
+		);
 
-      PERFORM pg_notify(${qLiteral(channel)}, payload::text);
+		PERFORM pg_notify(${qLiteral(channel)}, payload::text);
 
-      RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
-    END;
-    $$ LANGUAGE plpgsql;
-  `;
+		RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+		END;
+		$$ LANGUAGE plpgsql;
+	`;
 }
 
 function buildTriggerSQL(

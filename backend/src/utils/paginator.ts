@@ -24,8 +24,8 @@ import {
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query";
-import { Static, t, TSchema } from "elysia";
 import { createSelectSchema } from "drizzle-typebox";
+import { Static, t, TSchema } from "elysia";
 
 enum SortOrder {
 	ASC = "asc",

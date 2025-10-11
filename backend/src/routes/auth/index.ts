@@ -1,12 +1,11 @@
+import { addDBListener } from "@/db/listener";
 import { AppWithServices } from "@/services";
 import login from "./login";
 import logout from "./logout";
 import me from "./me";
-import { addDBListener } from "@/db/listener";
-import { users } from "@/db/schema";
 
 addDBListener(
-	users,
+	"users",
 	["id"],
 	async (event) => {
 		console.log(event);
