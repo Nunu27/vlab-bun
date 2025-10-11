@@ -5,10 +5,15 @@ import { success } from "@/utils/response";
 export default (app: AppWithServices) =>
 	app.post(
 		"/logout",
-		({ cookie }) => {
-			redis.del(cookie.session.value!);
+		async ({ cookie }) => {
+			await redis.del(cookie.session.value!);
 
 			return success({ message: "Logout successful" });
 		},
-		{ protected: true }
+		{
+			protected: true,
+			detail: {
+				description: "Logout and invalidate the current session"
+			}
+		}
 	);

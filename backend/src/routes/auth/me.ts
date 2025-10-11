@@ -3,7 +3,7 @@ import { failure, success } from "@/utils/response";
 
 export default (app: AppWithServices) =>
 	app.get(
-		"me",
+		"/me",
 		async ({ session, db, status }) => {
 			const user = await db.query.users.findFirst({
 				where: (user, { eq }) => eq(user.id, session!.id),
@@ -13,5 +13,5 @@ export default (app: AppWithServices) =>
 			if (!user) return status(404, failure({ message: "User not found" }));
 			return success({ data: user });
 		},
-		{ protected: true }
+		{ protected: true, detail: { description: "Get current logged in user" } }
 	);

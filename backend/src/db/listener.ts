@@ -1,16 +1,12 @@
 import env from "@/env";
 import logger from "@/services/logger";
-import { PgTable } from "drizzle-orm/pg-core";
+import { PgTable, getTableConfig } from "drizzle-orm/pg-core";
 import { createHash } from "crypto";
 import db from ".";
+import { toSnakeCase } from "drizzle-orm/casing";
+import { InferSelectModel } from "drizzle-orm";
 
 const client = await db.$client.connect();
-
-const DRIZZLE_INTERNAL_META = {
-	name: Symbol.for("drizzle:Name"),
-	schema: Symbol.for("drizzle:Schema"),
-	columns: Symbol.for("drizzle:Columns")
-} as const;
 
 const MANAGED_PREFIX = "on_change";
 const TRIGGER_PREFIX = "trg_onchg_";
@@ -18,14 +14,17 @@ const FUNC_PREFIX = "fn_onchg_";
 const BATCH_SIZE = Math.max(1, Number(env.BATCH_SIZE ?? 64));
 
 type Operations = "INSERT" | "UPDATE" | "DELETE";
-type ListenerCallback = (event: {
+type ListenerCallback<
+	T extends PgTable,
+	K extends keyof T["$inferSelect"] = keyof T["$inferSelect"]
+> = (event: {
 	op: Operations;
 	table: string;
-	data: any;
+	data: { [P in K]: T["$inferSelect"][P] };
 }) => Promise<void>;
 type ListenerEntry = {
 	events: Set<Operations>;
-	listener: ListenerCallback;
+	listener: ListenerCallback<any, any>;
 };
 
 // In-memory registry, keyed by channel: "on_change:schema.table:col1,col2"
@@ -38,8 +37,8 @@ const trigNameFor = (channel: string) =>
 	`${TRIGGER_PREFIX}${nameHash(channel)}`;
 const funcNameFor = (channel: string) => `${FUNC_PREFIX}${nameHash(channel)}`;
 
-const qIdent = (s: string) => `"${s.replace(/"/g, '""')}"`; // Quote an identifier
-const qLiteral = (s: string) => `'${s.replace(/'/g, "''")}'`; // Quote a literal
+const qIdent = (s: string) => `"${s.replace(/"/g, '""')}"`;
+const qLiteral = (s: string) => `'${s.replace(/'/g, "''")}'`;
 const areSetsEqual = (a: Set<unknown>, b: Set<unknown>) =>
 	a.size === b.size && [...a].every((x) => b.has(x));
 
@@ -47,14 +46,14 @@ const getChannelForTable = <T extends PgTable>(
 	table: T,
 	columns: (keyof T["$inferSelect"])[]
 ): string => {
-	const tableAny = table as any;
-	const schema = tableAny[DRIZZLE_INTERNAL_META.schema] || "public";
-	const name = tableAny[DRIZZLE_INTERNAL_META.name];
-	const drizzleCols = tableAny[DRIZZLE_INTERNAL_META.columns];
+	const { schema = "public", name, columns: cols } = getTableConfig(table);
+	const sqlCols = cols.reduce<string[]>((acc, col) => {
+		if (columns.includes(col.name)) {
+			acc.push(toSnakeCase(col.name));
+		}
 
-	const sqlCols = (columns as string[])
-		.map((col) => drizzleCols[col]?.name || String(col))
-		.sort();
+		return acc;
+	}, []);
 
 	return `${MANAGED_PREFIX}:${schema}.${name}:${sqlCols.join(",")}`;
 };
@@ -100,7 +99,7 @@ export const addDBListener = <
 >(
 	table: T,
 	columns: K[],
-	listener: ListenerCallback,
+	listener: ListenerCallback<T, K>,
 	opts?: { ops?: Array<Operations> }
 ) => {
 	const channel = getChannelForTable(table, columns);
@@ -120,7 +119,7 @@ export const removeDBListener = <
 >(
 	table: T,
 	columns: K[],
-	listener: ListenerCallback,
+	listener: ListenerCallback<T, K>,
 	opts?: { ops?: Array<Operations> }
 ) => {
 	const channel = getChannelForTable(table, columns);
@@ -205,7 +204,7 @@ export const syncDBListeners = async () => {
 			const [, fullTable, cols] = channel.split(":");
 			const [schema, table] = fullTable.split(".");
 			const allOps = entries.reduce((acc, { events }) => {
-				events.forEach((op) => acc.add(op));
+				events.forEach((op: Operations) => acc.add(op));
 				return acc;
 			}, new Set<Operations>());
 
@@ -236,15 +235,11 @@ export const syncDBListeners = async () => {
 
 	const stats = {
 		addedTriggers: addSQL ? (addSQL.match(/CREATE TRIGGER/g) || []).length : 0,
-		droppedTriggers: dropSQL
-			? (dropSQL.match(/DROP TRIGGER/g) || []).length
-			: 0,
-		addedListens: listenSQL ? (listenSQL.match(/LISTEN/g) || []).length : 0,
-		droppedListens: listenSQL ? (listenSQL.match(/UNLISTEN/g) || []).length : 0
+		droppedTriggers: dropSQL ? (dropSQL.match(/DROP TRIGGER/g) || []).length : 0
 	};
 
 	logger.info(
-		`DB Listener Sync: Trigger +${stats.addedTriggers}/-${stats.droppedTriggers} | Listener +${stats.addedListens}/-${stats.droppedListens}`
+		`DB Listener Sync: +${stats.addedTriggers}/-${stats.droppedTriggers}`
 	);
 };
 

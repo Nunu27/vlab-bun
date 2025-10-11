@@ -1,10 +1,10 @@
 import env from "@/env";
 
+import { syncDBListeners } from "@/db/listener";
 import routes from "@/routes";
 import services from "@/services";
 import logger from "@/services/logger";
 import { Elysia } from "elysia";
-import { syncDBListeners } from "./db/listener";
 
 await syncDBListeners();
 

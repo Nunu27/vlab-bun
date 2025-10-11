@@ -1,10 +1,8 @@
 import db from "@/db";
-import { users } from "@/db/schema";
 import env from "@/env";
 import { AppWithServices } from "@/services";
 import redis from "@/services/redis";
 import { failure, success } from "@/utils/response";
-import { eq } from "drizzle-orm";
 import { status, t } from "elysia";
 
 const LoginRequest = t.Object({
@@ -20,7 +18,8 @@ export default (app: AppWithServices) =>
 		"/login",
 		async ({ cookie, body }) => {
 			const user = await db.query.users.findFirst({
-				where: eq(users.email, body.email)
+				where: (user, { eq }) => eq(user.email, body.email),
+				columns: { passwordHash: true, id: true, role: true }
 			});
 
 			if (!user) {
@@ -37,7 +36,10 @@ export default (app: AppWithServices) =>
 			}
 		},
 		{
+			guest: true,
 			body: LoginRequest,
-			guest: true
+			detail: {
+				description: "Login with email and password"
+			}
 		}
 	);

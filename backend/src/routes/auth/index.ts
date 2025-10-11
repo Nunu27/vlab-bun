@@ -17,6 +17,6 @@ addDBListener(
 );
 
 export default (app: AppWithServices) =>
-	app.group("auth", { detail: { tags: ["Authentication"] } }, (app) =>
+	app.group("/auth", { detail: { tags: ["Authentication"] } }, (app) =>
 		app.use(login).use(logout).use(me)
 	);

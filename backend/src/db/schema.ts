@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
 	integer,
 	pgEnum,
@@ -12,25 +13,31 @@ const base = {
 		.primaryKey()
 		.$default(() => Bun.randomUUIDv7()),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-	updatedAt: timestamp({ withTimezone: true })
+	updatedAt: timestamp({ withTimezone: true }).$onUpdate(() => new Date())
 };
 
 // Auth tables
 export const departments = pgTable("department", {
 	...base,
-	name: text().notNull()
+	name: text().unique().notNull()
 });
 
 export const degreeLevelEnum = pgEnum("degree_level", ["D3", "LJ", "D4", "S2"]);
 
 export const studyPrograms = pgTable("study_program", {
 	...base,
-	name: text().notNull(),
-	degreeLevel: degreeLevelEnum().notNull(),
+	name: text().unique().notNull(),
 	departmentId: uuid()
 		.references(() => departments.id)
 		.notNull()
 });
+
+export const studyProgramsRelations = relations(studyPrograms, ({ one }) => ({
+	department: one(departments, {
+		fields: [studyPrograms.departmentId],
+		references: [departments.id]
+	})
+}));
 
 export const roleEnum = pgEnum("roles", ["student", "lecturer", "admin"]);
 export type Role = (typeof roleEnum.enumValues)[number];
@@ -43,6 +50,17 @@ export const users = pgTable("user", {
 	role: roleEnum().notNull().default("student")
 });
 
+export const usersRelations = relations(users, ({ one }) => ({
+	student: one(students, {
+		fields: [users.id],
+		references: [students.id]
+	}),
+	lecturer: one(students, {
+		fields: [users.id],
+		references: [students.id]
+	})
+}));
+
 export const students = pgTable("student", {
 	...base,
 	id: uuid()
@@ -50,10 +68,22 @@ export const students = pgTable("student", {
 		.references(() => users.id),
 	nrp: text().notNull().unique(),
 	year: integer().notNull(),
+	degreeLevel: degreeLevelEnum().notNull(),
 	studyProgramId: uuid()
 		.references(() => studyPrograms.id)
 		.notNull()
 });
+
+export const studentsRelations = relations(students, ({ one }) => ({
+	user: one(users, {
+		fields: [students.id],
+		references: [users.id]
+	}),
+	studyProgram: one(studyPrograms, {
+		fields: [students.studyProgramId],
+		references: [studyPrograms.id]
+	})
+}));
 
 export const lecturers = pgTable("lecturer", {
 	...base,
@@ -62,3 +92,10 @@ export const lecturers = pgTable("lecturer", {
 		.references(() => users.id),
 	nip: text().notNull().unique()
 });
+
+export const lecturersRelations = relations(lecturers, ({ one }) => ({
+	user: one(users, {
+		fields: [lecturers.id],
+		references: [users.id]
+	})
+}));

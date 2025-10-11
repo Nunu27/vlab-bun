@@ -1,9 +1,9 @@
-import { Elysia, t } from "elysia";
 import { Role } from "@/db/schema";
-import redis from "./redis";
+import env from "@/env";
 import { Session } from "@/types/session";
 import { failure } from "@/utils/response";
-import env from "@/env";
+import { Elysia, t } from "elysia";
+import redis from "./redis";
 
 export default new Elysia()
 	.guard({
@@ -25,7 +25,7 @@ export default new Elysia()
 	.macro({
 		guest: {
 			beforeHandle({ session, status }) {
-				if (session) return;
+				if (!session) return;
 				return status(400, failure({ message: "Already logged in" }));
 			}
 		},
@@ -35,7 +35,7 @@ export default new Elysia()
 				await redis.expire(cookie.session.value!, env.SESSION_TTL);
 			}
 		},
-		private(...roles: Role[]) {
+		private(roles: Role[]) {
 			return {
 				async beforeHandle({ cookie, session, status }) {
 					if (session && roles.includes(session.role)) {
