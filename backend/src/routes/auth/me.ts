@@ -13,5 +13,12 @@ export default (app: AppWithServices) =>
 			if (!user) return status(404, failure({ message: "User not found" }));
 			return success({ data: user });
 		},
-		{ protected: true, detail: { description: "Get current logged in user" } }
+		{
+			protected: true,
+			cached: {
+				key: "me",
+				personalized: true
+			},
+			detail: { description: "Get current logged in user" }
+		}
 	);

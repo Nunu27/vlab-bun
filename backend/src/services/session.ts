@@ -5,7 +5,7 @@ import { failure } from "@/utils/response";
 import { Elysia, t } from "elysia";
 import redis from "./redis";
 
-export default new Elysia()
+export default new Elysia({ name: "session" })
 	.guard({
 		cookie: t.Object({
 			session: t.Optional(t.String())

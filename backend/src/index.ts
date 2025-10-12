@@ -3,10 +3,12 @@ import env from "@/env";
 import { syncDBListeners } from "@/db/listener";
 import routes from "@/routes";
 import services from "@/services";
+import { clearCache } from "@/services/caching";
 import logger from "@/services/logger";
 import { Elysia } from "elysia";
 
 await syncDBListeners();
+await clearCache();
 
 new Elysia()
 	.use(services)

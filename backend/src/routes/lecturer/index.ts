@@ -1,15 +1,26 @@
 import { addDBListener } from "@/db/listener";
-import { AppWithServices } from "@/services";
+import { deleteCache } from "@/services/caching";
+import { Elysia } from "elysia";
 import create from "./create";
 import _delete from "./delete";
 import pagination from "./pagination";
 import update from "./update";
 
-addDBListener("lecturers", ["id"], async (event) => {
-	console.log("Lecturers table changed:", event);
+addDBListener("lecturers", ["id"], async ({ op, data }) => {
+	const keys = ["lecturer:pagination:*"];
+
+	if (op !== "INSERT") {
+		keys.push(`lecturer:${data.id}`);
+	}
+
+	await deleteCache(...keys);
 });
 
-export default (app: AppWithServices) =>
-	app.group("/lecturer", { detail: { tags: ["Lecturers"] } }, (app) =>
-		app.use(create).use(update).use(_delete).use(pagination)
-	);
+export default new Elysia({
+	prefix: "/lecturer",
+	detail: { tags: ["Lecturers"] }
+})
+	.use(create)
+	.use(update)
+	.use(_delete)
+	.use(pagination);

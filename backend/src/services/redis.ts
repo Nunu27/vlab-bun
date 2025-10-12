@@ -2,6 +2,7 @@ import env from "@/env";
 import { RedisClient } from "bun";
 import logger from "./logger";
 
+const patternRegex = /\*|\?|\[/;
 const client = new RedisClient(env.REDIS_URL);
 
 logger.info("Connecting to Redis...");
@@ -9,20 +10,68 @@ await client.connect();
 logger.info("Connected to Redis");
 
 export default {
-	get: async <T>(key: string): Promise<T | null> => {
+	async get<T>(key: string): Promise<T | null> {
 		const value = await client.get(key);
 		return value ? (JSON.parse(value) as T) : null;
 	},
-	set: async (key: string, value: unknown, ttl?: number): Promise<void> => {
+	async set(key: string, value: unknown, ttl?: number) {
 		await client.set(key, JSON.stringify(value));
 		if (ttl) {
 			await client.expire(key, ttl);
 		}
 	},
-	expire: async (key: string, ttl: number): Promise<void> => {
+	async expire(key: string, ttl: number) {
 		await client.expire(key, ttl);
 	},
-	del: async (key: string): Promise<void> => {
-		await client.del(key);
+	async del(...keys: string[]) {
+		const directKeys: string[] = [];
+		const patternKeys: string[] = [];
+
+		for (const key of keys) {
+			if (patternRegex.test(key)) {
+				patternKeys.push(key);
+			} else {
+				directKeys.push(key);
+			}
+		}
+
+		await client.del(...directKeys);
+		for (const pattern of patternKeys) {
+			await this.delByPattern(pattern);
+		}
+	},
+	async delByPattern(pattern: string) {
+		if (!patternRegex.test(pattern)) {
+			throw new Error("Invalid pattern.");
+		}
+
+		const keysToDelete: string[] = [];
+		let cursor = "0";
+		let deletedCount = 0;
+
+		try {
+			do {
+				const [nextCursor, keys] = await client.send("SCAN", [
+					cursor,
+					"MATCH",
+					pattern,
+					"COUNT",
+					"100"
+				]);
+
+				if (keys.length > 0) {
+					keysToDelete.push(...keys);
+				}
+				cursor = nextCursor as string;
+			} while (cursor !== "0");
+
+			if (keysToDelete.length > 0) {
+				deletedCount += await client.del(...keysToDelete);
+			}
+		} catch (error) {
+			logger.error({ error }, "An error occurred while deleting Redis keys.");
+		}
+
+		return deletedCount;
 	}
 };

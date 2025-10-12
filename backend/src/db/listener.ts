@@ -1,6 +1,6 @@
 import env from "@/env";
 import logger from "@/services/logger";
-import { createHash } from "crypto";
+import { md5 } from "@/utils/hash";
 import { ExtractTablesWithRelations, InferSelectModel } from "drizzle-orm";
 import { toSnakeCase } from "drizzle-orm/casing";
 import { PgTable, getTableConfig } from "drizzle-orm/pg-core";
@@ -19,11 +19,11 @@ const BATCH_SIZE = Math.max(1, Number(env.BATCH_SIZE ?? 64));
 type Operations = "INSERT" | "UPDATE" | "DELETE";
 type ListenerCallback<
 	T extends PgTable,
-	K extends keyof T["$inferSelect"] = keyof T["$inferSelect"]
+	K extends keyof InferSelectModel<T> = keyof InferSelectModel<T>
 > = (event: {
 	op: Operations;
 	table: string;
-	data: { [P in K]: T["$inferSelect"][P] };
+	data: { [P in K]: InferSelectModel<T>[P] };
 }) => Promise<void>;
 type ListenerEntry = {
 	events: Set<Operations>;
@@ -33,12 +33,8 @@ type ListenerEntry = {
 // In-memory registry, keyed by channel: "on_change:schema.table:col1,col2"
 const registry = new Map<string, ListenerEntry[]>();
 
-const nameHash = (s: string) =>
-	createHash("md5").update(s).digest("hex").slice(0, 24);
-
-const trigNameFor = (channel: string) =>
-	`${TRIGGER_PREFIX}${nameHash(channel)}`;
-const funcNameFor = (channel: string) => `${FUNC_PREFIX}${nameHash(channel)}`;
+const trigNameFor = (channel: string) => `${TRIGGER_PREFIX}${md5(channel)}`;
+const funcNameFor = (channel: string) => `${FUNC_PREFIX}${md5(channel)}`;
 
 const qIdent = (s: string) => `"${s.replace(/"/g, '""')}"`;
 const qLiteral = (s: string) => `'${s.replace(/'/g, "''")}'`;
@@ -47,7 +43,7 @@ const areSetsEqual = (a: Set<unknown>, b: Set<unknown>) =>
 
 const getChannelForTable = <T extends PgTable>(
 	table: T,
-	columns: (keyof T["$inferSelect"])[]
+	columns: (keyof InferSelectModel<T>)[]
 ): string => {
 	const { schema = "public", name, columns: cols } = getTableConfig(table);
 	const sqlCols = cols.reduce<string[]>((acc, col) => {
@@ -98,11 +94,12 @@ client.on("notification", async ({ channel, payload }) => {
 
 export const addDBListener = <
 	TEntity extends keyof TSchema,
-	K extends keyof InferSelectModel<PgTable>
+	TTable extends TFullSchema[TEntity],
+	K extends keyof InferSelectModel<TTable>
 >(
 	entity: TEntity,
 	columns: K[],
-	listener: ListenerCallback<PgTable, K>,
+	listener: ListenerCallback<TTable, K>,
 	opts?: { ops?: Array<Operations> }
 ) => {
 	const table = (db._.fullSchema as any)[entity] as PgTable;
@@ -119,7 +116,7 @@ export const addDBListener = <
 
 export const removeDBListener = <
 	T extends PgTable,
-	K extends keyof T["$inferSelect"]
+	K extends keyof InferSelectModel<T>
 >(
 	table: T,
 	columns: K[],

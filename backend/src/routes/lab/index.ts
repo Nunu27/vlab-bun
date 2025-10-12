@@ -1,4 +1,6 @@
-import { AppWithServices } from "@/services";
+import { Elysia } from "elysia";
 
-export default (app: AppWithServices) =>
-	app.group("/lab", { detail: { tags: ["Labs"] } }, (app) => app);
+export default new Elysia({
+	prefix: "/lab",
+	detail: { tags: ["Labs"] }
+});

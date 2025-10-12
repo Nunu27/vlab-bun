@@ -1,5 +1,7 @@
 import { addDBListener } from "@/db/listener";
-import { AppWithServices } from "@/services";
+import { deleteCache } from "@/services/caching";
+import { Elysia } from "elysia";
+import changePassword from "./changePassword";
 import login from "./login";
 import logout from "./logout";
 import me from "./me";
@@ -8,14 +10,18 @@ addDBListener(
 	"users",
 	["id"],
 	async (event) => {
-		console.log(event);
+		await deleteCache(`me:${event.data.id}`);
 	},
 	{
 		ops: ["UPDATE", "DELETE"]
 	}
 );
 
-export default (app: AppWithServices) =>
-	app.group("/auth", { detail: { tags: ["Authentication"] } }, (app) =>
-		app.use(login).use(logout).use(me)
-	);
+export default new Elysia({
+	prefix: "/auth",
+	detail: { tags: ["Authentication"] }
+})
+	.use(login)
+	.use(logout)
+	.use(changePassword)
+	.use(me);

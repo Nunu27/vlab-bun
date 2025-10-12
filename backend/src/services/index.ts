@@ -5,14 +5,22 @@ import { failure } from "@/utils/response";
 import { wrap } from "@bogeychan/elysia-logger";
 import openapi from "@elysiajs/openapi";
 import { Elysia } from "elysia";
+import caching from "./caching";
 import logger from "./logger";
+import redis from "./redis";
 import session from "./session";
 
+const inProduction = env.NODE_ENV === "production";
+
 const services = new Elysia()
-	.use(wrap(logger, { autoLogging: false }))
+	.use(
+		wrap(logger, {
+			autoLogging: false
+		})
+	)
 	.use(
 		openapi({
-			enabled: env.NODE_ENV !== "production",
+			enabled: !inProduction,
 			documentation: {
 				info: { title: name, version }
 			}
@@ -28,15 +36,14 @@ const services = new Elysia()
 			default:
 				logger.error(error, path);
 				return failure({
-					message:
-						env.NODE_ENV !== "production"
-							? error.toString()
-							: "Internal server error"
+					message: inProduction ? "Internal server error" : error.toString()
 				});
 		}
 	})
+	.decorate("redis", redis)
 	.decorate("db", db)
 	.use(session)
+	.use(caching)
 	.as("global");
 
 export default services;
