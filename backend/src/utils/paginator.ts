@@ -3,6 +3,7 @@ import {
 	asc,
 	between,
 	BuildQueryResult,
+	ColumnDataType,
 	count,
 	DBQueryConfig,
 	desc,
@@ -18,35 +19,43 @@ import {
 	ne,
 	notBetween,
 	notLike,
-	SQLWrapper,
-	TableRelationalConfig
+	SQLWrapper
 } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { PgColumn, PgTable } from "drizzle-orm/pg-core";
+import { PgTable } from "drizzle-orm/pg-core";
 import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query";
 import { createSelectSchema } from "drizzle-typebox";
-import { Static, t, TSchema } from "elysia";
+import { t, TSchema } from "elysia";
 
-enum SortOrder {
-	ASC = "asc",
-	DESC = "desc"
-}
+// =================================================================
+// SECTION: Constants and Core Types
+// =================================================================
 
-enum FilterOp {
-	EQ = "eq",
-	NE = "ne",
-	GT = "gt",
-	GTE = "gte",
-	LT = "lt",
-	LTE = "lte",
-	LIKE = "like",
-	ILIKE = "ilike",
-	NLIKE = "nlike",
-	BT = "bt",
-	NB = "nb"
-}
+export const SortOrder = {
+	ASC: "asc",
+	DESC: "desc"
+} as const;
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
 
-const COLUMN_FILTER_OPS: Record<string, FilterOp[]> = {
+export const FilterOp = {
+	EQ: "eq",
+	NE: "ne",
+	GT: "gt",
+	GTE: "gte",
+	LT: "lt",
+	LTE: "lte",
+	LIKE: "like",
+	ILIKE: "ilike",
+	NLIKE: "nlike",
+	BT: "bt",
+	NB: "nb"
+} as const;
+export type FilterOp = (typeof FilterOp)[keyof typeof FilterOp];
+
+const RANGE_OPS = [FilterOp.BT, FilterOp.NB] as const;
+type RangeOp = (typeof RANGE_OPS)[number];
+
+const COLUMN_FILTER_OPS = {
 	string: [
 		FilterOp.EQ,
 		FilterOp.NE,
@@ -115,79 +124,159 @@ const COLUMN_FILTER_OPS: Record<string, FilterOp[]> = {
 		FilterOp.NB
 	],
 	boolean: [FilterOp.EQ, FilterOp.NE]
+} as const;
+
+type SupportedDataType = keyof typeof COLUMN_FILTER_OPS;
+
+const getDataTypeFilterOps = <T extends ColumnDataType>(dataType: T) => {
+	if (dataType in COLUMN_FILTER_OPS) {
+		return COLUMN_FILTER_OPS[dataType as SupportedDataType];
+	}
+	return [];
 };
 
-const getColumnFilterOps = (column: PgColumn): FilterOp[] => {
-	return COLUMN_FILTER_OPS[column.dataType] ?? [];
+// =================================================================
+// SECTION: Drizzle Table Type Inference
+// =================================================================
+
+type ColumnKeys<T extends PgTable> = Extract<keyof T["_"]["columns"], string>;
+
+type GetColumnDataType<
+	TTable extends PgTable,
+	K extends ColumnKeys<TTable>
+> = TTable["_"]["columns"][K]["_"]["dataType"];
+
+type ColumnData<
+	TTable extends PgTable,
+	K extends ColumnKeys<TTable>
+> = TTable["_"]["columns"][K]["_"]["data"];
+
+type FilterType<TTable extends PgTable> = {
+	[K in ColumnKeys<TTable>]: GetColumnDataType<
+		TTable,
+		K
+	> extends SupportedDataType
+		? (typeof COLUMN_FILTER_OPS)[GetColumnDataType<
+				TTable,
+				K
+		  >] extends readonly (infer Op extends FilterOp)[]
+			? Op extends RangeOp
+				? {
+						field: K;
+						op: Op;
+						value: [ColumnData<TTable, K>, ColumnData<TTable, K>];
+				  }
+				: { field: K; op: Op; value: ColumnData<TTable, K> }
+			: never
+		: never;
+}[ColumnKeys<TTable>];
+
+type PaginationSchema<TTable extends PgTable> = {
+	page: number;
+	perPage: number;
+	search?: string;
+	sortBy?: ColumnKeys<TTable>;
+	sortOrder?: SortOrder;
+	filters?: FilterType<TTable>[];
 };
 
-const buildPaginationSchema = (table: PgTable) => {
+// =================================================================
+// SECTION: Schema Generation
+// =================================================================
+
+const buildPaginationSchema = <TTable extends PgTable>(table: TTable) => {
 	const columns = getTableColumns(table);
 	const selectSchema = createSelectSchema(table);
-	const filterItems: TSchema[] = [];
+	const columnNames = Object.keys(
+		selectSchema.properties
+	) as ColumnKeys<TTable>[];
 
-	for (const column of Object.values(columns)) {
-		const filterOps = getColumnFilterOps(column);
-		if (filterOps.length === 0) continue;
+	const filterItems = columnNames.flatMap((columnName) => {
+		const column = columns[columnName];
+		const filterOps = getDataTypeFilterOps(column.dataType);
+		if (!filterOps.length) return [];
 
-		const columnSchema = (selectSchema as any).properties?.[
-			column.name
-		] as TSchema;
-		if (!columnSchema) continue;
+		const columnSchema = (selectSchema.properties as Record<string, TSchema>)[
+			columnName
+		];
+		const generatedSchemas: TSchema[] = [];
 
-		const rangeOps = [FilterOp.BT, FilterOp.NB];
-		const singleValueOps = filterOps.filter((op) => !rangeOps.includes(op));
-		const hasRangeOps = filterOps.some((op) => rangeOps.includes(op));
+		const singleValueOps = filterOps.filter(
+			(op): op is Exclude<FilterOp, RangeOp> =>
+				!RANGE_OPS.includes(op as RangeOp)
+		);
+		const hasRangeOps = filterOps.some((op) =>
+			RANGE_OPS.includes(op as RangeOp)
+		);
 
 		if (singleValueOps.length > 0) {
-			filterItems.push(
+			generatedSchemas.push(
 				t.Object(
 					{
-						field: t.Literal(column.name),
+						field: t.Literal(columnName),
 						op: t.UnionEnum(singleValueOps as [FilterOp, ...FilterOp[]]),
 						value: columnSchema
 					},
-					{ title: `${column.name} filter` }
+					{
+						title: `${columnName} filter`
+					}
 				)
 			);
 		}
 
 		if (hasRangeOps) {
-			filterItems.push(
+			generatedSchemas.push(
 				t.Object(
 					{
-						field: t.Literal(column.name),
-						op: t.UnionEnum([FilterOp.BT, FilterOp.NB] as [FilterOp, FilterOp]),
-						value: t.Array(columnSchema, { minItems: 2, maxItems: 2 })
+						field: t.Literal(columnName),
+						op: t.UnionEnum(RANGE_OPS),
+						value: t.Tuple([columnSchema, columnSchema])
 					},
-					{ title: `${column.name} range filter` }
+					{
+						title: `${columnName} range filter`
+					}
 				)
 			);
 		}
-	}
+		return generatedSchemas;
+	});
+
+	const columnsEnum = Object.fromEntries(
+		columnNames.map((name) => [name, name])
+	);
+
+	// TypeBox's `t.Union` requires at least two items in its array.
+	const filterSchema =
+		filterItems.length === 0
+			? t.Array(t.Never())
+			: filterItems.length === 1
+			? t.Array(filterItems[0])
+			: t.Array(t.Union(filterItems as [TSchema, TSchema, ...TSchema[]]));
 
 	return t.Object({
-		page: t.Integer({ min: 1, default: 1 }),
-		perPage: t.Integer({ min: 1, max: 100, default: 10 }),
+		page: t.Number({ default: 1, minimum: 1, multipleOf: 1 }),
+		perPage: t.Number({ default: 10, minimum: 1, maximum: 100, multipleOf: 1 }),
 		search: t.Optional(t.String({ minLength: 1 })),
-		sortBy: t.Optional(
-			t.UnionEnum(Object.keys(columns) as [string, ...string[]])
-		),
+		sortBy: t.Optional(t.Enum(columnsEnum)),
 		sortOrder: t.Optional(t.Enum(SortOrder, { default: SortOrder.ASC })),
-		filters: t.Optional(
-			filterItems.length > 0
-				? t.Array(t.Union(filterItems))
-				: t.Array(t.Never())
-		)
+		filters: t.Optional(filterSchema)
 	});
 };
 
+const createPaginationSchema = <TTable extends PgTable>(table: TTable) => {
+	return buildPaginationSchema(table) as TSchema & {
+		static: PaginationSchema<TTable>;
+	};
+};
+
+// =================================================================
+// SECTION: Query Execution
+// =================================================================
+
 const buildFilterConditions = (
-	filters: Array<{ field: string; op: FilterOp; value: any }>,
+	filters: { field: string; op: FilterOp; value: any }[],
 	columns: Record<string, any>
 ): SQLWrapper[] => {
-	const conditions: SQLWrapper[] = [];
-
 	const filterMap: Record<FilterOp, (col: any, val: any) => SQLWrapper | null> =
 		{
 			[FilterOp.EQ]: (col, val) => eq(col, val),
@@ -209,32 +298,40 @@ const buildFilterConditions = (
 					: null
 		};
 
-	for (const { field, op, value } of filters) {
+	return filters.flatMap(({ field, op, value }) => {
 		const column = columns[field];
-		if (!column) continue;
+		if (!column) return [];
 
 		const condition = filterMap[op]?.(column, value);
-		if (condition) conditions.push(condition);
-	}
-
-	return conditions;
+		return condition ? [condition] : [];
+	});
 };
+
+// =================================================================
+// SECTION: Paginator Factory
+// =================================================================
 
 export const createPaginator = <
 	TFullSchema extends Record<string, unknown>,
-	TSchema extends ExtractTablesWithRelations<TFullSchema>,
-	TEntity extends keyof TSchema
+	TRelationalSchema extends ExtractTablesWithRelations<TFullSchema>,
+	TEntity extends keyof ExtractTablesWithRelations<TFullSchema>
 >(
 	db: NodePgDatabase<TFullSchema>,
 	entity: TEntity
 ) => {
-	const table = (db._.fullSchema as any)[entity] as PgTable;
-	const tableConfig = (db._.schema as any)[entity] as TableRelationalConfig;
-	const schema = buildPaginationSchema(table);
+	const tableConfig = db._.schema![entity];
 	const { columns } = tableConfig;
 
-	type TFields = TSchema[TEntity];
-	type TBaseOptions = DBQueryConfig<"many", true, TSchema, TFields>;
+	// This logic is used to get the fully-typed table object from a dynamic entity name.
+	type TTable = TFullSchema[TEntity] extends PgTable
+		? TFullSchema[TEntity]
+		: never;
+	const table = Object.values(columns)[0].table as TTable;
+
+	const schema = createPaginationSchema(table);
+
+	type TFields = TRelationalSchema[TEntity];
+	type TBaseOptions = DBQueryConfig<"many", true, TRelationalSchema, TFields>;
 
 	const paginate = async <
 		TOptions extends Omit<
@@ -242,27 +339,24 @@ export const createPaginator = <
 			"where" | "limit" | "offset" | "orderBy"
 		>
 	>(
-		request: Static<typeof schema>,
+		request: typeof schema.static,
 		options?: TOptions
 	) => {
-		const { page, perPage, search, sortBy, sortOrder, filters } = request;
+		const { page, perPage, sortBy, sortOrder, filters } = request;
 		const offset = (page - 1) * perPage;
 
 		const conditions = filters?.length
-			? buildFilterConditions(
-					filters as Array<{ field: string; op: FilterOp; value: any }>,
-					columns
-			  )
+			? buildFilterConditions(filters, columns)
 			: [];
 		const filter = conditions.length > 0 ? and(...conditions) : undefined;
 
 		const [{ count: total }] = await db
 			.select({ count: count() })
-			.from(table)
+			.from(table as PgTable)
 			.where(filter);
 
 		const query = (db.query as any)[entity] as RelationalQueryBuilder<
-			TSchema,
+			TRelationalSchema,
 			TFields
 		>;
 
@@ -277,7 +371,7 @@ export const createPaginator = <
 		});
 
 		return {
-			items: items as BuildQueryResult<TSchema, TFields, TOptions>[],
+			items: items as BuildQueryResult<TRelationalSchema, TFields, TOptions>[],
 			pageInfo: {
 				page,
 				perPage,
@@ -287,5 +381,8 @@ export const createPaginator = <
 		};
 	};
 
-	return { schema, paginate };
+	return {
+		schema,
+		paginate
+	};
 };

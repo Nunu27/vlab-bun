@@ -6,7 +6,6 @@
       "dependencies": {
         "@bogeychan/elysia-logger": "^0.1.10",
         "@elysiajs/openapi": "^1.4.11",
-        "@sinclair/typebox": "^0.34.41",
         "dotenv": "^17.2.3",
         "drizzle-orm": "^0.44.6",
         "drizzle-typebox": "^0.3.3",
@@ -14,6 +13,7 @@
         "pg": "^8.16.3",
         "pg-native": "^3.5.2",
         "pino": "^10.0.0",
+        "typebox": "^1.0.36",
       },
       "devDependencies": {
         "@types/pg": "^8.15.5",
@@ -192,6 +192,8 @@
     "split2": ["split2@4.2.0", "", {}, "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg=="],
 
     "thread-stream": ["thread-stream@3.1.0", "", { "dependencies": { "real-require": "^0.2.0" } }, "sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A=="],
+
+    "typebox": ["typebox@1.0.36", "", {}, "sha512-2HwWb84g7YPvKwt8UMNxryW67Y2vviB40nixOOXtWPQz/i0Ol/K//s0OqOXRD/EtqseWfOTFZQyCdyhxFLQX8Q=="],
 
     "undici-types": ["undici-types@7.13.0", "", {}, "sha512-Ov2Rr9Sx+fRgagJ5AX0qvItZG/JKKoBRAVITs1zk7IqZGTJUwgUr7qoYBpWwakpWilTZFM98rG/AFRocu10iIQ=="],
 

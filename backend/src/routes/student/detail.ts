@@ -1,0 +1,48 @@
+import { AppWithServices } from "@/services";
+import { failure, success } from "@/utils/response";
+import { t } from "elysia";
+
+export default (app: AppWithServices) =>
+	app.guard(
+		{
+			private: ["admin"],
+			params: t.Object({
+				id: t.String({ format: "uuid" })
+			}),
+			detail: {
+				description: "Get student detail"
+			}
+		},
+		(app) =>
+			app
+				.resolve(({ params }) => ({
+					cacheKey: `student:${params.id}`
+				}))
+				.get("/:id", async ({ params, db, status }) => {
+					const { id } = params;
+
+					const student = await db.query.students.findFirst({
+						with: {
+							user: {
+								columns: {
+									name: true,
+									email: true
+								}
+							}
+						},
+						where: (student, { eq }) => eq(student.id, id)
+					});
+					if (!student) {
+						return status(404, failure({ message: "Student not found" }));
+					}
+
+					const { user, ...data } = student;
+
+					return success({
+						data: {
+							...data,
+							...user
+						}
+					});
+				})
+	);

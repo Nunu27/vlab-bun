@@ -3,6 +3,7 @@ import { deleteCache } from "@/services/caching";
 import { Elysia } from "elysia";
 import create from "./create";
 import _delete from "./delete";
+import detail from "./detail";
 import pagination from "./pagination";
 import update from "./update";
 
@@ -17,10 +18,11 @@ addDBListener("students", ["id"], async ({ op, data }) => {
 });
 
 export default new Elysia({
-	prefix: "/lecturer",
-	detail: { tags: ["Lecturers"] }
+	prefix: "/student",
+	detail: { tags: ["Students"] }
 })
 	.use(create)
+	.use(detail)
 	.use(update)
 	.use(_delete)
 	.use(pagination);

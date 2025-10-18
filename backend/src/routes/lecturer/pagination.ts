@@ -7,39 +7,41 @@ import { success } from "@/utils/response";
 const paginator = createPaginator(db, "lecturers");
 
 export default (app: AppWithServices) =>
-	app
-		.guard({
+	app.guard(
+		{
+			cached: true,
+			private: ["admin"],
 			body: paginator.schema
-		})
-		.resolve(({ body }) => ({
-			cacheKey: `lecturer:pagination:${md5(JSON.stringify(body))}`
-		}))
-		.post(
-			"/pagination",
-			async ({ body }) => {
-				const data = await paginator.paginate(body, {
-					with: {
-						user: {
-							columns: {
-								name: true,
-								email: true
+		},
+		(app) =>
+			app
+				.resolve(({ body }) => ({
+					cacheKey: `lecturer:pagination:${md5(JSON.stringify(body))}`
+				}))
+				.post(
+					"/pagination",
+					async ({ body }) => {
+						const data = await paginator.paginate(body, {
+							with: {
+								user: {
+									columns: {
+										name: true,
+										email: true
+									}
+								}
 							}
-						}
-					}
-				});
+						});
 
-				return success({
-					data: {
-						...data,
-						items: data.items.map(({ user, ...item }) => ({
-							...item,
-							...user
-						}))
-					}
-				});
-			},
-			{
-				private: ["admin"],
-				cached: true
-			}
-		);
+						return success({
+							data: {
+								...data,
+								items: data.items.map(({ user, ...item }) => ({
+									...item,
+									...user
+								}))
+							}
+						});
+					},
+					{ body: paginator.schema }
+				)
+	);

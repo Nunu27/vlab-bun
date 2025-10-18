@@ -102,7 +102,7 @@ export const addDBListener = <
 	listener: ListenerCallback<TTable, K>,
 	opts?: { ops?: Array<Operations> }
 ) => {
-	const table = (db._.fullSchema as any)[entity] as PgTable;
+	const table = db._.fullSchema[entity];
 	const channel = getChannelForTable(table, columns);
 	const listeners = registry.get(channel) ?? [];
 

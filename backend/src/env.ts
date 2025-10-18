@@ -1,23 +1,23 @@
 import "dotenv/config";
 
-import { Static, t } from "elysia";
-import { Value } from "@sinclair/typebox/value";
+import Type from "typebox";
+import Value from "typebox/value";
 
-const EnvSchema = t.Object({
-	NODE_ENV: t.Union([
-		t.Literal("development"),
-		t.Literal("production"),
-		t.Literal("test")
+const EnvSchema = Type.Object({
+	NODE_ENV: Type.Union([
+		Type.Literal("development"),
+		Type.Literal("production"),
+		Type.Literal("test")
 	]),
 
-	PORT: t.Number({ default: 3000 }),
+	PORT: Type.Number({ default: 3000 }),
 
-	DATABASE_URL: t.String({ format: "uri" }),
-	REDIS_URL: t.String({ format: "uri" }),
+	DATABASE_URL: Type.String({ format: "uri" }),
+	REDIS_URL: Type.String({ format: "uri" }),
 
-	SESSION_TTL: t.Number({ default: 60 * 60 * 3 }),
-	BATCH_SIZE: t.Number({ default: 100 })
+	SESSION_TTL: Type.Number({ default: 60 * 60 * 3 }),
+	BATCH_SIZE: Type.Number({ default: 100 })
 });
 
-export type Env = Static<typeof EnvSchema>;
+export type Env = Type.Static<typeof EnvSchema>;
 export default Value.Parse(EnvSchema, process.env);

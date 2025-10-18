@@ -12,7 +12,7 @@ import session from "./session";
 
 const inProduction = env.NODE_ENV === "production";
 
-const services = new Elysia()
+const services = new Elysia({ name: "services" })
 	.use(
 		wrap(logger, {
 			autoLogging: false
