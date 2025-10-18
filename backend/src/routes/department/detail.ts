@@ -11,39 +11,27 @@ export default (app: AppWithServices) =>
 				id: t.String({ format: "uuid" })
 			}),
 			detail: {
-				description: "Get lecturer detail"
+				description: "Get department detail"
 			}
 		},
 		(app) =>
 			app
 				.resolve(({ params }) => ({
-					cacheKey: `lecturer:${params.id}`
+					cacheKey: `department:${params.id}`
 				}))
 				.get("/:id", async ({ params, db, status }) => {
 					const { id } = params;
 
-					const lecturer = await db.query.lecturers.findFirst({
-						with: {
-							user: {
-								columns: {
-									name: true,
-									email: true
-								}
-							}
-						},
-						where: (lecturer, { eq }) => eq(lecturer.id, id)
+					const data = await db.query.departments.findFirst({
+						where: (departments, { eq }) => eq(departments.id, id)
 					});
-					if (!lecturer) {
-						return status(404, failure({ message: "Lecturer not found" }));
+
+					if (!data) {
+						return status(404, failure({ message: "Department not found" }));
 					}
 
-					const { user, ...data } = lecturer;
-
 					return success({
-						data: {
-							...data,
-							...user
-						}
+						data
 					});
 				})
 	);

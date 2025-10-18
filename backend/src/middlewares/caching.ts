@@ -1,6 +1,6 @@
 import env from "@/env";
-import logger from "./logger";
-import redis from "./redis";
+import logger from "@/services/logger";
+import redis from "@/services/redis";
 import { Elysia } from "elysia";
 
 const PREFIX = "cache:";

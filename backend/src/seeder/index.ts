@@ -2,7 +2,7 @@ import db from "@/db";
 import logger from "@/services/logger";
 import admin from "./admin";
 import department from "./department";
-import studyProgram from "./studyProgram";
+import studyProgram from "./study-program";
 
 try {
 	logger.info("Seeding...");

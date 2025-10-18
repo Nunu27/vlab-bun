@@ -1,4 +1,4 @@
-import { AppWithServices } from "@/services";
+import { AppWithServices } from "@/plugins/services";
 import redis from "@/services/redis";
 import { success } from "@/utils/response";
 

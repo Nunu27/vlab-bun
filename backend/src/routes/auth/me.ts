@@ -1,4 +1,4 @@
-import { AppWithServices } from "@/services";
+import { AppWithServices } from "@/plugins/services";
 import { failure, success } from "@/utils/response";
 
 export default (app: AppWithServices) =>

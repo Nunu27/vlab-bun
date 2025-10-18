@@ -1,9 +1,9 @@
 import db from "@/db";
 import env from "@/env";
-import { AppWithServices } from "@/services";
+import { AppWithServices } from "@/plugins/services";
 import redis from "@/services/redis";
 import { failure, success } from "@/utils/response";
-import { status, t } from "elysia";
+import { t } from "elysia";
 
 const LoginRequest = t.Object({
 	email: t.String({ format: "email" }),
@@ -16,7 +16,7 @@ const LoginRequest = t.Object({
 export default (app: AppWithServices) =>
 	app.post(
 		"/login",
-		async ({ sessionId, body }) => {
+		async ({ sessionId, body, status }) => {
 			const user = await db.query.users.findFirst({
 				where: (user, { eq }) => eq(user.email, body.email),
 				columns: { passwordHash: true, id: true, role: true }

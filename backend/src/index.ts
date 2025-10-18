@@ -2,8 +2,8 @@ import env from "@/env";
 
 import { syncDBListeners } from "@/db/listener";
 import routes from "@/routes";
-import services from "@/services";
-import { clearCache } from "@/services/caching";
+import services from "@/plugins/services";
+import { clearCache } from "@/middlewares/caching";
 import logger from "@/services/logger";
 import { Elysia } from "elysia";
 

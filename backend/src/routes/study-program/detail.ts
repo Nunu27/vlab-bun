@@ -11,48 +11,38 @@ export default (app: AppWithServices) =>
 				id: t.String({ format: "uuid" })
 			}),
 			detail: {
-				description: "Get student detail"
+				description: "Get study program detail"
 			}
 		},
 		(app) =>
 			app
 				.resolve(({ params }) => ({
-					cacheKey: `student:${params.id}`
+					cacheKey: `study-program:${params.id}`
 				}))
 				.get("/:id", async ({ params, db, status }) => {
 					const { id } = params;
 
-					const student = await db.query.students.findFirst({
+					const data = await db.query.studyPrograms.findFirst({
 						columns: {
-							studyProgramId: false
+							departmentId: false
 						},
 						with: {
-							user: {
-								columns: {
-									name: true,
-									email: true
-								}
-							},
-							studyProgram: {
+							department: {
 								columns: {
 									id: true,
 									name: true
 								}
 							}
 						},
-						where: (student, { eq }) => eq(student.id, id)
+						where: (studyProgram, { eq }) => eq(studyProgram.id, id)
 					});
-					if (!student) {
-						return status(404, failure({ message: "Student not found" }));
+
+					if (!data) {
+						return status(404, failure({ message: "Study program not found" }));
 					}
 
-					const { user, ...data } = student;
-
 					return success({
-						data: {
-							...data,
-							...user
-						}
+						data
 					});
 				})
 	);

@@ -1,4 +1,4 @@
-import { users } from "@/db/schema";
+import { departments } from "@/db/schema";
 import { AppWithServices } from "@/plugins/services";
 import { success } from "@/utils/response";
 import { eq } from "drizzle-orm";
@@ -9,14 +9,14 @@ export default (app: AppWithServices) =>
 		async ({ params, db }) => {
 			const { id } = params;
 
-			await db.delete(users).where(eq(users.id, id));
+			await db.delete(departments).where(eq(departments.id, id));
 
-			return success({ message: "Student deleted" });
+			return success({ message: "Department deleted" });
 		},
 		{
 			private: ["admin"],
 			detail: {
-				description: "Delete a student"
+				description: "Delete a department"
 			}
 		}
 	);

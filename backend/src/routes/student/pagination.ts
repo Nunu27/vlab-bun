@@ -1,6 +1,6 @@
 import db from "@/db";
-import { AppWithServices } from "@/services";
-import { md5 } from "@/utils/hash";
+import { AppWithServices } from "@/plugins/services";
+import { md5 } from "@/utils/crypto";
 import { createPaginator } from "@/utils/paginator";
 import { success } from "@/utils/response";
 
@@ -9,8 +9,12 @@ const paginator = createPaginator(db, "students");
 export default (app: AppWithServices) =>
 	app.guard(
 		{
+			cached: true,
 			private: ["admin"],
-			body: paginator.schema
+			body: paginator.schema,
+			detail: {
+				description: "Get paginated students data"
+			}
 		},
 		(app) =>
 			app

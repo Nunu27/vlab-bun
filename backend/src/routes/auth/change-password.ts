@@ -1,10 +1,10 @@
 import db from "@/db";
 import { users } from "@/db/schema";
-import { AppWithServices } from "@/services";
+import { AppWithServices } from "@/plugins/services";
 import redis from "@/services/redis";
 import { failure, success } from "@/utils/response";
 import { eq } from "drizzle-orm";
-import { status, t } from "elysia";
+import { t } from "elysia";
 
 const ChangePasswordRequest = t.Object({
 	oldPassword: t.String({
@@ -24,7 +24,7 @@ const ChangePasswordRequest = t.Object({
 export default (app: AppWithServices) =>
 	app.post(
 		"/change-password",
-		async ({ session, body }) => {
+		async ({ session, body, status }) => {
 			const user = await db.query.users.findFirst({
 				where: (user, { eq }) => eq(user.id, session.id),
 				columns: { passwordHash: true }

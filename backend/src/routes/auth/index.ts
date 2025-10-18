@@ -1,7 +1,7 @@
 import { addDBListener } from "@/db/listener";
-import { deleteCache } from "@/services/caching";
+import { deleteCache } from "@/middlewares/caching";
 import { Elysia } from "elysia";
-import changePassword from "./changePassword";
+import changePassword from "./change-password";
 import login from "./login";
 import logout from "./logout";
 import me from "./me";

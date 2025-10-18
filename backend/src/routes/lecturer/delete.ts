@@ -1,5 +1,5 @@
 import { users } from "@/db/schema";
-import { AppWithServices } from "@/services";
+import { AppWithServices } from "@/plugins/services";
 import { success } from "@/utils/response";
 import { eq } from "drizzle-orm";
 

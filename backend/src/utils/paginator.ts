@@ -254,8 +254,8 @@ const buildPaginationSchema = <TTable extends PgTable>(table: TTable) => {
 			: t.Array(t.Union(filterItems as [TSchema, TSchema, ...TSchema[]]));
 
 	return t.Object({
-		page: t.Number({ default: 1, minimum: 1, multipleOf: 1 }),
-		perPage: t.Number({ default: 10, minimum: 1, maximum: 100, multipleOf: 1 }),
+		page: t.Integer({ default: 1, minimum: 1 }),
+		perPage: t.Integer({ default: 10, minimum: 1, maximum: 100 }),
 		search: t.Optional(t.String({ minLength: 1 })),
 		sortBy: t.Optional(t.Enum(columnsEnum)),
 		sortOrder: t.Optional(t.Enum(SortOrder, { default: SortOrder.ASC })),

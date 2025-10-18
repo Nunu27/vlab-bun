@@ -1,9 +1,9 @@
 import { Role } from "@/db/schema";
 import env from "@/env";
+import redis from "@/services/redis";
 import { Session } from "@/types/session";
 import { failure } from "@/utils/response";
 import { Elysia, t } from "elysia";
-import redis from "./redis";
 
 export default new Elysia({ name: "session" })
 	.guard({

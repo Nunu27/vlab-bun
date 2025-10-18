@@ -1,6 +1,6 @@
 import env from "@/env";
 import logger from "@/services/logger";
-import { md5 } from "@/utils/hash";
+import { md5 } from "@/utils/crypto";
 import { ExtractTablesWithRelations, InferSelectModel } from "drizzle-orm";
 import { toSnakeCase } from "drizzle-orm/casing";
 import { PgTable, getTableConfig } from "drizzle-orm/pg-core";

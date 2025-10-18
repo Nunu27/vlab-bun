@@ -4,25 +4,25 @@ import { Elysia } from "elysia";
 import create from "./create";
 import _delete from "./delete";
 import detail from "./detail";
-import pagination from "./pagination";
+import list from "./list";
 import update from "./update";
 
-addDBListener("students", ["id"], async ({ op, data }) => {
-	const keys = ["student:pagination:*"];
+addDBListener("departments", ["id"], async ({ op, data }) => {
+	const keys = ["department:list"];
 
 	if (op !== "INSERT") {
-		keys.push(`student:${data.id}`);
+		keys.push(`department:${data.id}`);
 	}
 
 	await deleteCache(...keys);
 });
 
 export default new Elysia({
-	prefix: "/student",
-	detail: { tags: ["Students"] }
+	prefix: "/department",
+	detail: { tags: ["Department"] }
 })
 	.use(create)
 	.use(detail)
 	.use(update)
 	.use(_delete)
-	.use(pagination);
+	.use(list);

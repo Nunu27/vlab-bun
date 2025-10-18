@@ -1,5 +1,5 @@
 import { degreeLevelEnum, students, users } from "@/db/schema";
-import { AppWithServices } from "@/services";
+import { AppWithServices } from "@/plugins/services";
 import { eq } from "drizzle-orm";
 import { t } from "elysia";
 
