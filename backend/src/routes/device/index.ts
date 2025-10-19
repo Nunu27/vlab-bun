@@ -1,6 +1,8 @@
 import { Elysia } from "elysia";
 
-export default new Elysia({
-	prefix: "/device",
+const deviceRouter = new Elysia({
 	detail: { tags: ["Device"] }
 });
+
+export default deviceRouter;
+export type DeviceRouter = typeof deviceRouter;

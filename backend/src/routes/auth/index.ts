@@ -17,11 +17,13 @@ addDBListener(
 	}
 );
 
-export default new Elysia({
-	prefix: "/auth",
+const authRouter = new Elysia({
 	detail: { tags: ["Authentication"] }
 })
 	.use(login)
 	.use(logout)
 	.use(changePassword)
 	.use(me);
+
+export default authRouter;
+export type AuthRouter = typeof authRouter;

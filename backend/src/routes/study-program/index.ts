@@ -17,8 +17,7 @@ addDBListener("studyPrograms", ["id"], async ({ op, data }) => {
 	await deleteCache(...keys);
 });
 
-export default new Elysia({
-	prefix: "/study-program",
+const studyProgramRouter = new Elysia({
 	detail: { tags: ["Study Programs"] }
 })
 	.use(create)
@@ -26,3 +25,6 @@ export default new Elysia({
 	.use(update)
 	.use(_delete)
 	.use(list);
+
+export default studyProgramRouter;
+export type StudyProgramRouter = typeof studyProgramRouter;

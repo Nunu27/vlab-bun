@@ -151,11 +151,11 @@ type ColumnData<
 	K extends ColumnKeys<TTable>
 > = TTable["_"]["columns"][K]["_"]["data"];
 
-type FilterType<TTable extends PgTable> = {
-	[K in ColumnKeys<TTable>]: GetColumnDataType<
-		TTable,
-		K
-	> extends SupportedDataType
+type FilterType<
+	TTable extends PgTable,
+	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>
+> = {
+	[K in TColumns]: GetColumnDataType<TTable, K> extends SupportedDataType
 		? (typeof COLUMN_FILTER_OPS)[GetColumnDataType<
 				TTable,
 				K
@@ -169,27 +169,38 @@ type FilterType<TTable extends PgTable> = {
 				: { field: K; op: Op; value: ColumnData<TTable, K> }
 			: never
 		: never;
-}[ColumnKeys<TTable>];
+}[TColumns];
 
-type PaginationSchema<TTable extends PgTable> = {
+type PaginationSchema<
+	TTable extends PgTable,
+	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>
+> = {
 	page: number;
 	perPage: number;
 	search?: string;
-	sortBy?: ColumnKeys<TTable>;
+	sortBy?: TColumns;
 	sortOrder?: SortOrder;
-	filters?: FilterType<TTable>[];
+	filters?: FilterType<TTable, TColumns>[];
 };
 
 // =================================================================
 // SECTION: Schema Generation
 // =================================================================
 
-const buildPaginationSchema = <TTable extends PgTable>(table: TTable) => {
+const buildPaginationSchema = <TTable extends PgTable>(
+	table: TTable,
+	usableColumns?: string[]
+) => {
 	const columns = getTableColumns(table);
 	const selectSchema = createSelectSchema(table);
-	const columnNames = Object.keys(
+	const allColumnNames = Object.keys(
 		selectSchema.properties
 	) as ColumnKeys<TTable>[];
+
+	// Filter columns based on usableColumns if provided
+	const columnNames = usableColumns
+		? allColumnNames.filter((name) => usableColumns.includes(name))
+		: allColumnNames;
 
 	const filterItems = columnNames.flatMap((columnName) => {
 		const column = columns[columnName];
@@ -263,9 +274,15 @@ const buildPaginationSchema = <TTable extends PgTable>(table: TTable) => {
 	});
 };
 
-const createPaginationSchema = <TTable extends PgTable>(table: TTable) => {
-	return buildPaginationSchema(table) as TSchema & {
-		static: PaginationSchema<TTable>;
+const createPaginationSchema = <
+	TTable extends PgTable,
+	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>
+>(
+	table: TTable,
+	usableColumns?: TColumns[]
+) => {
+	return buildPaginationSchema(table, usableColumns as string[]) as TSchema & {
+		static: PaginationSchema<TTable, TColumns>;
 	};
 };
 
@@ -314,10 +331,14 @@ const buildFilterConditions = (
 export const createPaginator = <
 	TFullSchema extends Record<string, unknown>,
 	TRelationalSchema extends ExtractTablesWithRelations<TFullSchema>,
-	TEntity extends keyof ExtractTablesWithRelations<TFullSchema>
+	TEntity extends keyof ExtractTablesWithRelations<TFullSchema>,
+	TUsableColumns extends keyof TRelationalSchema[TEntity]["columns"] = keyof TRelationalSchema[TEntity]["columns"]
 >(
 	db: NodePgDatabase<TFullSchema>,
-	entity: TEntity
+	entity: TEntity,
+	config?: {
+		usableColumns?: TUsableColumns[];
+	}
 ) => {
 	const tableConfig = db._.schema![entity];
 	const { columns } = tableConfig;
@@ -328,7 +349,12 @@ export const createPaginator = <
 		: never;
 	const table = Object.values(columns)[0].table as TTable;
 
-	const schema = createPaginationSchema(table);
+	type TColumns = Extract<TUsableColumns, string>;
+	const usableColumnNames = config?.usableColumns as TColumns[] | undefined;
+	const schema = createPaginationSchema<TTable, TColumns>(
+		table,
+		usableColumnNames
+	);
 
 	type TFields = TRelationalSchema[TEntity];
 	type TBaseOptions = DBQueryConfig<"many", true, TRelationalSchema, TFields>;

@@ -1,6 +1,8 @@
 import { Elysia } from "elysia";
 
-export default new Elysia({
-	prefix: "/lab",
+const labRouter = new Elysia({
 	detail: { tags: ["Labs"] }
 });
+
+export default labRouter;
+export type LabRouter = typeof labRouter;
