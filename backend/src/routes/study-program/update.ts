@@ -1,4 +1,4 @@
-import { studyPrograms } from "@/db/schema";
+import { studyPrograms } from "@/db/schema/auth";
 import { AppWithServices } from "@/plugins/services";
 import { eq } from "drizzle-orm";
 import { t } from "elysia";

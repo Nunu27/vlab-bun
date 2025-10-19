@@ -1,4 +1,4 @@
-import { departments } from "@/db/schema";
+import { departments } from "@/db/schema/auth";
 import logger from "@/services/logger";
 import { Transaction } from "@/types/seeder";
 

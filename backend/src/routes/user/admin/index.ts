@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+
 import create from "./create";
 import _delete from "./delete";
 import detail from "./detail";

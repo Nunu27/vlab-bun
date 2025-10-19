@@ -1,7 +1,7 @@
 import { name, version } from "@/../package.json";
 import { success } from "@/utils/response";
-
 import { Elysia } from "elysia";
+
 import authRouter from "./auth";
 import departmentRouter from "./department";
 import studyProgramRouter from "./study-program";

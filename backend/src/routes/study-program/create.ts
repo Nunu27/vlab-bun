@@ -1,4 +1,4 @@
-import { studyPrograms } from "@/db/schema";
+import { studyPrograms } from "@/db/schema/auth";
 import { AppWithServices } from "@/plugins/services";
 import { success } from "@/utils/response";
 import { t } from "elysia";

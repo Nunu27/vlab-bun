@@ -1,4 +1,4 @@
-import { degreeLevelEnum, students, users } from "@/db/schema";
+import { degreeLevelEnum, students, users } from "@/db/schema/auth";
 import { AppWithServices } from "@/plugins/services";
 import { success } from "@/utils/response";
 import { t } from "elysia";

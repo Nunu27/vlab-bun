@@ -4,7 +4,6 @@ import {
 	between,
 	BuildQueryResult,
 	ColumnDataType,
-	count,
 	DBQueryConfig,
 	desc,
 	eq,
@@ -376,10 +375,7 @@ export const createPaginator = <
 			: [];
 		const filter = conditions.length > 0 ? and(...conditions) : undefined;
 
-		const [{ count: total }] = await db
-			.select({ count: count() })
-			.from(table as PgTable)
-			.where(filter);
+		const total = await db.$count(table, filter);
 
 		const query = (db.query as any)[entity] as RelationalQueryBuilder<
 			TRelationalSchema,

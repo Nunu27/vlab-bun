@@ -1,4 +1,4 @@
-import { departments } from "@/db/schema";
+import { departments } from "@/db/schema/auth";
 import { AppWithServices } from "@/plugins/services";
 import { success } from "@/utils/response";
 import { eq } from "drizzle-orm";

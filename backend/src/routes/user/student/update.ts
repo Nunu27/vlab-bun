@@ -1,4 +1,4 @@
-import { degreeLevelEnum, students, users } from "@/db/schema";
+import { degreeLevelEnum, students, users } from "@/db/schema/auth";
 import { AppWithServices } from "@/plugins/services";
 import { failure } from "@/utils/response";
 import { eq } from "drizzle-orm";

@@ -1,10 +1,11 @@
 import { addDBListener } from "@/db/listener";
 import { deleteCache } from "@/middlewares/caching";
 import { Elysia } from "elysia";
+
 import adminRouter from "./admin";
+import changePassword from "./change-password";
 import lecturerRouter from "./lecturer";
 import studentRouter from "./student";
-import changePassword from "./change-password";
 
 addDBListener("users", ["id", "role"], async ({ op, data }) => {
 	const keys = [`${data.role}:pagination:*`];

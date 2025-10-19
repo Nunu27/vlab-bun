@@ -1,4 +1,4 @@
-import { Role } from "@/db/schema";
+import { Role } from "@/db/schema/auth";
 import env from "@/env";
 import redis from "@/services/redis";
 import { Session } from "@/types/session";

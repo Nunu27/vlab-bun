@@ -35,7 +35,8 @@ export default (app: AppWithServices) =>
 
 						const data = await paginator.paginate(body, {
 							columns: {
-								passwordHash: false
+								passwordHash: false,
+								role: false
 							}
 						});
 
