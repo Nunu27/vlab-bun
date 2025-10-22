@@ -16,8 +16,13 @@ const EnvSchema = Type.Object({
 	REDIS_URL: Type.String({ format: "uri" }),
 
 	SESSION_TTL: Type.Number({ default: 60 * 60 * 3 }),
-	BATCH_SIZE: Type.Number({ default: 100 })
+	BATCH_SIZE: Type.Number({ default: 100 }),
+	DEBOUNCE_MS: Type.Number({ default: 100 }),
+	MAX_BATCH_WAIT_MS: Type.Number({ default: 500 })
 });
 
+const env = Value.Parse(EnvSchema, process.env);
+
+export default env;
 export type Env = Type.Static<typeof EnvSchema>;
-export default Value.Parse(EnvSchema, process.env);
+export const inProduction = env.NODE_ENV === "production";

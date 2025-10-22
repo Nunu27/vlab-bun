@@ -15,6 +15,8 @@ const MANAGED_PREFIX = "on_change";
 const TRIGGER_PREFIX = "trg_onchg_";
 const FUNC_PREFIX = "fn_onchg_";
 const BATCH_SIZE = Math.max(1, Number(env.BATCH_SIZE ?? 64));
+const DEBOUNCE_MS = Math.max(0, Number(env.DEBOUNCE_MS ?? 100));
+const MAX_BATCH_WAIT_MS = Math.max(0, Number(env.MAX_BATCH_WAIT_MS ?? 500));
 
 type Operations = "INSERT" | "UPDATE" | "DELETE";
 type ListenerCallback<
@@ -30,8 +32,15 @@ type ListenerEntry = {
 	listener: ListenerCallback<any, any>;
 };
 
-// In-memory registry, keyed by channel: "on_change:schema.table:col1,col2"
 const registry = new Map<string, ListenerEntry[]>();
+const batchQueue = new Map<
+	string,
+	{
+		items: Array<{ op: Operations; table: string; data: any }>;
+		timer: NodeJS.Timeout | null;
+		firstReceivedAt: number;
+	}
+>();
 
 const trigNameFor = (channel: string) => `${TRIGGER_PREFIX}${md5(channel)}`;
 const funcNameFor = (channel: string) => `${FUNC_PREFIX}${md5(channel)}`;
@@ -57,6 +66,75 @@ const getChannelForTable = <T extends PgTable>(
 	return `${MANAGED_PREFIX}:${schema}.${name}:${sqlCols.join(",")}`;
 };
 
+const processBatch = async (channel: string) => {
+	const batch = batchQueue.get(channel);
+	if (!batch || batch.items.length === 0) return;
+
+	const items = batch.items.slice();
+	batchQueue.delete(channel);
+
+	const listeners = registry.get(channel);
+	if (!listeners) return;
+
+	const groupedByOp = items.reduce((acc, item) => {
+		if (!acc[item.op]) acc[item.op] = [];
+		acc[item.op].push(item);
+		return acc;
+	}, {} as Record<Operations, typeof items>);
+
+	for (const [op, opItems] of Object.entries(groupedByOp)) {
+		const listenersToCall = listeners.filter(({ events }) =>
+			events.has(op as Operations)
+		);
+
+		if (listenersToCall.length === 0) continue;
+
+		for (let i = 0; i < listenersToCall.length; i += BATCH_SIZE) {
+			const chunk = listenersToCall.slice(i, i + BATCH_SIZE);
+			const results = await Promise.allSettled(
+				chunk.map(({ listener }) =>
+					Promise.all(opItems.map((item) => listener(item)))
+				)
+			);
+
+			results.forEach((result) => {
+				if (result.status === "rejected") {
+					logger.error(
+						result.reason,
+						`DB Listener: Batch failure on channel ${channel}`
+					);
+				}
+			});
+		}
+	}
+};
+
+const scheduleBatchProcessing = (channel: string) => {
+	const batch = batchQueue.get(channel);
+	if (!batch) return;
+
+	const now = Date.now();
+	const timeSinceFirst = now - batch.firstReceivedAt;
+
+	if (batch.timer) {
+		clearTimeout(batch.timer);
+	}
+
+	if (timeSinceFirst >= MAX_BATCH_WAIT_MS) {
+		processBatch(channel);
+		return;
+	}
+
+	const remainingWait = Math.min(
+		DEBOUNCE_MS,
+		MAX_BATCH_WAIT_MS - timeSinceFirst
+	);
+
+	batch.timer = setTimeout(() => {
+		processBatch(channel);
+	}, remainingWait);
+};
+
 client.on("notification", async ({ channel, payload }) => {
 	if (!payload || !registry.has(channel)) return;
 
@@ -68,28 +146,18 @@ client.on("notification", async ({ channel, payload }) => {
 		return;
 	}
 
-	const listeners = registry.get(channel)!;
-	const listenersToCall = listeners.filter(({ events }) =>
-		events.has(parsedPayload.op)
-	);
-
-	if (listenersToCall.length === 0) return;
-
-	for (let i = 0; i < listenersToCall.length; i += BATCH_SIZE) {
-		const chunk = listenersToCall.slice(i, i + BATCH_SIZE);
-		const results = await Promise.allSettled(
-			chunk.map(({ listener }) => listener(parsedPayload))
-		);
-
-		results.forEach((result) => {
-			if (result.status === "rejected") {
-				logger.error(
-					result.reason,
-					`DB Listener: Failure on channel ${channel}`
-				);
-			}
+	if (!batchQueue.has(channel)) {
+		batchQueue.set(channel, {
+			items: [],
+			timer: null,
+			firstReceivedAt: Date.now()
 		});
 	}
+
+	const batch = batchQueue.get(channel)!;
+	batch.items.push(parsedPayload);
+
+	scheduleBatchProcessing(channel);
 });
 
 export const addDBListener = <
@@ -152,10 +220,8 @@ function buildFunctionSQL(channel: string, columns: string[]): string {
 		payload jsonb;
 		data_obj jsonb;
 		BEGIN
-		-- On DELETE, NEW is null, so we must use OLD.
 		row_data := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
 
-		-- Build a JSON object containing only the listened-to columns.
 		data_obj := (
 			SELECT jsonb_object_agg(key, value)
 			FROM jsonb_each(row_data)
@@ -196,9 +262,6 @@ function buildTriggerSQL(
     `;
 }
 
-/**
- * Reconciles the in-memory listener registry with the actual database state.
- */
 export const syncDBListeners = async () => {
 	const desiredListeners = Array.from(registry.entries()).map(
 		([channel, entries]) => {
@@ -244,6 +307,24 @@ export const syncDBListeners = async () => {
 			`DB Listener Sync: +${stats.addedTriggers}/-${stats.droppedTriggers}`
 		);
 	}
+};
+
+export const flushDBListeners = async () => {
+	const channels = Array.from(batchQueue.keys());
+	await Promise.all(channels.map((channel) => processBatch(channel)));
+};
+
+export const cleanupDBListeners = async () => {
+	await flushDBListeners();
+
+	for (const batch of batchQueue.values()) {
+		if (batch.timer) {
+			clearTimeout(batch.timer);
+		}
+	}
+
+	batchQueue.clear();
+	client.removeAllListeners("notification");
 };
 
 async function _getDBState() {

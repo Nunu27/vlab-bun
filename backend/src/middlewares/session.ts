@@ -30,9 +30,9 @@ export default new Elysia({ name: "session" })
 			}
 		},
 		protected: {
-			async beforeHandle({ cookie, session, status }) {
-				if (!session) return status(401, failure({ message: "Unauthorized" }));
-				await redis.expire(cookie.session.value!, env.SESSION_TTL);
+			async beforeHandle({ cookie: { session }, status }) {
+				if (session.value) await redis.expire(session.value, env.SESSION_TTL);
+				else return status(401, failure({ message: "Unauthorized" }));
 			},
 			resolve({ session }) {
 				return { session: session! };

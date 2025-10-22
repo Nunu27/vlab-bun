@@ -4,7 +4,9 @@ import { md5 } from "@/utils/crypto";
 import { createPaginator } from "@/utils/paginator";
 import { success } from "@/utils/response";
 
-const paginator = createPaginator(db, "students");
+const paginator = createPaginator(db, "students", {
+	searchableColumns: ["nrp"]
+});
 
 export default (app: AppWithServices) =>
 	app.guard(

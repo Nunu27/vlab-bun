@@ -28,7 +28,7 @@ export const studyPrograms = pgTable("study_program", {
 	...base,
 	name: text().unique().notNull(),
 	departmentId: uuid()
-		.references(() => departments.id)
+		.references(() => departments.id, { onDelete: "restrict" })
 		.notNull()
 });
 
@@ -39,7 +39,7 @@ export const studyProgramsRelations = relations(studyPrograms, ({ one }) => ({
 	})
 }));
 
-export const roleEnum = pgEnum("roles", ["student", "lecturer", "admin"]);
+export const roleEnum = pgEnum("role", ["student", "lecturer", "admin"]);
 export type Role = (typeof roleEnum.enumValues)[number];
 
 export const users = pgTable("user", {
@@ -65,12 +65,12 @@ export const students = pgTable("student", {
 	...base,
 	id: uuid()
 		.primaryKey()
-		.references(() => users.id),
+		.references(() => users.id, { onDelete: "cascade" }),
 	nrp: text().notNull().unique(),
 	year: integer().notNull(),
 	degreeLevel: degreeLevelEnum().notNull(),
 	studyProgramId: uuid()
-		.references(() => studyPrograms.id)
+		.references(() => studyPrograms.id, { onDelete: "restrict" })
 		.notNull()
 });
 
@@ -89,7 +89,7 @@ export const lecturers = pgTable("lecturer", {
 	...base,
 	id: uuid()
 		.primaryKey()
-		.references(() => users.id),
+		.references(() => users.id, { onDelete: "cascade" }),
 	nip: text().notNull().unique()
 });
 

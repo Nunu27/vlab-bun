@@ -5,7 +5,8 @@ import { createPaginator } from "@/utils/paginator";
 import { success } from "@/utils/response";
 
 const paginator = createPaginator(db, "users", {
-	usableColumns: ["id", "name", "email", "role", "createdAt", "updatedAt"]
+	usableColumns: ["id", "name", "email", "createdAt", "updatedAt"],
+	searchableColumns: ["name", "email"]
 });
 
 export default (app: AppWithServices) =>
@@ -26,14 +27,8 @@ export default (app: AppWithServices) =>
 				.post(
 					"/pagination",
 					async ({ body }) => {
-						body.filters ??= [];
-						body.filters.push({
-							field: "role",
-							op: "eq",
-							value: "admin"
-						});
-
 						const data = await paginator.paginate(body, {
+							where: (users, { eq }) => eq(users.role, "admin"),
 							columns: {
 								passwordHash: false,
 								role: false

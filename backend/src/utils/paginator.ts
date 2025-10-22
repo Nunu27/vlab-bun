@@ -12,12 +12,15 @@ import {
 	gt,
 	gte,
 	ilike,
+	isSQLWrapper,
 	like,
 	lt,
 	lte,
 	ne,
 	notBetween,
 	notLike,
+	or,
+	SQL,
 	SQLWrapper
 } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -125,6 +128,26 @@ const COLUMN_FILTER_OPS = {
 	boolean: [FilterOp.EQ, FilterOp.NE]
 } as const;
 
+const filterMap: Record<FilterOp, (col: any, val: any) => SQL | null> = {
+	[FilterOp.EQ]: (col, val) => eq(col, val),
+	[FilterOp.NE]: (col, val) => ne(col, val),
+	[FilterOp.GT]: (col, val) => gt(col, val),
+	[FilterOp.GTE]: (col, val) => gte(col, val),
+	[FilterOp.LT]: (col, val) => lt(col, val),
+	[FilterOp.LTE]: (col, val) => lte(col, val),
+	[FilterOp.LIKE]: (col, val) => like(col, `%${val}%`),
+	[FilterOp.ILIKE]: (col, val) => ilike(col, `%${val}%`),
+	[FilterOp.NLIKE]: (col, val) => notLike(col, `%${val}%`),
+	[FilterOp.BT]: (col, val) =>
+		Array.isArray(val) && val.length === 2
+			? between(col, val[0], val[1])
+			: null,
+	[FilterOp.NB]: (col, val) =>
+		Array.isArray(val) && val.length === 2
+			? notBetween(col, val[0], val[1])
+			: null
+};
+
 type SupportedDataType = keyof typeof COLUMN_FILTER_OPS;
 
 const getDataTypeFilterOps = <T extends ColumnDataType>(dataType: T) => {
@@ -150,6 +173,13 @@ type ColumnData<
 	K extends ColumnKeys<TTable>
 > = TTable["_"]["columns"][K]["_"]["data"];
 
+// Helper type to filter only columns that support ILIKE (string columns)
+type SearchableColumnKeys<TTable extends PgTable> = {
+	[K in ColumnKeys<TTable>]: GetColumnDataType<TTable, K> extends "string"
+		? K
+		: never;
+}[ColumnKeys<TTable>];
+
 type FilterType<
 	TTable extends PgTable,
 	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>
@@ -172,15 +202,15 @@ type FilterType<
 
 type PaginationSchema<
 	TTable extends PgTable,
-	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>
+	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>,
+	TSearchable extends boolean = boolean
 > = {
 	page: number;
 	perPage: number;
-	search?: string;
 	sortBy?: TColumns;
 	sortOrder?: SortOrder;
 	filters?: FilterType<TTable, TColumns>[];
-};
+} & (TSearchable extends true ? { search?: string } : {});
 
 // =================================================================
 // SECTION: Schema Generation
@@ -188,7 +218,8 @@ type PaginationSchema<
 
 const buildPaginationSchema = <TTable extends PgTable>(
 	table: TTable,
-	usableColumns?: string[]
+	usableColumns?: string[],
+	searchableColumns?: string[]
 ) => {
 	const columns = getTableColumns(table);
 	const selectSchema = createSelectSchema(table);
@@ -261,27 +292,42 @@ const buildPaginationSchema = <TTable extends PgTable>(
 			? t.Array(t.Never())
 			: filterItems.length === 1
 			? t.Array(filterItems[0])
-			: t.Array(t.Union(filterItems as [TSchema, TSchema, ...TSchema[]]));
+			: t.Array(t.Union(filterItems));
 
-	return t.Object({
+	const baseSchema = {
 		page: t.Integer({ default: 1, minimum: 1 }),
 		perPage: t.Integer({ default: 10, minimum: 1, maximum: 100 }),
-		search: t.Optional(t.String({ minLength: 1 })),
 		sortBy: t.Optional(t.Enum(columnsEnum)),
 		sortOrder: t.Optional(t.Enum(SortOrder, { default: SortOrder.ASC })),
 		filters: t.Optional(filterSchema)
-	});
+	};
+
+	// Only include search if searchableColumns is provided and not empty
+	if (searchableColumns && searchableColumns.length > 0) {
+		return t.Object({
+			...baseSchema,
+			search: t.Optional(t.String({ minLength: 1 }))
+		});
+	}
+
+	return t.Object(baseSchema);
 };
 
 const createPaginationSchema = <
 	TTable extends PgTable,
-	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>
+	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>,
+	TSearchable extends boolean = false
 >(
 	table: TTable,
-	usableColumns?: TColumns[]
+	usableColumns?: TColumns[],
+	searchableColumns?: string[]
 ) => {
-	return buildPaginationSchema(table, usableColumns as string[]) as TSchema & {
-		static: PaginationSchema<TTable, TColumns>;
+	return buildPaginationSchema(
+		table,
+		usableColumns,
+		searchableColumns
+	) as TSchema & {
+		static: PaginationSchema<TTable, TColumns, TSearchable>;
 	};
 };
 
@@ -292,28 +338,7 @@ const createPaginationSchema = <
 const buildFilterConditions = (
 	filters: { field: string; op: FilterOp; value: any }[],
 	columns: Record<string, any>
-): SQLWrapper[] => {
-	const filterMap: Record<FilterOp, (col: any, val: any) => SQLWrapper | null> =
-		{
-			[FilterOp.EQ]: (col, val) => eq(col, val),
-			[FilterOp.NE]: (col, val) => ne(col, val),
-			[FilterOp.GT]: (col, val) => gt(col, val),
-			[FilterOp.GTE]: (col, val) => gte(col, val),
-			[FilterOp.LT]: (col, val) => lt(col, val),
-			[FilterOp.LTE]: (col, val) => lte(col, val),
-			[FilterOp.LIKE]: (col, val) => like(col, `%${val}%`),
-			[FilterOp.ILIKE]: (col, val) => ilike(col, `%${val}%`),
-			[FilterOp.NLIKE]: (col, val) => notLike(col, `%${val}%`),
-			[FilterOp.BT]: (col, val) =>
-				Array.isArray(val) && val.length === 2
-					? between(col, val[0], val[1])
-					: null,
-			[FilterOp.NB]: (col, val) =>
-				Array.isArray(val) && val.length === 2
-					? notBetween(col, val[0], val[1])
-					: null
-		};
-
+): SQL[] => {
 	return filters.flatMap(({ field, op, value }) => {
 		const column = columns[field];
 		if (!column) return [];
@@ -323,10 +348,29 @@ const buildFilterConditions = (
 	});
 };
 
+const buildSearchConditions = (
+	search: string,
+	searchableColumns: string[],
+	columns: Record<string, any>
+): SQL | undefined => {
+	if (!search || searchableColumns.length === 0) return undefined;
+
+	const searchConditions = searchableColumns.flatMap((columnName) => {
+		const column = columns[columnName];
+		if (!column) return [];
+
+		// Use ILIKE for case-insensitive search on string columns
+		return [ilike(column, `%${search}%`)];
+	});
+
+	return searchConditions.length > 0 ? or(...searchConditions) : undefined;
+};
+
 // =================================================================
 // SECTION: Paginator Factory
 // =================================================================
 
+// TODO: add support for relations
 export const createPaginator = <
 	TFullSchema extends Record<string, unknown>,
 	TRelationalSchema extends ExtractTablesWithRelations<TFullSchema>,
@@ -337,12 +381,15 @@ export const createPaginator = <
 	entity: TEntity,
 	config?: {
 		usableColumns?: TUsableColumns[];
+		searchableColumns?: SearchableColumnKeys<
+			TFullSchema[TEntity] extends PgTable ? TFullSchema[TEntity] : never
+		>[];
 	}
 ) => {
 	const tableConfig = db._.schema![entity];
 	const { columns } = tableConfig;
 
-	// This logic is used to get the fully-typed table object from a dynamic entity name.
+	// Get the table type
 	type TTable = TFullSchema[TEntity] extends PgTable
 		? TFullSchema[TEntity]
 		: never;
@@ -350,32 +397,66 @@ export const createPaginator = <
 
 	type TColumns = Extract<TUsableColumns, string>;
 	const usableColumnNames = config?.usableColumns as TColumns[] | undefined;
-	const schema = createPaginationSchema<TTable, TColumns>(
+	const searchableColumnNames = config?.searchableColumns || [];
+	const hasSearchable = searchableColumnNames.length > 0;
+
+	const schema = createPaginationSchema<TTable, TColumns, typeof hasSearchable>(
 		table,
-		usableColumnNames
+		usableColumnNames,
+		searchableColumnNames
 	);
 
 	type TFields = TRelationalSchema[TEntity];
 	type TBaseOptions = DBQueryConfig<"many", true, TRelationalSchema, TFields>;
 
 	const paginate = async <
-		TOptions extends Omit<
-			TBaseOptions,
-			"where" | "limit" | "offset" | "orderBy"
-		>
+		TOptions extends Omit<TBaseOptions, "limit" | "offset" | "orderBy">
 	>(
 		request: typeof schema.static,
 		options?: TOptions
 	) => {
 		const { page, perPage, sortBy, sortOrder, filters } = request;
+		const search = "search" in request ? request.search : undefined;
 		const offset = (page - 1) * perPage;
 
-		const conditions = filters?.length
+		const filterConditions = filters?.length
 			? buildFilterConditions(filters, columns)
 			: [];
-		const filter = conditions.length > 0 ? and(...conditions) : undefined;
+		const filter =
+			filterConditions.length > 0 ? and(...filterConditions) : undefined;
 
-		const total = await db.$count(table, filter);
+		const searchCondition = search
+			? buildSearchConditions(search, searchableColumnNames, columns)
+			: undefined;
+
+		// Combine filter and search conditions
+		let combinedConditions: SQL | undefined;
+		if (filter && searchCondition) {
+			combinedConditions = and(filter, searchCondition);
+		} else if (filter) {
+			combinedConditions = filter;
+		} else if (searchCondition) {
+			combinedConditions = searchCondition;
+		}
+
+		let where: TOptions["where"];
+		if (combinedConditions && options?.where) {
+			if (isSQLWrapper(options.where)) {
+				where = and(combinedConditions, options.where);
+			} else {
+				const whereFunc = options.where as Exclude<
+					TOptions["where"],
+					SQLWrapper | undefined
+				>;
+
+				where = (fields, ops) =>
+					and(combinedConditions!, whereFunc(fields, ops));
+			}
+		} else {
+			where = combinedConditions ?? options?.where;
+		}
+
+		const total = await db.$count(table, combinedConditions);
 
 		const query = (db.query as any)[entity] as RelationalQueryBuilder<
 			TRelationalSchema,
@@ -384,7 +465,7 @@ export const createPaginator = <
 
 		const items = await query.findMany({
 			...options,
-			where: filter,
+			where,
 			orderBy: sortBy
 				? (sortOrder === SortOrder.DESC ? desc : asc)(columns[sortBy])
 				: undefined,

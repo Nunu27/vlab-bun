@@ -1,6 +1,6 @@
 import { name, version } from "@/../package.json";
 import db from "@/db";
-import env from "@/env";
+import { inProduction } from "@/env";
 import caching from "@/middlewares/caching";
 import session from "@/middlewares/session";
 import logger from "@/services/logger";
@@ -10,8 +10,6 @@ import { wrap } from "@bogeychan/elysia-logger";
 import openapi from "@elysiajs/openapi";
 import { Elysia, ValidationError } from "elysia";
 import { TUnionEnum } from "elysia/dist/type-system/types";
-
-const inProduction = env.NODE_ENV === "production";
 
 const formatError = (
 	error: ValidationError["valueError"]

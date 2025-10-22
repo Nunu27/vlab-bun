@@ -8,6 +8,7 @@
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.1.10",
     "@elysiajs/openapi": "^1.4.11",
+    "@elysiajs/static": "^1.4.4",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.6",
     "drizzle-typebox": "^0.3.3",
