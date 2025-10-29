@@ -1,5 +1,5 @@
-import { name, version } from "@/../package.json";
-import { success } from "@/utils/response";
+import { name, version } from "@backend/../package.json";
+import { success } from "@backend/utils/response";
 import { Elysia } from "elysia";
 
 import authRouter from "./auth";
@@ -7,12 +7,11 @@ import departmentRouter from "./department";
 import studyProgramRouter from "./study-program";
 import userRouter from "./user";
 
-const app = new Elysia();
+const routes = new Elysia({ prefix: "/api" })
+	.get("/", () => success({ data: { name, version } }))
+	.group("/auth", (app) => app.use(authRouter))
+	.group("/department", (app) => app.use(departmentRouter))
+	.group("/study-program", (app) => app.use(studyProgramRouter))
+	.group("/user", (app) => app.use(userRouter));
 
-app.get("/", () => success({ data: { name, version } }));
-app.group("/auth", (app) => app.use(authRouter));
-app.group("/department", (app) => app.use(departmentRouter));
-app.group("/study-program", (app) => app.use(studyProgramRouter));
-app.group("/user", (app) => app.use(userRouter));
-
-export default app;
+export default routes;

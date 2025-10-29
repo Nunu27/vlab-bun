@@ -1,4 +1,4 @@
-import { inProduction } from "@/env";
+import { inProduction } from "@backend/env";
 import { formatters, serializers } from "@bogeychan/elysia-logger";
 import { pino } from "pino";
 

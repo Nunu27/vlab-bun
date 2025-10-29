@@ -1,6 +1,6 @@
-import { studyPrograms } from "@/db/schema/auth";
-import logger from "@/services/logger";
-import { Transaction } from "@/types/seeder";
+import { studyPrograms } from "@backend/db/schema/auth";
+import logger from "@backend/services/logger";
+import { Transaction } from "@backend/types/seeder";
 
 export default {
 	seed: async (tx: Transaction) => {
@@ -9,10 +9,13 @@ export default {
 		const departmentList = await tx.query.departments.findMany({
 			columns: { id: true, name: true }
 		});
-		const departmentMap = departmentList.reduce((acc, dept) => {
-			acc[dept.name] = dept.id;
-			return acc;
-		}, {} as Record<string, string>);
+		const departmentMap = departmentList.reduce(
+			(acc, dept) => {
+				acc[dept.name] = dept.id;
+				return acc;
+			},
+			{} as Record<string, string>
+		);
 
 		const { rowCount } = await tx
 			.insert(studyPrograms)

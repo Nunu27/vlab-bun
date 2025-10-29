@@ -55,9 +55,9 @@ export const usersRelations = relations(users, ({ one }) => ({
 		fields: [users.id],
 		references: [students.id]
 	}),
-	lecturer: one(students, {
+	lecturer: one(lecturers, {
 		fields: [users.id],
-		references: [students.id]
+		references: [lecturers.id]
 	})
 }));
 

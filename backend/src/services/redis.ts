@@ -1,4 +1,4 @@
-import env from "@/env";
+import env from "@backend/env";
 import { RedisClient } from "bun";
 import logger from "./logger";
 

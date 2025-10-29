@@ -1,7 +1,7 @@
-import env from "@/env";
-import logger from "@/services/logger";
-import { md5 } from "@/utils/crypto";
-import { ExtractTablesWithRelations, InferSelectModel } from "drizzle-orm";
+import env from "@backend/env";
+import logger from "@backend/services/logger";
+import { md5 } from "@backend/utils/crypto";
+import type { ExtractTablesWithRelations, InferSelectModel } from "drizzle-orm";
 import { toSnakeCase } from "drizzle-orm/casing";
 import { PgTable, getTableConfig } from "drizzle-orm/pg-core";
 import db from ".";
@@ -76,11 +76,14 @@ const processBatch = async (channel: string) => {
 	const listeners = registry.get(channel);
 	if (!listeners) return;
 
-	const groupedByOp = items.reduce((acc, item) => {
-		if (!acc[item.op]) acc[item.op] = [];
-		acc[item.op].push(item);
-		return acc;
-	}, {} as Record<Operations, typeof items>);
+	const groupedByOp = items.reduce(
+		(acc, item) => {
+			if (!acc[item.op]) acc[item.op] = [];
+			acc[item.op].push(item);
+			return acc;
+		},
+		{} as Record<Operations, typeof items>
+	);
 
 	for (const [op, opItems] of Object.entries(groupedByOp)) {
 		const listenersToCall = listeners.filter(({ events }) =>

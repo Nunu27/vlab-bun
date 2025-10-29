@@ -1,6 +1,7 @@
 {
   "name": "vlab-backend",
   "version": "1.0.50",
+  "main": "src/index.ts",
   "scripts": {
     "dev": "bun run --watch src/index.ts | pino-pretty",
     "seed": "bun run src/seeder/index.ts | pino-pretty"
@@ -12,7 +13,7 @@
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.6",
     "drizzle-typebox": "^0.3.3",
-    "elysia": "latest",
+    "elysia": "^1.4.13",
     "pg": "^8.16.3",
     "pg-native": "^3.5.2",
     "pino": "^10.0.0",
@@ -22,6 +23,5 @@
     "@types/pg": "^8.15.5",
     "bun-types": "latest",
     "drizzle-kit": "^0.31.5"
-  },
-  "module": "src/index.js"
+  }
 }

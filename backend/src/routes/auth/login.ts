@@ -1,8 +1,6 @@
-import db from "@/db";
-import env from "@/env";
-import { AppWithServices } from "@/plugins/services";
-import redis from "@/services/redis";
-import { failure, success } from "@/utils/response";
+import env from "@backend/env";
+import { createAppWithServices } from "@backend/plugins/services";
+import { failure, success } from "@backend/utils/response";
 import { t } from "elysia";
 
 const LoginRequest = t.Object({
@@ -13,33 +11,32 @@ const LoginRequest = t.Object({
 	})
 });
 
-export default (app: AppWithServices) =>
-	app.post(
-		"/login",
-		async ({ sessionId, body, status }) => {
-			const user = await db.query.users.findFirst({
-				where: (user, { eq }) => eq(user.email, body.email),
-				columns: { passwordHash: true, id: true, role: true }
-			});
+export default createAppWithServices().post(
+	"/login",
+	async ({ sessionId, body, status, redis, db }) => {
+		const user = await db.query.users.findFirst({
+			where: (user, { eq }) => eq(user.email, body.email),
+			columns: { passwordHash: true, id: true, role: true }
+		});
 
-			if (!user) {
-				return status(404, failure({ message: "User not found" }));
-			} else if (await Bun.password.verify(body.password, user.passwordHash)) {
-				const session = {
-					id: user.id,
-					role: user.role
-				};
-				await redis.set(sessionId, session, env.SESSION_TTL);
-				return success({ data: session, message: "Login successful" });
-			} else {
-				return status(401, failure({ message: "Invalid password" }));
-			}
-		},
-		{
-			guest: true,
-			body: LoginRequest,
-			detail: {
-				description: "Login with email and password"
-			}
+		if (!user) {
+			return status(404, failure({ message: "User not found" }));
+		} else if (await Bun.password.verify(body.password, user.passwordHash)) {
+			const session = {
+				id: user.id,
+				role: user.role
+			};
+			await redis.set(sessionId, session, env.SESSION_TTL);
+			return success({ message: "Login successful" });
+		} else {
+			return status(401, failure({ message: "Invalid password" }));
 		}
-	);
+	},
+	{
+		guest: true,
+		body: LoginRequest,
+		detail: {
+			description: "Login with email and password"
+		}
+	}
+);

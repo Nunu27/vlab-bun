@@ -1,58 +1,57 @@
-import { AppWithServices } from "@/plugins/services";
-import { failure, success } from "@/utils/response";
+import { createAppWithServices } from "@backend/plugins/services";
+import { failure, success } from "@backend/utils/response";
 import { t } from "elysia";
 
-export default (app: AppWithServices) =>
-	app.guard(
-		{
-			cached: true,
-			private: ["admin"],
-			params: t.Object({
-				id: t.String({ format: "uuid" })
-			}),
-			detail: {
-				description: "Get student detail"
-			}
-		},
-		(app) =>
-			app
-				.resolve(({ params }) => ({
-					cacheKey: `student:${params.id}`
-				}))
-				.get("/:id", async ({ params, db, status }) => {
-					const { id } = params;
+export default createAppWithServices().guard(
+	{
+		cached: true,
+		private: ["admin"],
+		params: t.Object({
+			id: t.String({ format: "uuid" })
+		}),
+		detail: {
+			description: "Get student detail"
+		}
+	},
+	(app) =>
+		app
+			.resolve(({ params }) => ({
+				cacheKey: `student:${params.id}`
+			}))
+			.get("/:id", async ({ params, db, status }) => {
+				const { id } = params;
 
-					const student = await db.query.students.findFirst({
-						columns: {
-							studyProgramId: false
-						},
-						with: {
-							user: {
-								columns: {
-									name: true,
-									email: true
-								}
-							},
-							studyProgram: {
-								columns: {
-									id: true,
-									name: true
-								}
+				const student = await db.query.students.findFirst({
+					columns: {
+						studyProgramId: false
+					},
+					with: {
+						user: {
+							columns: {
+								name: true,
+								email: true
 							}
 						},
-						where: (student, { eq }) => eq(student.id, id)
-					});
-					if (!student) {
-						return status(404, failure({ message: "Student not found" }));
-					}
-
-					const { user, ...data } = student;
-
-					return success({
-						data: {
-							...data,
-							...user
+						studyProgram: {
+							columns: {
+								id: true,
+								name: true
+							}
 						}
-					});
-				})
-	);
+					},
+					where: (student, { eq }) => eq(student.id, id)
+				});
+				if (!student) {
+					return status(404, failure({ message: "Student not found" }));
+				}
+
+				const { user, ...data } = student;
+
+				return success({
+					data: {
+						...data,
+						...user
+					}
+				});
+			})
+);

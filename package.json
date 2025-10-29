@@ -1,0 +1,21 @@
+{
+  "name": "vlab",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "bun --filter '*' dev",
+    "build": "bun --filter '*' build",
+    "lint": "bun --filter '*' lint",
+    "frontend": "bun run --filter frontend",
+    "frontend:build": "bun frontend build",
+    "backend": "bun run --filter vlab-backend",
+    "backend:docker-build": "bun backend build:docker"
+  },
+  "devDependencies": {},
+  "peerDependencies": {}
+}

@@ -1,15 +1,15 @@
-import { name, version } from "@/../package.json";
-import db from "@/db";
-import { inProduction } from "@/env";
-import caching from "@/middlewares/caching";
-import session from "@/middlewares/session";
-import logger from "@/services/logger";
-import redis from "@/services/redis";
-import { failure } from "@/utils/response";
+import { name, version } from "@backend/../package.json";
+import db from "@backend/db";
+import { inProduction } from "@backend/env";
+import caching from "@backend/middlewares/caching";
+import session from "@backend/middlewares/session";
+import logger from "@backend/services/logger";
+import redis from "@backend/services/redis";
+import { failure } from "@backend/utils/response";
 import { wrap } from "@bogeychan/elysia-logger";
 import openapi from "@elysiajs/openapi";
-import { Elysia, ValidationError } from "elysia";
-import { TUnionEnum } from "elysia/dist/type-system/types";
+import { Elysia, type ElysiaConfig, ValidationError } from "elysia";
+import type { TUnionEnum } from "elysia/type-system/types";
 
 const formatError = (
 	error: ValidationError["valueError"]
@@ -18,9 +18,21 @@ const formatError = (
 	let { errors, path, message, type, schema } = error;
 
 	if (errors.length) {
+		if (type === 62) {
+			const allMemberErrors = errors.map((err) => {
+				const error = err.First();
+				return formatError(error);
+			});
+
+			const leastErrors = allMemberErrors.reduce((min, current) => {
+				return current.length < min.length ? current : min;
+			}, allMemberErrors[0] || []);
+
+			return leastErrors;
+		}
+
 		return errors.flatMap((err) => {
 			const error = err.First();
-
 			return formatError(error);
 		});
 	}
@@ -29,7 +41,7 @@ const formatError = (
 		message = `Expected one of the following values ${(
 			schema as TUnionEnum
 		).enum
-			.map((v) => JSON.stringify(v))
+			.map((v: unknown) => JSON.stringify(v))
 			.join(", ")}`;
 	}
 
@@ -53,23 +65,29 @@ const services = new Elysia({ name: "services" })
 			}
 		})
 	)
-	.onError(({ code, error, path }) => {
+	.onError(({ code, error, status, path }) => {
 		switch (code) {
 			case "VALIDATION":
-				return failure({
-					message: "Validation error",
-					errors: error.all.flatMap((e) =>
-						formatError(e as ValidationError["valueError"])
-					)
-				});
+				return status(
+					422,
+					failure({
+						message: "Validation error",
+						errors: error.all.flatMap((e) =>
+							formatError(e as ValidationError["valueError"])
+						)
+					})
+				);
 			case "NOT_FOUND":
-				return failure({ message: "Resource not found" });
+				return status(404, failure({ message: "Resource not found" }));
 
 			default:
 				logger.error(error, path);
-				return failure({
-					message: inProduction ? "Internal server error" : error.toString()
-				});
+				return status(
+					500,
+					failure({
+						message: inProduction ? "Internal server error" : error.toString()
+					})
+				);
 		}
 	})
 	.decorate("redis", redis)
@@ -79,4 +97,6 @@ const services = new Elysia({ name: "services" })
 	.as("global");
 
 export default services;
-export type AppWithServices = typeof services;
+export const createAppWithServices = <const BasePath extends string = "">(
+	config?: ElysiaConfig<BasePath>
+) => new Elysia(config).use(services);

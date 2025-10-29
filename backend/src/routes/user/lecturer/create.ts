@@ -1,6 +1,6 @@
-import { lecturers, users } from "@/db/schema/auth";
-import { AppWithServices } from "@/plugins/services";
-import { success } from "@/utils/response";
+import { lecturers, users } from "@backend/db/schema/auth";
+import { createAppWithServices } from "@backend/plugins/services";
+import { success } from "@backend/utils/response";
 import { t } from "elysia";
 
 const CreateLecturerRequest = t.Object({
@@ -13,34 +13,33 @@ const CreateLecturerRequest = t.Object({
 	})
 });
 
-export default (app: AppWithServices) =>
-	app.post(
-		"/",
-		async ({ body, db }) => {
-			const userId = await db.transaction(async (tx) => {
-				const [user] = await tx
-					.insert(users)
-					.values({
-						...body,
-						passwordHash: await Bun.password.hash(body.password)
-					})
-					.returning({ id: users.id });
+export default createAppWithServices().post(
+	"/",
+	async ({ body, db }) => {
+		const userId = await db.transaction(async (tx) => {
+			const [user] = await tx
+				.insert(users)
+				.values({
+					...body,
+					passwordHash: await Bun.password.hash(body.password)
+				})
+				.returning({ id: users.id });
 
-				await tx.insert(lecturers).values({
-					...user,
-					...body
-				});
-
-				return user.id;
+			await tx.insert(lecturers).values({
+				...user,
+				...body
 			});
 
-			return success({ message: "Lecturer created", data: { id: userId } });
-		},
-		{
-			private: ["admin"],
-			body: CreateLecturerRequest,
-			detail: {
-				description: "Create a new lecturer"
-			}
+			return user.id;
+		});
+
+		return success({ message: "Lecturer created", data: { id: userId } });
+	},
+	{
+		private: ["admin"],
+		body: CreateLecturerRequest,
+		detail: {
+			description: "Create a new lecturer"
 		}
-	);
+	}
+);

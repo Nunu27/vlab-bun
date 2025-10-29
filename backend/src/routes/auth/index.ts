@@ -1,5 +1,5 @@
-import { addDBListener } from "@/db/listener";
-import { deleteCache } from "@/middlewares/caching";
+import { addDBListener } from "@backend/db/listener";
+import { deleteCache } from "@backend/middlewares/caching";
 import { Elysia } from "elysia";
 
 import changePassword from "./change-password";

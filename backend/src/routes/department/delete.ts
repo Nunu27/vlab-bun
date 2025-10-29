@@ -1,22 +1,21 @@
-import { departments } from "@/db/schema/auth";
-import { AppWithServices } from "@/plugins/services";
-import { success } from "@/utils/response";
+import { departments } from "@backend/db/schema/auth";
+import { createAppWithServices } from "@backend/plugins/services";
+import { success } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
 
-export default (app: AppWithServices) =>
-	app.delete(
-		"/:id",
-		async ({ params, db }) => {
-			const { id } = params;
+export default createAppWithServices().delete(
+	"/:id",
+	async ({ params, db }) => {
+		const { id } = params;
 
-			await db.delete(departments).where(eq(departments.id, id));
+		await db.delete(departments).where(eq(departments.id, id));
 
-			return success({ message: "Department deleted" });
-		},
-		{
-			private: ["admin"],
-			detail: {
-				description: "Delete a department"
-			}
+		return success({ message: "Department deleted" });
+	},
+	{
+		private: ["admin"],
+		detail: {
+			description: "Delete a department"
 		}
-	);
+	}
+);

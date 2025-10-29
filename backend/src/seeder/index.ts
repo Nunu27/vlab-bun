@@ -1,5 +1,5 @@
-import db from "@/db";
-import logger from "@/services/logger";
+import db from "@backend/db";
+import logger from "@backend/services/logger";
 
 import admin from "./admin";
 import department from "./department";

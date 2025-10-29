@@ -11,20 +11,20 @@
             "title": "To-Do",
             "tasks": [
                 {
+                    "text": "[Checker] RouterOS",
+                    "id": "k7piar066jbqss2a8q8gpkp1"
+                },
+                {
+                    "text": "Containerlab deployment",
+                    "id": "boq8hudsaxuwxo0zkro64tzr"
+                },
+                {
                     "text": "Lab Access",
                     "id": "o9ivjqa6uukm9uo4wwy4ao15"
                 },
                 {
                     "text": "CRUD Lab",
                     "id": "gus0tl2s8tcmi2kt4780tj5b"
-                },
-                {
-                    "text": "CRUD Device",
-                    "id": "uaqubgfsndqyyk0flrjre4nm"
-                },
-                {
-                    "text": "CRUD User",
-                    "id": "g7jq1zzrgxzls3xf6ibzq56l"
                 }
             ],
             "id": "v29x67aeud6wsrex3bp68yln",
@@ -34,8 +34,8 @@
             "title": "Doing",
             "tasks": [
                 {
-                    "text": "Caching",
-                    "id": "bp1y2t8rclamszbyp75ggoc1"
+                    "text": "CRUD Device",
+                    "id": "uaqubgfsndqyyk0flrjre4nm"
                 }
             ],
             "id": "ppj2h8a0u0o1d4cyw3jf9ifh",
@@ -45,8 +45,24 @@
             "title": "Done",
             "tasks": [
                 {
+                    "text": "Pagination",
+                    "id": "vk65rg60loqsgif01zukiw84"
+                },
+                {
+                    "text": "DB Listener",
+                    "id": "seblhg5y5d73ko1uae0jaifu"
+                },
+                {
                     "text": "Auth",
                     "id": "wxpbyreabymr0qti790011yp"
+                },
+                {
+                    "text": "CRUD User",
+                    "id": "g7jq1zzrgxzls3xf6ibzq56l"
+                },
+                {
+                    "text": "Caching",
+                    "id": "bp1y2t8rclamszbyp75ggoc1"
                 }
             ],
             "id": "evooddvl4dgf4mputmvav45v",
@@ -55,5 +71,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1760029863379
+    "timestamp": 1760286054276
 }

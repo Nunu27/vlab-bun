@@ -1,8 +1,8 @@
-import { Role } from "@/db/schema/auth";
-import env from "@/env";
-import redis from "@/services/redis";
-import { Session } from "@/types/session";
-import { failure } from "@/utils/response";
+import type { Role } from "@backend/db/schema/auth";
+import env from "@backend/env";
+import redis from "@backend/services/redis";
+import type { Session } from "@backend/types/session";
+import { failure } from "@backend/utils/response";
 import { Elysia, t } from "elysia";
 
 export default new Elysia({ name: "session" })
@@ -15,7 +15,7 @@ export default new Elysia({ name: "session" })
 		session.value ??= Bun.randomUUIDv7();
 
 		return {
-			sessionId: session.value,
+			sessionId: session.value!,
 			session: await redis.get<Session>(session.value)
 		};
 	})
@@ -24,14 +24,11 @@ export default new Elysia({ name: "session" })
 			beforeHandle({ session, status }) {
 				if (!session) return;
 				return status(400, failure({ message: "Already logged in" }));
-			},
-			resolve() {
-				return { session: null };
 			}
 		},
 		protected: {
-			async beforeHandle({ cookie: { session }, status }) {
-				if (session.value) await redis.expire(session.value, env.SESSION_TTL);
+			async beforeHandle({ session, sessionId, status }) {
+				if (session) await redis.expire(sessionId!, env.SESSION_TTL);
 				else return status(401, failure({ message: "Unauthorized" }));
 			},
 			resolve({ session }) {
@@ -40,9 +37,9 @@ export default new Elysia({ name: "session" })
 		},
 		private(roles: Role[]) {
 			return {
-				async beforeHandle({ cookie, session, status }) {
+				async beforeHandle({ sessionId, session, status }) {
 					if (session && roles.includes(session.role)) {
-						await redis.expire(cookie.session.value!, env.SESSION_TTL);
+						await redis.expire(sessionId!, env.SESSION_TTL);
 						return;
 					}
 

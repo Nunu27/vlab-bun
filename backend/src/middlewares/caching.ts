@@ -1,11 +1,11 @@
-import env from "@/env";
-import logger from "@/services/logger";
-import redis from "@/services/redis";
-import { Elysia } from "elysia";
+import env from "@backend/env";
+import logger from "@backend/services/logger";
+import redis from "@backend/services/redis";
+import { Elysia, status } from "elysia";
 
 const PREFIX = "cache:";
 
-interface CacheOptions {
+export interface CacheOptions {
 	key?: string;
 	personalized?: boolean;
 	ttl?: number;
@@ -69,7 +69,7 @@ export default new Elysia().macro({
 
 				if (cachedData) {
 					logger.debug(`Cache hit for key: ${cacheKey}`);
-					return cachedData;
+					return status(202, cachedData);
 				}
 			},
 			async afterResponse(ctx) {

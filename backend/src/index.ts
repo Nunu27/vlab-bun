@@ -1,17 +1,17 @@
-import env from "@/env";
+import env from "@backend/env";
 
-import { cleanupDBListeners, syncDBListeners } from "@/db/listener";
-import { clearCache } from "@/middlewares/caching";
-import logger from "@/services/logger";
+import { cleanupDBListeners, syncDBListeners } from "@backend/db/listener";
+import { clearCache } from "@backend/middlewares/caching";
+import logger from "@backend/services/logger";
 import { Elysia } from "elysia";
 
-import services from "@/plugins/services";
-import routes from "@/routes";
+import services from "@backend/plugins/services";
+import routes from "@backend/routes";
 
 await syncDBListeners();
 await clearCache();
 
-new Elysia()
+const app = new Elysia()
 	.use(services)
 	.use(routes)
 	.listen(env.PORT, (app) => {
@@ -27,3 +27,5 @@ const shutdown = async (signal: string) => {
 
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
+
+export type App = typeof app;

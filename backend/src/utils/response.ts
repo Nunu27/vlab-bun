@@ -5,7 +5,7 @@ export const success = <T>({
 	data?: T;
 	message?: string;
 }) => ({
-	success: true,
+	success: true as const,
 	data,
 	message
 });
@@ -17,7 +17,7 @@ export const failure = <T>({
 	errors?: T[];
 	message: string;
 }) => ({
-	success: false,
+	success: false as const,
 	errors,
 	message
 });
