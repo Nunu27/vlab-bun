@@ -1,17 +1,8 @@
-import { degreeLevelEnum, students, users } from "@backend/db/schema/auth";
+import { students, users } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { failure } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
-import { t } from "elysia";
-
-const UpdateStudentRequest = t.Object({
-	name: t.String(),
-	email: t.String({ format: "email" }),
-	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
-	year: t.Integer({ min: 0 }),
-	degreeLevel: t.UnionEnum(degreeLevelEnum.enumValues),
-	studyProgramId: t.String({ format: "uuid" })
-});
+import { UpdateStudentRequest } from "./schema";
 
 export default createAppWithServices().put(
 	"/:id",

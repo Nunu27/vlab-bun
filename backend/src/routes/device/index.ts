@@ -5,4 +5,3 @@ const deviceRouter = new Elysia({
 });
 
 export default deviceRouter;
-export type DeviceRouter = typeof deviceRouter;

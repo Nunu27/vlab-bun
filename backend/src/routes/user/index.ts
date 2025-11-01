@@ -26,4 +26,3 @@ const userRouter = new Elysia({
 	.group("/admin", (app) => app.use(adminRouter));
 
 export default userRouter;
-export type UserRouter = typeof userRouter;

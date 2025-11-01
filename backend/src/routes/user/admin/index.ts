@@ -16,4 +16,3 @@ const adminRouter = new Elysia({
 	.use(pagination);
 
 export default adminRouter;
-export type AdminRouter = typeof adminRouter;

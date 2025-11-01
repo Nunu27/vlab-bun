@@ -2,22 +2,7 @@ import { users } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
-import { t } from "elysia";
-
-const ChangePasswordRequest = t.Object({
-	oldPassword: t.String({
-		minLength: 8,
-		maxLength: 128
-	}),
-	newPassword: t.String({
-		minLength: 8,
-		maxLength: 128
-	}),
-	confirmPassword: t.String({
-		minLength: 8,
-		maxLength: 128
-	})
-});
+import { ChangePasswordRequest } from "./schema";
 
 export default createAppWithServices().post(
 	"/change-password",
@@ -28,7 +13,10 @@ export default createAppWithServices().post(
 		});
 
 		if (!user) return status(404, failure({ message: "User not found" }));
-		if (await Bun.password.verify(body.oldPassword, user.passwordHash)) {
+		if (
+			!user.passwordHash ||
+			(await Bun.password.verify(body.oldPassword, user.passwordHash))
+		) {
 			if (body.newPassword !== body.confirmPassword) {
 				return status(400, failure({ message: "Passwords do not match" }));
 			}

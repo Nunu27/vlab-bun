@@ -28,4 +28,3 @@ const departmentRouter = new Elysia({
 	.use(list);
 
 export default departmentRouter;
-export type DepartmentRouter = typeof departmentRouter;

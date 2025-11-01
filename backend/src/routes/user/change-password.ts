@@ -2,18 +2,7 @@ import { users } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
-import { t } from "elysia";
-
-const ChangePasswordRequest = t.Object({
-	newPassword: t.String({
-		minLength: 8,
-		maxLength: 128
-	}),
-	confirmPassword: t.String({
-		minLength: 8,
-		maxLength: 128
-	})
-});
+import { ChangePasswordRequest } from "./schema";
 
 export default createAppWithServices().post(
 	"/:id/change-password",

@@ -2,13 +2,7 @@ import { lecturers, users } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { failure } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
-import { t } from "elysia";
-
-const UpdateLecturerRequest = t.Object({
-	name: t.String(),
-	email: t.String({ format: "email" }),
-	nip: t.String({ minLength: 1, maxLength: 100, format: "numeric" })
-});
+import { UpdateLecturerRequest } from "./schema";
 
 export default createAppWithServices().put(
 	"/:id",

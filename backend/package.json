@@ -4,7 +4,8 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "bun run --watch src/index.ts | pino-pretty",
-    "seed": "bun run src/seeder/index.ts | pino-pretty"
+    "seed": "bun run src/seeder/index.ts | pino-pretty",
+    "drizzle:push": "drizzle-kit push"
   },
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.1.10",
@@ -14,6 +15,8 @@
     "drizzle-orm": "^0.44.6",
     "drizzle-typebox": "^0.3.3",
     "elysia": "^1.4.13",
+    "elysia-helmet": "^3.0.0",
+    "fast-xml-parser": "^5.3.0",
     "pg": "^8.16.3",
     "pg-native": "^3.5.2",
     "pino": "^10.0.0",
@@ -22,6 +25,6 @@
   "devDependencies": {
     "@types/pg": "^8.15.5",
     "bun-types": "latest",
-    "drizzle-kit": "^0.31.5"
+    "drizzle-kit": "^0.31.6"
   }
 }

@@ -1,11 +1,7 @@
 import { departments } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { eq } from "drizzle-orm";
-import { t } from "elysia";
-
-const UpdateDepartmentRequest = t.Object({
-	name: t.String()
-});
+import { UpdateDepartmentRequest } from "./schema";
 
 export default createAppWithServices().put(
 	"/:id",

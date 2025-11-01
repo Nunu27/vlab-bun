@@ -9,9 +9,9 @@ export default {
 		const { rowCount } = await tx
 			.insert(users)
 			.values({
-				name: "Wisnu",
-				email: "wisnu@gmail.com",
-				passwordHash: await Bun.password.hash("wisnu123"),
+				name: "Admin",
+				email: "admin@vlab.pens.ac.id",
+				passwordHash: await Bun.password.hash("admin123"),
 				role: "admin"
 			})
 			.onConflictDoNothing();

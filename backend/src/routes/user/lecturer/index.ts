@@ -16,4 +16,3 @@ const lecturerRouter = new Elysia({
 	.use(pagination);
 
 export default lecturerRouter;
-export type LecturerRouter = typeof lecturerRouter;

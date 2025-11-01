@@ -9,6 +9,7 @@ import { failure } from "@backend/utils/response";
 import { wrap } from "@bogeychan/elysia-logger";
 import openapi from "@elysiajs/openapi";
 import { Elysia, type ElysiaConfig, ValidationError } from "elysia";
+import { helmet } from "elysia-helmet";
 import type { TUnionEnum } from "elysia/type-system/types";
 
 const formatError = (
@@ -49,6 +50,11 @@ const formatError = (
 };
 
 const services = new Elysia({ name: "services" })
+	.use(
+		helmet({
+			referrerPolicy: { policy: "strict-origin-when-cross-origin" }
+		})
+	)
 	.use(
 		wrap(logger, {
 			autoLogging: false

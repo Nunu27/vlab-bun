@@ -1,15 +1,7 @@
 import env from "@backend/env";
 import { createAppWithServices } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { t } from "elysia";
-
-const LoginRequest = t.Object({
-	email: t.String({ format: "email" }),
-	password: t.String({
-		minLength: 8,
-		maxLength: 128
-	})
-});
+import { LoginRequest } from "./schema";
 
 export default createAppWithServices().post(
 	"/login",
@@ -21,6 +13,8 @@ export default createAppWithServices().post(
 
 		if (!user) {
 			return status(404, failure({ message: "User not found" }));
+		} else if (!user.passwordHash) {
+			return status(401, failure({ message: "Please login using CAS" }));
 		} else if (await Bun.password.verify(body.password, user.passwordHash)) {
 			const session = {
 				id: user.id,

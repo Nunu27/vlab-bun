@@ -2,12 +2,14 @@ import type { Role } from "@backend/db/schema/auth";
 import env from "@backend/env";
 import redis from "@backend/services/redis";
 import type { Session } from "@backend/types/session";
+import { ToastItemSchema } from "@backend/types/toast";
 import { failure } from "@backend/utils/response";
 import { Elysia, t } from "elysia";
 
 export default new Elysia({ name: "session" })
 	.guard({
 		cookie: t.Object({
+			toast: t.Optional(ToastItemSchema),
 			session: t.Optional(t.String())
 		})
 	})

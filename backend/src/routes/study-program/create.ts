@@ -1,12 +1,7 @@
 import { studyPrograms } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { t } from "elysia";
-
-const CreateStudyProgramRequest = t.Object({
-	name: t.String(),
-	departmentId: t.String({ format: "uuid" })
-});
+import { CreateStudyProgramRequest } from "./schema";
 
 export default createAppWithServices().post(
 	"/",

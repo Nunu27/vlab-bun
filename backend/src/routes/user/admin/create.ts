@@ -1,16 +1,7 @@
 import { users } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { t } from "elysia";
-
-const CreateAdminRequest = t.Object({
-	name: t.String(),
-	email: t.String({ format: "email" }),
-	password: t.String({
-		minLength: 8,
-		maxLength: 128
-	})
-});
+import { CreateAdminRequest } from "./schema";
 
 export default createAppWithServices().post(
 	"/",

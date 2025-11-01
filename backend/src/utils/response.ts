@@ -6,7 +6,7 @@ export const success = <T>({
 	message?: string;
 }) => ({
 	success: true as const,
-	data,
+	data: data as T extends undefined ? T | undefined : T,
 	message
 });
 

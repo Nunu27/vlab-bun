@@ -5,4 +5,3 @@ const labRouter = new Elysia({
 });
 
 export default labRouter;
-export type LabRouter = typeof labRouter;

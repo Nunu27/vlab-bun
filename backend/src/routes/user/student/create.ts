@@ -1,20 +1,7 @@
-import { degreeLevelEnum, students, users } from "@backend/db/schema/auth";
+import { students, users } from "@backend/db/schema/auth";
 import { createAppWithServices } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { t } from "elysia";
-
-const CreateStudentRequest = t.Object({
-	name: t.String(),
-	email: t.String({ format: "email" }),
-	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
-	year: t.Integer({ min: 0 }),
-	degreeLevel: t.UnionEnum(degreeLevelEnum.enumValues),
-	studyProgramId: t.String({ format: "uuid" }),
-	password: t.String({
-		minLength: 8,
-		maxLength: 128
-	})
-});
+import { CreateStudentRequest } from "./schema";
 
 export default createAppWithServices().post(
 	"/",

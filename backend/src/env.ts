@@ -18,7 +18,9 @@ const EnvSchema = Type.Object({
 	SESSION_TTL: Type.Number({ default: 60 * 60 * 3 }),
 	BATCH_SIZE: Type.Number({ default: 100 }),
 	DEBOUNCE_MS: Type.Number({ default: 100 }),
-	MAX_BATCH_WAIT_MS: Type.Number({ default: 500 })
+	MAX_BATCH_WAIT_MS: Type.Number({ default: 500 }),
+
+	CAS_BASE_URL: Type.String({ format: "uri" })
 });
 
 const env = Value.Parse(EnvSchema, process.env);

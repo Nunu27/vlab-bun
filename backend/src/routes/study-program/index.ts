@@ -28,4 +28,3 @@ const studyProgramRouter = new Elysia({
 	.use(list);
 
 export default studyProgramRouter;
-export type StudyProgramRouter = typeof studyProgramRouter;
