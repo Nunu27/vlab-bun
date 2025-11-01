@@ -9,27 +9,189 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
+import { Route as DashboardUserAdminIndexRouteImport } from './routes/_dashboard/user/admin/index'
+import { Route as DashboardMasterStudyProgramIndexRouteImport } from './routes/_dashboard/master/study-program/index'
+import { Route as DashboardMasterDeviceIndexRouteImport } from './routes/_dashboard/master/device/index'
+import { Route as DashboardMasterDepartmentIndexRouteImport } from './routes/_dashboard/master/department/index'
 
-export interface FileRoutesByFullPath {}
-export interface FileRoutesByTo {}
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardUserAdminIndexRoute = DashboardUserAdminIndexRouteImport.update({
+  id: '/user/admin/',
+  path: '/user/admin/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMasterStudyProgramIndexRoute =
+  DashboardMasterStudyProgramIndexRouteImport.update({
+    id: '/master/study-program/',
+    path: '/master/study-program/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardMasterDeviceIndexRoute =
+  DashboardMasterDeviceIndexRouteImport.update({
+    id: '/master/device/',
+    path: '/master/device/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardMasterDepartmentIndexRoute =
+  DashboardMasterDepartmentIndexRouteImport.update({
+    id: '/master/department/',
+    path: '/master/department/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+
+export interface FileRoutesByFullPath {
+  '/login': typeof LoginRoute
+  '/': typeof DashboardIndexRoute
+  '/master/department': typeof DashboardMasterDepartmentIndexRoute
+  '/master/device': typeof DashboardMasterDeviceIndexRoute
+  '/master/study-program': typeof DashboardMasterStudyProgramIndexRoute
+  '/user/admin': typeof DashboardUserAdminIndexRoute
+}
+export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
+  '/': typeof DashboardIndexRoute
+  '/master/department': typeof DashboardMasterDepartmentIndexRoute
+  '/master/device': typeof DashboardMasterDeviceIndexRoute
+  '/master/study-program': typeof DashboardMasterStudyProgramIndexRoute
+  '/user/admin': typeof DashboardUserAdminIndexRoute
+}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_dashboard': typeof DashboardRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/master/department/': typeof DashboardMasterDepartmentIndexRoute
+  '/_dashboard/master/device/': typeof DashboardMasterDeviceIndexRoute
+  '/_dashboard/master/study-program/': typeof DashboardMasterStudyProgramIndexRoute
+  '/_dashboard/user/admin/': typeof DashboardUserAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: never
+  fullPaths:
+    | '/login'
+    | '/'
+    | '/master/department'
+    | '/master/device'
+    | '/master/study-program'
+    | '/user/admin'
   fileRoutesByTo: FileRoutesByTo
-  to: never
-  id: '__root__'
+  to:
+    | '/login'
+    | '/'
+    | '/master/department'
+    | '/master/device'
+    | '/master/study-program'
+    | '/user/admin'
+  id:
+    | '__root__'
+    | '/_dashboard'
+    | '/login'
+    | '/_dashboard/'
+    | '/_dashboard/master/department/'
+    | '/_dashboard/master/device/'
+    | '/_dashboard/master/study-program/'
+    | '/_dashboard/user/admin/'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {}
+export interface RootRouteChildren {
+  DashboardRoute: typeof DashboardRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
-const rootRouteChildren: RootRouteChildren = {}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard/': {
+      id: '/_dashboard/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/user/admin/': {
+      id: '/_dashboard/user/admin/'
+      path: '/user/admin'
+      fullPath: '/user/admin'
+      preLoaderRoute: typeof DashboardUserAdminIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/master/study-program/': {
+      id: '/_dashboard/master/study-program/'
+      path: '/master/study-program'
+      fullPath: '/master/study-program'
+      preLoaderRoute: typeof DashboardMasterStudyProgramIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/master/device/': {
+      id: '/_dashboard/master/device/'
+      path: '/master/device'
+      fullPath: '/master/device'
+      preLoaderRoute: typeof DashboardMasterDeviceIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/master/department/': {
+      id: '/_dashboard/master/department/'
+      path: '/master/department'
+      fullPath: '/master/department'
+      preLoaderRoute: typeof DashboardMasterDepartmentIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+  }
+}
+
+interface DashboardRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardMasterDepartmentIndexRoute: typeof DashboardMasterDepartmentIndexRoute
+  DashboardMasterDeviceIndexRoute: typeof DashboardMasterDeviceIndexRoute
+  DashboardMasterStudyProgramIndexRoute: typeof DashboardMasterStudyProgramIndexRoute
+  DashboardUserAdminIndexRoute: typeof DashboardUserAdminIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardMasterDepartmentIndexRoute: DashboardMasterDepartmentIndexRoute,
+  DashboardMasterDeviceIndexRoute: DashboardMasterDeviceIndexRoute,
+  DashboardMasterStudyProgramIndexRoute: DashboardMasterStudyProgramIndexRoute,
+  DashboardUserAdminIndexRoute: DashboardUserAdminIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  DashboardRoute: DashboardRouteWithChildren,
+  LoginRoute: LoginRoute,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()

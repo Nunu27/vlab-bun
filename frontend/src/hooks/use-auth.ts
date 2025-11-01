@@ -6,7 +6,7 @@ import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 type LoginData = Parameters<typeof api.auth.login.post>[0];
-type AuthUser = Exclude<Treaty.Data<typeof api.auth.me.get>['data'], undefined>;
+type AuthUser = Treaty.Data<typeof api.auth.me.get>['data'];
 
 type AuthUtils = {
   login: (_: LoginData) => void;
@@ -19,7 +19,7 @@ type AuthData = { user?: AuthUser | null } & AuthUtils;
 const options = queryOptions({
   queryKey: ['me'],
   queryFn: () =>
-    api.auth.me.get().then(({ data: response }) => response?.data ?? null),
+    api.auth.me.get().then(({ data: response }) => response?.data || null),
   retry: false,
 });
 
@@ -51,8 +51,8 @@ function useAuth(): AuthData {
     },
   };
 
-  return { ...utils, user: query.isPending ? undefined : query.data };
+  return { ...utils, user: query.data };
 }
 
 export { useAuth };
-export type { AuthData };
+export type { AuthData, AuthUser };

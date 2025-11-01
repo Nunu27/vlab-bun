@@ -13,7 +13,10 @@ interface BaseResponse {
 }
 
 interface ErrorHandlerConfig<TData> {
-  showSuccessMessage?: boolean;
+  showToast?: {
+    onSuccess?: boolean;
+    onError?: boolean;
+  };
   callback?: (result: TData) => void | Promise<void>;
 }
 
@@ -22,6 +25,8 @@ export async function errorHandler<
   TResponse extends Treaty.TreatyResponse<T>,
   TData extends Treaty.Data<TResponse>,
 >(promise: Promise<TResponse>, config: ErrorHandlerConfig<TData> = {}) {
+  const { showToast = {}, callback } = config;
+
   try {
     const { data, error } = await promise;
 
@@ -30,7 +35,7 @@ export async function errorHandler<
       throw new Error(response.message || 'An error occurred');
     }
 
-    if (config.showSuccessMessage ?? true) {
+    if (showToast.onSuccess ?? true) {
       const response = data as BaseResponse;
 
       if (response.message) {
@@ -38,8 +43,10 @@ export async function errorHandler<
       }
     }
 
-    await config.callback?.(data as TData);
+    await callback?.(data as TData);
   } catch (error) {
-    toast.error((error as Error).message);
+    if (showToast.onError ?? true) {
+      toast.error((error as Error).message);
+    }
   }
 }

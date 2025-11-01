@@ -10,6 +10,9 @@ export default defineConfig({
       '/api': 'http://localhost:3000',
     },
   },
+  html: {
+    title: 'vLab',
+  },
   tools: {
     rspack: {
       plugins: [

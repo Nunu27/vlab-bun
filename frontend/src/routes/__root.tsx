@@ -1,30 +1,37 @@
-import { Toaster } from '@frontend/components/ui/sonner';
+import type { ToastItem } from '@backend/types/toast';
+import NotFoundPage from '@frontend/components/pages/not-found';
 import type { RouterContext } from '@frontend/lib/router';
 import {
   HeadContent,
   Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [{ title: 'vLab' }],
   }),
-  loader: async ({ context }) => {
+  beforeLoad: async ({ context }) => {
     if (context.auth.user === undefined) {
-      const user = await context.auth.ensureData();
-      return { user };
+      context.auth.user = await context.auth.ensureData();
     }
 
-    return { user: context.auth.user };
+    const toastItemRaw = await cookieStore.get('toast');
+    if (!toastItemRaw?.value) return;
+
+    const { message, type } = JSON.parse(
+      decodeURIComponent(toastItemRaw.value),
+    ) as ToastItem;
+    toast[type](message);
+
+    await cookieStore.delete('toast');
   },
-  component: () => {
-    return (
-      <>
-        <HeadContent />
-        <Outlet />
-        <Toaster />
-      </>
-    );
-  },
+  notFoundComponent: NotFoundPage,
+  component: () => (
+    <>
+      <HeadContent />
+      <Outlet />
+    </>
+  ),
 });
