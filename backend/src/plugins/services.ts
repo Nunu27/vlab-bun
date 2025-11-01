@@ -50,11 +50,7 @@ const formatError = (
 };
 
 const services = new Elysia({ name: "services" })
-	.use(
-		helmet({
-			referrerPolicy: { policy: "strict-origin-when-cross-origin" }
-		})
-	)
+	.use(helmet())
 	.use(
 		wrap(logger, {
 			autoLogging: false

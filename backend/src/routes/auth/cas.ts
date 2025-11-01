@@ -4,8 +4,9 @@ import { createAppWithServices } from "@backend/plugins/services";
 import { ToastType } from "@backend/types/toast";
 import { compile } from "elysia/type-system/utils";
 import { XMLParser } from "fast-xml-parser";
-import { CASRequestHeader, CASRequestQuery, CASResponseSchema } from "./schema";
+import { CASRequestQuery, CASResponseSchema } from "./schema";
 
+const { BASE_URL, CAS_BASE_URL, SESSION_TTL } = env;
 const parser = new XMLParser({
 	transformTagName: (tagName) => tagName.slice(4)
 });
@@ -15,19 +16,10 @@ const CASResponseValidator = compile(CASResponseSchema);
 
 export default createAppWithServices().get(
 	"/cas",
-	async ({
-		sessionId,
-		query: { ticket },
-		redirect,
-		redis,
-		db,
-		cookie,
-		headers: { referer }
-	}) => {
-		const origin = new URL(referer).origin;
-		const service = `${origin}/api/auth/cas`;
+	async ({ sessionId, query: { ticket }, redirect, redis, db, cookie }) => {
+		const service = `${BASE_URL}/api/auth/cas`;
 
-		const casUrl = new URL(env.CAS_BASE_URL);
+		const casUrl = new URL(CAS_BASE_URL);
 		casUrl.searchParams.set("service", service);
 
 		if (!ticket) {
@@ -50,7 +42,7 @@ export default createAppWithServices().get(
 				message: "CAS authentication failed",
 				type: ToastType.Error
 			};
-			return redirect(origin);
+			return redirect(BASE_URL);
 		}
 
 		const userInfo = data.serviceResponse.authenticationSuccess.attributes;
@@ -97,27 +89,18 @@ export default createAppWithServices().get(
 			};
 		}
 
-		await redis.set(sessionId, user, env.SESSION_TTL);
+		await redis.set(sessionId, user, SESSION_TTL);
 
 		cookie.toast.value = {
 			message: "Logged in successfully via CAS",
 			type: ToastType.Success
 		};
 
-		return redirect(origin);
+		return redirect(BASE_URL);
 	},
 	{
 		guest: true,
 		query: CASRequestQuery,
-		headers: CASRequestHeader,
-		error: ({ cookie, redirect }) => {
-			cookie.toast.value = {
-				message: "CAS authentication failed",
-				type: ToastType.Error
-			};
-
-			return redirect(origin);
-		},
 		detail: {
 			description: "Login with email and password"
 		}

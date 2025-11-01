@@ -1,9 +1,5 @@
 import { t } from "elysia";
 
-export const CASRequestHeader = t.Object({
-	referer: t.String()
-});
-
 export const CASRequestQuery = t.Object({
 	ticket: t.Optional(t.String())
 });

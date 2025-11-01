@@ -20,6 +20,7 @@ const EnvSchema = Type.Object({
 	DEBOUNCE_MS: Type.Number({ default: 100 }),
 	MAX_BATCH_WAIT_MS: Type.Number({ default: 500 }),
 
+	BASE_URL: Type.String({ format: "uri" }),
 	CAS_BASE_URL: Type.String({ format: "uri" })
 });
 
