@@ -4,26 +4,26 @@ import { Button } from '@frontend/components/ui/button';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import type {
+  ExtractPaginationData,
   ExtractFields,
   ExtractFilters,
-  ExtractPaginationData,
 } from '@frontend/lib/api-types';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
-import { adminColumns } from './-module/columns';
+import { studentColumns } from './-module/columns';
 
-const pagination = api.user.admin.pagination;
+const pagination = api.user.student.pagination;
 
 type Item = ExtractPaginationData<typeof pagination>;
 type Fields = ExtractFields<typeof pagination>;
 type Filters = ExtractFilters<typeof pagination>;
 
-export const Route = createFileRoute('/_dashboard/user/admin/')({
+export const Route = createFileRoute('/_dashboard/user/student/')({
   beforeLoad: ({ context }) => {
     privateRoute(['admin'])({ context });
 
-    context.breadcrumbs = [{ title: 'User', url: '#' }, { title: 'Admin' }];
+    context.breadcrumbs = [{ title: 'User', url: '#' }, { title: 'Student' }];
   },
   component: RouteComponent,
 });
@@ -34,25 +34,25 @@ function RouteComponent() {
     Fields,
     Filters
   >({
-    queryKey: (params) => ['admin', 'pagination', params] as const,
+    queryKey: (params) => ['student', 'pagination', params],
     queryFn: pagination.post,
   });
 
   return (
     <div className="space-y-4">
       <PageHeading
-        title="Admins"
-        subtitle="Manage administrative users with elevated privileges."
+        title="Students"
+        subtitle="Manage student accounts and information."
         actions={
           <Button size="lg" asChild>
             <Link to="/">
-              <PlusIcon /> Create Admin
+              <PlusIcon /> Create Student
             </Link>
           </Button>
         }
       />
       <DataTable
-        columns={adminColumns}
+        columns={studentColumns}
         data={data?.items ?? []}
         pageInfo={
           data?.pageInfo ?? {
@@ -66,7 +66,7 @@ function RouteComponent() {
         sortBy={params.sortBy}
         sortOrder={params.sortOrder}
         search={params.search}
-        searchPlaceholder="Search by name or email..."
+        searchPlaceholder="Search by NRP..."
         {...handlers}
       />
     </div>

@@ -474,8 +474,15 @@ export const createPaginator = <
 			offset
 		});
 
+		type Item = BuildQueryResult<TRelationalSchema, TFields, TOptions> & {
+			index: number;
+		};
+
 		return {
-			items: items as BuildQueryResult<TRelationalSchema, TFields, TOptions>[],
+			items: items.map((item, idx) => ({
+				...item,
+				index: offset + idx + 1
+			})) as Item[],
 			pageInfo: {
 				page,
 				perPage,

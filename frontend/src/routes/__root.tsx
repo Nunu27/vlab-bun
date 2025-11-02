@@ -6,6 +6,7 @@ import {
   Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
+import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
 import { toast } from 'sonner';
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -31,7 +32,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => (
     <>
       <HeadContent />
-      <Outlet />
+      <NuqsAdapter>
+        <Outlet />
+      </NuqsAdapter>
     </>
   ),
 });

@@ -1,4 +1,5 @@
 /// <reference types="@rsbuild/core/types" />
+import '@tanstack/react-table';
 
 /**
  * Imports the SVG file as a React component.
@@ -8,4 +9,11 @@ declare module '*.svg?react' {
   import type React from 'react';
   const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
   export default ReactComponent;
+}
+
+declare module '@tanstack/table-core' {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    label?: string;
+    center?: boolean;
+  }
 }

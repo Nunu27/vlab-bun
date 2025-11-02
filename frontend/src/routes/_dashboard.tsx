@@ -1,4 +1,4 @@
-import { AppSidebar } from '@frontend/components/app-sidebar';
+import { AppSidebar } from '@frontend/routes/_dashboard/-module/components/app-sidebar';
 import ThemeToggle from '@frontend/components/theme-toggle';
 import {
   Breadcrumb,
@@ -20,6 +20,7 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { protectedRoute } from '@frontend/lib/middlewares';
+import { Fragment } from 'react';
 
 export const Route = createFileRoute('/_dashboard')({
   beforeLoad: protectedRoute(),
@@ -45,7 +46,7 @@ function RouteComponent() {
             <Breadcrumb>
               <BreadcrumbList>
                 {breadcrumbs.map((breadcrumb, index) => (
-                  <>
+                  <Fragment key={index}>
                     {index > 0 && (
                       <BreadcrumbSeparator
                         key={`sep-${index}`}
@@ -64,16 +65,16 @@ function RouteComponent() {
                         <BreadcrumbPage>{breadcrumb.title}</BreadcrumbPage>
                       )}
                     </BreadcrumbItem>
-                  </>
+                  </Fragment>
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
           <ThemeToggle />
         </header>
-        <main className="px-4">
+        <div className="px-4">
           <Outlet />
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

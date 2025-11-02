@@ -5,11 +5,11 @@ import { Elysia } from "elysia";
 import create from "./create";
 import _delete from "./delete";
 import detail from "./detail";
-import list from "./list";
+import pagination from "./pagination";
 import update from "./update";
 
 addDBListener("departments", ["id"], async ({ op, data }) => {
-	const keys = ["department:list"];
+	const keys = ["department:pagination:*"];
 
 	if (op !== "INSERT") {
 		keys.push(`department:${data.id}`);
@@ -25,6 +25,6 @@ const departmentRouter = new Elysia({
 	.use(detail)
 	.use(update)
 	.use(_delete)
-	.use(list);
+	.use(pagination);
 
 export default departmentRouter;

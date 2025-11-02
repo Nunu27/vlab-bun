@@ -8,7 +8,10 @@ export const Route = createFileRoute('/_dashboard/master/device/')({
   beforeLoad: ({ context }) => {
     privateRoute(['admin'])({ context });
 
-    context.breadcrumbs = [{ title: 'Master', url: '#' }, { title: 'Device' }];
+    context.breadcrumbs = [
+      { title: 'Master Data', url: '#' },
+      { title: 'Device' },
+    ];
   },
   component: RouteComponent,
 });

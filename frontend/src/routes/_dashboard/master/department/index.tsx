@@ -1,30 +1,30 @@
+import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
 import { Button } from '@frontend/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@frontend/components/ui/card';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationLink,
-  PaginationEllipsis,
-  PaginationNext,
-} from '@frontend/components/ui/pagination';
+import { usePagination } from '@frontend/hooks/use-pagination';
+import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
+import { departmentColumns } from './-module/columns';
+import type {
+  ExtractPaginationData,
+  ExtractFields,
+  ExtractFilters,
+} from '@frontend/lib/api-types';
+
+const pagination = api.department.pagination;
+
+type Item = ExtractPaginationData<typeof pagination>;
+type Fields = ExtractFields<typeof pagination>;
+type Filters = ExtractFilters<typeof pagination>;
 
 export const Route = createFileRoute('/_dashboard/master/department/')({
   beforeLoad: ({ context }) => {
     privateRoute(['admin'])({ context });
 
     context.breadcrumbs = [
-      { title: 'Master', url: '#' },
+      { title: 'Master Data', url: '#' },
       { title: 'Department' },
     ];
   },
@@ -32,8 +32,17 @@ export const Route = createFileRoute('/_dashboard/master/department/')({
 });
 
 function RouteComponent() {
+  const { data, isFetching, params, handlers } = usePagination<
+    Item,
+    Fields,
+    Filters
+  >({
+    queryKey: (params) => ['department', 'pagination', params],
+    queryFn: pagination.post,
+  });
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <PageHeading
         title="Departments"
         subtitle="Manage academic departments within the institution."
@@ -45,36 +54,24 @@ function RouteComponent() {
           </Button>
         }
       />
-      <Card>
-        <CardHeader></CardHeader>
-        <CardContent></CardContent>
-        <CardFooter>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious href="#" />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">1</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#" isActive>
-                  2
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">3</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext href="#" />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </CardFooter>
-      </Card>
+      <DataTable
+        columns={departmentColumns}
+        data={data?.items ?? []}
+        pageInfo={
+          data?.pageInfo ?? {
+            page: 1,
+            perPage: 10,
+            total: 0,
+            totalPages: 0,
+          }
+        }
+        isLoading={isFetching}
+        sortBy={params.sortBy}
+        sortOrder={params.sortOrder}
+        search={params.search}
+        searchPlaceholder="Search by department name..."
+        {...handlers}
+      />
     </div>
   );
 }

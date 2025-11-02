@@ -50,7 +50,7 @@ const formatError = (
 };
 
 const services = new Elysia({ name: "services" })
-	.use(helmet())
+	.use(helmet({ contentSecurityPolicy: inProduction ? undefined : false }))
 	.use(
 		wrap(logger, {
 			autoLogging: false

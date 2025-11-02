@@ -21,6 +21,10 @@ const options = queryOptions({
   queryFn: () =>
     api.auth.me.get().then(({ data: response }) => response?.data || null),
   retry: false,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
+  refetchOnWindowFocus: false,
+  staleTime: 1000 * 60 * 30,
 });
 
 function useAuth(): AuthData {

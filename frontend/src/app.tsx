@@ -27,7 +27,7 @@ function RouterProviderWithContext() {
 
   return (
     <>
-      <RouterProvider router={router} context={{ auth }} />;
+      <RouterProvider router={router} context={{ auth }} />
       <Toaster />
     </>
   );

@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
+import { Route as DashboardUserStudentIndexRouteImport } from './routes/_dashboard/user/student/index'
+import { Route as DashboardUserLecturerIndexRouteImport } from './routes/_dashboard/user/lecturer/index'
 import { Route as DashboardUserAdminIndexRouteImport } from './routes/_dashboard/user/admin/index'
 import { Route as DashboardMasterStudyProgramIndexRouteImport } from './routes/_dashboard/master/study-program/index'
 import { Route as DashboardMasterDeviceIndexRouteImport } from './routes/_dashboard/master/device/index'
@@ -31,6 +33,18 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardUserStudentIndexRoute =
+  DashboardUserStudentIndexRouteImport.update({
+    id: '/user/student/',
+    path: '/user/student/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardUserLecturerIndexRoute =
+  DashboardUserLecturerIndexRouteImport.update({
+    id: '/user/lecturer/',
+    path: '/user/lecturer/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardUserAdminIndexRoute = DashboardUserAdminIndexRouteImport.update({
   id: '/user/admin/',
   path: '/user/admin/',
@@ -62,6 +76,8 @@ export interface FileRoutesByFullPath {
   '/master/device': typeof DashboardMasterDeviceIndexRoute
   '/master/study-program': typeof DashboardMasterStudyProgramIndexRoute
   '/user/admin': typeof DashboardUserAdminIndexRoute
+  '/user/lecturer': typeof DashboardUserLecturerIndexRoute
+  '/user/student': typeof DashboardUserStudentIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -70,6 +86,8 @@ export interface FileRoutesByTo {
   '/master/device': typeof DashboardMasterDeviceIndexRoute
   '/master/study-program': typeof DashboardMasterStudyProgramIndexRoute
   '/user/admin': typeof DashboardUserAdminIndexRoute
+  '/user/lecturer': typeof DashboardUserLecturerIndexRoute
+  '/user/student': typeof DashboardUserStudentIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +98,8 @@ export interface FileRoutesById {
   '/_dashboard/master/device/': typeof DashboardMasterDeviceIndexRoute
   '/_dashboard/master/study-program/': typeof DashboardMasterStudyProgramIndexRoute
   '/_dashboard/user/admin/': typeof DashboardUserAdminIndexRoute
+  '/_dashboard/user/lecturer/': typeof DashboardUserLecturerIndexRoute
+  '/_dashboard/user/student/': typeof DashboardUserStudentIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,6 +110,8 @@ export interface FileRouteTypes {
     | '/master/device'
     | '/master/study-program'
     | '/user/admin'
+    | '/user/lecturer'
+    | '/user/student'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -98,6 +120,8 @@ export interface FileRouteTypes {
     | '/master/device'
     | '/master/study-program'
     | '/user/admin'
+    | '/user/lecturer'
+    | '/user/student'
   id:
     | '__root__'
     | '/_dashboard'
@@ -107,6 +131,8 @@ export interface FileRouteTypes {
     | '/_dashboard/master/device/'
     | '/_dashboard/master/study-program/'
     | '/_dashboard/user/admin/'
+    | '/_dashboard/user/lecturer/'
+    | '/_dashboard/user/student/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -135,6 +161,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/user/student/': {
+      id: '/_dashboard/user/student/'
+      path: '/user/student'
+      fullPath: '/user/student'
+      preLoaderRoute: typeof DashboardUserStudentIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/user/lecturer/': {
+      id: '/_dashboard/user/lecturer/'
+      path: '/user/lecturer'
+      fullPath: '/user/lecturer'
+      preLoaderRoute: typeof DashboardUserLecturerIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/user/admin/': {
@@ -174,6 +214,8 @@ interface DashboardRouteChildren {
   DashboardMasterDeviceIndexRoute: typeof DashboardMasterDeviceIndexRoute
   DashboardMasterStudyProgramIndexRoute: typeof DashboardMasterStudyProgramIndexRoute
   DashboardUserAdminIndexRoute: typeof DashboardUserAdminIndexRoute
+  DashboardUserLecturerIndexRoute: typeof DashboardUserLecturerIndexRoute
+  DashboardUserStudentIndexRoute: typeof DashboardUserStudentIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -182,6 +224,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardMasterDeviceIndexRoute: DashboardMasterDeviceIndexRoute,
   DashboardMasterStudyProgramIndexRoute: DashboardMasterStudyProgramIndexRoute,
   DashboardUserAdminIndexRoute: DashboardUserAdminIndexRoute,
+  DashboardUserLecturerIndexRoute: DashboardUserLecturerIndexRoute,
+  DashboardUserStudentIndexRoute: DashboardUserStudentIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

@@ -2,6 +2,8 @@ import * as React from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
   MoreHorizontalIcon,
 } from 'lucide-react';
 
@@ -15,7 +17,7 @@ function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
       role="navigation"
       aria-label="pagination"
       data-slot="pagination"
-      className={cn('mx-auto flex w-full justify-center', className)}
+      className={cn('flex', className)}
       {...props}
     />
   );
@@ -46,7 +48,7 @@ type PaginationLinkProps = {
 function PaginationLink({
   className,
   isActive,
-  size = 'icon',
+  size = 'sm',
   ...props
 }: PaginationLinkProps) {
   return (
@@ -66,6 +68,22 @@ function PaginationLink({
   );
 }
 
+function PaginationFirst({
+  className,
+  ...props
+}: React.ComponentProps<typeof PaginationLink>) {
+  return (
+    <PaginationLink
+      aria-label="Go to previous page"
+      size="icon-sm"
+      className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
+      {...props}
+    >
+      <ChevronsLeftIcon />
+    </PaginationLink>
+  );
+}
+
 function PaginationPrevious({
   className,
   ...props
@@ -73,7 +91,7 @@ function PaginationPrevious({
   return (
     <PaginationLink
       aria-label="Go to previous page"
-      size="default"
+      size="icon-sm"
       className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
       {...props}
     >
@@ -89,11 +107,27 @@ function PaginationNext({
   return (
     <PaginationLink
       aria-label="Go to next page"
-      size="default"
+      size="icon-sm"
       className={cn('gap-1 px-2.5 sm:pr-2.5', className)}
       {...props}
     >
       <ChevronRightIcon />
+    </PaginationLink>
+  );
+}
+
+function PaginationLast({
+  className,
+  ...props
+}: React.ComponentProps<typeof PaginationLink>) {
+  return (
+    <PaginationLink
+      aria-label="Go to next page"
+      size="icon-sm"
+      className={cn('gap-1 px-2.5 sm:pr-2.5', className)}
+      {...props}
+    >
+      <ChevronsRightIcon />
     </PaginationLink>
   );
 }
@@ -120,7 +154,9 @@ export {
   PaginationContent,
   PaginationLink,
   PaginationItem,
+  PaginationFirst,
   PaginationPrevious,
   PaginationNext,
+  PaginationLast,
   PaginationEllipsis,
 };
