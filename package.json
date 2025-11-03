@@ -8,13 +8,11 @@
     "frontend"
   ],
   "scripts": {
-    "dev": "bun --filter '*' dev",
-    "build": "bun --filter '*' build",
-    "lint": "bun --filter '*' lint",
-    "frontend": "bun run --filter frontend",
-    "frontend:build": "bun frontend build",
-    "backend": "bun run --filter vlab-backend",
-    "backend:docker-build": "bun backend build:docker"
+    "dev": "bun dev",
+    "build": "bun frontend build && bun backend build",
+    "lint": "bun lint",
+    "frontend": "bun run --filter vlab-frontend",
+    "backend": "bun run --filter vlab-backend"
   },
   "devDependencies": {},
   "peerDependencies": {}
