@@ -4,6 +4,12 @@ import { tanstackRouter } from '@tanstack/router-plugin/rspack';
 
 export default defineConfig({
   plugins: [pluginReact()],
+  output: {
+    distPath: { root: '../build/public' },
+    cleanDistPath: {
+      enable: true,
+    },
+  },
   server: {
     port: 5173,
     proxy: {

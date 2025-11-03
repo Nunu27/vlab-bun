@@ -8,6 +8,7 @@ import redis from "@backend/services/redis";
 import { failure } from "@backend/utils/response";
 import { wrap } from "@bogeychan/elysia-logger";
 import openapi from "@elysiajs/openapi";
+import { file } from "bun";
 import { Elysia, type ElysiaConfig, ValidationError } from "elysia";
 import { helmet } from "elysia-helmet";
 import type { TUnionEnum } from "elysia/type-system/types";
@@ -80,7 +81,9 @@ const services = new Elysia({ name: "services" })
 					})
 				);
 			case "NOT_FOUND":
-				return status(404, failure({ message: "Resource not found" }));
+				if (path?.startsWith("/api")) {
+					return status(404, failure({ message: "Resource not found" }));
+				} else return file("public/index.html");
 
 			default:
 				logger.error({ error }, path);
@@ -99,6 +102,4 @@ const services = new Elysia({ name: "services" })
 	.as("global");
 
 export default services;
-export const createAppWithServices = <const BasePath extends string = "">(
-	config?: ElysiaConfig<BasePath>
-) => new Elysia(config).use(services);
+export const createAppWithServices = () => new Elysia().use(services);
