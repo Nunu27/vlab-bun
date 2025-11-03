@@ -83,7 +83,7 @@ const services = new Elysia({ name: "services" })
 				return status(404, failure({ message: "Resource not found" }));
 
 			default:
-				logger.error(error, path);
+				logger.error({ error }, path);
 				return status(
 					500,
 					failure({

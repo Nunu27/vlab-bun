@@ -1,31 +1,22 @@
-import env from "@backend/env";
-
-import { cleanupDBListeners, syncDBListeners } from "@backend/db/listener";
-import { clearCache } from "@backend/middlewares/caching";
 import logger from "@backend/services/logger";
-import { Elysia } from "elysia";
 
-import services from "@backend/plugins/services";
-import routes from "@backend/routes";
+const command = process.argv[2];
 
-await syncDBListeners();
-await clearCache();
+if (command === "seed") {
+	logger.info("🌱 Running database seeding...");
+	try {
+		await import("@backend/seeder");
+	} catch (error) {
+		logger.error({ error }, "Seeding failed");
+		process.exit(1);
+	}
+} else if (command) {
+	logger.error(`Unknown command: ${command}`);
+	logger.info("Available commands: seed");
+	process.exit(1);
+}
 
-const app = new Elysia()
-	.use(services)
-	.use(routes)
-	.listen(env.PORT, (app) => {
-		logger.info(`Server running on ${app.url.origin}`);
-	});
+import { startServer, type App } from "./server";
+await startServer();
 
-const shutdown = async (signal: string) => {
-	logger.info(`${signal} received, shutting down...`);
-	await cleanupDBListeners();
-	logger.info("Cleanup complete, exiting");
-	process.exit(0);
-};
-
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
-
-export type App = typeof app;
+export type { App };

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts | pino-pretty",
     "seed": "bun run src/seeder/index.ts | pino-pretty",
-    "drizzle:push": "drizzle-kit push"
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.1.10",

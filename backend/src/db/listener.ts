@@ -103,7 +103,7 @@ const processBatch = async (channel: string) => {
 			results.forEach((result) => {
 				if (result.status === "rejected") {
 					logger.error(
-						result.reason,
+						{ error: result.reason },
 						`DB Listener: Batch failure on channel ${channel}`
 					);
 				}
@@ -144,8 +144,8 @@ client.on("notification", async ({ channel, payload }) => {
 	let parsedPayload: { op: Operations; table: string; data: any };
 	try {
 		parsedPayload = JSON.parse(payload);
-	} catch (e) {
-		logger.error(e, `DB Listener: Invalid JSON payload on ${channel}`);
+	} catch (error) {
+		logger.error({ error }, `DB Listener: Invalid JSON payload on ${channel}`);
 		return;
 	}
 
