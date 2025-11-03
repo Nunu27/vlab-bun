@@ -35,7 +35,7 @@ export default {
 			}
 		}
 
-		await client.del(...directKeys);
+		if (directKeys.length) await client.del(...directKeys);
 		for (const pattern of patternKeys) {
 			await this.delByPattern(pattern);
 		}
@@ -65,7 +65,7 @@ export default {
 				cursor = nextCursor as string;
 			} while (cursor !== "0");
 
-			if (keysToDelete.length > 0) {
+			if (keysToDelete.length) {
 				deletedCount += await client.del(...keysToDelete);
 			}
 		} catch (error) {

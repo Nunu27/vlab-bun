@@ -1,21 +1,23 @@
-import env from "@backend/env";
+import env, { inProduction } from "@backend/env";
 
 import { cleanupDBListeners, syncDBListeners } from "@backend/db/listener";
 import { clearCache } from "@backend/middlewares/caching";
 import logger from "@backend/services/logger";
-import { Elysia, file } from "elysia";
+import { Elysia } from "elysia";
 
 import services from "@backend/plugins/services";
 import routes from "@backend/routes";
-import { checkAndRunMigration } from "./db";
 import staticPlugin from "@elysiajs/static";
+import { checkAndRunMigration } from "./db";
 
 const app = new Elysia()
 	.use(
-		staticPlugin({
-			prefix: "/static",
-			assets: "public/static"
-		})
+		inProduction
+			? staticPlugin({
+					prefix: "/static",
+					assets: "public/static"
+				})
+			: undefined
 	)
 	.use(services)
 	.use(routes);

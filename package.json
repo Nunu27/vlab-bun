@@ -8,7 +8,7 @@
     "frontend"
   ],
   "scripts": {
-    "dev": "bun dev",
+    "dev": "bun frontend dev & bun backend dev",
     "build": "bun frontend build && bun backend build",
     "lint": "bun lint",
     "frontend": "bun run --filter vlab-frontend",

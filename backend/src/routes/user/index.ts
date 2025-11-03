@@ -8,13 +8,20 @@ import lecturerRouter from "./lecturer";
 import studentRouter from "./student";
 
 addDBListener("users", ["id", "role"], async ({ op, data }) => {
+	console.log(op, data);
 	const keys = [`${data.role}:pagination:*`];
 
 	if (op !== "INSERT") {
 		keys.push(`${data.role}:${data.id}`);
 	}
 
-	await deleteCache(...keys);
+	console.log(keys);
+
+	try {
+		await deleteCache(...keys);
+	} catch (error) {
+		console.error("Error deleting cache for user changes:", error);
+	}
 });
 
 const userRouter = new Elysia({

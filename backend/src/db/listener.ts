@@ -95,9 +95,7 @@ const processBatch = async (channel: string) => {
 		for (let i = 0; i < listenersToCall.length; i += BATCH_SIZE) {
 			const chunk = listenersToCall.slice(i, i + BATCH_SIZE);
 			const results = await Promise.allSettled(
-				chunk.map(({ listener }) =>
-					Promise.all(opItems.map((item) => listener(item)))
-				)
+				chunk.map(({ listener }) => Promise.all(opItems.map(listener)))
 			);
 
 			results.forEach((result) => {
