@@ -2,15 +2,22 @@ import type { Role } from '@backend/db/schema';
 import { DatabaseIcon, LayoutDashboardIcon, UsersIcon } from 'lucide-react';
 import type { ElementType } from 'react';
 
-export type MenuItem = {
+type Menu = {
   title: string;
   url: string;
   icon: ElementType;
-  items?: {
+};
+
+type MenuWithSub = {
+  title: string;
+  icon: ElementType;
+  items: {
     title: string;
     url: string;
   }[];
 };
+
+export type MenuItem = Menu | MenuWithSub;
 
 export const menuByRole: Record<Role, MenuItem[]> = {
   student: [],
@@ -23,7 +30,6 @@ export const menuByRole: Record<Role, MenuItem[]> = {
     },
     {
       title: 'Master Data',
-      url: '#',
       icon: DatabaseIcon,
       items: [
         {
@@ -42,7 +48,6 @@ export const menuByRole: Record<Role, MenuItem[]> = {
     },
     {
       title: 'User',
-      url: '#',
       icon: UsersIcon,
       items: [
         {

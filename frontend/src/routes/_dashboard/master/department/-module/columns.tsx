@@ -32,6 +32,7 @@ export const departmentColumns: ColumnDef<Item>[] = [
     enableHiding: false,
     meta: {
       label: 'Department Name',
+      isGrow: true,
     },
   },
   {

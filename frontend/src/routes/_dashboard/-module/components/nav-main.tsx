@@ -29,7 +29,8 @@ export function NavMain({ items }: { items: MenuItem[] }) {
       <SidebarMenu>
         {items.map((item) => {
           let isChildActive = false;
-          const subMenu = item.items?.map((subItem) => {
+          const haveSubMenu = 'items' in item;
+          const subMenu = (haveSubMenu ? item.items : [])?.map((subItem) => {
             const isActive = subItem.url === pathname;
             if (!isChildActive && isActive) isChildActive = true;
 
@@ -50,7 +51,7 @@ export function NavMain({ items }: { items: MenuItem[] }) {
             );
           });
 
-          return subMenu ? (
+          return haveSubMenu ? (
             <Collapsible
               key={item.title}
               asChild

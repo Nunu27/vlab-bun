@@ -32,6 +32,7 @@ export const studyProgramColumns: ColumnDef<Item>[] = [
     enableHiding: false,
     meta: {
       label: 'Study Program Name',
+      isGrow: true,
     },
   },
   {
@@ -42,6 +43,7 @@ export const studyProgramColumns: ColumnDef<Item>[] = [
     enableSorting: false,
     meta: {
       label: 'Department',
+      isGrow: true,
     },
   },
   {

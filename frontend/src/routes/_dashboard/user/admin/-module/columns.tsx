@@ -43,6 +43,7 @@ export const adminColumns: ColumnDef<Item>[] = [
     enableHiding: false,
     meta: {
       label: 'Name',
+      isGrow: true,
     },
   },
   {

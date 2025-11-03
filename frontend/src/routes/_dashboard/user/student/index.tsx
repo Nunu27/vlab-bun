@@ -23,7 +23,7 @@ export const Route = createFileRoute('/_dashboard/user/student/')({
   beforeLoad: ({ context }) => {
     privateRoute(['admin'])({ context });
 
-    context.breadcrumbs = [{ title: 'User', url: '#' }, { title: 'Student' }];
+    context.breadcrumbs = [{ title: 'User' }, { title: 'Student' }];
   },
   component: RouteComponent,
 });

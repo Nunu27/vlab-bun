@@ -51,6 +51,7 @@ export const studentColumns: ColumnDef<Item>[] = [
     enableSorting: false,
     meta: {
       label: 'Name',
+      isGrow: true,
     },
   },
   {

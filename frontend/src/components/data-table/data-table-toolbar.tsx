@@ -85,8 +85,9 @@ export function DataTableToolbar<TData>({
             onChange={handleColumnToggle}
             placeholder="Select columns..."
             emptyMessage="No columns found."
-            icon={<LayoutListIcon className="h-4 w-4" />}
+            icon={<LayoutListIcon />}
             label="Columns"
+            width="w-[200px]"
           />
         )}
       </div>

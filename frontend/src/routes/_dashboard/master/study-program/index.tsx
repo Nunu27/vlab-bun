@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_dashboard/master/study-program/')({
     privateRoute(['admin'])({ context });
 
     context.breadcrumbs = [
-      { title: 'Master Data', url: '#' },
+      { title: 'Master Data' },
       { title: 'Study Program' },
     ];
   },

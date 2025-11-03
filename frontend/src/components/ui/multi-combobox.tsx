@@ -7,6 +7,7 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from '@frontend/components/ui/command';
@@ -15,9 +16,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
-import { Checkbox } from '@frontend/components/ui/checkbox';
 import { cn } from '@frontend/lib/utils';
-import { ChevronsUpDownIcon } from 'lucide-react';
+import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
 
 type Option = {
   value: string;
@@ -29,6 +29,7 @@ type MultiComboBoxProps = {
   options: Option[];
   onChange: (value: string, checked: boolean) => void;
   placeholder?: string;
+  searchPlaceholder?: string;
   emptyMessage?: string;
   disabled?: boolean;
   width?: string;
@@ -40,6 +41,7 @@ export function MultiComboBox({
   options,
   onChange,
   placeholder = 'Select options...',
+  searchPlaceholder = 'Search...',
   emptyMessage = 'No options found.',
   disabled = false,
   width = 'w-auto',
@@ -59,39 +61,32 @@ export function MultiComboBox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(width, 'justify-between cursor-pointer! gap-2')}
           disabled={disabled}
         >
-          <div className="flex items-center gap-2">
-            {icon}
-            {label && <span className="hidden lg:inline">{label}</span>}
-            {!label && <span className="truncate">{placeholder}</span>}
-          </div>
-          <ChevronsUpDownIcon className="h-4 w-4 shrink-0 opacity-50" />
+          {icon}
+          {label && <span className="hidden lg:inline">{label}</span>}
+          {!label && <span className="truncate">{placeholder}</span>}
+          <ChevronsUpDownIcon className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-0" align="end">
+      <PopoverContent className={cn(width, 'p-0')} align="end">
         <Command>
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  className="capitalize cursor-pointer"
+                  value={option.value}
                   onSelect={() => {
                     handleToggle(option.value, !option.checked);
                   }}
                 >
-                  <Checkbox
-                    checked={option.checked}
-                    onCheckedChange={(checked) =>
-                      handleToggle(option.value, !!checked)
-                    }
-                    className="mr-2"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  {option.label}
+                  <span className="truncate">{option.label}</span>
+                  {option.checked && (
+                    <CheckIcon size={16} className="ml-auto" />
+                  )}
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -78,7 +78,6 @@ export function DataTableFilterCombobox<TItem>({
         emptyMessage={emptyMessage}
         disabled={disabled}
         width={width}
-        showCheck={true}
         allowClear={true}
         isLoading={isLoading}
         hasMore={hasNextPage}

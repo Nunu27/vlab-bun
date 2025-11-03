@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -6,10 +5,10 @@ import {
   ChevronsRightIcon,
   MoreHorizontalIcon,
 } from 'lucide-react';
+import * as React from 'react';
 
+import { Button } from '@frontend/components/ui/button';
 import { cn } from '@frontend/lib/utils';
-import { Button, buttonVariants } from '@frontend/components/ui/button';
-import { Link } from '@tanstack/react-router';
 
 function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
   return (
@@ -42,27 +41,16 @@ function PaginationItem({ ...props }: React.ComponentProps<'li'>) {
 
 type PaginationLinkProps = {
   isActive?: boolean;
-} & Pick<React.ComponentProps<typeof Button>, 'size'> &
-  React.ComponentProps<typeof Link>;
+} & React.ComponentProps<typeof Button>;
 
-function PaginationLink({
-  className,
-  isActive,
-  size = 'sm',
-  ...props
-}: PaginationLinkProps) {
+function PaginationLink({ isActive, variant, ...props }: PaginationLinkProps) {
   return (
-    <Link
+    <Button
       aria-current={isActive ? 'page' : undefined}
       data-slot="pagination-link"
       data-active={isActive}
-      className={cn(
-        buttonVariants({
-          variant: isActive ? 'outline' : 'ghost',
-          size,
-        }),
-        className,
-      )}
+      variant={variant ?? (isActive ? 'outline' : 'ghost')}
+      disabled={isActive || !props.onClick}
       {...props}
     />
   );
@@ -152,11 +140,11 @@ function PaginationEllipsis({
 export {
   Pagination,
   PaginationContent,
-  PaginationLink,
-  PaginationItem,
-  PaginationFirst,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLast,
   PaginationEllipsis,
+  PaginationFirst,
+  PaginationItem,
+  PaginationLast,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 };

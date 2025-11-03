@@ -50,6 +50,7 @@ export const lecturerColumns: ColumnDef<Item>[] = [
     enableSorting: false,
     meta: {
       label: 'Name',
+      isGrow: true,
     },
   },
   {

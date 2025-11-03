@@ -15,5 +15,7 @@ declare module '@tanstack/table-core' {
   interface ColumnMeta<TData extends RowData, TValue> {
     label?: string;
     center?: boolean;
+    isGrow?: boolean;
+    widthPercentage?: number;
   }
 }

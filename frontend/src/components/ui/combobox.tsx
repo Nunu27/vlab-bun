@@ -12,17 +12,11 @@ import {
   CommandList,
 } from '@frontend/components/ui/command';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from '@frontend/components/ui/drawer';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
 import { Spinner } from '@frontend/components/ui/spinner';
-import { useIsMobile } from '@frontend/hooks/use-mobile';
 import { cn } from '@frontend/lib/utils';
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
 
@@ -40,7 +34,6 @@ type ComboBoxProps = {
   emptyMessage?: string;
   disabled?: boolean;
   width?: string;
-  showCheck?: boolean;
   allowClear?: boolean;
   isLoading?: boolean;
   hasMore?: boolean;
@@ -58,7 +51,6 @@ export function ComboBox({
   emptyMessage = 'No option found.',
   disabled = false,
   width = 'w-[150px]',
-  showCheck = false,
   allowClear = false,
   isLoading = false,
   hasMore = false,
@@ -68,7 +60,6 @@ export function ComboBox({
 }: ComboBoxProps) {
   const [open, setOpen] = React.useState(false);
   const searchRef = React.useRef('');
-  const isMobile = useIsMobile();
 
   const selectedOption = React.useMemo(() => {
     return options.find((option) => option.value === value) || null;
@@ -98,53 +89,6 @@ export function ComboBox({
     onSearchChange?.(newSearch);
   };
 
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(width, 'justify-between cursor-pointer!')}
-            disabled={disabled}
-          >
-            <span className="truncate">
-              {selectedOption ? selectedOption.label : placeholder}
-            </span>
-            <div className="flex items-center gap-1">
-              {allowClear && value && (
-                <button
-                  type="button"
-                  className="flex items-center"
-                  onClick={handleClear}
-                >
-                  <XIcon className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 cursor-pointer" />
-                </button>
-              )}
-              <ChevronsUpDownIcon className="h-4 w-4 shrink-0 opacity-50" />
-            </div>
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent>
-          <div className="mt-4 border-t">
-            <OptionList
-              options={options}
-              value={value}
-              onSelect={handleSelect}
-              searchPlaceholder={searchPlaceholder}
-              emptyMessage={emptyMessage}
-              showCheck={showCheck}
-              isLoading={isLoading}
-              hasMore={hasMore}
-              onLoadMore={onLoadMore}
-              onSearchChange={handleSearchChange}
-              shouldFilter={shouldFilter}
-            />
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -156,23 +100,15 @@ export function ComboBox({
           disabled={disabled}
         >
           <span className="truncate">
-            {selectedOption ? selectedOption.label : placeholder}
+            {selectedOption?.label ?? placeholder}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center">
             {allowClear && value && (
-              <button
-                type="button"
-                className="flex items-center"
-                onClick={handleClear}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <XIcon className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 cursor-pointer" />
-              </button>
+              <Button variant="ghost" size="icon-sm" onClick={handleClear}>
+                <XIcon className="opacity-50 hover:opacity-100" />
+              </Button>
             )}
-            <ChevronsUpDownIcon className="h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDownIcon className="opacity-50" />
           </div>
         </Button>
       </PopoverTrigger>
@@ -183,7 +119,6 @@ export function ComboBox({
           onSelect={handleSelect}
           searchPlaceholder={searchPlaceholder}
           emptyMessage={emptyMessage}
-          showCheck={showCheck}
           isLoading={isLoading}
           hasMore={hasMore}
           onLoadMore={onLoadMore}
@@ -201,7 +136,6 @@ function OptionList({
   onSelect,
   searchPlaceholder,
   emptyMessage,
-  showCheck,
   isLoading,
   hasMore,
   onLoadMore,
@@ -213,7 +147,6 @@ function OptionList({
   onSelect: (value: string) => void;
   searchPlaceholder: string;
   emptyMessage: string;
-  showCheck: boolean;
   isLoading: boolean;
   hasMore: boolean;
   onLoadMore?: () => void;
@@ -250,17 +183,14 @@ function OptionList({
               key={option.value}
               value={option.value}
               onSelect={onSelect}
-              className="justify-between"
             >
               <span className="truncate">{option.label}</span>
-              {showCheck && (
-                <CheckIcon
-                  className={cn(
-                    'ml-auto shrink-0',
-                    value === option.value ? 'opacity-100' : 'opacity-0',
-                  )}
-                />
-              )}
+              <CheckIcon
+                className={cn(
+                  'ml-auto',
+                  value === option.value ? 'opacity-100' : 'opacity-0',
+                )}
+              />
             </CommandItem>
           ))}
           {hasMore && isLoading && (

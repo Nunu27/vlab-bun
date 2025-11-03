@@ -80,9 +80,7 @@ export function DataTablePagination({
           <PaginationItem>
             <PaginationFirst
               onClick={canGoFirst ? () => onPageChange(1) : undefined}
-              className={
-                canGoFirst ? 'cursor-pointer' : 'pointer-events-none opacity-50'
-              }
+              className={canGoFirst ? undefined : 'opacity-50'}
               aria-label="Go to first page"
             />
           </PaginationItem>
@@ -90,9 +88,7 @@ export function DataTablePagination({
           <PaginationItem>
             <PaginationPrevious
               onClick={canGoPrev ? () => onPageChange(page - 1) : undefined}
-              className={
-                canGoPrev ? 'cursor-pointer' : 'pointer-events-none opacity-50'
-              }
+              className={canGoPrev ? undefined : 'opacity-50'}
               aria-label="Go to previous page"
             />
           </PaginationItem>
@@ -107,7 +103,6 @@ export function DataTablePagination({
             <PaginationItem>
               <PaginationLink
                 onClick={() => onPageChange(page - 1)}
-                className="cursor-pointer"
                 aria-label={`Go to page ${page - 1}`}
               >
                 {page - 1}
@@ -130,7 +125,6 @@ export function DataTablePagination({
             <PaginationItem>
               <PaginationLink
                 onClick={() => onPageChange(page + 1)}
-                className="cursor-pointer"
                 aria-label={`Go to page ${page + 1}`}
               >
                 {page + 1}

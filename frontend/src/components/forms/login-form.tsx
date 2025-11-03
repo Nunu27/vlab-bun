@@ -119,7 +119,7 @@ export function LoginForm({
                     </Button>
                   )}
                 </form.Subscribe>
-                <Button variant="outline" type="button">
+                <Button variant="outline" type="button" asChild>
                   <a href="/api/auth/cas">Login with CAS</a>
                 </Button>
               </Field>

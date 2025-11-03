@@ -24,8 +24,12 @@ import {
   TableHeader,
   TableRow,
 } from '@frontend/components/ui/table';
+import { calculateTableSizing } from '@frontend/lib/table';
 import type { PageInfo, SortOrder } from '@frontend/types/pagination';
-import { useState } from 'react';
+import { CircleQuestionMarkIcon } from 'lucide-react';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { useWindowSize } from 'usehooks-ts';
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '../ui/empty';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableToolbar } from './data-table-toolbar';
@@ -41,6 +45,10 @@ export type DataTableProps<TData, TFields extends string> = {
   searchPlaceholder?: string;
   pageSizeOptions?: number[];
   emptyMessage?: string;
+  emptyIcon?: React.ReactNode;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyActions?: React.ReactNode;
   filters?: React.ReactNode;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
@@ -67,10 +75,11 @@ export function DataTable<TData, TFields extends string>({
   onSortChange,
   onRefresh,
 }: DataTableProps<TData, TFields>) {
+  const tableContainerRef = useRef<HTMLDivElement>(null);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const windowDimensions = useWindowSize();
 
-  // Convert server-side sorting to TanStack Table format
   const sorting: SortingState =
     sortBy && sortOrder ? [{ id: sortBy, desc: sortOrder === 'desc' }] : [];
 
@@ -110,6 +119,17 @@ export function DataTable<TData, TFields extends string>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  const headers = table.getFlatHeaders();
+  useLayoutEffect(() => {
+    if (tableContainerRef.current) {
+      const initialColumnSizing = calculateTableSizing(
+        headers,
+        tableContainerRef.current?.clientWidth,
+      );
+      table.setColumnSizing(initialColumnSizing);
+    }
+  }, [headers, windowDimensions.width]);
+
   return (
     <div className="w-full space-y-4">
       <DataTableToolbar
@@ -122,7 +142,13 @@ export function DataTable<TData, TFields extends string>({
         filters={filters}
       />
       <div className="relative flex flex-col gap-4">
-        <div className="overflow-x-auto rounded-lg border">
+        <div
+          ref={tableContainerRef}
+          className="rounded-lg border overflow-hidden"
+          style={{
+            direction: table.options.columnResizeDirection,
+          }}
+        >
           <Table className="w-full">
             <TableHeader className="bg-muted">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -170,10 +196,9 @@ export function DataTable<TData, TFields extends string>({
                       <TableCell
                         key={cell.id}
                         style={{
-                          width:
-                            cell.column.getSize() !== 150
-                              ? cell.column.getSize()
-                              : undefined,
+                          width: cell.column.columnDef.size
+                            ? cell.column.getSize()
+                            : 'auto',
                         }}
                       >
                         {flexRender(
@@ -186,11 +211,16 @@ export function DataTable<TData, TFields extends string>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="py-24 text-center"
-                  >
-                    {emptyMessage}
+                  <TableCell colSpan={columns.length} className="py-16">
+                    <Empty>
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <CircleQuestionMarkIcon />
+                        </EmptyMedia>
+
+                        <EmptyTitle>{emptyMessage}</EmptyTitle>
+                      </EmptyHeader>
+                    </Empty>
                   </TableCell>
                 </TableRow>
               )}
