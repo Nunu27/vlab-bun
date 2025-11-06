@@ -3,7 +3,7 @@ import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { CreateStudentRequest } from "./schema";
 
-export default createRouter().plugin.post(
+export default createRouter().post(
 	"/",
 	async ({ body, db }) => {
 		const userId = await db.transaction(async (tx) => {

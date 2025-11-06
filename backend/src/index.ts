@@ -19,11 +19,11 @@ if (command === "seed") {
 	process.exit(1);
 }
 
-if (cluster.isPrimary) {
-	for (let i = 0; i < os.availableParallelism(); i++) cluster.fork();
-} else {
-	const { startServer } = await import("./server");
+import { inProduction } from "./env";
+import { startServer } from "./server";
 
-	startServer();
-	logger.info(`Worker ${process.pid} started`);
+await startServer();
+
+if (cluster.isPrimary && inProduction) {
+	for (let i = 1; i < os.availableParallelism(); i++) cluster.fork();
 }

@@ -28,6 +28,7 @@ type ListenerCallback<
 	data: { [P in K]: InferSelectModel<T>[P] };
 }) => Promise<void>;
 type ListenerEntry = {
+	columns: Set<string>;
 	events: Set<Operations>;
 	listener: ListenerCallback<any, any>;
 };
@@ -50,20 +51,22 @@ const qLiteral = (s: string) => `'${s.replace(/'/g, "''")}'`;
 const areSetsEqual = (a: Set<unknown>, b: Set<unknown>) =>
 	a.size === b.size && [...a].every((x) => b.has(x));
 
-const getChannelForTable = <T extends PgTable>(
+const getChannelForTable = <T extends PgTable>(table: T): string => {
+	const { schema = "public", name } = getTableConfig(table);
+	return `${MANAGED_PREFIX}:${schema}.${name}`;
+};
+
+const normalizeColumns = <T extends PgTable>(
 	table: T,
 	columns: (keyof InferSelectModel<T>)[]
-): string => {
-	const { schema = "public", name, columns: cols } = getTableConfig(table);
-	const sqlCols = cols.reduce<string[]>((acc, col) => {
+): string[] => {
+	const { columns: cols } = getTableConfig(table);
+	return cols.reduce<string[]>((acc, col) => {
 		if (columns.includes(col.name)) {
 			acc.push(toSnakeCase(col.name));
 		}
-
 		return acc;
 	}, []);
-
-	return `${MANAGED_PREFIX}:${schema}.${name}:${sqlCols.join(",")}`;
 };
 
 const processBatch = async (channel: string) => {
@@ -95,7 +98,20 @@ const processBatch = async (channel: string) => {
 		for (let i = 0; i < listenersToCall.length; i += BATCH_SIZE) {
 			const chunk = listenersToCall.slice(i, i + BATCH_SIZE);
 			const results = await Promise.allSettled(
-				chunk.map(({ listener }) => Promise.all(opItems.map(listener)))
+				chunk.map(({ listener, columns }) =>
+					Promise.all(
+						opItems.map((item) => {
+							const filteredData = Object.keys(item.data).reduce((acc, key) => {
+								if (columns.has(key)) {
+									acc[key] = item.data[key];
+								}
+								return acc;
+							}, {} as any);
+
+							return listener({ ...item, data: filteredData });
+						})
+					)
+				)
 			);
 
 			results.forEach((result) => {
@@ -172,10 +188,12 @@ export const addDBListener = <
 	opts?: { ops?: Array<Operations> }
 ) => {
 	const table = db._.fullSchema[entity];
-	const channel = getChannelForTable(table, columns);
+	const channel = getChannelForTable(table);
+	const normalizedCols = normalizeColumns(table, columns);
 	const listeners = registry.get(channel) ?? [];
 
 	listeners.push({
+		columns: new Set(normalizedCols),
 		events: new Set(opts?.ops ?? ["INSERT", "UPDATE", "DELETE"]),
 		listener
 	});
@@ -192,13 +210,18 @@ export const removeDBListener = <
 	listener: ListenerCallback<T, K>,
 	opts?: { ops?: Array<Operations> }
 ) => {
-	const channel = getChannelForTable(table, columns);
+	const channel = getChannelForTable(table);
+	const normalizedCols = normalizeColumns(table, columns);
 	const listeners = registry.get(channel);
 	if (!listeners) return;
 
 	const opsSet = new Set(opts?.ops ?? ["INSERT", "UPDATE", "DELETE"]);
+	const colsSet = new Set(normalizedCols);
 	const listenerIndex = listeners.findIndex(
-		(entry) => entry.listener === listener && areSetsEqual(entry.events, opsSet)
+		(entry) =>
+			entry.listener === listener &&
+			areSetsEqual(entry.events, opsSet) &&
+			areSetsEqual(entry.columns, colsSet)
 	);
 
 	if (listenerIndex !== -1) {
@@ -266,14 +289,26 @@ function buildTriggerSQL(
 export const syncDBListeners = async () => {
 	const desiredListeners = Array.from(registry.entries()).map(
 		([channel, entries]) => {
-			const [, fullTable, cols] = channel.split(":");
+			const [, fullTable] = channel.split(":");
 			const [schema, table] = fullTable.split(".");
+
+			const allColumns = entries.reduce((acc, { columns }) => {
+				columns.forEach((col) => acc.add(col));
+				return acc;
+			}, new Set<string>());
+
 			const allOps = entries.reduce((acc, { events }) => {
 				events.forEach((op: Operations) => acc.add(op));
 				return acc;
 			}, new Set<Operations>());
 
-			return { channel, schema, table, cols: cols.split(","), events: allOps };
+			return {
+				channel,
+				schema,
+				table,
+				cols: Array.from(allColumns),
+				events: allOps
+			};
 		}
 	);
 
