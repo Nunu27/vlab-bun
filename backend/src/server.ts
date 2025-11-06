@@ -14,7 +14,8 @@ const app = new Elysia()
 		inProduction
 			? staticPlugin({
 					prefix: "/static",
-					assets: "public/static"
+					assets: "public/static",
+					alwaysStatic: true
 				})
 			: undefined
 	)

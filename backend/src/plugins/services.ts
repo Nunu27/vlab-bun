@@ -68,6 +68,10 @@ const services = new Elysia({ name: "services" })
 			}
 		})
 	)
+	.all("*", ({ status }) => status(200, file("public/index.html")))
+	.all("/api/*", ({ status }) =>
+		status(404, failure({ message: "Resource not found" }))
+	)
 	.onError(({ code, error, status, path }) => {
 		switch (code) {
 			case "VALIDATION":
@@ -80,10 +84,6 @@ const services = new Elysia({ name: "services" })
 						)
 					})
 				);
-			case "NOT_FOUND":
-				if (path?.startsWith("/api")) {
-					return status(404, failure({ message: "Resource not found" }));
-				} else return file("public/index.html");
 
 			default:
 				logger.error({ error }, path);
@@ -102,6 +102,6 @@ const services = new Elysia({ name: "services" })
 	.as("global");
 
 export default services;
-export const createRouter = <Prefix extends string>(
+export const createRouter = <Prefix extends string = "">(
 	config?: ElysiaConfig<Prefix>
 ) => new Elysia(config).use(services);

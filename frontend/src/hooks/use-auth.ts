@@ -50,8 +50,13 @@ function useAuth(): AuthData {
         },
       });
     },
-    ensureData: () => {
-      return client.ensureQueryData(options);
+    ensureData: async () => {
+      const data = await client.ensureQueryData(options);
+      if (!data && location.pathname !== '/login') {
+        await cookieStore.delete('session');
+      }
+
+      return data;
     },
   };
 
