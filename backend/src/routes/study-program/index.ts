@@ -8,15 +8,22 @@ import detail from "./detail";
 import pagination from "./pagination";
 import update from "./update";
 
-addDBListener("studyPrograms", ["id"], async ({ op, data }) => {
-	const keys = ["study-program:pagination:*"];
+addDBListener(
+	"studyPrograms",
+	["id"],
+	async ({ op, data }) => {
+		const keys = ["study-program:pagination:*"];
 
-	if (op !== "INSERT") {
-		keys.push(`study-program:${data.id}`);
-	}
+		if (op !== "INSERT") {
+			for (const { id } of data) {
+				keys.push(`study-program:${id}`);
+			}
+		}
 
-	await deleteCache(...keys);
-});
+		await deleteCache(...keys);
+	},
+	{ bulk: true }
+);
 
 const studyProgramRouter = new Elysia({
 	detail: { tags: ["Study Programs"] }

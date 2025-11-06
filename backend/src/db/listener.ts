@@ -27,10 +27,21 @@ type ListenerCallback<
 	table: string;
 	data: { [P in K]: InferSelectModel<T>[P] };
 }) => Promise<void>;
+
+type BulkListenerCallback<
+	T extends PgTable,
+	K extends keyof InferSelectModel<T> = keyof InferSelectModel<T>
+> = (event: {
+	op: Operations;
+	table: string;
+	data: Array<{ [P in K]: InferSelectModel<T>[P] }>;
+}) => Promise<void>;
+
 type ListenerEntry = {
 	columns: Set<string>;
 	events: Set<Operations>;
-	listener: ListenerCallback<any, any>;
+	bulk: boolean;
+	listener: ListenerCallback<any, any> | BulkListenerCallback<any, any>;
 };
 
 const registry = new Map<string, ListenerEntry[]>();
@@ -95,33 +106,78 @@ const processBatch = async (channel: string) => {
 
 		if (listenersToCall.length === 0) continue;
 
-		for (let i = 0; i < listenersToCall.length; i += BATCH_SIZE) {
-			const chunk = listenersToCall.slice(i, i + BATCH_SIZE);
-			const results = await Promise.allSettled(
-				chunk.map(({ listener, columns }) =>
-					Promise.all(
-						opItems.map((item) => {
+		const bulkListeners = listenersToCall.filter(({ bulk }) => bulk);
+		const nonBulkListeners = listenersToCall.filter(({ bulk }) => !bulk);
+
+		if (bulkListeners.length > 0) {
+			for (let i = 0; i < bulkListeners.length; i += BATCH_SIZE) {
+				const chunk = bulkListeners.slice(i, i + BATCH_SIZE);
+				const results = await Promise.allSettled(
+					chunk.map(({ listener, columns }) => {
+						const bulkData = opItems.map((item) => {
 							const filteredData = Object.keys(item.data).reduce((acc, key) => {
 								if (columns.has(key)) {
 									acc[key] = item.data[key];
 								}
 								return acc;
 							}, {} as any);
+							return filteredData;
+						});
 
-							return listener({ ...item, data: filteredData });
-						})
+						return (listener as BulkListenerCallback<any, any>)({
+							op: op as Operations,
+							table: opItems[0].table,
+							data: bulkData
+						});
+					})
+				);
+
+				results.forEach((result) => {
+					if (result.status === "rejected") {
+						logger.error(
+							{ error: result.reason },
+							`DB Listener (bulk): Batch failure on channel ${channel}`
+						);
+					}
+				});
+			}
+		}
+
+		if (nonBulkListeners.length > 0) {
+			for (let i = 0; i < nonBulkListeners.length; i += BATCH_SIZE) {
+				const chunk = nonBulkListeners.slice(i, i + BATCH_SIZE);
+				const results = await Promise.allSettled(
+					chunk.map(({ listener, columns }) =>
+						Promise.all(
+							opItems.map((item) => {
+								const filteredData = Object.keys(item.data).reduce(
+									(acc, key) => {
+										if (columns.has(key)) {
+											acc[key] = item.data[key];
+										}
+										return acc;
+									},
+									{} as any
+								);
+
+								return (listener as ListenerCallback<any, any>)({
+									...item,
+									data: filteredData
+								});
+							})
+						)
 					)
-				)
-			);
+				);
 
-			results.forEach((result) => {
-				if (result.status === "rejected") {
-					logger.error(
-						{ error: result.reason },
-						`DB Listener: Batch failure on channel ${channel}`
-					);
-				}
-			});
+				results.forEach((result) => {
+					if (result.status === "rejected") {
+						logger.error(
+							{ error: result.reason },
+							`DB Listener: Batch failure on channel ${channel}`
+						);
+					}
+				});
+			}
 		}
 	}
 };
@@ -172,7 +228,16 @@ client.on("notification", async ({ channel, payload }) => {
 	}
 
 	const batch = batchQueue.get(channel)!;
-	batch.items.push(parsedPayload);
+
+	if (Array.isArray(parsedPayload.data)) {
+		parsedPayload.data.forEach((rowData) => {
+			batch.items.push({
+				op: parsedPayload.op,
+				table: parsedPayload.table,
+				data: rowData
+			});
+		});
+	}
 
 	scheduleBatchProcessing(channel);
 });
@@ -180,12 +245,15 @@ client.on("notification", async ({ channel, payload }) => {
 export const addDBListener = <
 	TEntity extends keyof TSchema,
 	TTable extends TFullSchema[TEntity],
-	K extends keyof InferSelectModel<TTable>
+	K extends keyof InferSelectModel<TTable>,
+	Bulk extends boolean = false
 >(
 	entity: TEntity,
 	columns: K[],
-	listener: ListenerCallback<TTable, K>,
-	opts?: { ops?: Array<Operations> }
+	listener: Bulk extends false
+		? ListenerCallback<TTable, K>
+		: BulkListenerCallback<TTable, K>,
+	opts?: { ops?: Array<Operations>; bulk?: Bulk }
 ) => {
 	const table = db._.fullSchema[entity];
 	const channel = getChannelForTable(table);
@@ -195,6 +263,7 @@ export const addDBListener = <
 	listeners.push({
 		columns: new Set(normalizedCols),
 		events: new Set(opts?.ops ?? ["INSERT", "UPDATE", "DELETE"]),
+		bulk: opts?.bulk ?? false,
 		listener
 	});
 
@@ -207,8 +276,8 @@ export const removeDBListener = <
 >(
 	table: T,
 	columns: K[],
-	listener: ListenerCallback<T, K>,
-	opts?: { ops?: Array<Operations> }
+	listener: ListenerCallback<T, K> | BulkListenerCallback<T, K>,
+	opts?: { ops?: Array<Operations>; bulk?: boolean }
 ) => {
 	const channel = getChannelForTable(table);
 	const normalizedCols = normalizeColumns(table, columns);
@@ -217,11 +286,13 @@ export const removeDBListener = <
 
 	const opsSet = new Set(opts?.ops ?? ["INSERT", "UPDATE", "DELETE"]);
 	const colsSet = new Set(normalizedCols);
+	const bulk = opts?.bulk ?? false;
 	const listenerIndex = listeners.findIndex(
 		(entry) =>
 			entry.listener === listener &&
 			areSetsEqual(entry.events, opsSet) &&
-			areSetsEqual(entry.columns, colsSet)
+			areSetsEqual(entry.columns, colsSet) &&
+			entry.bulk === bulk
 	);
 
 	if (listenerIndex !== -1) {
@@ -240,27 +311,39 @@ function buildFunctionSQL(channel: string, columns: string[]): string {
 	return `
 		CREATE OR REPLACE FUNCTION ${qIdent(fnName)}() RETURNS trigger AS $$
 		DECLARE
-		row_data jsonb;
 		payload jsonb;
-		data_obj jsonb;
+		data_array jsonb;
 		BEGIN
-		row_data := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
-
-		data_obj := (
-			SELECT jsonb_object_agg(key, value)
-			FROM jsonb_each(row_data)
-			WHERE key = ANY(ARRAY[${colsArray}]::text[])
-		);
+		-- For statement-level triggers, we aggregate all changed rows
+		IF TG_OP = 'DELETE' THEN
+			data_array := (
+				SELECT jsonb_agg(
+					(SELECT jsonb_object_agg(key, value)
+					 FROM jsonb_each(to_jsonb(t))
+					 WHERE key = ANY(ARRAY[${colsArray}]::text[]))
+				)
+				FROM old_table t
+			);
+		ELSE
+			data_array := (
+				SELECT jsonb_agg(
+					(SELECT jsonb_object_agg(key, value)
+					 FROM jsonb_each(to_jsonb(t))
+					 WHERE key = ANY(ARRAY[${colsArray}]::text[]))
+				)
+				FROM new_table t
+			);
+		END IF;
 
 		payload := jsonb_build_object(
 			'op', TG_OP,
 			'table', TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME,
-			'data', COALESCE(data_obj, '{}'::jsonb)
+			'data', COALESCE(data_array, '[]'::jsonb)
 		);
 
 		PERFORM pg_notify(${qLiteral(channel)}, payload::text);
 
-		RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+		RETURN NULL;
 		END;
 		$$ LANGUAGE plpgsql;
 	`;
@@ -281,7 +364,8 @@ function buildTriggerSQL(
         DROP TRIGGER IF EXISTS ${trigName} ON ${qualifiedTable};
         CREATE TRIGGER ${trigName}
         AFTER ${events} ON ${qualifiedTable}
-        FOR EACH ROW
+        REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table
+        FOR EACH STATEMENT
         EXECUTE FUNCTION ${fnName}();
     `;
 }

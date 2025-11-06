@@ -8,15 +8,22 @@ import detail from "./detail";
 import pagination from "./pagination";
 import update from "./update";
 
-addDBListener("departments", ["id"], async ({ op, data }) => {
-	const keys = ["department:pagination:*"];
+addDBListener(
+	"departments",
+	["id"],
+	async ({ op, data }) => {
+		const keys = ["department:pagination:*"];
 
-	if (op !== "INSERT") {
-		keys.push(`department:${data.id}`);
-	}
+		if (op !== "INSERT") {
+			for (const { id } of data) {
+				keys.push(`department:${id}`);
+			}
+		}
 
-	await deleteCache(...keys);
-});
+		await deleteCache(...keys);
+	},
+	{ bulk: true }
+);
 
 const departmentRouter = new Elysia({
 	detail: { tags: ["Department"] }

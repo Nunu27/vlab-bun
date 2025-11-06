@@ -20,10 +20,11 @@ const authRouter = createRouter({
 addDBListener(
 	"users",
 	["id"],
-	async (event) => {
-		await deleteCache(`me:${event.data.id}`);
+	async ({ data }) => {
+		await deleteCache(...data.map(({ id }) => `me:${id}`));
 	},
 	{
+		bulk: true,
 		ops: ["UPDATE", "DELETE"]
 	}
 );

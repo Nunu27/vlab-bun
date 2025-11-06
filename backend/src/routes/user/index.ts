@@ -15,14 +15,25 @@ const userRouter = createRouter({
 	.group("/lecturer", (app) => app.use(lecturerRouter))
 	.group("/admin", (app) => app.use(adminRouter));
 
-addDBListener("users", ["id", "role"], async ({ op, data }) => {
-	const keys = [`${data.role}:pagination:*`];
+addDBListener(
+	"users",
+	["id", "role"],
+	async ({ op, data }) => {
+		const roles = new Set<string>();
+		const keys: string[] = [];
 
-	if (op !== "INSERT") {
-		keys.push(`${data.role}:${data.id}`);
-	}
+		for (const { id, role } of data) {
+			roles.add(role);
+			if (op !== "INSERT") {
+				keys.push(`${role}:${id}`);
+			}
+		}
 
-	await deleteCache(...keys);
-});
+		keys.push(...Array.from(roles, (role) => `${role}:pagination:*`));
+
+		await deleteCache(...keys);
+	},
+	{ bulk: true }
+);
 
 export default userRouter;
