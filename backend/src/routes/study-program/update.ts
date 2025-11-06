@@ -1,9 +1,9 @@
 import { studyPrograms } from "@backend/db/schema/auth";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { eq } from "drizzle-orm";
 import { UpdateStudyProgramRequest } from "./schema";
 
-export default createAppWithServices().put(
+export default createRouter().put(
 	"/:id",
 	async ({ params, body, db }) => {
 		const { id } = params;

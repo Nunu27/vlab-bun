@@ -1,9 +1,9 @@
 import { users } from "@backend/db/schema/auth";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { CreateAdminRequest } from "./schema";
 
-export default createAppWithServices().post(
+export default createRouter().post(
 	"/",
 	async ({ body, db }) => {
 		const [user] = await db

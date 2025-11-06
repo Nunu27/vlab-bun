@@ -1,9 +1,9 @@
 import { users } from "@backend/db/schema/auth";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { and, eq } from "drizzle-orm";
 
-export default createAppWithServices().delete(
+export default createRouter().delete(
 	"/:id",
 	async ({ params, db, status }) => {
 		const { id } = params;

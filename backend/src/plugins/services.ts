@@ -102,4 +102,6 @@ const services = new Elysia({ name: "services" })
 	.as("global");
 
 export default services;
-export const createAppWithServices = () => new Elysia().use(services);
+export const createRouter = <Prefix extends string>(
+	config?: ElysiaConfig<Prefix>
+) => new Elysia(config).use(services);

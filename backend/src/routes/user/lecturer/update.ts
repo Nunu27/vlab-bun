@@ -1,10 +1,10 @@
 import { lecturers, users } from "@backend/db/schema/auth";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { failure } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
 import { UpdateLecturerRequest } from "./schema";
 
-export default createAppWithServices().put(
+export default createRouter().put(
 	"/:id",
 	async ({ params, body, db, status }) => {
 		const { id } = params;

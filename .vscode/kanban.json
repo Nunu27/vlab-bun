@@ -34,6 +34,14 @@
             "title": "Doing",
             "tasks": [
                 {
+                    "text": "Websocket for realtime update",
+                    "id": "q6smwdhjlhoccosra4w3ichb"
+                },
+                {
+                    "text": "Containerlab Planning",
+                    "id": "jefgvjf88i3xc5gdvlasuolc"
+                },
+                {
                     "text": "CRUD Device",
                     "id": "uaqubgfsndqyyk0flrjre4nm"
                 }
@@ -44,6 +52,10 @@
         {
             "title": "Done",
             "tasks": [
+                {
+                    "text": "[FE] Paginated data table with filter",
+                    "id": "pju00y81x4xyozyouvl9rk7g"
+                },
                 {
                     "text": "Pagination",
                     "id": "vk65rg60loqsgif01zukiw84"
@@ -71,5 +83,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1760286054276
+    "timestamp": 1762366682225
 }

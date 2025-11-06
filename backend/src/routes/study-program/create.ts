@@ -1,9 +1,9 @@
 import { studyPrograms } from "@backend/db/schema/auth";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { CreateStudyProgramRequest } from "./schema";
 
-export default createAppWithServices().post(
+export default createRouter().post(
 	"/",
 	async ({ body, db }) => {
 		const [studyProgram] = await db

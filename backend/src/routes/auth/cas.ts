@@ -1,6 +1,6 @@
 import { students, users } from "@backend/db/schema/auth";
 import env from "@backend/env";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { ToastType } from "@backend/types/toast";
 import { compile } from "elysia/type-system/utils";
 import { XMLParser } from "fast-xml-parser";
@@ -14,7 +14,7 @@ const parser = new XMLParser({
 type CASResponse = typeof CASResponseSchema.static;
 const CASResponseValidator = compile(CASResponseSchema);
 
-export default createAppWithServices().get(
+export default createRouter().get(
 	"/cas",
 	async ({ sessionId, query: { ticket }, redirect, redis, db, cookie }) => {
 		const service = `${BASE_URL}/api/auth/cas`;

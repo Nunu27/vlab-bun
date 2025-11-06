@@ -1,4 +1,7 @@
 import logger from "@backend/services/logger";
+import cluster from "node:cluster";
+import os from "node:os";
+import process from "node:process";
 
 const command = process.argv[2];
 
@@ -16,7 +19,11 @@ if (command === "seed") {
 	process.exit(1);
 }
 
-import { startServer, type App } from "./server";
-await startServer();
+if (cluster.isPrimary) {
+	for (let i = 0; i < os.availableParallelism(); i++) cluster.fork();
+} else {
+	const { startServer } = await import("./server");
 
-export type { App };
+	startServer();
+	logger.info(`Worker ${process.pid} started`);
+}

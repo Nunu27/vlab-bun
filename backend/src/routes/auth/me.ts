@@ -1,7 +1,7 @@
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 
-export default createAppWithServices().get(
+export default createRouter().get(
 	"/me",
 	async ({ session, db, status }) => {
 		const user = await db.query.users.findFirst({

@@ -1,14 +1,13 @@
-import env, { inProduction } from "@backend/env";
-
 import { cleanupDBListeners, syncDBListeners } from "@backend/db/listener";
+import env, { inProduction } from "@backend/env";
 import { clearCache } from "@backend/middlewares/caching";
-import logger from "@backend/services/logger";
-import { Elysia } from "elysia";
-
 import services from "@backend/plugins/services";
 import routes from "@backend/routes";
+import logger from "@backend/services/logger";
 import staticPlugin from "@elysiajs/static";
+import { Elysia } from "elysia";
 import { checkAndRunMigration } from "./db";
+import ws from "./plugins/ws";
 
 const app = new Elysia()
 	.use(
@@ -19,6 +18,7 @@ const app = new Elysia()
 				})
 			: undefined
 	)
+	.use(ws({}))
 	.use(services)
 	.use(routes);
 

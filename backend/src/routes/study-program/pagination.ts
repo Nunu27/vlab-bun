@@ -1,5 +1,5 @@
 import db from "@backend/db";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { md5 } from "@backend/utils/crypto";
 import { createPaginator } from "@backend/utils/paginator";
 import { success } from "@backend/utils/response";
@@ -8,7 +8,7 @@ const paginator = createPaginator(db, "studyPrograms", {
 	searchableColumns: ["name"]
 });
 
-export default createAppWithServices().guard(
+export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],

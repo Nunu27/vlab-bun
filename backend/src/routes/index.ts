@@ -7,11 +7,9 @@ import departmentRouter from "./department";
 import studyProgramRouter from "./study-program";
 import userRouter from "./user";
 
-const routes = new Elysia({ prefix: "/api" })
+export default new Elysia({ prefix: "/api" })
 	.get("/", () => success({ data: { name, version } }))
 	.group("/auth", (app) => app.use(authRouter))
 	.group("/department", (app) => app.use(departmentRouter))
 	.group("/study-program", (app) => app.use(studyProgramRouter))
 	.group("/user", (app) => app.use(userRouter));
-
-export default routes;

@@ -1,8 +1,8 @@
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { t } from "elysia";
 
-export default createAppWithServices().guard(
+export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],

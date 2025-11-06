@@ -1,9 +1,9 @@
 import env from "@backend/env";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { LoginRequest } from "./schema";
 
-export default createAppWithServices().post(
+export default createRouter().post(
 	"/login",
 	async ({ sessionId, body, status, redis, db }) => {
 		const user = await db.query.users.findFirst({

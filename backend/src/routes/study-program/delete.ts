@@ -1,9 +1,9 @@
 import { studyPrograms } from "@backend/db/schema/auth";
-import { createAppWithServices } from "@backend/plugins/services";
+import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
 
-export default createAppWithServices().delete(
+export default createRouter().delete(
 	"/:id",
 	async ({ params, db }) => {
 		const { id } = params;
