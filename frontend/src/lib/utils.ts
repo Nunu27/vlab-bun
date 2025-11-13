@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from 'clsx';
 import type { Treaty } from '@elysiajs/eden';
 import { twMerge } from 'tailwind-merge';
 import { toast } from 'sonner';
+import { redirect } from '@tanstack/react-router';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -47,8 +48,11 @@ export async function errorHandler<
     const { data, error } = await promise;
 
     if (error) {
-      const response = error.value as BaseResponse;
-      throw new Error(response.message || 'An error occurred');
+      if (error.status === 401) {
+        await cookieStore.delete('session');
+        return redirect({ to: '/login' });
+      }
+      throw new Error(getErrorMessageFromApi(error));
     }
 
     if (showToast.onSuccess ?? true) {
@@ -67,11 +71,11 @@ export async function errorHandler<
   }
 }
 
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
 
   return function (...args: Parameters<T>) {
     if (timeout) {

@@ -29,6 +29,7 @@ const filtersParser = createParser({
           return Array.isArray(parsed) ? parsed : [];
         }
       } catch (e) {
+        console.error('Failed to parse filters from URL', e);
         toast.error('Failed to parse filters from URL');
       }
 
@@ -41,6 +42,7 @@ const filtersParser = createParser({
       const parsed = JSON.parse(value);
       return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
+      console.error('Failed to parse filters from URL', e);
       toast.error('Failed to parse filters from URL');
 
       return [];
