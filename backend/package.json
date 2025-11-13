@@ -3,7 +3,7 @@
   "version": "1.0.50",
   "main": "src/index.ts",
   "exports": {
-    "./server": "./src/server.ts"
+    "./server": "./src/services/server.ts"
   },
   "scripts": {
     "dev": "bun run --watch src/index.ts | pino-pretty",
@@ -16,18 +16,21 @@
     "@bogeychan/elysia-logger": "^0.1.10",
     "@elysiajs/openapi": "^1.4.11",
     "@elysiajs/static": "^1.4.4",
+    "dockerode": "^4.0.9",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.6",
     "drizzle-typebox": "^0.3.3",
     "elysia": "^1.4.13",
     "elysia-helmet": "^3.0.0",
     "fast-xml-parser": "^5.3.0",
+    "guacamole-lite": "^1.2.0",
     "pg": "^8.16.3",
     "pg-native": "^3.5.2",
     "pino": "^10.0.0",
     "typebox": "^1.0.36"
   },
   "devDependencies": {
+    "@types/dockerode": "^3.3.45",
     "@types/pg": "^8.15.5",
     "bun-types": "latest",
     "drizzle-kit": "^0.31.6"

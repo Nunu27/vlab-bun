@@ -1,22 +1,24 @@
+import { checkAndRunMigration } from "@backend/db";
 import { cleanupDBListeners, syncDBListeners } from "@backend/db/listener";
 import env, { inProduction } from "@backend/env";
 import { clearCache } from "@backend/middlewares/caching";
 import services from "@backend/plugins/services";
+import ws from "@backend/plugins/ws";
 import routes from "@backend/routes";
+import { initGuacamole, shutdownGuacamole } from "@backend/services/guacamole";
 import logger from "@backend/services/logger";
 import staticPlugin from "@elysiajs/static";
 import { Elysia } from "elysia";
 import cluster from "node:cluster";
-import { checkAndRunMigration } from "./db";
-import ws from "./plugins/ws";
 
-const app = new Elysia()
+const app = new Elysia({
+	cookie: { secrets: env.COOKIE_SECRET, secure: inProduction }
+})
 	.use(
 		inProduction
 			? staticPlugin({
 					prefix: "/static",
-					assets: "public/static",
-					alwaysStatic: true
+					assets: "public/static"
 				})
 			: undefined
 	)
@@ -26,6 +28,7 @@ const app = new Elysia()
 
 const shutdown = async (signal: string) => {
 	logger.info(`${signal} received, shutting down...`);
+	await shutdownGuacamole();
 	await cleanupDBListeners();
 	logger.info("Cleanup complete, exiting");
 	process.exit(0);
@@ -39,6 +42,8 @@ export async function startServer() {
 		await checkAndRunMigration();
 		await syncDBListeners();
 		await clearCache();
+
+		initGuacamole();
 	}
 
 	app.listen(env.PORT, (app) => {

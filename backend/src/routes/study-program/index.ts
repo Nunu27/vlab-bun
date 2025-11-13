@@ -15,8 +15,8 @@ addDBListener(
 		const keys = ["study-program:pagination:*"];
 
 		if (op !== "INSERT") {
-			for (const { id } of data) {
-				keys.push(`study-program:${id}`);
+			for (const { previous, current } of data) {
+				keys.push(`study-program:${current?.id ?? previous?.id}`);
 			}
 		}
 

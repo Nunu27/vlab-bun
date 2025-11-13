@@ -13,14 +13,14 @@ if (command === "seed") {
 		logger.error({ error }, "Seeding failed");
 		process.exit(1);
 	}
-} else if (command) {
+} else if (command && !command.endsWith("vlab")) {
 	logger.error(`Unknown command: ${command}`);
 	logger.info("Available commands: seed");
 	process.exit(1);
 }
 
 import { inProduction } from "./env";
-import { startServer } from "./server";
+import { startServer } from "./services/server";
 
 await startServer();
 

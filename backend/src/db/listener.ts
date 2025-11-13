@@ -1,5 +1,11 @@
 import env from "@backend/env";
 import logger from "@backend/services/logger";
+import type {
+	BulkListenerCallback,
+	ListenerCallback,
+	ListenerEntry,
+	Operations
+} from "@backend/types/listener";
 import { md5 } from "@backend/utils/crypto";
 import type { ExtractTablesWithRelations, InferSelectModel } from "drizzle-orm";
 import { toSnakeCase } from "drizzle-orm/casing";
@@ -18,37 +24,16 @@ const BATCH_SIZE = Math.max(1, Number(env.BATCH_SIZE ?? 64));
 const DEBOUNCE_MS = Math.max(0, Number(env.DEBOUNCE_MS ?? 100));
 const MAX_BATCH_WAIT_MS = Math.max(0, Number(env.MAX_BATCH_WAIT_MS ?? 500));
 
-type Operations = "INSERT" | "UPDATE" | "DELETE";
-type ListenerCallback<
-	T extends PgTable,
-	K extends keyof InferSelectModel<T> = keyof InferSelectModel<T>
-> = (event: {
-	op: Operations;
-	table: string;
-	data: { [P in K]: InferSelectModel<T>[P] };
-}) => Promise<void>;
-
-type BulkListenerCallback<
-	T extends PgTable,
-	K extends keyof InferSelectModel<T> = keyof InferSelectModel<T>
-> = (event: {
-	op: Operations;
-	table: string;
-	data: Array<{ [P in K]: InferSelectModel<T>[P] }>;
-}) => Promise<void>;
-
-type ListenerEntry = {
-	columns: Set<string>;
-	events: Set<Operations>;
-	bulk: boolean;
-	listener: ListenerCallback<any, any> | BulkListenerCallback<any, any>;
-};
-
 const registry = new Map<string, ListenerEntry[]>();
 const batchQueue = new Map<
 	string,
 	{
-		items: Array<{ op: Operations; table: string; data: any }>;
+		items: Array<{
+			op: Operations;
+			table: string;
+			previous: any;
+			current: any;
+		}>;
 		timer: NodeJS.Timeout | null;
 		firstReceivedAt: number;
 	}
@@ -115,13 +100,25 @@ const processBatch = async (channel: string) => {
 				const results = await Promise.allSettled(
 					chunk.map(({ listener, columns }) => {
 						const bulkData = opItems.map((item) => {
-							const filteredData = Object.keys(item.data).reduce((acc, key) => {
-								if (columns.has(key)) {
-									acc[key] = item.data[key];
-								}
-								return acc;
-							}, {} as any);
-							return filteredData;
+							const filteredPrevious = item.previous
+								? Object.keys(item.previous).reduce((acc, key) => {
+										if (columns.has(key)) {
+											acc[key] = item.previous[key];
+										}
+										return acc;
+									}, {} as any)
+								: null;
+
+							const filteredCurrent = item.current
+								? Object.keys(item.current).reduce((acc, key) => {
+										if (columns.has(key)) {
+											acc[key] = item.current[key];
+										}
+										return acc;
+									}, {} as any)
+								: null;
+
+							return { previous: filteredPrevious, current: filteredCurrent };
 						});
 
 						return (listener as BulkListenerCallback<any, any>)({
@@ -150,19 +147,31 @@ const processBatch = async (channel: string) => {
 					chunk.map(({ listener, columns }) =>
 						Promise.all(
 							opItems.map((item) => {
-								const filteredData = Object.keys(item.data).reduce(
-									(acc, key) => {
-										if (columns.has(key)) {
-											acc[key] = item.data[key];
-										}
-										return acc;
-									},
-									{} as any
-								);
+								const filteredPrevious = item.previous
+									? Object.keys(item.previous).reduce((acc, key) => {
+											if (columns.has(key)) {
+												acc[key] = item.previous[key];
+											}
+											return acc;
+										}, {} as any)
+									: null;
+
+								const filteredCurrent = item.current
+									? Object.keys(item.current).reduce((acc, key) => {
+											if (columns.has(key)) {
+												acc[key] = item.current[key];
+											}
+											return acc;
+										}, {} as any)
+									: null;
 
 								return (listener as ListenerCallback<any, any>)({
-									...item,
-									data: filteredData
+									op: item.op,
+									table: item.table,
+									data: {
+										previous: filteredPrevious,
+										current: filteredCurrent
+									}
 								});
 							})
 						)
@@ -211,7 +220,11 @@ const scheduleBatchProcessing = (channel: string) => {
 client.on("notification", async ({ channel, payload }) => {
 	if (!payload || !registry.has(channel)) return;
 
-	let parsedPayload: { op: Operations; table: string; data: any };
+	let parsedPayload: {
+		op: Operations;
+		table: string;
+		data: Array<{ previous: any; current: any }>;
+	};
 	try {
 		parsedPayload = JSON.parse(payload);
 	} catch (error) {
@@ -234,7 +247,8 @@ client.on("notification", async ({ channel, payload }) => {
 			batch.items.push({
 				op: parsedPayload.op,
 				table: parsedPayload.table,
-				data: rowData
+				previous: rowData.previous || null,
+				current: rowData.current || null
 			});
 		});
 	}
@@ -245,15 +259,16 @@ client.on("notification", async ({ channel, payload }) => {
 export const addDBListener = <
 	TEntity extends keyof TSchema,
 	TTable extends TFullSchema[TEntity],
-	K extends keyof InferSelectModel<TTable>,
+	TKeys extends keyof InferSelectModel<TTable>,
+	TOps extends Array<Operations> = ["INSERT", "UPDATE", "DELETE"],
 	Bulk extends boolean = false
 >(
 	entity: TEntity,
-	columns: K[],
+	columns: TKeys[],
 	listener: Bulk extends false
-		? ListenerCallback<TTable, K>
-		: BulkListenerCallback<TTable, K>,
-	opts?: { ops?: Array<Operations>; bulk?: Bulk }
+		? ListenerCallback<TTable, TOps[number], TKeys>
+		: BulkListenerCallback<TTable, TOps[number], TKeys>,
+	opts?: { ops?: TOps; bulk?: Bulk }
 ) => {
 	const table = db._.fullSchema[entity];
 	const channel = getChannelForTable(table);
@@ -264,20 +279,23 @@ export const addDBListener = <
 		columns: new Set(normalizedCols),
 		events: new Set(opts?.ops ?? ["INSERT", "UPDATE", "DELETE"]),
 		bulk: opts?.bulk ?? false,
-		listener
+		listener: listener as any
 	});
 
 	registry.set(channel, listeners);
 };
 
 export const removeDBListener = <
-	T extends PgTable,
-	K extends keyof InferSelectModel<T>
+	TTable extends PgTable,
+	TKeys extends keyof InferSelectModel<TTable>,
+	TOps extends Array<Operations> = ["INSERT", "UPDATE", "DELETE"]
 >(
-	table: T,
-	columns: K[],
-	listener: ListenerCallback<T, K> | BulkListenerCallback<T, K>,
-	opts?: { ops?: Array<Operations>; bulk?: boolean }
+	table: TTable,
+	columns: TKeys[],
+	listener:
+		| ListenerCallback<TTable, TOps[number], TKeys>
+		| BulkListenerCallback<TTable, TOps[number], TKeys>,
+	opts?: { ops?: TOps; bulk?: boolean }
 ) => {
 	const channel = getChannelForTable(table);
 	const normalizedCols = normalizeColumns(table, columns);
@@ -314,24 +332,45 @@ function buildFunctionSQL(channel: string, columns: string[]): string {
 		payload jsonb;
 		data_array jsonb;
 		BEGIN
-		-- For statement-level triggers, we aggregate all changed rows
+		-- For statement-level triggers, we create an array of objects with previous and current
 		IF TG_OP = 'DELETE' THEN
 			data_array := (
 				SELECT jsonb_agg(
-					(SELECT jsonb_object_agg(key, value)
-					 FROM jsonb_each(to_jsonb(t))
-					 WHERE key = ANY(ARRAY[${colsArray}]::text[]))
+					jsonb_build_object(
+						'previous', (SELECT jsonb_object_agg(key, value)
+									 FROM jsonb_each(to_jsonb(t))
+									 WHERE key = ANY(ARRAY[${colsArray}]::text[])),
+						'current', NULL
+					)
 				)
 				FROM old_table t
 			);
-		ELSE
+		ELSIF TG_OP = 'INSERT' THEN
 			data_array := (
 				SELECT jsonb_agg(
-					(SELECT jsonb_object_agg(key, value)
-					 FROM jsonb_each(to_jsonb(t))
-					 WHERE key = ANY(ARRAY[${colsArray}]::text[]))
+					jsonb_build_object(
+						'previous', NULL,
+						'current', (SELECT jsonb_object_agg(key, value)
+									FROM jsonb_each(to_jsonb(t))
+									WHERE key = ANY(ARRAY[${colsArray}]::text[]))
+					)
 				)
 				FROM new_table t
+			);
+		ELSE -- UPDATE
+			data_array := (
+				SELECT jsonb_agg(
+					jsonb_build_object(
+						'previous', (SELECT jsonb_object_agg(key, value)
+									 FROM jsonb_each(to_jsonb(old_t))
+									 WHERE key = ANY(ARRAY[${colsArray}]::text[])),
+						'current', (SELECT jsonb_object_agg(key, value)
+									FROM jsonb_each(to_jsonb(new_t))
+									WHERE key = ANY(ARRAY[${colsArray}]::text[]))
+					)
+				)
+				FROM old_table old_t
+				JOIN new_table new_t ON old_t.id = new_t.id
 			);
 		END IF;
 

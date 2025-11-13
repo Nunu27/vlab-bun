@@ -2,15 +2,10 @@ import env from "@backend/env";
 import logger from "@backend/services/logger";
 import redis from "@backend/services/redis";
 import { Session } from "@backend/types/session";
+import type { CacheOptions } from "@backend/types/caching";
 import { Elysia, status } from "elysia";
 
 const PREFIX = "cache:";
-
-export interface CacheOptions {
-	key?: string;
-	personalized?: boolean;
-	ttl?: number;
-}
 
 const buildCacheKey = (
 	key: string | undefined,

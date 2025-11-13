@@ -22,8 +22,12 @@ addDBListener(
 		const roles = new Set<string>();
 		const keys: string[] = [];
 
-		for (const { id, role } of data) {
-			roles.add(role);
+		for (const { previous, current } of data) {
+			const role = current?.role ?? previous?.role;
+			const id = current?.id ?? previous?.id;
+
+			roles.add(role!);
+
 			if (op !== "INSERT") {
 				keys.push(`${role}:${id}`);
 			}

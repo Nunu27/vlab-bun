@@ -13,7 +13,6 @@ export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
-		body: paginator.schema,
 		detail: {
 			description: "Get paginated admins data"
 		}

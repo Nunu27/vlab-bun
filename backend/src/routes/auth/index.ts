@@ -21,7 +21,11 @@ addDBListener(
 	"users",
 	["id"],
 	async ({ data }) => {
-		await deleteCache(...data.map(({ id }) => `me:${id}`));
+		await deleteCache(
+			...data.map(
+				({ previous, current }) => `me:${current?.id ?? previous?.id}`
+			)
+		);
 	},
 	{
 		bulk: true,

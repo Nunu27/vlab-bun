@@ -15,8 +15,8 @@ addDBListener(
 		const keys = ["department:pagination:*"];
 
 		if (op !== "INSERT") {
-			for (const { id } of data) {
-				keys.push(`department:${id}`);
+			for (const { previous, current } of data) {
+				keys.push(`department:${current?.id ?? previous?.id}`);
 			}
 		}
 

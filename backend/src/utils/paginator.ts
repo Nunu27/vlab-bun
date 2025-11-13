@@ -28,121 +28,43 @@ import { PgTable } from "drizzle-orm/pg-core";
 import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query";
 import { createSelectSchema } from "drizzle-typebox";
 import { t, type TSchema } from "elysia";
+import { FilterOp, SortOrder } from "@backend/types/paginator";
 
 // =================================================================
 // SECTION: Constants and Core Types
 // =================================================================
 
-export const SortOrder = {
-	ASC: "asc",
-	DESC: "desc"
-} as const;
-export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+export { SortOrder, FilterOp };
 
-export const FilterOp = {
-	EQ: "eq",
-	NE: "ne",
-	GT: "gt",
-	GTE: "gte",
-	LT: "lt",
-	LTE: "lte",
-	LIKE: "like",
-	ILIKE: "ilike",
-	NLIKE: "nlike",
-	BT: "bt",
-	NB: "nb"
-} as const;
-export type FilterOp = (typeof FilterOp)[keyof typeof FilterOp];
-
-const RANGE_OPS = [FilterOp.BT, FilterOp.NB] as const;
+const RANGE_OPS = ["bt", "nb"] as const;
 type RangeOp = (typeof RANGE_OPS)[number];
 
 const COLUMN_FILTER_OPS = {
-	string: [
-		FilterOp.EQ,
-		FilterOp.NE,
-		FilterOp.LIKE,
-		FilterOp.ILIKE,
-		FilterOp.NLIKE
-	],
-	number: [
-		FilterOp.EQ,
-		FilterOp.NE,
-		FilterOp.GT,
-		FilterOp.GTE,
-		FilterOp.LT,
-		FilterOp.LTE,
-		FilterOp.BT,
-		FilterOp.NB
-	],
-	bigint: [
-		FilterOp.EQ,
-		FilterOp.NE,
-		FilterOp.GT,
-		FilterOp.GTE,
-		FilterOp.LT,
-		FilterOp.LTE,
-		FilterOp.BT,
-		FilterOp.NB
-	],
-	date: [
-		FilterOp.EQ,
-		FilterOp.NE,
-		FilterOp.GT,
-		FilterOp.GTE,
-		FilterOp.LT,
-		FilterOp.LTE,
-		FilterOp.BT,
-		FilterOp.NB
-	],
-	localTime: [
-		FilterOp.EQ,
-		FilterOp.NE,
-		FilterOp.GT,
-		FilterOp.GTE,
-		FilterOp.LT,
-		FilterOp.LTE,
-		FilterOp.BT,
-		FilterOp.NB
-	],
-	localDate: [
-		FilterOp.EQ,
-		FilterOp.NE,
-		FilterOp.GT,
-		FilterOp.GTE,
-		FilterOp.LT,
-		FilterOp.LTE,
-		FilterOp.BT,
-		FilterOp.NB
-	],
-	localDateTime: [
-		FilterOp.EQ,
-		FilterOp.NE,
-		FilterOp.GT,
-		FilterOp.GTE,
-		FilterOp.LT,
-		FilterOp.LTE,
-		FilterOp.BT,
-		FilterOp.NB
-	],
-	boolean: [FilterOp.EQ, FilterOp.NE]
+	string: ["eq", "ne", "like", "ilike", "nlike"],
+	number: ["eq", "ne", "gt", "gte", "lt", "lte", "bt", "nb"],
+	bigint: ["eq", "ne", "gt", "gte", "lt", "lte", "bt", "nb"],
+	date: ["eq", "ne", "gt", "gte", "lt", "lte", "bt", "nb"],
+	localTime: ["eq", "ne", "gt", "gte", "lt", "lte", "bt", "nb"],
+	localDate: ["eq", "ne", "gt", "gte", "lt", "lte", "bt", "nb"],
+	localDateTime: ["eq", "ne", "gt", "gte", "lt", "lte", "bt", "nb"],
+	boolean: ["eq", "ne"]
 } as const;
 
 const filterMap: Record<FilterOp, (col: any, val: any) => SQL | null> = {
-	[FilterOp.EQ]: (col, val) => eq(col, val),
-	[FilterOp.NE]: (col, val) => ne(col, val),
-	[FilterOp.GT]: (col, val) => gt(col, val),
-	[FilterOp.GTE]: (col, val) => gte(col, val),
-	[FilterOp.LT]: (col, val) => lt(col, val),
-	[FilterOp.LTE]: (col, val) => lte(col, val),
-	[FilterOp.LIKE]: (col, val) => like(col, `%${val}%`),
-	[FilterOp.ILIKE]: (col, val) => ilike(col, `%${val}%`),
-	[FilterOp.NLIKE]: (col, val) => notLike(col, `%${val}%`),
-	[FilterOp.BT]: (col, val) =>
+	eq: (col, val) => eq(col, val),
+	ne: (col, val) => ne(col, val),
+	gt: (col, val) => gt(col, val),
+	gte: (col, val) => gte(col, val),
+	lt: (col, val) => lt(col, val),
+	lte: (col, val) => lte(col, val),
+	like: (col, val) => like(col, `%${val}%`),
+	ilike: (col, val) => ilike(col, `%${val}%`),
+	nlike: (col, val) => notLike(col, `%${val}%`),
+	bt: (col, val) =>
 		Array.isArray(val) && val.length === 2
 			? between(col, val[0], val[1])
 			: null,
-	[FilterOp.NB]: (col, val) =>
+	nb: (col, val) =>
 		Array.isArray(val) && val.length === 2
 			? notBetween(col, val[0], val[1])
 			: null
@@ -228,7 +150,7 @@ const buildPaginationSchema = <TTable extends PgTable>(
 	) as ColumnKeys<TTable>[];
 
 	// Filter columns based on usableColumns if provided
-	const columnNames = usableColumns
+	const columnNames: string[] = usableColumns
 		? allColumnNames.filter((name) => usableColumns.includes(name))
 		: allColumnNames;
 
@@ -282,10 +204,6 @@ const buildPaginationSchema = <TTable extends PgTable>(
 		return generatedSchemas;
 	});
 
-	const columnsEnum = Object.fromEntries(
-		columnNames.map((name) => [name, name])
-	);
-
 	// TypeBox's `t.Union` requires at least two items in its array.
 	const filterSchema =
 		filterItems.length === 0
@@ -297,8 +215,8 @@ const buildPaginationSchema = <TTable extends PgTable>(
 	const baseSchema = {
 		page: t.Integer({ default: 1, minimum: 1 }),
 		perPage: t.Integer({ default: 10, minimum: 1, maximum: 100 }),
-		sortBy: t.Optional(t.Enum(columnsEnum)),
-		sortOrder: t.Optional(t.Enum(SortOrder, { default: SortOrder.ASC })),
+		sortBy: t.Optional(t.UnionEnum(columnNames as [string, ...string[]])),
+		sortOrder: t.Optional(t.UnionEnum(SortOrder, { default: "asc" })),
 		filters: t.Optional(filterSchema)
 	};
 
@@ -468,7 +386,7 @@ export const createPaginator = <
 			...options,
 			where,
 			orderBy: sortBy
-				? (sortOrder === SortOrder.DESC ? desc : asc)(columns[sortBy])
+				? (sortOrder === "desc" ? desc : asc)(columns[sortBy])
 				: undefined,
 			limit: perPage,
 			offset

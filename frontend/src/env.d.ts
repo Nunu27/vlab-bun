@@ -12,7 +12,7 @@ declare module '*.svg?react' {
 }
 
 declare module '@tanstack/table-core' {
-  interface ColumnMeta<TData extends RowData, TValue> {
+  interface ColumnMeta {
     label?: string;
     center?: boolean;
     isGrow?: boolean;

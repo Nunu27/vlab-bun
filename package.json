@@ -15,5 +15,9 @@
     "backend": "bun run --filter vlab-backend"
   },
   "devDependencies": {},
-  "peerDependencies": {}
+  "peerDependencies": {},
+  "trustedDependencies": [
+    "core-js",
+    "protobufjs"
+  ]
 }

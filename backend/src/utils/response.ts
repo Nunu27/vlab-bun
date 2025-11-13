@@ -21,18 +21,21 @@ export const success = <
 			: { success: true; data: TData; message: TMessage };
 };
 
-export const failure = <TErrors extends unknown = undefined>({
+export const failure = <
+	TMessage extends string,
+	TErrors extends unknown = undefined
+>({
 	errors,
 	message
 }: {
 	errors?: TErrors[];
-	message: string;
+	message: TMessage;
 }) => {
 	return {
 		success: false as const,
 		message,
 		...(errors !== undefined && { errors })
 	} as TErrors extends undefined
-		? { success: false; message: string }
-		: { success: false; message: string; errors: TErrors[] };
+		? { success: false; message: TMessage }
+		: { success: false; message: TMessage; errors: TErrors[] };
 };
