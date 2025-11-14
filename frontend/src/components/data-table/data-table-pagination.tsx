@@ -20,7 +20,7 @@ import {
 import type { PageInfo } from '@frontend/types/pagination';
 
 type DataTablePaginationProps = {
-  pageInfo: PageInfo;
+  pageInfo?: PageInfo;
   isLoading?: boolean;
   pageSizeOptions?: number[];
   onPageChange: (page: number) => void;
@@ -34,7 +34,7 @@ export function DataTablePagination({
   onPageChange,
   onPageSizeChange,
 }: DataTablePaginationProps) {
-  const { page, perPage, total, totalPages } = pageInfo;
+  const { page = 1, perPage = 10, total = 0, totalPages = 0 } = pageInfo ?? {};
 
   const from = (page - 1) * perPage + 1;
   const to = Math.min(page * perPage, total);
@@ -74,7 +74,7 @@ export function DataTablePagination({
       <Pagination>
         <PaginationContent>
           <PaginationItem className="text-sm text-muted-foreground">
-            {from}-{to} of {total}
+            {from || '?'}-{to || '?'} of {total || '?'}
           </PaginationItem>
 
           <PaginationItem>

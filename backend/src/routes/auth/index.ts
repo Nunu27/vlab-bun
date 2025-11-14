@@ -1,5 +1,3 @@
-import { addDBListener } from "@backend/db/listener";
-import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 
 import cas from "./cas";
@@ -16,21 +14,5 @@ const authRouter = createRouter({
 	.use(logout)
 	.use(changePassword)
 	.use(me);
-
-addDBListener(
-	"users",
-	["id"],
-	async ({ data }) => {
-		await deleteCache(
-			...data.map(
-				({ previous, current }) => `me:${current?.id ?? previous?.id}`
-			)
-		);
-	},
-	{
-		bulk: true,
-		ops: ["UPDATE", "DELETE"]
-	}
-);
 
 export default authRouter;

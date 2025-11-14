@@ -1,4 +1,5 @@
 import { users } from "@backend/db/schema/auth";
+import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { CreateAdminRequest } from "./schema";
@@ -15,6 +16,7 @@ export default createRouter().post(
 				passwordHash: await Bun.password.hash(body.password)
 			})
 			.returning({ id: users.id });
+		await deleteCache("admin:pagination:*");
 
 		return success({ message: "Admin created", data: { id: user.id } });
 	},

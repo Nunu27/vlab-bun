@@ -1,4 +1,5 @@
 import { students, users } from "@backend/db/schema/auth";
+import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { CreateStudentRequest } from "./schema";
@@ -26,6 +27,7 @@ export default createRouter().post(
 
 			return user.id;
 		});
+		await deleteCache("student:pagination:*");
 
 		return success({ message: "Student created", data: { id: userId } });
 	},

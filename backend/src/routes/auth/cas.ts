@@ -1,5 +1,6 @@
 import { students, users } from "@backend/db/schema/auth";
 import env from "@backend/env";
+import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { ToastType } from "@backend/types/toast";
 import { compile } from "elysia/type-system/utils";
@@ -87,6 +88,8 @@ export default createRouter().get(
 				id: userId,
 				role: "student"
 			};
+
+			await deleteCache("student:pagination:*");
 		}
 
 		await redis.set(sessionId, user, SESSION_TTL);

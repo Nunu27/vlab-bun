@@ -1,4 +1,5 @@
 import { studyPrograms } from "@backend/db/schema/auth";
+import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { CreateStudyProgramRequest } from "./schema";
@@ -10,6 +11,7 @@ export default createRouter().post(
 			.insert(studyPrograms)
 			.values(body)
 			.returning({ id: studyPrograms.id });
+		await deleteCache("study-program:pagination:*");
 
 		return success({
 			message: "Study program created",

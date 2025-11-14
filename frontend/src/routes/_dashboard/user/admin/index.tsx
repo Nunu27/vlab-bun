@@ -1,6 +1,5 @@
 import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { Button } from '@frontend/components/ui/button';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import type {
@@ -9,8 +8,8 @@ import type {
   ExtractPaginationData,
 } from '@frontend/lib/api-types';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { PlusIcon } from 'lucide-react';
+import { CreateAdminModal } from '@frontend/routes/_dashboard/user/admin/-module/components/modals/create-admin-modal';
+import { createFileRoute } from '@tanstack/react-router';
 import { adminColumns } from './-module/columns';
 
 const pagination = api.user.admin.pagination;
@@ -34,7 +33,7 @@ function RouteComponent() {
     Fields,
     Filters
   >({
-    queryKey: (params) => ['admin', 'pagination', params] as const,
+    queryKey: (params) => ['admin', 'pagination', params],
     queryFn: pagination.post,
   });
 
@@ -43,13 +42,7 @@ function RouteComponent() {
       <PageHeading
         title="Admins"
         subtitle="Manage administrative users with elevated privileges."
-        actions={
-          <Button size="lg" asChild>
-            <Link to="/">
-              <PlusIcon /> Create Admin
-            </Link>
-          </Button>
-        }
+        actions={<CreateAdminModal />}
       />
       <DataTable
         columns={adminColumns}

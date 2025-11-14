@@ -1,10 +1,10 @@
 import { Button } from '@frontend/components/ui/button';
 import { Input } from '@frontend/components/ui/input';
 import { MultiComboBox } from '@frontend/components/ui/multi-combobox';
-import { RefreshCwIcon, LayoutListIcon } from 'lucide-react';
 import { type Table as TanStackTable } from '@tanstack/react-table';
-import { debounce } from '@frontend/lib/utils';
+import { LayoutListIcon, RefreshCwIcon } from 'lucide-react';
 import { useMemo } from 'react';
+import { useDebounceCallback } from 'usehooks-ts';
 
 type DataTableToolbarProps<TData> = {
   table: TanStackTable<TData>;
@@ -25,13 +25,7 @@ export function DataTableToolbar<TData>({
   onRefresh,
   filters,
 }: DataTableToolbarProps<TData>) {
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((value: string) => {
-        onSearchChange(value);
-      }, 500),
-    [onSearchChange],
-  );
+  const debouncedSearch = useDebounceCallback(onSearchChange, 500);
 
   const hideableColumns = useMemo(
     () =>

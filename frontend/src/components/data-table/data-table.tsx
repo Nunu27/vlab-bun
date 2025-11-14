@@ -37,7 +37,7 @@ import { DataTableToolbar } from './data-table-toolbar';
 export type DataTableProps<TData, TFields extends string> = {
   columns: ColumnDef<TData>[];
   data: TData[];
-  pageInfo: PageInfo;
+  pageInfo?: PageInfo;
   isLoading?: boolean;
   sortBy?: TFields;
   sortOrder?: SortOrder;
@@ -91,11 +91,11 @@ export function DataTable<TData, TFields extends string>({
       columnVisibility,
       columnFilters,
       pagination: {
-        pageIndex: pageInfo.page - 1,
-        pageSize: pageInfo.perPage,
+        pageIndex: (pageInfo?.page ?? 1) - 1,
+        pageSize: pageInfo?.perPage ?? 10,
       },
     },
-    pageCount: pageInfo.totalPages,
+    pageCount: pageInfo?.totalPages,
     manualPagination: true,
     manualSorting: true,
     enableMultiSort: false,

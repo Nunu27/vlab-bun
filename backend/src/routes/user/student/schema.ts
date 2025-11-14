@@ -2,7 +2,7 @@ import { degreeLevelEnum } from "@backend/db/schema/auth";
 import { t } from "elysia";
 
 export const CreateStudentRequest = t.Object({
-	name: t.String(),
+	name: t.String({ minLength: 1 }),
 	email: t.String({ format: "email" }),
 	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
 	year: t.Integer({ min: 0 }),
@@ -15,7 +15,7 @@ export const CreateStudentRequest = t.Object({
 });
 
 export const UpdateStudentRequest = t.Object({
-	name: t.String(),
+	name: t.String({ minLength: 1 }),
 	email: t.String({ format: "email" }),
 	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
 	year: t.Integer({ min: 0 }),

@@ -3,7 +3,6 @@ import {
   DataTableFilterCombobox,
 } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { Button } from '@frontend/components/ui/button';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import type {
@@ -12,10 +11,10 @@ import type {
   ExtractPaginationData,
 } from '@frontend/lib/api-types';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { PlusIcon } from 'lucide-react';
+import { createFileRoute } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { studyProgramColumns } from './-module/columns';
+import { CreateStudyProgramModal } from './-module/components/modals/create-study-program-modal';
 
 const pagination = api['study-program'].pagination;
 
@@ -72,13 +71,7 @@ function RouteComponent() {
       <PageHeading
         title="Study Programs"
         subtitle="Manage study programs offered in the institution."
-        actions={
-          <Button size="lg" asChild>
-            <Link to="/">
-              <PlusIcon /> Add Study Program
-            </Link>
-          </Button>
-        }
+        actions={<CreateStudyProgramModal />}
       />
       <DataTable
         columns={studyProgramColumns}

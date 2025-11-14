@@ -1,15 +1,7 @@
-import { Button } from '@frontend/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@frontend/components/ui/dropdown-menu';
 import type api from '@frontend/lib/api';
 import type { ExtractPaginationData } from '@frontend/lib/api-types';
 import { type ColumnDef } from '@tanstack/react-table';
-import { MoreVerticalIcon } from 'lucide-react';
+import { StudyProgramActionsCell } from './components/study-program-actions-cell';
 
 type Item = ExtractPaginationData<(typeof api)['study-program']['pagination']>;
 
@@ -54,27 +46,6 @@ export const studyProgramColumns: ColumnDef<Item>[] = [
     meta: {
       center: true,
     },
-    cell: () => (
-      <div className="flex justify-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <MoreVerticalIcon />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    ),
+    cell: ({ row }) => <StudyProgramActionsCell studyProgram={row.original} />,
   },
 ];

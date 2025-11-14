@@ -1,5 +1,3 @@
-import { addDBListener } from "@backend/db/listener";
-import { deleteCache } from "@backend/middlewares/caching";
 import { Elysia } from "elysia";
 
 import create from "./create";
@@ -7,23 +5,6 @@ import _delete from "./delete";
 import detail from "./detail";
 import pagination from "./pagination";
 import update from "./update";
-
-addDBListener(
-	"departments",
-	["id"],
-	async ({ op, data }) => {
-		const keys = ["department:pagination:*"];
-
-		if (op !== "INSERT") {
-			for (const { previous, current } of data) {
-				keys.push(`department:${current?.id ?? previous?.id}`);
-			}
-		}
-
-		await deleteCache(...keys);
-	},
-	{ bulk: true }
-);
 
 const departmentRouter = new Elysia({
 	detail: { tags: ["Department"] }

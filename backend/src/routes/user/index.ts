@@ -1,5 +1,3 @@
-import { addDBListener } from "@backend/db/listener";
-import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 
 import adminRouter from "./admin";
@@ -14,30 +12,5 @@ const userRouter = createRouter({
 	.group("/student", (app) => app.use(studentRouter))
 	.group("/lecturer", (app) => app.use(lecturerRouter))
 	.group("/admin", (app) => app.use(adminRouter));
-
-addDBListener(
-	"users",
-	["id", "role"],
-	async ({ op, data }) => {
-		const roles = new Set<string>();
-		const keys: string[] = [];
-
-		for (const { previous, current } of data) {
-			const role = current?.role ?? previous?.role;
-			const id = current?.id ?? previous?.id;
-
-			roles.add(role!);
-
-			if (op !== "INSERT") {
-				keys.push(`${role}:${id}`);
-			}
-		}
-
-		keys.push(...Array.from(roles, (role) => `${role}:pagination:*`));
-
-		await deleteCache(...keys);
-	},
-	{ bulk: true }
-);
 
 export default userRouter;

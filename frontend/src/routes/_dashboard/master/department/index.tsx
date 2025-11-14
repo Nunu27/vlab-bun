@@ -1,11 +1,10 @@
 import { DataTable } from '@frontend/components/data-table';
+import { CreateDepartmentModal } from '@frontend/routes/_dashboard/master/department/-module/components/modals/create-department-modal';
 import { PageHeading } from '@frontend/components/page-heading';
-import { Button } from '@frontend/components/ui/button';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { PlusIcon } from 'lucide-react';
+import { createFileRoute } from '@tanstack/react-router';
 import { departmentColumns } from './-module/columns';
 import type {
   ExtractPaginationData,
@@ -43,13 +42,7 @@ function RouteComponent() {
       <PageHeading
         title="Departments"
         subtitle="Manage academic departments within the institution."
-        actions={
-          <Button size="lg" asChild>
-            <Link to="/">
-              <PlusIcon /> Add Department
-            </Link>
-          </Button>
-        }
+        actions={<CreateDepartmentModal />}
       />
       <DataTable
         columns={departmentColumns}

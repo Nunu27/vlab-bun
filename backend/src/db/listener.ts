@@ -394,19 +394,33 @@ function buildTriggerSQL(
 	table: string,
 	ops: Set<Operations>
 ): string {
-	const trigName = qIdent(trigNameFor(channel));
 	const fnName = qIdent(funcNameFor(channel));
 	const qualifiedTable = `${qIdent(schema)}.${qIdent(table)}`;
-	const events = [...ops].join(" OR ");
 
-	return `
+	let sql = "";
+
+	// Create a separate trigger for each operation since PostgreSQL doesn't support
+	// transition tables (OLD TABLE/NEW TABLE) with multiple events in one trigger
+	for (const op of ops) {
+		const trigName = qIdent(`${trigNameFor(channel)}_${op.toLowerCase()}`);
+		const referencing =
+			op === "INSERT"
+				? "REFERENCING NEW TABLE AS new_table"
+				: op === "DELETE"
+					? "REFERENCING OLD TABLE AS old_table"
+					: "REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table";
+
+		sql += `
         DROP TRIGGER IF EXISTS ${trigName} ON ${qualifiedTable};
         CREATE TRIGGER ${trigName}
-        AFTER ${events} ON ${qualifiedTable}
-        REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table
+        AFTER ${op} ON ${qualifiedTable}
+        ${referencing}
         FOR EACH STATEMENT
         EXECUTE FUNCTION ${fnName}();
     `;
+	}
+
+	return sql;
 }
 
 export const syncDBListeners = async () => {
@@ -440,12 +454,32 @@ export const syncDBListeners = async () => {
 	const desiredChannels = new Set(desiredListeners.map((d) => d.channel));
 	const listenSQL = _getListenSQL(currentChannels, desiredChannels);
 
-	const desiredTriggers = new Map(
-		desiredListeners.map((d) => {
-			const key = `${d.schema}.${d.table}:${trigNameFor(d.channel)}`;
-			return [key, d];
-		})
-	);
+	const desiredTriggers = new Map<
+		string,
+		{
+			channel: string;
+			schema: string;
+			table: string;
+			cols: string[];
+			events: Set<Operations>;
+		}
+	>();
+
+	// Create entries for each operation separately since we now have one trigger per operation
+	for (const d of desiredListeners) {
+		for (const op of d.events) {
+			const trigName = `${trigNameFor(d.channel)}_${op.toLowerCase()}`;
+			const key = `${d.schema}.${d.table}:${trigName}`;
+			desiredTriggers.set(key, {
+				channel: d.channel,
+				schema: d.schema,
+				table: d.table,
+				cols: d.cols,
+				events: new Set([op])
+			});
+		}
+	}
+
 	const { addSQL, dropSQL } = _getTriggerDiffSQL(
 		existingTriggers,
 		desiredTriggers
@@ -538,22 +572,67 @@ function _getTriggerDiffSQL(
 	let addSQL = "";
 	let dropSQL = "";
 
+	// Track which channels are still in use to avoid dropping their functions
+	const channelsInUse = new Set<string>();
+	for (const d of desired.values()) {
+		channelsInUse.add(d.channel);
+	}
+
+	// Track which channels were in use before (from existing triggers)
+	const previousChannels = new Set<string>();
+	for (const key of existing) {
+		const [schemaTable, tgname] = key.split(":");
+		// Extract channel hash from trigger name (remove operation suffix if present)
+		const baseTrigName = tgname.replace(/_(?:insert|update|delete)$/, "");
+		const channelHash = baseTrigName.substring(TRIGGER_PREFIX.length);
+		previousChannels.add(channelHash);
+	}
+
 	for (const key of existing) {
 		if (!desired.has(key)) {
 			const [schemaTable, tgname] = key.split(":");
 			const [schema, table] = schemaTable.split(".");
-			const fnName = `${FUNC_PREFIX}${tgname.substring(TRIGGER_PREFIX.length)}`;
 
 			dropSQL += `DROP TRIGGER IF EXISTS ${qIdent(tgname)} ON ${qIdent(
 				schema
 			)}.${qIdent(table)};\n`;
+		}
+	}
+
+	// Drop functions for channels that are no longer in use at all
+	for (const channelHash of previousChannels) {
+		const stillInUse = Array.from(channelsInUse).some((channel) => {
+			return funcNameFor(channel).includes(channelHash);
+		});
+
+		if (!stillInUse) {
+			const fnName = `${FUNC_PREFIX}${channelHash}`;
 			dropSQL += `DROP FUNCTION IF EXISTS ${qIdent(fnName)}();\n`;
 		}
 	}
 
+	// Group desired triggers by channel to create function only once per channel
+	const channelToTriggers = new Map<
+		string,
+		typeof desired extends Map<any, infer V> ? V[] : never
+	>();
 	for (const [key, d] of desired) {
-		if (!existing.has(key)) {
-			addSQL += buildFunctionSQL(d.channel, d.cols);
+		if (!channelToTriggers.has(d.channel)) {
+			channelToTriggers.set(d.channel, []);
+		}
+		channelToTriggers.get(d.channel)!.push(d);
+	}
+
+	const functionsCreated = new Set<string>();
+	for (const [key, d] of desired) {
+		const existingKey = Array.from(existing).find((k) => k === key);
+		if (!existingKey) {
+			// Create function once per channel
+			if (!functionsCreated.has(d.channel)) {
+				addSQL += buildFunctionSQL(d.channel, d.cols);
+				functionsCreated.add(d.channel);
+			}
+			// Create trigger (one per operation)
 			addSQL += buildTriggerSQL(d.channel, d.schema, d.table, d.events);
 		}
 	}

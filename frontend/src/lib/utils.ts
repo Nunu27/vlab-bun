@@ -50,9 +50,10 @@ export async function errorHandler<
     if (error) {
       if (error.status === 401) {
         await cookieStore.delete('session');
+        toast.error('Session expired');
         return redirect({ to: '/login' });
       }
-      throw new Error(getErrorMessageFromApi(error));
+      throw new Error(getErrorMessageFromApi(error.value));
     }
 
     if (showToast.onSuccess ?? true) {
@@ -69,23 +70,6 @@ export async function errorHandler<
       toast.error(getErrorMessage(error));
     }
   }
-}
-
-export function debounce<T extends (...args: unknown[]) => unknown>(
-  func: T,
-  wait: number,
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-
-  return function (...args: Parameters<T>) {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-
-    timeout = setTimeout(() => {
-      func(...args);
-    }, wait);
-  };
 }
 
 export function formatTimeAgo(date: Date | string): string {

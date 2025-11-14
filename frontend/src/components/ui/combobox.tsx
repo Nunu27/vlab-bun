@@ -65,10 +65,6 @@ export function ComboBox({
     return options.find((option) => option.value === value) || null;
   }, [options, value]);
 
-  React.useEffect(() => {
-    console.log('ComboBox options:', options, value, selectedOption);
-  }, [selectedOption]);
-
   const handleSelect = (currentValue: string) => {
     if (currentValue === value) {
       onChange?.(undefined);

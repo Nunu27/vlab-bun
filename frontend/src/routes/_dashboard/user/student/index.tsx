@@ -1,6 +1,6 @@
 import { DataTable } from '@frontend/components/data-table';
+import { CreateStudentModal } from '@frontend/routes/_dashboard/user/student/-module/components/modals/create-student-modal';
 import { PageHeading } from '@frontend/components/page-heading';
-import { Button } from '@frontend/components/ui/button';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import type {
@@ -9,8 +9,7 @@ import type {
   ExtractFilters,
 } from '@frontend/lib/api-types';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { PlusIcon } from 'lucide-react';
+import { createFileRoute } from '@tanstack/react-router';
 import { studentColumns } from './-module/columns';
 
 const pagination = api.user.student.pagination;
@@ -43,25 +42,12 @@ function RouteComponent() {
       <PageHeading
         title="Students"
         subtitle="Manage student accounts and information."
-        actions={
-          <Button size="lg" asChild>
-            <Link to="/">
-              <PlusIcon /> Create Student
-            </Link>
-          </Button>
-        }
+        actions={<CreateStudentModal />}
       />
       <DataTable
         columns={studentColumns}
         data={data?.items ?? []}
-        pageInfo={
-          data?.pageInfo ?? {
-            page: 1,
-            perPage: 10,
-            total: 0,
-            totalPages: 0,
-          }
-        }
+        pageInfo={data?.pageInfo}
         isLoading={isFetching}
         sortBy={params.sortBy}
         sortOrder={params.sortOrder}

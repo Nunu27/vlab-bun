@@ -1,6 +1,6 @@
 import { DataTable } from '@frontend/components/data-table';
+import { CreateLecturerModal } from '@frontend/routes/_dashboard/user/lecturer/-module/components/modals/create-lecturer-modal';
 import { PageHeading } from '@frontend/components/page-heading';
-import { Button } from '@frontend/components/ui/button';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import type {
@@ -9,8 +9,7 @@ import type {
   ExtractPaginationData,
 } from '@frontend/lib/api-types';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { PlusIcon } from 'lucide-react';
+import { createFileRoute } from '@tanstack/react-router';
 import { lecturerColumns } from './-module/columns';
 
 const pagination = api.user.lecturer.pagination;
@@ -43,13 +42,7 @@ function RouteComponent() {
       <PageHeading
         title="Lecturers"
         subtitle="Manage lecturer accounts and information."
-        actions={
-          <Button size="lg" asChild>
-            <Link to="/">
-              <PlusIcon /> Create Lecturer
-            </Link>
-          </Button>
-        }
+        actions={<CreateLecturerModal />}
       />
       <DataTable
         columns={lecturerColumns}

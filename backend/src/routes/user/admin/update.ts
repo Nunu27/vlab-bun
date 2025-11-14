@@ -1,4 +1,5 @@
 import { users } from "@backend/db/schema/auth";
+import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
@@ -16,6 +17,8 @@ export default createRouter().put(
 		if (rowCount === 0) {
 			return status(404, failure({ message: "Admin not found" }));
 		}
+
+		await deleteCache("admin:pagination:*", `admin:${id}`);
 
 		return { message: "Admin updated" };
 	},

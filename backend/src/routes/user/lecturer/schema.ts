@@ -1,7 +1,7 @@
 import { t } from "elysia";
 
 export const CreateLecturerRequest = t.Object({
-	name: t.String(),
+	name: t.String({ minLength: 1 }),
 	email: t.String({ format: "email" }),
 	nip: t.String({ minLength: 1, maxLength: 100, format: "numeric" }),
 	password: t.String({
@@ -11,7 +11,7 @@ export const CreateLecturerRequest = t.Object({
 });
 
 export const UpdateLecturerRequest = t.Object({
-	name: t.String(),
+	name: t.String({ minLength: 1 }),
 	email: t.String({ format: "email" }),
 	nip: t.String({ minLength: 1, maxLength: 100, format: "numeric" })
 });

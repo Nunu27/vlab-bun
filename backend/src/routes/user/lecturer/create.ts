@@ -1,4 +1,5 @@
 import { lecturers, users } from "@backend/db/schema/auth";
+import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
 import { CreateLecturerRequest } from "./schema";
@@ -22,6 +23,7 @@ export default createRouter().post(
 
 			return user.id;
 		});
+		await deleteCache("lecturer:pagination:*");
 
 		return success({ message: "Lecturer created", data: { id: userId } });
 	},

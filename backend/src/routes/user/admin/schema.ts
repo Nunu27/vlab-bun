@@ -1,7 +1,7 @@
 import { t } from "elysia";
 
 export const CreateAdminRequest = t.Object({
-	name: t.String(),
+	name: t.String({ minLength: 1 }),
 	email: t.String({ format: "email" }),
 	password: t.String({
 		minLength: 8,
@@ -10,6 +10,6 @@ export const CreateAdminRequest = t.Object({
 });
 
 export const UpdateAdminRequest = t.Object({
-	name: t.String(),
+	name: t.String({ minLength: 1 }),
 	email: t.String({ format: "email" })
 });

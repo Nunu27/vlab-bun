@@ -1,14 +1,22 @@
 import { departments } from "@backend/db/schema/auth";
+import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
-import { success } from "@backend/utils/response";
+import { failure, success } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
 
 export default createRouter().delete(
 	"/:id",
-	async ({ params, db }) => {
+	async ({ params, db, status }) => {
 		const { id } = params;
 
-		await db.delete(departments).where(eq(departments.id, id));
+		const { rowCount } = await db
+			.delete(departments)
+			.where(eq(departments.id, id));
+		if (!rowCount) {
+			return status(404, failure({ message: "Department not found" }));
+		}
+
+		await deleteCache("department:pagination:*", `department:${id}`);
 
 		return success({ message: "Department deleted" });
 	},
