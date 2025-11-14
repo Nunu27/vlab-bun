@@ -63,6 +63,6 @@ export const lecturerColumns: ColumnDef<Item>[] = [
     meta: {
       center: true,
     },
-    cell: ({ row }) => <LecturerActionsCell row={row} />,
+    cell: ({ row }) => <LecturerActionsCell lecturer={row.original} />,
   },
 ];
