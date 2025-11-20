@@ -1,9 +1,11 @@
+import env from "@backend/env";
 import redis from "@backend/services/redis";
-import { createServer } from "net";
+import { Socket } from "net";
 
-const REDIS_KEY = "leased-ports";
+const HOST = env.CLAB_HOST;
 const MIN_PORT = 10000;
 const MAX_PORT = 65535;
+const REDIS_KEY = `leased-ports`;
 
 async function getLeasedPorts(): Promise<Set<number>> {
 	const ports = await redis.get<number[]>(REDIS_KEY);
@@ -21,11 +23,22 @@ async function isPortAvailable(port: number): Promise<boolean> {
 	}
 
 	return new Promise((resolve) => {
-		const server = createServer();
-		server.listen(port, "0.0.0.0", () => {
-			server.close(() => resolve(true));
+		const socket = new Socket();
+		socket.setTimeout(1000); // 1 second timeout
+
+		socket.connect(port, HOST, () => {
+			socket.destroy();
+			resolve(false); // Port is open (in use), not available
 		});
-		server.on("error", () => resolve(false));
+
+		socket.on("error", () => {
+			resolve(true); // Port is closed (available)
+		});
+
+		socket.on("timeout", () => {
+			socket.destroy();
+			resolve(true); // Timeout means closed (available)
+		});
 	});
 }
 
@@ -56,7 +69,9 @@ export async function leasePort(): Promise<number> {
 	for (let attempt = 0; attempt < 3; attempt++) {
 		const port = await findNextAvailablePort();
 		if (port === null) {
-			throw new Error(`No available ports in range ${MIN_PORT}-${MAX_PORT}`);
+			throw new Error(
+				`No available ports in range ${MIN_PORT}-${MAX_PORT} on host ${HOST}`
+			);
 		}
 
 		const leasedPorts = await getLeasedPorts();
@@ -75,7 +90,9 @@ export async function leasePort(): Promise<number> {
 		await saveLeasedPorts(leasedPorts);
 	}
 
-	throw new Error("Failed to lease port after multiple attempts");
+	throw new Error(
+		`Failed to lease port on host ${HOST} after multiple attempts`
+	);
 }
 
 export async function leasePorts(
@@ -124,7 +141,7 @@ async function leaseConsecutivePorts(count: number): Promise<number[]> {
 	}
 
 	throw new Error(
-		`No ${count} consecutive ports available in range ${MIN_PORT}-${MAX_PORT}`
+		`No ${count} consecutive ports available in range ${MIN_PORT}-${MAX_PORT} on host ${HOST}`
 	);
 }
 

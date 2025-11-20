@@ -1,4 +1,5 @@
-// import { pgEnum } from "drizzle-orm/pg-core";
+// import { pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+// import { base } from "./base";
 
 // export const deviceKindEnum = pgEnum("deviceKind", [
 // 	"nokia_srlinux",
@@ -54,3 +55,10 @@
 // 	"host"
 // ]);
 // export type DeviceKind = (typeof deviceKindEnum.enumValues)[number];
+
+// export const devices = pgTable("device", {
+// 	...base,
+// 	name: text().notNull(),
+// 	kind: deviceKindEnum().notNull(),
+// 	image: text().notNull()
+// });

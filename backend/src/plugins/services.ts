@@ -6,6 +6,7 @@ import errorHandler from "@backend/plugins/error-handler";
 import fallback from "@backend/plugins/fallback";
 import logging from "@backend/plugins/logging";
 import security from "@backend/plugins/security";
+import clab from "@backend/services/clab";
 import redis from "@backend/services/redis";
 import { Elysia, type ElysiaConfig } from "elysia";
 
@@ -16,6 +17,7 @@ const services = new Elysia({ name: "services" })
 	.use(fallback)
 	.use(errorHandler)
 	.decorate("redis", redis)
+	.decorate("clab", clab)
 	.decorate("db", db)
 	.use(session)
 	.use(caching)

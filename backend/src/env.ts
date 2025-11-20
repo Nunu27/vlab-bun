@@ -31,7 +31,11 @@ const EnvSchema = t.Object({
 	// Labs
 	GUACD_HOST: t.String(),
 	GUACD_PORT: t.Number({ default: 4822 }),
-	GUACD_SECRET: t.String({ minLength: 32, maxLength: 64 })
+	GUACD_SECRET: t.String({ minLength: 32, maxLength: 64 }),
+
+	CLAB_HOST: t.String(),
+	CLAB_USERNAME: t.String(),
+	CLAB_PASSWORD: t.String()
 });
 
 const env = Value.Parse(EnvSchema, process.env);

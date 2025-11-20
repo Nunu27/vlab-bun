@@ -24,6 +24,7 @@
     "elysia-helmet": "^3.0.0",
     "fast-xml-parser": "^5.3.0",
     "guacamole-lite": "^1.2.0",
+    "openapi-fetch": "^0.15.0",
     "pg": "^8.16.3",
     "pg-native": "^3.5.2",
     "pino": "^10.0.0",
