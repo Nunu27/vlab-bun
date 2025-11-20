@@ -43,7 +43,7 @@ export function LoginForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl flex items-center justify-center gap-2">
+          <CardTitle className="text-xl flex items-center justify-center gap-2 font-bold">
             <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
               <ServerIcon className="size-4" />
             </div>

@@ -40,5 +40,6 @@ function handleForeignKeyViolation(error: DatabaseError) {
 }
 
 export default {
-	"23503": handleForeignKeyViolation
+	"23503": handleForeignKeyViolation,
+	"23001": handleForeignKeyViolation
 } as const;
