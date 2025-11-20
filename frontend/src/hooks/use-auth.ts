@@ -48,7 +48,9 @@ function useAuth(): AuthData {
         callback: ({ data }) => {
           client.invalidateQueries({ queryKey: ['me'] });
 
-          window.location.href = data;
+          if (data) {
+            window.location.href = data;
+          }
         },
       });
     },
