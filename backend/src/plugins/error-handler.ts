@@ -12,7 +12,7 @@ const errorHandler = new Elysia({ name: "error-handler" })
 		DrizzleQueryError,
 		DrizzleError
 	})
-	.onError({ as: "global" }, ({ code, error, status, path }) => {
+	.onError(({ code, error, status, path }) => {
 		switch (code) {
 			case "VALIDATION":
 				return status(
@@ -36,20 +36,13 @@ const errorHandler = new Elysia({ name: "error-handler" })
 				);
 
 			case "DrizzleQueryError":
-				if (error.cause instanceof DatabaseError && error.cause.code) {
+				if (
+					error.cause instanceof DatabaseError &&
+					error.cause.code &&
+					error.cause.code in dbErrorHandler
+				) {
 					const key = error.cause.code as keyof typeof dbErrorHandler;
-					const handler =
-						error.cause.code in dbErrorHandler ? dbErrorHandler[key] : null;
-
-					return (
-						handler?.(error.cause) ??
-						status(
-							500,
-							failure({
-								message: inProduction ? "Internal server error" : error.message
-							})
-						)
-					);
+					return dbErrorHandler[key](error.cause);
 				}
 
 				logger.error({ error: error.cause }, error.message);
@@ -70,6 +63,7 @@ const errorHandler = new Elysia({ name: "error-handler" })
 					})
 				);
 		}
-	});
+	})
+	.as("global");
 
 export default errorHandler;

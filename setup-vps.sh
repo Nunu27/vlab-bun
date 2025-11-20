@@ -292,20 +292,24 @@ else
     REDIS_URL="redis://${REDIS_HOST}:${REDIS_PORT}"
 fi
 
-# Step 6: Guacamole Daemon (guacd)
-print_header "Step 6: Guacamole Daemon"
+# Step 6: vLab Internal Network
+print_header "Step 6: vLab Internal Network"
 
-GUACD_NETWORK="guacd"
-GUACD_CONTAINER="guacd"
+VLAB_NETWORK="vlab"
 
-# Create internal network for guacd <-> vlab communication
-if docker network inspect "$GUACD_NETWORK" &> /dev/null; then
-    print_info "Network '$GUACD_NETWORK' exists"
+# Create internal network for vlab services communication (guacd, containerlab, etc)
+if docker network inspect "$VLAB_NETWORK" &> /dev/null; then
+    print_info "Network '$VLAB_NETWORK' exists"
 else
-    print_step "Creating network: $GUACD_NETWORK"
-    docker network create "$GUACD_NETWORK"
-    print_success "Network '$GUACD_NETWORK' created"
+    print_step "Creating network: $VLAB_NETWORK"
+    docker network create "$VLAB_NETWORK"
+    print_success "Network '$VLAB_NETWORK' created"
 fi
+
+# Step 7: Guacamole Daemon (guacd)
+print_header "Step 7: Guacamole Daemon"
+
+GUACD_CONTAINER="guacd"
 
 # Check if guacd container exists
 if docker ps -a --format '{{.Names}}' | grep -q "^${GUACD_CONTAINER}$"; then
@@ -393,7 +397,7 @@ else
     print_step "Creating guacd container..."
     docker run -d \
         --name "$GUACD_CONTAINER" \
-        --network "$GUACD_NETWORK" \
+        --network "$VLAB_NETWORK" \
         --restart unless-stopped \
         "$GUACD_IMAGE"
     
@@ -420,8 +424,231 @@ else
     print_warning "guacd may not be healthy, check logs: docker logs $GUACD_CONTAINER"
 fi
 
-# Step 7: Application Configuration
-print_header "Step 7: Application"
+# Step 8: Containerlab API Server (DinD)
+print_header "Step 8: Containerlab API Server"
+
+CLAB_REPO_PATH="$DEPLOY_PATH/clab-api-server"
+
+# Check if containerlab is already running
+if docker ps --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"; then
+    print_success "Containerlab API server already running"
+    
+    # Ensure it's connected to vlab network
+    ACTUAL_CONTAINER_NAME=$(docker ps --filter "name=clab-api" --format "{{.Names}}" | head -1)
+    if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$ACTUAL_CONTAINER_NAME\""; then
+        print_step "Connecting API server to vlab network..."
+        docker network connect "$VLAB_NETWORK" "$ACTUAL_CONTAINER_NAME" 2>/dev/null || true
+    fi
+    
+    # Check if repository exists to show config info
+    if [ -f "$CLAB_REPO_PATH/docker/common/.env" ]; then
+        CLAB_JWT_SECRET=$(grep "^JWT_SECRET=" "$CLAB_REPO_PATH/docker/common/.env" 2>/dev/null | cut -d'=' -f2)
+        if [ -n "$CLAB_JWT_SECRET" ] && [ "$CLAB_JWT_SECRET" != "please_change_me" ]; then
+            print_info "JWT Secret: $CLAB_JWT_SECRET"
+        fi
+    fi
+elif docker ps -a --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"; then
+    print_warning "Found stopped Containerlab containers. Cleaning up..."
+    
+    if [ -d "$CLAB_REPO_PATH" ]; then
+        cd "$CLAB_REPO_PATH"
+        print_step "Stopping and removing old containers..."
+        ./clab-api-manager.sh dind stop 2>/dev/null || true
+        
+        # Force remove any stuck containers
+        docker ps -a --filter "name=clab-api" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+        docker ps -a --filter "name=dind" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+        
+        cd "$DEPLOY_PATH"
+    else
+        print_step "Removing containers manually..."
+        docker ps -a --filter "name=clab-api" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+        docker ps -a --filter "name=dind" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+    fi
+    
+    print_info "Starting fresh setup..."
+else
+    print_step "Setting up Containerlab API server with DinD..."
+    
+    # Define repository path
+    CLAB_REPO_PATH="$DEPLOY_PATH/clab-api-server"
+    
+    # Clone or update repository
+    if [ ! -d "$CLAB_REPO_PATH" ]; then
+        print_step "Cloning clab-api-server repository..."
+        if ! git clone https://github.com/srl-labs/clab-api-server.git "$CLAB_REPO_PATH"; then
+            print_error "Failed to clone repository"
+            exit 1
+        fi
+    else
+        print_info "Repository already exists at $CLAB_REPO_PATH"
+        cd "$CLAB_REPO_PATH"
+        print_step "Pulling latest changes..."
+        git pull origin main 2>/dev/null || print_warning "Could not pull latest changes, using existing version"
+        git reset --hard
+        cd "$DEPLOY_PATH"
+    fi
+    
+    cd "$CLAB_REPO_PATH"
+    
+    # Restore compose file from backup if it exists (in case of previous corruption)
+    if [ -f docker/dind/docker-compose.yml.backup ]; then
+        print_step "Restoring docker-compose.yml from backup..."
+        cp docker/dind/docker-compose.yml.backup docker/dind/docker-compose.yml
+    else
+        # Create backup on first run
+        cp docker/dind/docker-compose.yml docker/dind/docker-compose.yml.backup
+    fi
+    
+    # Fix Dockerfile template path issue
+    print_step "Patching Dockerfile..."
+    sed -i 's|templates/redoc.html|internal/templates/redoc.html|g' docker/dind/Dockerfile
+    sed -i 's|cp -r templates/redoc.html /templates/|cp -r internal/templates/redoc.html /templates/|g' docker/dind/Dockerfile
+    
+    # Fix entrypoint to clean up stale PID file
+    print_step "Patching entrypoint script to clean stale PID files..."
+    if ! grep -q "rm -f /var/run/docker.pid" docker/dind/entrypoint.sh; then
+        # Add cleanup right after sourcing common functions
+        sed -i '/# Source common functions/a\
+\
+# Clean up any stale PID file from previous runs\
+rm -f /var/run/docker.pid /var/run/docker/*.pid 2>/dev/null || true' docker/dind/entrypoint.sh
+    fi
+    
+    # Create a patched docker-compose.yml
+    print_step "Patching docker-compose.yml..."
+    python3 - <<'PYEOF'
+import yaml
+import sys
+
+with open('docker/dind/docker-compose.yml', 'r') as f:
+    compose = yaml.safe_load(f)
+
+# Remove ports
+if 'services' in compose and 'clab-api' in compose['services']:
+    service = compose['services']['clab-api']
+    if 'ports' in service:
+        del service['ports']
+    
+    # Add environment variables
+    if 'environment' not in service:
+        service['environment'] = []
+    env_vars = ['DOCKER_TLS_CERTDIR=', 'DOCKER_DRIVER=overlay2']
+    for var in env_vars:
+        if var not in service['environment']:
+            service['environment'].append(var)
+    
+    # Set cgroup namespace to host (requires Compose 2.15.0+)
+    service['cgroup'] = 'host'
+    
+    # Add cgroup mount to volumes
+    if 'volumes' not in service:
+        service['volumes'] = []
+    cgroup_mount = '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+    if cgroup_mount not in service['volumes']:
+        service['volumes'].insert(0, cgroup_mount)
+    
+    # Add .env file mount - mount from docker/common/.env to /app/.env
+    env_mount = '../common/.env:/app/.env:ro'
+    if env_mount not in service['volumes']:
+        service['volumes'].append(env_mount)
+
+# Add vlab network
+if 'networks' not in compose:
+    compose['networks'] = {}
+compose['networks']['default'] = {
+    'name': 'vlab',
+    'external': True
+}
+
+with open('docker/dind/docker-compose.yml', 'w') as f:
+    yaml.dump(compose, f, default_flow_style=False, sort_keys=False)
+
+print("docker-compose.yml patched successfully")
+PYEOF
+
+    if [ $? -ne 0 ]; then
+        print_error "Failed to patch docker-compose.yml"
+        exit 1
+    fi
+    
+    # Check if .env already exists
+    if [ ! -f "docker/common/.env" ]; then
+        print_step "Creating configuration file..."
+        cp docker/common/.env.example docker/common/.env
+        
+        # Generate JWT secret
+        CLAB_JWT_SECRET=$(openssl rand -hex 32)
+        
+        # Update the .env file with our settings
+        sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$CLAB_JWT_SECRET/" docker/common/.env
+        sed -i "s/^API_SERVER_HOST=.*/API_SERVER_HOST=$CONTAINERLAB_CONTAINER/" docker/common/.env
+        sed -i "s/^API_PORT=.*/API_PORT=8080/" docker/common/.env
+        sed -i "s/^LOG_LEVEL=.*/LOG_LEVEL=info/" docker/common/.env
+        
+        print_success "Configuration file created"
+        print_info "JWT Secret: $CLAB_JWT_SECRET"
+        print_warning "Save the JWT secret for configuration!"
+    else
+        print_info "Using existing configuration file"
+        CLAB_JWT_SECRET=$(grep "^JWT_SECRET=" docker/common/.env | cut -d'=' -f2)
+    fi
+    
+    print_step "Starting Containerlab API server with DinD..."
+    
+    # Force rebuild to apply patches
+    print_step "Building image with patches..."
+    if docker compose -f docker/dind/docker-compose.yml build --no-cache; then
+        print_success "Image built successfully"
+    else
+        print_error "Failed to build image"
+        cd "$DEPLOY_PATH"
+        exit 1
+    fi
+    
+    if ./clab-api-manager.sh dind start; then
+        print_success "Containerlab API server started successfully"
+        
+        # Connect to vlab network if not already connected
+        sleep 3
+        ACTUAL_CONTAINER_NAME=$(docker ps --filter "name=clab-api" --format "{{.Names}}" | head -1)
+        if [ -n "$ACTUAL_CONTAINER_NAME" ]; then
+            if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$ACTUAL_CONTAINER_NAME\""; then
+                print_step "Connecting API server to vlab network..."
+                docker network connect "$VLAB_NETWORK" "$ACTUAL_CONTAINER_NAME" 2>/dev/null || true
+            fi
+        fi
+    else
+        print_error "Failed to start Containerlab API server"
+        cd "$DEPLOY_PATH"
+        exit 1
+    fi
+    
+    cd "$DEPLOY_PATH"
+fi
+
+# Verify containerlab API server is healthy
+print_step "Verifying containerlab API server..."
+sleep 2
+
+ACTUAL_CONTAINER_NAME=$(docker ps --filter "name=clab-api" --format "{{.Names}}" | head -1)
+if [ -n "$ACTUAL_CONTAINER_NAME" ] && docker ps --filter "name=clab-api" --filter "status=running" | grep -q "clab-api"; then
+    print_success "Containerlab API server is healthy"
+    print_info "Container: $ACTUAL_CONTAINER_NAME"
+    print_info "API available at: http://${ACTUAL_CONTAINER_NAME}:8080"
+    print_info "Swagger UI: http://${ACTUAL_CONTAINER_NAME}:8080/swagger/index.html"
+    
+    # Set container name for .env file
+    CONTAINERLAB_CONTAINER="$ACTUAL_CONTAINER_NAME"
+else
+    print_warning "Containerlab API server may not be healthy"
+    if [ -d "$CLAB_REPO_PATH" ]; then
+        print_info "Check logs: cd $CLAB_REPO_PATH && ./clab-api-manager.sh dind logs"
+    fi
+fi
+
+# Step 9: Application Configuration
+print_header "Step 9: Application"
 
 read -p "Domain/URL [${EXISTING_BASE_URL}]: " BASE_URL
 BASE_URL=${BASE_URL:-${EXISTING_BASE_URL}}
@@ -435,8 +662,8 @@ BIND_PORT=${BIND_PORT:-${EXISTING_BIND_PORT}}
 read -p "Session TTL seconds [${EXISTING_SESSION_TTL:-10800}]: " SESSION_TTL
 SESSION_TTL=${SESSION_TTL:-${EXISTING_SESSION_TTL:-10800}}
 
-# Step 8: nginx-proxy Configuration
-print_header "Step 8: Reverse Proxy"
+# Step 10: nginx-proxy Configuration
+print_header "Step 10: Reverse Proxy"
 
 read -p "Using nginx-proxy? (y/n) [${EXISTING_VIRTUAL_HOST:+y}${EXISTING_VIRTUAL_HOST:-n}]: " USE_NGINX_PROXY
 USE_NGINX_PROXY=${USE_NGINX_PROXY:-${EXISTING_VIRTUAL_HOST:+y}}
@@ -460,14 +687,14 @@ else
     VIRTUAL_HOST=""
 fi
 
-# Step 9: Create .env file
-print_header "Step 9: Creating .env"
+# Step 11: Create .env file
+print_header "Step 11: Creating .env"
 
 # Combine networks and avoid duplicates
-if [[ ",$NETWORKS_INPUT," == *",$GUACD_NETWORK,"* ]]; then
+if [[ ",$NETWORKS_INPUT," == *",$VLAB_NETWORK,"* ]]; then
     FINAL_NETWORKS="$NETWORKS_INPUT"
 else
-    FINAL_NETWORKS="$NETWORKS_INPUT,$GUACD_NETWORK"
+    FINAL_NETWORKS="$NETWORKS_INPUT,$VLAB_NETWORK"
 fi
 
 cat > "$DEPLOY_PATH/.env" << EOF
@@ -497,6 +724,7 @@ COOKIE_SECRET=$(openssl rand -hex 32)
 GUACD_HOST=$GUACD_CONTAINER
 GUACD_PORT=4822
 GUACD_SECRET=$(openssl rand -hex 32)
+CONTAINERLAB_API_URL=http://$CONTAINERLAB_CONTAINER:8080
 EOF
 
 if [ -n "$VIRTUAL_HOST" ]; then
@@ -514,8 +742,8 @@ fi
 
 print_success ".env created"
 
-# Step 10: SSH Key
-print_header "Step 10: SSH Key"
+# Step 12: SSH Key
+print_header "Step 12: SSH Key"
 
 SSH_KEY_PATH="$HOME/.ssh/vlab_deploy"
 
@@ -543,8 +771,8 @@ chmod 600 "$HOME/.ssh/authorized_keys"
 
 print_success "SSH key ready"
 
-# Step 11: Generate GitHub Secrets
-print_header "Step 11: GitHub Config"
+# Step 13: Generate GitHub Secrets
+print_header "Step 13: GitHub Config"
 
 print_success "Setup complete! 🎉"
 echo ""
@@ -609,12 +837,17 @@ echo -e "${MAGENTA}$DOCKER_PLATFORM${NC} ${CYAN}(detected: $VPS_ARCH)${NC}\n"
 # Summary
 print_header "📝 Summary"
 
+# Get actual containerlab container name
+CLAB_CONTAINER_NAME=$(docker ps --filter "name=clab-api" --format "{{.Names}}" | head -1)
+CLAB_CONTAINER_NAME=${CLAB_CONTAINER_NAME:-containerlab-api-server}
+
 echo -e "${CYAN}Deploy:${NC} $DEPLOY_PATH"
 echo -e "${CYAN}Architecture:${NC} $VPS_ARCH"
 echo -e "${CYAN}Networks:${NC} $FINAL_NETWORKS"
 echo -e "${CYAN}Database:${NC} ${DB_HOST}:${DB_PORT}/${DB_NAME}"
 echo -e "${CYAN}Redis:${NC} ${REDIS_HOST}:${REDIS_PORT}"
 echo -e "${CYAN}Guacd:${NC} ${GUACD_CONTAINER}:4822 (container)"
+echo -e "${CYAN}Containerlab API:${NC} ${CLAB_CONTAINER_NAME}:8080 (container)"
 echo -e "${CYAN}URL:${NC} $BASE_URL"
 if [ -n "$BIND_PORT" ]; then
     echo -e "${CYAN}Port:${NC} $BIND_PORT:3000"

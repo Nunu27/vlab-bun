@@ -12,6 +12,7 @@ export default createRouter().post(
 				.insert(users)
 				.values({
 					...body,
+					role: "lecturer",
 					passwordHash: await Bun.password.hash(body.password)
 				})
 				.returning({ id: users.id });

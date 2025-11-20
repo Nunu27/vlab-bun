@@ -1,5 +1,5 @@
-function SudentDashboard() {
+function StudentDashboard() {
   return <div>SudentDashboard</div>;
 }
 
-export default SudentDashboard;
+export default StudentDashboard;

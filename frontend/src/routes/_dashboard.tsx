@@ -29,7 +29,8 @@ export const Route = createFileRoute('/_dashboard')({
 
 function RouteComponent() {
   const breadcrumbs = useRouterState({
-    select: (state) => state.matches.at(-1)?.context.breadcrumbs || [],
+    select: (state) =>
+      state.matches[state.matches.length - 1]?.context.breadcrumbs || [],
   });
 
   return (
