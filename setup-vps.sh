@@ -181,6 +181,10 @@ if [ -f "$ENV_FILE" ]; then
     EXISTING_CAS_URL=$(grep "^CAS_BASE_URL=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     EXISTING_VIRTUAL_HOST=$(grep "^VIRTUAL_HOST=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     EXISTING_LETSENCRYPT_EMAIL=$(grep "^LETSENCRYPT_EMAIL=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+    EXISTING_S3_ACCESS_KEY=$(grep "^S3_ACCESS_KEY=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+    EXISTING_S3_SECRET_KEY=$(grep "^S3_SECRET_KEY=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+    EXISTING_S3_BUCKET_NAME=$(grep "^S3_BUCKET_NAME=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+    EXISTING_S3_ENDPOINT=$(grep "^S3_ENDPOINT=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     
     # Extract DB details from DATABASE_URL if present
     if [ -n "$EXISTING_DB_URL" ]; then
@@ -317,17 +321,19 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${GUACD_CONTAINER}$"; then
     if docker ps --format '{{.Names}}' | grep -q "^${GUACD_CONTAINER}$"; then
         print_success "guacd container running"
         
-        # Ensure it's connected to bridge network for host port access
-        if ! docker network inspect bridge | grep -q "\"$GUACD_CONTAINER\""; then
-            print_step "Connecting guacd to bridge network..."
-            docker network connect bridge "$GUACD_CONTAINER" 2>/dev/null || true
+        # Ensure it's connected to vlab network
+        if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$GUACD_CONTAINER\""; then
+            print_step "Connecting guacd to vlab network..."
+            docker network connect "$VLAB_NETWORK" "$GUACD_CONTAINER" 2>/dev/null || true
         fi
     else
         print_step "Starting guacd container..."
         docker start "$GUACD_CONTAINER"
         
-        # Ensure bridge network connection
-        docker network connect bridge "$GUACD_CONTAINER" 2>/dev/null || true
+        # Ensure vlab network connection
+        if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$GUACD_CONTAINER\""; then
+            docker network connect "$VLAB_NETWORK" "$GUACD_CONTAINER" 2>/dev/null || true
+        fi
         print_success "guacd container started"
     fi
 else
@@ -405,14 +411,7 @@ else
     print_step "Waiting for container initialization..."
     sleep 3
     
-    # Connect to bridge network for accessing host-bound containers
-    print_step "Connecting guacd to bridge network..."
-    if docker network connect bridge "$GUACD_CONTAINER" 2>/dev/null; then
-        print_success "guacd container created and started"
-    else
-        print_warning "Could not connect to bridge network, but container is running"
-        print_info "Check with: docker logs $GUACD_CONTAINER"
-    fi
+    print_success "guacd container created and started"
 fi
 
 # Verify guacd is healthy
@@ -438,14 +437,6 @@ if docker ps --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"
     if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$ACTUAL_CONTAINER_NAME\""; then
         print_step "Connecting API server to vlab network..."
         docker network connect "$VLAB_NETWORK" "$ACTUAL_CONTAINER_NAME" 2>/dev/null || true
-    fi
-    
-    # Check if repository exists to show config info
-    if [ -f "$CLAB_REPO_PATH/docker/common/.env" ]; then
-        CLAB_JWT_SECRET=$(grep "^JWT_SECRET=" "$CLAB_REPO_PATH/docker/common/.env" 2>/dev/null | cut -d'=' -f2)
-        if [ -n "$CLAB_JWT_SECRET" ] && [ "$CLAB_JWT_SECRET" != "please_change_me" ]; then
-            print_info "JWT Secret: $CLAB_JWT_SECRET"
-        fi
     fi
 elif docker ps -a --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"; then
     print_warning "Found stopped Containerlab containers. Cleaning up..."
@@ -587,11 +578,8 @@ PYEOF
         sed -i "s/^LOG_LEVEL=.*/LOG_LEVEL=info/" docker/common/.env
         
         print_success "Configuration file created"
-        print_info "JWT Secret: $CLAB_JWT_SECRET"
-        print_warning "Save the JWT secret for configuration!"
     else
         print_info "Using existing configuration file"
-        CLAB_JWT_SECRET=$(grep "^JWT_SECRET=" docker/common/.env | cut -d'=' -f2)
     fi
     
     print_step "Starting Containerlab API server with DinD..."
@@ -662,8 +650,39 @@ BIND_PORT=${BIND_PORT:-${EXISTING_BIND_PORT}}
 read -p "Session TTL seconds [${EXISTING_SESSION_TTL:-10800}]: " SESSION_TTL
 SESSION_TTL=${SESSION_TTL:-${EXISTING_SESSION_TTL:-10800}}
 
-# Step 10: nginx-proxy Configuration
-print_header "Step 10: Reverse Proxy"
+# Step 10: S3 Configuration (Optional)
+print_header "Step 10: S3 Storage"
+
+print_info "S3-compatible storage configuration (leave empty to skip)"
+read -p "S3 Access Key [${EXISTING_S3_ACCESS_KEY}]: " S3_ACCESS_KEY
+S3_ACCESS_KEY=${S3_ACCESS_KEY:-${EXISTING_S3_ACCESS_KEY}}
+
+if [ -n "$S3_ACCESS_KEY" ]; then
+    if [ -n "$EXISTING_S3_SECRET_KEY" ]; then
+        read -sp "S3 Secret Key [use existing]: " S3_SECRET_KEY
+        echo ""
+        S3_SECRET_KEY=${S3_SECRET_KEY:-${EXISTING_S3_SECRET_KEY}}
+    else
+        read -sp "S3 Secret Key: " S3_SECRET_KEY
+        echo ""
+    fi
+    
+    read -p "S3 Bucket Name [${EXISTING_S3_BUCKET_NAME}]: " S3_BUCKET_NAME
+    S3_BUCKET_NAME=${S3_BUCKET_NAME:-${EXISTING_S3_BUCKET_NAME}}
+    
+    read -p "S3 Endpoint [${EXISTING_S3_ENDPOINT}]: " S3_ENDPOINT
+    S3_ENDPOINT=${S3_ENDPOINT:-${EXISTING_S3_ENDPOINT}}
+    
+    print_success "S3 configuration set"
+else
+    print_info "Skipping S3 configuration"
+    S3_SECRET_KEY=""
+    S3_BUCKET_NAME=""
+    S3_ENDPOINT=""
+fi
+
+# Step 11: nginx-proxy Configuration
+print_header "Step 11: Reverse Proxy"
 
 read -p "Using nginx-proxy? (y/n) [${EXISTING_VIRTUAL_HOST:+y}${EXISTING_VIRTUAL_HOST:-n}]: " USE_NGINX_PROXY
 USE_NGINX_PROXY=${USE_NGINX_PROXY:-${EXISTING_VIRTUAL_HOST:+y}}
@@ -687,8 +706,8 @@ else
     VIRTUAL_HOST=""
 fi
 
-# Step 11: Create .env file
-print_header "Step 11: Creating .env"
+# Step 12: Create .env file
+print_header "Step 12: Creating .env"
 
 # Combine networks and avoid duplicates
 if [[ ",$NETWORKS_INPUT," == *",$VLAB_NETWORK,"* ]]; then
@@ -727,6 +746,31 @@ GUACD_SECRET=$(openssl rand -hex 32)
 CONTAINERLAB_API_URL=http://$CONTAINERLAB_CONTAINER:8080
 EOF
 
+# Add S3 configuration if provided
+if [ -n "$S3_ACCESS_KEY" ]; then
+    cat >> "$DEPLOY_PATH/.env" << EOF
+S3_ACCESS_KEY=$S3_ACCESS_KEY
+S3_SECRET_KEY=$S3_SECRET_KEY
+S3_BUCKET_NAME=$S3_BUCKET_NAME
+S3_ENDPOINT=$S3_ENDPOINT
+EOF
+else
+    cat >> "$DEPLOY_PATH/.env" << EOF
+S3_ACCESS_KEY=
+S3_SECRET_KEY=
+S3_BUCKET_NAME=
+S3_ENDPOINT=
+EOF
+fi
+
+# Add CLAB configuration
+# Using default credentials since API_PASS_BUILDTIME is not set in clab-api-server
+cat >> "$DEPLOY_PATH/.env" << EOF
+CLAB_HOST=$CONTAINERLAB_CONTAINER
+CLAB_USERNAME=admin
+CLAB_PASSWORD=admin
+EOF
+
 if [ -n "$VIRTUAL_HOST" ]; then
     cat >> "$DEPLOY_PATH/.env" << EOF
 VIRTUAL_HOST_MULTIPORTS={"$VIRTUAL_HOST":{"/":{"port":3000},"/display":{"port":8080,"dest":"/"}}}
@@ -742,8 +786,8 @@ fi
 
 print_success ".env created"
 
-# Step 12: SSH Key
-print_header "Step 12: SSH Key"
+# Step 13: SSH Key
+print_header "Step 13: SSH Key"
 
 SSH_KEY_PATH="$HOME/.ssh/vlab_deploy"
 
@@ -771,8 +815,8 @@ chmod 600 "$HOME/.ssh/authorized_keys"
 
 print_success "SSH key ready"
 
-# Step 13: Generate GitHub Secrets
-print_header "Step 13: GitHub Config"
+# Step 14: Generate GitHub Secrets
+print_header "Step 14: GitHub Config"
 
 print_success "Setup complete! 🎉"
 echo ""

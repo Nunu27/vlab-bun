@@ -6,6 +6,7 @@ import { failure } from "@backend/utils/response";
 import { DrizzleError, DrizzleQueryError } from "drizzle-orm";
 import { Elysia, type ValidationError } from "elysia";
 import { DatabaseError } from "pg";
+import S3 from "@aws-lite/s3";
 
 const errorHandler = new Elysia({ name: "error-handler" })
 	.error({
@@ -55,7 +56,8 @@ const errorHandler = new Elysia({ name: "error-handler" })
 				);
 
 			default:
-				logger.error({ error }, path);
+				console.error(error);
+
 				return status(
 					500,
 					failure({

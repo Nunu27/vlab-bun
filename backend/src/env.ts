@@ -22,6 +22,11 @@ const EnvSchema = t.Object({
 	DEBOUNCE_MS: t.Number({ default: 100 }),
 	MAX_BATCH_WAIT_MS: t.Number({ default: 500 }),
 
+	S3_ENDPOINT: t.String({ format: "uri" }),
+	S3_ACCESS_KEY: t.String(),
+	S3_SECRET_KEY: t.String(),
+	S3_BUCKET_NAME: t.String(),
+
 	// Auth
 	BASE_URL: t.String({ format: "uri" }),
 	CAS_BASE_URL: t.String({ format: "uri" }),

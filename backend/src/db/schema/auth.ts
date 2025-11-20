@@ -1,5 +1,5 @@
-import { relations } from "drizzle-orm";
 import { integer, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm/relations";
 import { base } from "./base";
 
 // Auth tables

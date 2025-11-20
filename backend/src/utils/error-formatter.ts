@@ -27,7 +27,7 @@ export const formatError = (
 		});
 	}
 
-	if (type === 31) {
+	if (type === 31 && message.includes("UnionEnum")) {
 		message = `Expected one of the following values ${(
 			schema as TUnionEnum
 		).enum
