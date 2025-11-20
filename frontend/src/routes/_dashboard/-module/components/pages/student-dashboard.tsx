@@ -1,5 +1,5 @@
 function StudentDashboard() {
-  return <div>SudentDashboard</div>;
+  return <div>StudentDashboard</div>;
 }
 
 export default StudentDashboard;

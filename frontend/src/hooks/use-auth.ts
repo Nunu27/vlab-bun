@@ -45,8 +45,10 @@ function useAuth(): AuthData {
     },
     logout: () => {
       errorHandler(api.auth.logout.post(), {
-        callback: () => {
+        callback: ({ data }) => {
           client.invalidateQueries({ queryKey: ['me'] });
+
+          window.location.href = data;
         },
       });
     },

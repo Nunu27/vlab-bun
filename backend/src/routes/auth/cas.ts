@@ -92,7 +92,7 @@ export default createRouter().get(
 			await deleteCache("student:pagination:*");
 		}
 
-		await redis.set(sessionId, user, SESSION_TTL);
+		await redis.set(sessionId, { ...user, useCAS: true }, SESSION_TTL);
 
 		cookie.toast.value = {
 			message: "Logged in successfully via CAS",
