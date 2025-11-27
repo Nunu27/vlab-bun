@@ -68,7 +68,9 @@ export function LoginForm({
 
                   return (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                      <FieldLabel htmlFor={field.name} required>
+                        Email
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -92,7 +94,9 @@ export function LoginForm({
 
                   return (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                      <FieldLabel htmlFor={field.name} required>
+                        Password
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}

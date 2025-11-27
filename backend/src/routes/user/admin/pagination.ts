@@ -13,6 +13,7 @@ export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
+		body: paginator.schema,
 		detail: {
 			description: "Get paginated admins data"
 		}
@@ -22,19 +23,15 @@ export default createRouter().guard(
 			.resolve(({ body }) => ({
 				cacheKey: `admin:pagination:${md5(JSON.stringify(body))}`
 			}))
-			.post(
-				"/pagination",
-				async ({ body }) => {
-					const data = await paginator.paginate(body, {
-						where: (users, { eq }) => eq(users.role, "admin"),
-						columns: {
-							passwordHash: false,
-							role: false
-						}
-					});
+			.post("/pagination", async ({ body }) => {
+				const data = await paginator.paginate(body, {
+					where: (users, { eq }) => eq(users.role, "admin"),
+					columns: {
+						passwordHash: false,
+						role: false
+					}
+				});
 
-					return success({ data });
-				},
-				{ body: paginator.schema }
-			)
+				return success({ data });
+			})
 );

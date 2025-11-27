@@ -2,6 +2,7 @@ import { departments } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { eq } from "drizzle-orm";
+import { RequestWithId } from "../schema";
 import { UpdateDepartmentRequest } from "./schema";
 
 export default createRouter().put(
@@ -16,6 +17,7 @@ export default createRouter().put(
 	},
 	{
 		private: ["admin"],
+		params: RequestWithId,
 		body: UpdateDepartmentRequest,
 		detail: {
 			description: "Update a department"

@@ -1,14 +1,12 @@
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { t } from "elysia";
+import { RequestWithId } from "../schema";
 
 export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
-		params: t.Object({
-			id: t.String({ format: "uuid" })
-		}),
+		params: RequestWithId,
 		detail: {
 			description: "Get study program detail"
 		}

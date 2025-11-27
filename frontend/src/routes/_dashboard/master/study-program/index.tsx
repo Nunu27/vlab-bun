@@ -11,11 +11,13 @@ import type {
   ExtractPaginationData,
 } from '@frontend/lib/api-types';
 import { privateRoute } from '@frontend/lib/middlewares';
+import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { studyProgramColumns } from './-module/columns';
 import { CreateStudyProgramModal } from './-module/components/modals/create-study-program-modal';
 
+const breadcrumbs = [{ title: 'Master Data' }, { title: 'Study Program' }];
 const pagination = api['study-program'].pagination;
 
 type Item = ExtractPaginationData<typeof pagination>;
@@ -23,13 +25,13 @@ type Fields = ExtractFields<typeof pagination>;
 type Filters = ExtractFilters<typeof pagination>;
 
 export const Route = createFileRoute('/_dashboard/master/study-program/')({
+  head: () => ({
+    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
+  }),
   beforeLoad: ({ context }) => {
     privateRoute(['admin'])({ context });
 
-    context.breadcrumbs = [
-      { title: 'Master Data' },
-      { title: 'Study Program' },
-    ];
+    context.breadcrumbs = breadcrumbs;
   },
   component: RouteComponent,
 });
@@ -49,16 +51,15 @@ function RouteComponent() {
   }, [params.filters]);
 
   const handleDepartmentChange = (departmentId: string | undefined) => {
-    console.log('Selected departmentId:', departmentId);
-    const currentFilters = params.filters ?? ([] as Filters);
+    const currentFilters = params.filters ?? [];
     const newFilters = currentFilters.filter(
       (f) => f.field !== 'departmentId',
     ) as Filters;
 
     if (departmentId) {
       newFilters.push({
-        field: 'departmentId' as const,
-        op: 'eq' as const,
+        field: 'departmentId',
+        op: 'eq',
         value: departmentId,
       });
     }
@@ -76,14 +77,7 @@ function RouteComponent() {
       <DataTable
         columns={studyProgramColumns}
         data={data?.items ?? []}
-        pageInfo={
-          data?.pageInfo ?? {
-            page: 1,
-            perPage: 10,
-            total: 0,
-            totalPages: 0,
-          }
-        }
+        pageInfo={data?.pageInfo}
         isLoading={isFetching}
         sortBy={params.sortBy}
         sortOrder={params.sortOrder}

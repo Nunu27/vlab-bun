@@ -12,6 +12,7 @@ export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
+		body: paginator.schema,
 		detail: {
 			description: "Get paginated lecturers data"
 		}
@@ -21,30 +22,26 @@ export default createRouter().guard(
 			.resolve(({ body }) => ({
 				cacheKey: `lecturer:pagination:${md5(JSON.stringify(body))}`
 			}))
-			.post(
-				"/pagination",
-				async ({ body }) => {
-					const data = await paginator.paginate(body, {
-						with: {
-							user: {
-								columns: {
-									name: true,
-									email: true
-								}
+			.post("/pagination", async ({ body }) => {
+				const data = await paginator.paginate(body, {
+					with: {
+						user: {
+							columns: {
+								name: true,
+								email: true
 							}
 						}
-					});
+					}
+				});
 
-					return success({
-						data: {
-							...data,
-							items: data.items.map(({ user, ...item }) => ({
-								...item,
-								...user
-							}))
-						}
-					});
-				},
-				{ body: paginator.schema }
-			)
+				return success({
+					data: {
+						...data,
+						items: data.items.map(({ user, ...item }) => ({
+							...item,
+							...user
+						}))
+					}
+				});
+			})
 );

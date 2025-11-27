@@ -95,7 +95,9 @@ export function EditAdminModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      Name
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -119,7 +121,9 @@ export function EditAdminModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      Email
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}

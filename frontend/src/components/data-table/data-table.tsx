@@ -128,6 +128,7 @@ export function DataTable<TData, TFields extends string>({
       );
       table.setColumnSizing(initialColumnSizing);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [headers, windowDimensions.width]);
 
   return (

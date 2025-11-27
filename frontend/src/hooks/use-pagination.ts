@@ -51,10 +51,7 @@ const filtersParser = createParser({
   eq: (a, b) => {
     return JSON.stringify(a) === JSON.stringify(b);
   },
-  serialize: (value: unknown) => {
-    console.log('Serialize:', value);
-    return JSON.stringify(value);
-  },
+  serialize: JSON.stringify,
 });
 export type UsePaginationConfig<
   TData,

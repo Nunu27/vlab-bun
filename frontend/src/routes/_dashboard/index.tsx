@@ -1,3 +1,4 @@
+import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
 
@@ -11,9 +12,14 @@ const StudentDashboard = lazy(
   () => import('./-module/components/pages/student-dashboard'),
 );
 
+const breadcrumbs = [{ title: 'Dashboard' }];
+
 export const Route = createFileRoute('/_dashboard/')({
+  head: () => ({
+    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
+  }),
   beforeLoad: ({ context }) => {
-    context.breadcrumbs = [{ title: 'Dashboard' }];
+    context.breadcrumbs = breadcrumbs;
   },
   component: RouteComponent,
 });

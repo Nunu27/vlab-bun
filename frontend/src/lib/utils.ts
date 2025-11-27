@@ -48,7 +48,10 @@ export async function errorHandler<
     const { data, error } = await promise;
 
     if (error) {
-      if (error.status === 401) {
+      if (
+        error.status === 401 &&
+        (data as BaseResponse).message === 'Unauthorized'
+      ) {
         await cookieStore.delete('session');
         toast.error('Session expired');
         return redirect({ to: '/login' });
@@ -108,4 +111,8 @@ export function formatTimeAgo(date: Date | string): string {
 
   const years = Math.floor(days / 365);
   return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+}
+
+export function getTitleFromBreadcrumbs(breadcrumbs: { title: string }[]) {
+  return breadcrumbs.reduce((acc, curr) => curr.title + ' - ' + acc, 'vLab');
 }

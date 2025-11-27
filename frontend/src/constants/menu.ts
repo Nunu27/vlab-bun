@@ -1,5 +1,10 @@
 import type { Role } from '@backend/db/schema';
-import { DatabaseIcon, LayoutDashboardIcon, UsersIcon } from 'lucide-react';
+import {
+  DatabaseIcon,
+  FlaskConicalIcon,
+  LayoutDashboardIcon,
+  UsersIcon,
+} from 'lucide-react';
 import type { ElementType } from 'react';
 
 type Menu = {
@@ -20,8 +25,20 @@ type MenuWithSub = {
 export type MenuItem = Menu | MenuWithSub;
 
 export const menuByRole: Record<Role, MenuItem[]> = {
-  student: [],
-  lecturer: [],
+  student: [
+    {
+      title: 'Dashboard',
+      url: '/',
+      icon: LayoutDashboardIcon,
+    },
+  ],
+  lecturer: [
+    {
+      title: 'Dashboard',
+      url: '/',
+      icon: LayoutDashboardIcon,
+    },
+  ],
   admin: [
     {
       title: 'Dashboard',
@@ -40,9 +57,19 @@ export const menuByRole: Record<Role, MenuItem[]> = {
           title: 'Study Program',
           url: '/master/study-program',
         },
+      ],
+    },
+    {
+      title: 'Lab Data',
+      icon: FlaskConicalIcon,
+      items: [
         {
-          title: 'Lab Device',
-          url: '/master/device',
+          title: 'Device Category',
+          url: '/lab/device-category',
+        },
+        {
+          title: 'Device',
+          url: '/lab/device',
         },
       ],
     },

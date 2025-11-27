@@ -15,6 +15,13 @@
       "when": 1763629051899,
       "tag": "0001_file",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763980093707,
+      "tag": "0002_lab-device",
+      "breakpoints": true
     }
   ]
 }

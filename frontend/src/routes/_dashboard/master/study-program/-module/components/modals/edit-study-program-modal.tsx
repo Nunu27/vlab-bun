@@ -147,7 +147,7 @@ export function EditStudyProgramModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
+                    <FieldLabel htmlFor={field.name} required>
                       Study Program Name
                     </FieldLabel>
                     <Input
@@ -173,7 +173,9 @@ export function EditStudyProgramModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Department</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      Department
+                    </FieldLabel>
                     <ComboBox
                       options={departmentOptions}
                       value={field.state.value}

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { Button } from '@frontend/components/ui/button';
+import { Button, buttonVariants } from '@frontend/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -99,10 +99,23 @@ export function ComboBox({
             {selectedOption?.label ?? placeholder}
           </span>
           <div className="flex items-center">
-            {allowClear && value && (
-              <Button variant="ghost" size="icon-sm" onClick={handleClear}>
+            {allowClear && value && !disabled && (
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label="Clear selection"
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                  'size-6 m-2',
+                )}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleClear(e);
+                }}
+              >
                 <XIcon className="opacity-50 hover:opacity-100" />
-              </Button>
+              </span>
             )}
             <ChevronsUpDownIcon className="opacity-50" />
           </div>

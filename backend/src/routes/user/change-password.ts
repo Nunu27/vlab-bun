@@ -3,6 +3,7 @@ import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
 import { ChangePasswordRequest } from "./schema";
+import { RequestWithId } from "../schema";
 
 export default createRouter().post(
 	"/:id/change-password",
@@ -28,6 +29,7 @@ export default createRouter().post(
 	},
 	{
 		private: ["admin"],
+		params: RequestWithId,
 		body: ChangePasswordRequest,
 		detail: {
 			description: "Change password for a user"

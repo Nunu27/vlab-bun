@@ -1,6 +1,7 @@
 import { lecturers, users } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
+import { RequestWithId } from "@backend/routes/schema";
 import { failure } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
 import { UpdateLecturerRequest } from "./schema";
@@ -34,6 +35,7 @@ export default createRouter().put(
 	},
 	{
 		private: ["admin"],
+		params: RequestWithId,
 		body: UpdateLecturerRequest,
 		detail: {
 			description: "Update a lecturer"

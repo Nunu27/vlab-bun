@@ -8,10 +8,12 @@ import type {
   ExtractPaginationData,
 } from '@frontend/lib/api-types';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { CreateAdminModal } from '@frontend/routes/_dashboard/user/admin/-module/components/modals/create-admin-modal';
+import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { adminColumns } from './-module/columns';
+import { CreateAdminModal } from './-module/components/modals/create-admin-modal';
 
+const breadcrumbs = [{ title: 'User' }, { title: 'Admin' }];
 const pagination = api.user.admin.pagination;
 
 type Item = ExtractPaginationData<typeof pagination>;
@@ -19,10 +21,13 @@ type Fields = ExtractFields<typeof pagination>;
 type Filters = ExtractFilters<typeof pagination>;
 
 export const Route = createFileRoute('/_dashboard/user/admin/')({
+  head: () => ({
+    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
+  }),
   beforeLoad: ({ context }) => {
     privateRoute(['admin'])({ context });
 
-    context.breadcrumbs = [{ title: 'User' }, { title: 'Admin' }];
+    context.breadcrumbs = breadcrumbs;
   },
   component: RouteComponent,
 });
@@ -47,14 +52,7 @@ function RouteComponent() {
       <DataTable
         columns={adminColumns}
         data={data?.items ?? []}
-        pageInfo={
-          data?.pageInfo ?? {
-            page: 1,
-            perPage: 10,
-            total: 0,
-            totalPages: 0,
-          }
-        }
+        pageInfo={data?.pageInfo}
         isLoading={isFetching}
         sortBy={params.sortBy}
         sortOrder={params.sortOrder}

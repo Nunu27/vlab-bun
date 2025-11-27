@@ -3,6 +3,7 @@ import { guestRoute } from '@frontend/lib/middlewares';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/login')({
+  head: () => ({ meta: [{ title: 'Login - vLab' }] }),
   beforeLoad: guestRoute(),
   component: RouteComponent,
 });

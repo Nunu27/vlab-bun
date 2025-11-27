@@ -22,18 +22,14 @@ export default createRouter().guard(
 			.resolve(({ body }) => ({
 				cacheKey: `department:pagination:${md5(JSON.stringify(body))}`
 			}))
-			.post(
-				"/pagination",
-				async ({ body }) => {
-					const data = await paginator.paginate(body, {
-						columns: {
-							createdAt: false,
-							updatedAt: false
-						}
-					});
+			.post("/pagination", async ({ body }) => {
+				const data = await paginator.paginate(body, {
+					columns: {
+						createdAt: false,
+						updatedAt: false
+					}
+				});
 
-					return success({ data });
-				},
-				{ body: paginator.schema }
-			)
+				return success({ data });
+			})
 );

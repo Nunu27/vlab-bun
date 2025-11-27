@@ -3,7 +3,7 @@ import awsLite from "@aws-lite/client";
 import db from "@backend/db";
 import logger from "./logger";
 import { fileDependencies, files } from "@backend/db/schema/file";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import path from "path";
 
 const bucket = env.S3_BUCKET_NAME;
@@ -63,7 +63,29 @@ export async function uploadFile(file: File, from: string) {
 		return insertedFile.id;
 	});
 
-	return id;
+	return { id, name };
+}
+
+export async function deleteFile(name: string, from: string) {
+	return await db.transaction(async (tx) => {
+		const { rowCount } = await tx
+			.delete(fileDependencies)
+			.where(
+				and(eq(fileDependencies.file, name), eq(fileDependencies.name, from))
+			);
+		if (!rowCount) return rowCount;
+
+		const count = await tx.$count(
+			fileDependencies,
+			eq(fileDependencies.file, name)
+		);
+
+		if (!count) {
+			await tx.update(files).set({ unused: true }).where(eq(files.name, name));
+		}
+
+		return rowCount;
+	});
 }
 
 export async function storageCleanup() {

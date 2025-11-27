@@ -1,6 +1,7 @@
 import env from "@backend/env";
 import logger from "@backend/services/logger";
 import redis from "@backend/services/redis";
+import { RDPParameters } from "@backend/types/guacamole";
 import GuacamoleLite from "guacamole-lite";
 import type { Server } from "node:http";
 
@@ -60,10 +61,9 @@ const clientOptions = {
 			"enable-wallpaper": false,
 			"create-recording-path": true,
 			audio: ["audio/L16"],
-			video: null,
 			image: ["image/png", "image/jpeg"],
-			timezone: null
-		},
+			"resize-method": "display-update"
+		} as Omit<RDPParameters, "hostname">,
 		vnc: {
 			"swap-red-blue": false,
 			"disable-paste": false

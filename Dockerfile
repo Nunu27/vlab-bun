@@ -1,68 +1,61 @@
-# syntax=docker/dockerfile:1.4
+# syntax=docker/dockerfile:1.7
 
-# Base stage with common dependencies
-FROM node:20-slim AS base
+############################
+# Base build image
+############################
+FROM oven/bun:1-slim AS build-base
 
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        unzip \
-        netcat-traditional && \
+    apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Bun
-RUN curl -fsSL https://bun.sh/install | bash && \
-    ln -s /root/.bun/bin/bun /usr/local/bin/bun
+############################
+# Dependencies
+############################
+FROM build-base AS deps
 
-# Dependencies stage
-FROM base AS deps
-
-COPY package.json bun.lock ./
+COPY bun.lock* package.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 
-# Frontend builder
-FROM base AS frontend-builder
+############################
+# Frontend build
+############################
+FROM build-base AS frontend-builder
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./
+COPY package.json bun.lock* ./
 COPY frontend ./frontend
 COPY backend ./backend
 
-RUN cd frontend && npx --yes rsbuild build
+RUN cd frontend && bun run build
 
-# Backend builder
-FROM base AS backend-builder
+############################
+# Backend build
+############################
+FROM build-base AS backend-builder
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY package.json bun.lock* ./
 COPY backend ./backend
 
-RUN cd backend && \
-    bun build src/index.ts \
-      --compile \
-      --minify \
-      --sourcemap \
-      --target=bun \
-      --outfile ../vlab && \
-    mkdir -p ../build && \
-    mv ../vlab ../build/ && \
-    cp -r migrations ../build/
+RUN cd backend && bun run build
 
-# Final production image
+############################
+# Runtime image
+############################
 FROM gcr.io/distroless/base-debian12:nonroot
 
 WORKDIR /app
 
-COPY --from=base /bin/nc.traditional /usr/bin/nc
-COPY --from=backend-builder /app/build/vlab /app/
-COPY --from=backend-builder /app/build/migrations /app/migrations
-COPY --from=frontend-builder /app/build/public /app/public
+COPY --from=build-base /bin/nc.traditional /usr/bin/nc
+COPY --from=backend-builder /app/build/ .
+COPY --from=frontend-builder /app/build/ .
 
 EXPOSE 3000
 

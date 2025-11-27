@@ -22,27 +22,23 @@ export default createRouter().guard(
 			.resolve(({ body }) => ({
 				cacheKey: `study-program:pagination:${md5(JSON.stringify(body))}`
 			}))
-			.post(
-				"/pagination",
-				async ({ body }) => {
-					const data = await paginator.paginate(body, {
-						columns: {
-							departmentId: false,
-							createdAt: false,
-							updatedAt: false
-						},
-						with: {
-							department: {
-								columns: {
-									id: true,
-									name: true
-								}
+			.post("/pagination", async ({ body }) => {
+				const data = await paginator.paginate(body, {
+					columns: {
+						departmentId: false,
+						createdAt: false,
+						updatedAt: false
+					},
+					with: {
+						department: {
+							columns: {
+								id: true,
+								name: true
 							}
 						}
-					});
+					}
+				});
 
-					return success({ data });
-				},
-				{ body: paginator.schema }
-			)
+				return success({ data });
+			})
 );

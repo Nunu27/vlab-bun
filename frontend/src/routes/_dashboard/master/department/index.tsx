@@ -1,17 +1,19 @@
 import { DataTable } from '@frontend/components/data-table';
-import { CreateDepartmentModal } from '@frontend/routes/_dashboard/master/department/-module/components/modals/create-department-modal';
 import { PageHeading } from '@frontend/components/page-heading';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
-import { privateRoute } from '@frontend/lib/middlewares';
-import { createFileRoute } from '@tanstack/react-router';
-import { departmentColumns } from './-module/columns';
 import type {
-  ExtractPaginationData,
   ExtractFields,
   ExtractFilters,
+  ExtractPaginationData,
 } from '@frontend/lib/api-types';
+import { privateRoute } from '@frontend/lib/middlewares';
+import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
+import { createFileRoute } from '@tanstack/react-router';
+import { departmentColumns } from './-module/columns';
+import { CreateDepartmentModal } from './-module/components/modals/create-department-modal';
 
+const breadcrumbs = [{ title: 'Master Data' }, { title: 'Department' }];
 const pagination = api.department.pagination;
 
 type Item = ExtractPaginationData<typeof pagination>;
@@ -19,10 +21,13 @@ type Fields = ExtractFields<typeof pagination>;
 type Filters = ExtractFilters<typeof pagination>;
 
 export const Route = createFileRoute('/_dashboard/master/department/')({
+  head: () => ({
+    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
+  }),
   beforeLoad: ({ context }) => {
     privateRoute(['admin'])({ context });
 
-    context.breadcrumbs = [{ title: 'Master Data' }, { title: 'Department' }];
+    context.breadcrumbs = breadcrumbs;
   },
   component: RouteComponent,
 });
@@ -47,14 +52,7 @@ function RouteComponent() {
       <DataTable
         columns={departmentColumns}
         data={data?.items ?? []}
-        pageInfo={
-          data?.pageInfo ?? {
-            page: 1,
-            perPage: 10,
-            total: 0,
-            totalPages: 0,
-          }
-        }
+        pageInfo={data?.pageInfo}
         isLoading={isFetching}
         sortBy={params.sortBy}
         sortOrder={params.sortOrder}

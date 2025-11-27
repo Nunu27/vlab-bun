@@ -1,6 +1,7 @@
 import { users } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
+import { RequestWithId } from "@backend/routes/schema";
 import { failure, success } from "@backend/utils/response";
 import { and, eq } from "drizzle-orm";
 
@@ -22,6 +23,7 @@ export default createRouter().delete(
 	},
 	{
 		private: ["admin"],
+		params: RequestWithId,
 		detail: {
 			description: "Delete a student"
 		}

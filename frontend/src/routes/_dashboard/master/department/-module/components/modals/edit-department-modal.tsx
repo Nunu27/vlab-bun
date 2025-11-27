@@ -92,7 +92,7 @@ export function EditDepartmentModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
+                    <FieldLabel htmlFor={field.name} required>
                       Department Name
                     </FieldLabel>
                     <Input

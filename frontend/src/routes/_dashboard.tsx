@@ -1,4 +1,3 @@
-import { AppSidebar } from '@frontend/routes/_dashboard/-module/components/app-sidebar';
 import ThemeToggle from '@frontend/components/theme-toggle';
 import {
   Breadcrumb,
@@ -14,13 +13,14 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@frontend/components/ui/sidebar';
+import { protectedRoute } from '@frontend/lib/middlewares';
 import {
   createFileRoute,
   Outlet,
   useRouterState,
 } from '@tanstack/react-router';
-import { protectedRoute } from '@frontend/lib/middlewares';
 import { Fragment } from 'react';
+import { AppSidebar } from './_dashboard/-module/components/app-sidebar';
 
 export const Route = createFileRoute('/_dashboard')({
   beforeLoad: protectedRoute(),

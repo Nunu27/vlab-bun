@@ -1,14 +1,12 @@
 import { createRouter } from "@backend/plugins/services";
+import { RequestWithId } from "@backend/routes/schema";
 import { failure, success } from "@backend/utils/response";
-import { t } from "elysia";
 
 export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
-		params: t.Object({
-			id: t.String({ format: "uuid" })
-		}),
+		params: RequestWithId,
 		detail: {
 			description: "Get admin detail"
 		}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Treaty } from '@elysiajs/eden';
 import type { PaginatedResponse } from '@frontend/types/pagination';
 

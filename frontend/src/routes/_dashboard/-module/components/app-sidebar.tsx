@@ -1,8 +1,5 @@
 'use client';
 
-import { AppLogo } from '@frontend/routes/_dashboard/-module/components/app-logo';
-import { NavMain } from '@frontend/routes/_dashboard/-module/components/nav-main';
-import { NavUser } from '@frontend/routes/_dashboard/-module/components/nav-user';
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +9,9 @@ import {
 } from '@frontend/components/ui/sidebar';
 import { menuByRole } from '@frontend/constants/menu';
 import { useRouteContext } from '@tanstack/react-router';
+import { AppLogo } from './app-logo';
+import { NavMain } from './nav-main';
+import { NavUser } from './nav-user';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const userRole = useRouteContext({

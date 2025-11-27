@@ -86,7 +86,9 @@ export function AuthChangePasswordModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Old Password</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      Old Password
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -112,7 +114,9 @@ export function AuthChangePasswordModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>New Password</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      New Password
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -138,7 +142,7 @@ export function AuthChangePasswordModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
+                    <FieldLabel htmlFor={field.name} required>
                       Confirm Password
                     </FieldLabel>
                     <Input

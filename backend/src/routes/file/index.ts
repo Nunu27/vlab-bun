@@ -1,8 +1,9 @@
+import logger from "@backend/services/logger";
 import { storageCleanup } from "@backend/services/storage";
 import { cron, Patterns } from "@elysiajs/cron";
 import { Elysia } from "elysia";
+import cluster from "node:cluster";
 
-import _delete from "./delete";
 import view from "./view";
 
 const fileRouter = new Elysia({
@@ -10,13 +11,15 @@ const fileRouter = new Elysia({
 })
 	.use(
 		cron({
-			catch: true,
 			name: "file-cleanup",
+			run: storageCleanup,
+			paused: cluster.isWorker,
 			pattern: Patterns.everyMinutes(15),
-			run: storageCleanup
+			catch: (error) => {
+				logger.error({ error }, "File cleanup task failed");
+			}
 		})
 	)
-	.use(view)
-	.use(_delete);
+	.use(view);
 
 export default fileRouter;

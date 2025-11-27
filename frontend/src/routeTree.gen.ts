@@ -16,8 +16,11 @@ import { Route as DashboardUserStudentIndexRouteImport } from './routes/_dashboa
 import { Route as DashboardUserLecturerIndexRouteImport } from './routes/_dashboard/user/lecturer/index'
 import { Route as DashboardUserAdminIndexRouteImport } from './routes/_dashboard/user/admin/index'
 import { Route as DashboardMasterStudyProgramIndexRouteImport } from './routes/_dashboard/master/study-program/index'
-import { Route as DashboardMasterDeviceIndexRouteImport } from './routes/_dashboard/master/device/index'
 import { Route as DashboardMasterDepartmentIndexRouteImport } from './routes/_dashboard/master/department/index'
+import { Route as DashboardLabDeviceIndexRouteImport } from './routes/_dashboard/lab/device/index'
+import { Route as DashboardLabDeviceCategoryIndexRouteImport } from './routes/_dashboard/lab/device-category/index'
+import { Route as DashboardLabDeviceCreateRouteImport } from './routes/_dashboard/lab/device/create'
+import { Route as DashboardLabDeviceIdUpdateRouteImport } from './routes/_dashboard/lab/device/$id.update'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -56,83 +59,118 @@ const DashboardMasterStudyProgramIndexRoute =
     path: '/master/study-program/',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardMasterDeviceIndexRoute =
-  DashboardMasterDeviceIndexRouteImport.update({
-    id: '/master/device/',
-    path: '/master/device/',
-    getParentRoute: () => DashboardRoute,
-  } as any)
 const DashboardMasterDepartmentIndexRoute =
   DashboardMasterDepartmentIndexRouteImport.update({
     id: '/master/department/',
     path: '/master/department/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardLabDeviceIndexRoute = DashboardLabDeviceIndexRouteImport.update({
+  id: '/lab/device/',
+  path: '/lab/device/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLabDeviceCategoryIndexRoute =
+  DashboardLabDeviceCategoryIndexRouteImport.update({
+    id: '/lab/device-category/',
+    path: '/lab/device-category/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardLabDeviceCreateRoute =
+  DashboardLabDeviceCreateRouteImport.update({
+    id: '/lab/device/create',
+    path: '/lab/device/create',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardLabDeviceIdUpdateRoute =
+  DashboardLabDeviceIdUpdateRouteImport.update({
+    id: '/lab/device/$id/update',
+    path: '/lab/device/$id/update',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/': typeof DashboardIndexRoute
+  '/lab/device/create': typeof DashboardLabDeviceCreateRoute
+  '/lab/device-category': typeof DashboardLabDeviceCategoryIndexRoute
+  '/lab/device': typeof DashboardLabDeviceIndexRoute
   '/master/department': typeof DashboardMasterDepartmentIndexRoute
-  '/master/device': typeof DashboardMasterDeviceIndexRoute
   '/master/study-program': typeof DashboardMasterStudyProgramIndexRoute
   '/user/admin': typeof DashboardUserAdminIndexRoute
   '/user/lecturer': typeof DashboardUserLecturerIndexRoute
   '/user/student': typeof DashboardUserStudentIndexRoute
+  '/lab/device/$id/update': typeof DashboardLabDeviceIdUpdateRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof DashboardIndexRoute
+  '/lab/device/create': typeof DashboardLabDeviceCreateRoute
+  '/lab/device-category': typeof DashboardLabDeviceCategoryIndexRoute
+  '/lab/device': typeof DashboardLabDeviceIndexRoute
   '/master/department': typeof DashboardMasterDepartmentIndexRoute
-  '/master/device': typeof DashboardMasterDeviceIndexRoute
   '/master/study-program': typeof DashboardMasterStudyProgramIndexRoute
   '/user/admin': typeof DashboardUserAdminIndexRoute
   '/user/lecturer': typeof DashboardUserLecturerIndexRoute
   '/user/student': typeof DashboardUserStudentIndexRoute
+  '/lab/device/$id/update': typeof DashboardLabDeviceIdUpdateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/lab/device/create': typeof DashboardLabDeviceCreateRoute
+  '/_dashboard/lab/device-category/': typeof DashboardLabDeviceCategoryIndexRoute
+  '/_dashboard/lab/device/': typeof DashboardLabDeviceIndexRoute
   '/_dashboard/master/department/': typeof DashboardMasterDepartmentIndexRoute
-  '/_dashboard/master/device/': typeof DashboardMasterDeviceIndexRoute
   '/_dashboard/master/study-program/': typeof DashboardMasterStudyProgramIndexRoute
   '/_dashboard/user/admin/': typeof DashboardUserAdminIndexRoute
   '/_dashboard/user/lecturer/': typeof DashboardUserLecturerIndexRoute
   '/_dashboard/user/student/': typeof DashboardUserStudentIndexRoute
+  '/_dashboard/lab/device/$id/update': typeof DashboardLabDeviceIdUpdateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/login'
     | '/'
+    | '/lab/device/create'
+    | '/lab/device-category'
+    | '/lab/device'
     | '/master/department'
-    | '/master/device'
     | '/master/study-program'
     | '/user/admin'
     | '/user/lecturer'
     | '/user/student'
+    | '/lab/device/$id/update'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/'
+    | '/lab/device/create'
+    | '/lab/device-category'
+    | '/lab/device'
     | '/master/department'
-    | '/master/device'
     | '/master/study-program'
     | '/user/admin'
     | '/user/lecturer'
     | '/user/student'
+    | '/lab/device/$id/update'
   id:
     | '__root__'
     | '/_dashboard'
     | '/login'
     | '/_dashboard/'
+    | '/_dashboard/lab/device/create'
+    | '/_dashboard/lab/device-category/'
+    | '/_dashboard/lab/device/'
     | '/_dashboard/master/department/'
-    | '/_dashboard/master/device/'
     | '/_dashboard/master/study-program/'
     | '/_dashboard/user/admin/'
     | '/_dashboard/user/lecturer/'
     | '/_dashboard/user/student/'
+    | '/_dashboard/lab/device/$id/update'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -191,13 +229,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMasterStudyProgramIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/master/device/': {
-      id: '/_dashboard/master/device/'
-      path: '/master/device'
-      fullPath: '/master/device'
-      preLoaderRoute: typeof DashboardMasterDeviceIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/_dashboard/master/department/': {
       id: '/_dashboard/master/department/'
       path: '/master/department'
@@ -205,27 +236,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMasterDepartmentIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/lab/device/': {
+      id: '/_dashboard/lab/device/'
+      path: '/lab/device'
+      fullPath: '/lab/device'
+      preLoaderRoute: typeof DashboardLabDeviceIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/lab/device-category/': {
+      id: '/_dashboard/lab/device-category/'
+      path: '/lab/device-category'
+      fullPath: '/lab/device-category'
+      preLoaderRoute: typeof DashboardLabDeviceCategoryIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/lab/device/create': {
+      id: '/_dashboard/lab/device/create'
+      path: '/lab/device/create'
+      fullPath: '/lab/device/create'
+      preLoaderRoute: typeof DashboardLabDeviceCreateRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/lab/device/$id/update': {
+      id: '/_dashboard/lab/device/$id/update'
+      path: '/lab/device/$id/update'
+      fullPath: '/lab/device/$id/update'
+      preLoaderRoute: typeof DashboardLabDeviceIdUpdateRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
 interface DashboardRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardLabDeviceCreateRoute: typeof DashboardLabDeviceCreateRoute
+  DashboardLabDeviceCategoryIndexRoute: typeof DashboardLabDeviceCategoryIndexRoute
+  DashboardLabDeviceIndexRoute: typeof DashboardLabDeviceIndexRoute
   DashboardMasterDepartmentIndexRoute: typeof DashboardMasterDepartmentIndexRoute
-  DashboardMasterDeviceIndexRoute: typeof DashboardMasterDeviceIndexRoute
   DashboardMasterStudyProgramIndexRoute: typeof DashboardMasterStudyProgramIndexRoute
   DashboardUserAdminIndexRoute: typeof DashboardUserAdminIndexRoute
   DashboardUserLecturerIndexRoute: typeof DashboardUserLecturerIndexRoute
   DashboardUserStudentIndexRoute: typeof DashboardUserStudentIndexRoute
+  DashboardLabDeviceIdUpdateRoute: typeof DashboardLabDeviceIdUpdateRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardLabDeviceCreateRoute: DashboardLabDeviceCreateRoute,
+  DashboardLabDeviceCategoryIndexRoute: DashboardLabDeviceCategoryIndexRoute,
+  DashboardLabDeviceIndexRoute: DashboardLabDeviceIndexRoute,
   DashboardMasterDepartmentIndexRoute: DashboardMasterDepartmentIndexRoute,
-  DashboardMasterDeviceIndexRoute: DashboardMasterDeviceIndexRoute,
   DashboardMasterStudyProgramIndexRoute: DashboardMasterStudyProgramIndexRoute,
   DashboardUserAdminIndexRoute: DashboardUserAdminIndexRoute,
   DashboardUserLecturerIndexRoute: DashboardUserLecturerIndexRoute,
   DashboardUserStudentIndexRoute: DashboardUserStudentIndexRoute,
+  DashboardLabDeviceIdUpdateRoute: DashboardLabDeviceIdUpdateRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

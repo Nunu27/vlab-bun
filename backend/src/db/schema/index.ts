@@ -1,3 +1,3 @@
 export * from "./auth";
 export * from "./file";
-// export * from "./lab";
+export * from "./lab-device";

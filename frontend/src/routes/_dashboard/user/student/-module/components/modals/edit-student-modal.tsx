@@ -158,7 +158,9 @@ export function EditStudentModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      Name
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -182,7 +184,9 @@ export function EditStudentModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      Email
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -207,7 +211,9 @@ export function EditStudentModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>NRP</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      NRP
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -233,7 +239,9 @@ export function EditStudentModal({
 
                   return (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Year</FieldLabel>
+                      <FieldLabel htmlFor={field.name} required>
+                        Year
+                      </FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -260,7 +268,9 @@ export function EditStudentModal({
 
                   return (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Degree Level</FieldLabel>
+                      <FieldLabel htmlFor={field.name} required>
+                        Degree Level
+                      </FieldLabel>
                       <Select
                         value={field.state.value}
                         onValueChange={(value) =>
@@ -297,7 +307,9 @@ export function EditStudentModal({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Study Program</FieldLabel>
+                    <FieldLabel htmlFor={field.name} required>
+                      Study Program
+                    </FieldLabel>
                     <ComboBox
                       options={studyProgramOptions}
                       value={field.state.value}
