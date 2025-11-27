@@ -49,7 +49,7 @@ RUN cd backend && bun run build
 ############################
 # Runtime image
 ############################
-FROM oven/bun:1.2.2-distroless
+FROM gcr.io/distroless/cc
 
 WORKDIR /app
 
