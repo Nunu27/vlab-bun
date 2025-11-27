@@ -1,4 +1,5 @@
 import { createRouter } from "@backend/plugins/services";
+import { withTimeout } from "@backend/utils/timeout";
 
 export default createRouter().get(
 	"/:name",
@@ -8,12 +9,10 @@ export default createRouter().get(
 		let file;
 
 		try {
-			file = await Promise.race([
+			file = await withTimeout(
 				storage.GetObject({ Bucket: bucket, Key: params.name }),
-				new Promise<never>((_, reject) =>
-					setTimeout(() => reject(new Error("Request timeout")), 5000)
-				)
-			]);
+				5000
+			);
 		} catch (error) {
 			return status(500);
 		}

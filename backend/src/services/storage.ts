@@ -1,10 +1,11 @@
-import env from "@backend/env";
 import awsLite from "@aws-lite/client";
 import db from "@backend/db";
-import logger from "./logger";
 import { fileDependencies, files } from "@backend/db/schema/file";
+import env from "@backend/env";
+import { withTimeout } from "@backend/utils/timeout";
 import { and, eq, inArray } from "drizzle-orm";
 import path from "path";
+import logger from "./logger";
 
 const bucket = env.S3_BUCKET_NAME;
 const aws = await awsLite({
@@ -53,21 +54,18 @@ export async function uploadFile(file: File, from: string) {
 			})
 			.onConflictDoNothing();
 
-		await Promise.race([
+		await withTimeout(
 			aws.S3.PutObject({
 				Bucket: bucket,
 				Key: name,
 				Body: fileBuffer,
 				ContentType: file.type
 			}),
-			new Promise<never>((_, reject) =>
-				setTimeout(() => reject(new Error("Request timeout")), 30000)
-			)
-		]);
+			5000
+		);
 
 		return insertedFile.id;
 	});
-
 	return { id, name };
 }
 
@@ -110,13 +108,16 @@ export async function storageCleanup() {
 		logger.info("Found %d unused files, deleting...", names.length);
 
 		await tx.delete(files).where(inArray(files.name, names));
-		await aws.S3.DeleteObjects({
-			Bucket: env.S3_BUCKET_NAME,
-			Delete: {
-				Objects: names.map((name) => ({ Key: name })),
-				Quiet: true
-			}
-		});
+		await withTimeout(
+			aws.S3.DeleteObjects({
+				Bucket: env.S3_BUCKET_NAME,
+				Delete: {
+					Objects: names.map((name) => ({ Key: name })),
+					Quiet: true
+				}
+			}),
+			30000
+		);
 
 		logger.info("Deleted %d unused files", names.length);
 	});
