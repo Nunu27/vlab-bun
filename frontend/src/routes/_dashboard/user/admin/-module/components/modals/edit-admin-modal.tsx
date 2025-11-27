@@ -69,9 +69,7 @@ export function EditAdminModal({
     validators: {
       onSubmit: Compile(UpdateAdminRequest),
     },
-    onSubmit: async ({ value }) => {
-      updateAdmin.mutate(value);
-    },
+    onSubmit: ({ value }) => updateAdmin.mutateAsync(value),
   });
 
   return (

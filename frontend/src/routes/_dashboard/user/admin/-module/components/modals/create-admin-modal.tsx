@@ -60,9 +60,7 @@ export function CreateAdminModal() {
     validators: {
       onSubmit: Compile(CreateAdminRequest),
     },
-    onSubmit: async ({ value }) => {
-      createAdmin.mutate(value);
-    },
+    onSubmit: ({ value }) => createAdmin.mutateAsync(value),
   });
 
   return (

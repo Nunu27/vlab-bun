@@ -63,9 +63,7 @@ export function ChangePasswordModal({
     validators: {
       onSubmit: Compile(ChangePasswordRequest),
     },
-    onSubmit: async ({ value }) => {
-      changePassword.mutate(value);
-    },
+    onSubmit: ({ value }) => changePassword.mutateAsync(value),
   });
 
   return (

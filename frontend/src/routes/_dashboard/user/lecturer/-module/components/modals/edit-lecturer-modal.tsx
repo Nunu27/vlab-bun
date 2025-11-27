@@ -72,9 +72,7 @@ export function EditLecturerModal({
     validators: {
       onSubmit: Compile(UpdateLecturerRequest),
     },
-    onSubmit: async ({ value }) => {
-      updateLecturer.mutate(value);
-    },
+    onSubmit: ({ value }) => updateLecturer.mutateAsync(value),
   });
 
   return (

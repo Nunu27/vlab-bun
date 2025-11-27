@@ -60,9 +60,7 @@ export function CreateDeviceCategoryModal() {
       icon: undefined,
     } as unknown as typeof CreateDeviceCategoryRequest.static,
     validators: { onSubmit: Compile(CreateDeviceCategoryRequest) },
-    onSubmit: async ({ value }) => {
-      createDeviceCategory.mutate(value);
-    },
+    onSubmit: ({ value }) => createDeviceCategory.mutateAsync(value),
   });
 
   return (

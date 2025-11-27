@@ -53,12 +53,17 @@ export async function uploadFile(file: File, from: string) {
 			})
 			.onConflictDoNothing();
 
-		await aws.S3.PutObject({
-			Bucket: bucket,
-			Key: name,
-			Body: fileBuffer,
-			ContentType: file.type
-		});
+		await Promise.race([
+			aws.S3.PutObject({
+				Bucket: bucket,
+				Key: name,
+				Body: fileBuffer,
+				ContentType: file.type
+			}),
+			new Promise<never>((_, reject) =>
+				setTimeout(() => reject(new Error("Request timeout")), 30000)
+			)
+		]);
 
 		return insertedFile.id;
 	});

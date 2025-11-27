@@ -129,9 +129,7 @@ export function EditStudentModal({
     validators: {
       onSubmit: Compile(UpdateStudentRequest),
     },
-    onSubmit: async ({ value }) => {
-      updateStudent.mutate(value);
-    },
+    onSubmit: ({ value }) => updateStudent.mutateAsync(value),
   });
 
   return (

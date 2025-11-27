@@ -71,9 +71,7 @@ export function EditDeviceCategoryModal({
       icon: undefined,
     } as typeof UpdateDeviceCategoryRequest.static,
     validators: { onSubmit: Compile(UpdateDeviceCategoryRequest) },
-    onSubmit: async ({ value }) => {
-      updateDeviceCategory.mutate(value);
-    },
+    onSubmit: ({ value }) => updateDeviceCategory.mutateAsync(value),
   });
 
   useEffect(() => {

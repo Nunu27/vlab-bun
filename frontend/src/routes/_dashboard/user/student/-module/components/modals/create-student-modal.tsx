@@ -122,9 +122,7 @@ export function CreateStudentModal() {
     validators: {
       onSubmit: Compile(CreateStudentRequest),
     },
-    onSubmit: async ({ value }) => {
-      createStudent.mutate(value);
-    },
+    onSubmit: ({ value }) => createStudent.mutateAsync(value),
   });
 
   return (

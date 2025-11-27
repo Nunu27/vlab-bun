@@ -119,9 +119,7 @@ export function EditStudyProgramModal({
     validators: {
       onSubmit: Compile(UpdateStudyProgramRequest),
     },
-    onSubmit: async ({ value }) => {
-      updateStudyProgram.mutate(value);
-    },
+    onSubmit: ({ value }) => updateStudyProgram.mutateAsync(value),
   });
 
   return (

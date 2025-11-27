@@ -66,9 +66,7 @@ export function EditDepartmentModal({
     validators: {
       onSubmit: Compile(UpdateDepartmentRequest),
     },
-    onSubmit: async ({ value }) => {
-      updateDepartment.mutate(value);
-    },
+    onSubmit: ({ value }) => updateDepartment.mutateAsync(value),
   });
 
   return (

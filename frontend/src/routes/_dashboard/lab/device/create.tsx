@@ -93,9 +93,7 @@ function RouteComponent() {
       interfaces: [],
     } as unknown as typeof CreateDeviceRequest.static,
     validators: { onSubmit: Compile(CreateDeviceRequest) },
-    onSubmit: async ({ value }) => {
-      createDevice.mutate(value);
-    },
+    onSubmit: ({ value }) => createDevice.mutateAsync(value),
     onSubmitInvalid: () => {
       toast.error('Validation failed', {
         description: 'Please check all required fields',

@@ -59,9 +59,7 @@ export function CreateDepartmentModal() {
     validators: {
       onSubmit: Compile(CreateDepartmentRequest),
     },
-    onSubmit: async ({ value }) => {
-      createDepartment.mutate(value);
-    },
+    onSubmit: ({ value }) => createDepartment.mutateAsync(value),
   });
 
   return (

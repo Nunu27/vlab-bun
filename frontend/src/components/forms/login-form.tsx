@@ -36,7 +36,7 @@ export function LoginForm({
     validators: {
       onSubmit: Compile(LoginRequest),
     },
-    onSubmit: async ({ value }) => login(value),
+    onSubmit: ({ value }) => login(value),
   });
 
   return (
