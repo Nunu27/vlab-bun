@@ -46,50 +46,44 @@ export const clearCache = async () => {
 	}
 };
 
-export default new Elysia().macro({
-	cached(options: CacheOptions | boolean) {
-		if (options === false) return;
-		if (options === true) options = {};
+export default new Elysia()
+	.resolve(() => ({}) as { cacheKey?: string; session?: Session })
+	.macro({
+		cached(options: CacheOptions | boolean) {
+			if (options === false) return;
+			if (options === true) options = {};
 
-		const { key, ttl = env.SESSION_TTL, personalized = false } = options;
+			const { key, ttl = env.SESSION_TTL, personalized = false } = options;
 
-		return {
-			async beforeHandle(ctx) {
-				const { cacheKey: rawKey, session } = ctx as {
-					cacheKey?: string;
-					session?: Session;
-				};
+			return {
+				async beforeHandle({ cacheKey: rawKey, session }) {
+					const cacheKey = buildCacheKey(key, personalized, {
+						key: rawKey,
+						session
+					});
+					if (!cacheKey) return;
 
-				const cacheKey = buildCacheKey(key, personalized, {
-					key: rawKey,
-					session
-				});
-				if (!cacheKey) return;
+					const cachedData = await redis.get<string>(cacheKey);
 
-				const cachedData = await redis.get<string>(cacheKey);
+					if (cachedData) {
+						logger.debug(`Cache hit for key: ${cacheKey}`);
+						return status(202, cachedData);
+					}
+				},
+				async afterResponse({ set, cacheKey: rawKey, session, responseValue }) {
+					if (set.status !== 200) return;
 
-				if (cachedData) {
-					logger.debug(`Cache hit for key: ${cacheKey}`);
-					return status(202, cachedData);
+					const cacheKey = buildCacheKey(key, personalized, {
+						key: rawKey,
+						session
+					});
+					if (!cacheKey) return;
+
+					logger.debug(
+						`Caching response for key: ${cacheKey} with TTL: ${ttl}`
+					);
+					await redis.set(cacheKey, responseValue, ttl);
 				}
-			},
-			async afterResponse(ctx) {
-				if (ctx.set.status !== 200) return;
-
-				const { cacheKey: rawKey, session } = ctx as {
-					cacheKey?: string;
-					session?: Session;
-				};
-
-				const cacheKey = buildCacheKey(key, personalized, {
-					key: rawKey,
-					session
-				});
-				if (!cacheKey) return;
-
-				logger.debug(`Caching response for key: ${cacheKey} with TTL: ${ttl}`);
-				await redis.set(cacheKey, ctx.responseValue, ttl);
-			}
-		};
-	}
-});
+			};
+		}
+	});

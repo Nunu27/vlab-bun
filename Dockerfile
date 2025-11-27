@@ -49,7 +49,7 @@ RUN cd backend && bun run build
 ############################
 # Runtime image
 ############################
-FROM oven/bun:distroless AS runtime
+FROM oven/bun:slim AS runtime
 
 WORKDIR /app
 
