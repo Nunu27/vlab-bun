@@ -14,20 +14,17 @@ export default createRouter().post(
 		const file = await uploadFile(body.icon, dependency);
 
 		try {
-			const [device] = await db
-				.insert(devices)
-				.values({
-					id,
-					...body,
-					icon: file.name
-				})
-				.returning({ id: devices.id });
+			await db.insert(devices).values({
+				id,
+				...body,
+				icon: file.name
+			});
 
 			await deleteCache("device:list", "device:pagination:*");
 
 			return success({
 				message: "Device created",
-				data: { id: device.id }
+				data: { id }
 			});
 		} catch (error) {
 			await deleteFile(file.name, dependency);

@@ -2,24 +2,34 @@ import { createRouter } from "@backend/plugins/services";
 
 export default createRouter().get(
 	"/:name",
-	async ({ params, storage, bucket, set, status }) => {
-		const file = await storage
-			.GetObject({ Bucket: bucket, Key: params.name })
-			.catch(() => null);
-		if (!file?.Body) {
-			return status(404);
-		}
+	async ({ session, params, storage, bucket, set, status }) => {
+		if (!session) return status(401);
 
-		set.headers.etag = file.ETag || "";
-		set.headers["content-type"] =
-			file.ContentType || "application/octet-stream";
-		set.headers["content-length"] = file.ContentLength;
-		set.headers["last-modified"] = file.LastModified?.toISOString();
+		let file;
+
+		try {
+			file = await storage.GetObject({ Bucket: bucket, Key: params.name });
+		} catch (error) {
+			return status(500);
+		}
+		if (!file?.Body) return status(404);
+
+		const {
+			ETag = "",
+			ContentType = "application/octet-stream",
+			ContentLength,
+			LastModified
+		} = file;
+
+		set.headers.etag = ETag;
+		set.headers["content-type"] = ContentType;
+		set.headers["content-length"] = ContentLength;
+		set.headers["last-modified"] = LastModified?.toISOString();
 
 		return file.Body;
 	},
 	{
-		protected: true,
+		protected: false,
 		detail: {
 			description: "Get a file"
 		}

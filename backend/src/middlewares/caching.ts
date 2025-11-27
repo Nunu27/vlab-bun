@@ -1,8 +1,8 @@
 import env from "@backend/env";
 import logger from "@backend/services/logger";
 import redis from "@backend/services/redis";
-import { Session } from "@backend/types/session";
 import type { CacheOptions } from "@backend/types/caching";
+import { Session } from "@backend/types/session";
 import { Elysia, status } from "elysia";
 
 const PREFIX = "cache:";
@@ -55,8 +55,10 @@ export default new Elysia().macro({
 
 		return {
 			async beforeHandle(ctx) {
-				const rawKey = "cacheKey" in ctx ? (ctx.cacheKey as string) : undefined;
-				const session = "session" in ctx ? (ctx.session as Session) : undefined;
+				const { cacheKey: rawKey, session } = ctx as {
+					cacheKey?: string;
+					session?: Session;
+				};
 
 				const cacheKey = buildCacheKey(key, personalized, {
 					key: rawKey,
@@ -74,8 +76,10 @@ export default new Elysia().macro({
 			async afterResponse(ctx) {
 				if (ctx.set.status !== 200) return;
 
-				const rawKey = "cacheKey" in ctx ? (ctx.cacheKey as string) : undefined;
-				const session = "session" in ctx ? (ctx.session as Session) : undefined;
+				const { cacheKey: rawKey, session } = ctx as {
+					cacheKey?: string;
+					session?: Session;
+				};
 
 				const cacheKey = buildCacheKey(key, personalized, {
 					key: rawKey,
