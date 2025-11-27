@@ -8,12 +8,16 @@ export default createRouter().get(
 		let file;
 
 		try {
-			file = await storage.GetObject({ Bucket: bucket, Key: params.name });
+			file = await Promise.race([
+				storage.GetObject({ Bucket: bucket, Key: params.name }),
+				new Promise<never>((_, reject) =>
+					setTimeout(() => reject(new Error("Request timeout")), 5000)
+				)
+			]);
 		} catch (error) {
 			return status(500);
 		}
 		if (!file?.Body) return status(404);
-
 		const {
 			ETag = "",
 			ContentType = "application/octet-stream",
