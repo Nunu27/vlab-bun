@@ -3,7 +3,7 @@
 ############################
 # Base build image
 ############################
-FROM oven/bun:1.2.2-slim AS build-base
+FROM oven/bun:slim AS build-base
 
 WORKDIR /app
 
@@ -49,7 +49,7 @@ RUN cd backend && bun run build
 ############################
 # Runtime image
 ############################
-FROM gcr.io/distroless/cc
+FROM oven/bun:distroless AS runtime
 
 WORKDIR /app
 
@@ -59,4 +59,4 @@ COPY --from=frontend-builder /app/build/ .
 
 EXPOSE 3000
 
-CMD ["/app/vlab"]
+ENTRYPOINT ["/app/vlab"]
