@@ -43,20 +43,22 @@ FROM build-base AS backend-builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json bun.lock* ./
 COPY backend ./backend
+COPY --from=frontend-builder /app/build/ ./backend
 
-RUN cd backend && bun run build
+# RUN cd backend && bun run build
 
-############################
-# Runtime image
-############################
-FROM oven/bun:slim AS runtime
+# ############################
+# # Runtime image
+# ############################
+# FROM oven/bun:slim AS runtime
 
-WORKDIR /app
+WORKDIR /app/backend
 
-COPY --from=build-base /bin/nc.traditional /usr/bin/nc
-COPY --from=backend-builder /app/build/ .
-COPY --from=frontend-builder /app/build/ .
+# COPY --from=build-base /bin/nc.traditional /usr/bin/nc
+# COPY --from=backend-builder /app/build/ .
+# COPY --from=frontend-builder /app/build/ .
 
 EXPOSE 3000
 
-ENTRYPOINT ["/app/vlab"]
+# ENTRYPOINT ["/app/vlab"]
+CMD ["src/index.ts"]
