@@ -183,9 +183,7 @@ if [ -f "$ENV_FILE" ]; then
     EXISTING_LETSENCRYPT_EMAIL=$(grep "^LETSENCRYPT_EMAIL=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     EXISTING_S3_ACCESS_KEY=$(grep "^S3_ACCESS_KEY=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     EXISTING_S3_SECRET_KEY=$(grep "^S3_SECRET_KEY=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
-    EXISTING_S3_BUCKET_NAME=$(grep "^S3_BUCKET_NAME=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
-    EXISTING_S3_HOST=$(grep "^S3_HOST=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
-    EXISTING_S3_PORT=$(grep "^S3_PORT=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+    EXISTING_S3_ENDPOINT=$(grep "^S3_ENDPOINT=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     
     # Extract DB details from DATABASE_URL if present
     if [ -n "$EXISTING_DB_URL" ]; then
@@ -655,6 +653,7 @@ SESSION_TTL=${SESSION_TTL:-${EXISTING_SESSION_TTL:-10800}}
 print_header "Step 10: S3 Storage"
 
 print_info "S3-compatible storage configuration (leave empty to skip)"
+print_info "Note: Endpoint should include bucket name, e.g., http://localhost:9000/vlab"
 read -p "S3 Access Key [${EXISTING_S3_ACCESS_KEY}]: " S3_ACCESS_KEY
 S3_ACCESS_KEY=${S3_ACCESS_KEY:-${EXISTING_S3_ACCESS_KEY}}
 
@@ -668,22 +667,14 @@ if [ -n "$S3_ACCESS_KEY" ]; then
         echo ""
     fi
     
-    read -p "S3 Bucket Name [${EXISTING_S3_BUCKET_NAME}]: " S3_BUCKET_NAME
-    S3_BUCKET_NAME=${S3_BUCKET_NAME:-${EXISTING_S3_BUCKET_NAME}}
-    
-    read -p "S3 Host [${EXISTING_S3_HOST}]: " S3_HOST
-    S3_HOST=${S3_HOST:-${EXISTING_S3_HOST}}
-    
-    read -p "S3 Port [${EXISTING_S3_PORT:-9000}]: " S3_PORT
-    S3_PORT=${S3_PORT:-${EXISTING_S3_PORT:-9000}}
+    read -p "S3 Endpoint with bucket (e.g., http://localhost:9000/vlab) [${EXISTING_S3_ENDPOINT}]: " S3_ENDPOINT
+    S3_ENDPOINT=${S3_ENDPOINT:-${EXISTING_S3_ENDPOINT}}
     
     print_success "S3 configuration set"
 else
     print_info "Skipping S3 configuration"
     S3_SECRET_KEY=""
-    S3_BUCKET_NAME=""
-    S3_HOST=""
-    S3_PORT=""
+    S3_ENDPOINT=""
 fi
 
 # Step 11: nginx-proxy Configuration
@@ -756,17 +747,13 @@ if [ -n "$S3_ACCESS_KEY" ]; then
     cat >> "$DEPLOY_PATH/.env" << EOF
 S3_ACCESS_KEY=$S3_ACCESS_KEY
 S3_SECRET_KEY=$S3_SECRET_KEY
-S3_BUCKET_NAME=$S3_BUCKET_NAME
-S3_HOST=$S3_HOST
-S3_PORT=$S3_PORT
+S3_ENDPOINT=$S3_ENDPOINT
 EOF
 else
     cat >> "$DEPLOY_PATH/.env" << EOF
 S3_ACCESS_KEY=
 S3_SECRET_KEY=
-S3_BUCKET_NAME=
-S3_HOST=
-S3_PORT=
+S3_ENDPOINT=
 EOF
 fi
 

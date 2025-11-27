@@ -1,23 +1,19 @@
-import awsLite from "@aws-lite/client";
 import db from "@backend/db";
 import { fileDependencies, files } from "@backend/db/schema/file";
 import env from "@backend/env";
-import { withTimeout } from "@backend/utils/timeout";
 import { and, eq, inArray } from "drizzle-orm";
 import path from "path";
+import { S3mini } from "s3mini";
 import logger from "./logger";
 
-const bucket = env.S3_BUCKET_NAME;
-const aws = await awsLite({
-	host: env.S3_HOST,
-	port: env.S3_PORT,
+const storage = new S3mini({
 	accessKeyId: env.S3_ACCESS_KEY,
 	secretAccessKey: env.S3_SECRET_KEY,
-	region: "auto",
-	plugins: [import("@aws-lite/s3")]
+	endpoint: env.S3_ENDPOINT,
+	requestAbortTimeout: 5000
 });
 
-export default aws.S3;
+export default storage;
 
 function getUniqueFilename(name: string, buffer: Buffer) {
 	const length = 8;
@@ -55,18 +51,12 @@ export async function uploadFile(file: File, from: string) {
 			})
 			.onConflictDoNothing();
 
-		await withTimeout(
-			aws.S3.PutObject({
-				Bucket: bucket,
-				Key: name,
-				Body: fileBuffer,
-				ContentType: file.type
-			}),
-			5000
-		);
+		const res = await storage.putObject(name, fileBuffer, file.type);
+		if (!res.ok) throw new Error(`Failed to upload file`);
 
 		return insertedFile.id;
 	});
+
 	return { id, name };
 }
 
@@ -109,17 +99,15 @@ export async function storageCleanup() {
 		logger.info("Found %d unused files, deleting...", names.length);
 
 		await tx.delete(files).where(inArray(files.name, names));
-		await withTimeout(
-			aws.S3.DeleteObjects({
-				Bucket: env.S3_BUCKET_NAME,
-				Delete: {
-					Objects: names.map((name) => ({ Key: name })),
-					Quiet: true
-				}
-			}),
-			30000
-		);
+		const statuses = await storage.deleteObjects(names);
+		const failed = names.filter((_, index) => !statuses[index]);
 
-		logger.info("Deleted %d unused files", names.length);
+		if (failed.length) {
+			await tx
+				.insert(files)
+				.values(failed.map((name) => ({ name, unused: true })));
+		}
+
+		logger.info("Deleted %d unused files", names.length - failed.length);
 	});
 }
