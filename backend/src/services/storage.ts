@@ -9,7 +9,8 @@ import logger from "./logger";
 
 const bucket = env.S3_BUCKET_NAME;
 const aws = await awsLite({
-	endpoint: env.S3_ENDPOINT,
+	host: env.S3_HOST,
+	port: env.S3_PORT,
 	accessKeyId: env.S3_ACCESS_KEY,
 	secretAccessKey: env.S3_SECRET_KEY,
 	region: "auto",

@@ -184,7 +184,8 @@ if [ -f "$ENV_FILE" ]; then
     EXISTING_S3_ACCESS_KEY=$(grep "^S3_ACCESS_KEY=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     EXISTING_S3_SECRET_KEY=$(grep "^S3_SECRET_KEY=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     EXISTING_S3_BUCKET_NAME=$(grep "^S3_BUCKET_NAME=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
-    EXISTING_S3_ENDPOINT=$(grep "^S3_ENDPOINT=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+    EXISTING_S3_HOST=$(grep "^S3_HOST=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
+    EXISTING_S3_PORT=$(grep "^S3_PORT=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
     
     # Extract DB details from DATABASE_URL if present
     if [ -n "$EXISTING_DB_URL" ]; then
@@ -670,15 +671,19 @@ if [ -n "$S3_ACCESS_KEY" ]; then
     read -p "S3 Bucket Name [${EXISTING_S3_BUCKET_NAME}]: " S3_BUCKET_NAME
     S3_BUCKET_NAME=${S3_BUCKET_NAME:-${EXISTING_S3_BUCKET_NAME}}
     
-    read -p "S3 Endpoint [${EXISTING_S3_ENDPOINT}]: " S3_ENDPOINT
-    S3_ENDPOINT=${S3_ENDPOINT:-${EXISTING_S3_ENDPOINT}}
+    read -p "S3 Host [${EXISTING_S3_HOST}]: " S3_HOST
+    S3_HOST=${S3_HOST:-${EXISTING_S3_HOST}}
+    
+    read -p "S3 Port [${EXISTING_S3_PORT:-9000}]: " S3_PORT
+    S3_PORT=${S3_PORT:-${EXISTING_S3_PORT:-9000}}
     
     print_success "S3 configuration set"
 else
     print_info "Skipping S3 configuration"
     S3_SECRET_KEY=""
     S3_BUCKET_NAME=""
-    S3_ENDPOINT=""
+    S3_HOST=""
+    S3_PORT=""
 fi
 
 # Step 11: nginx-proxy Configuration
@@ -752,14 +757,16 @@ if [ -n "$S3_ACCESS_KEY" ]; then
 S3_ACCESS_KEY=$S3_ACCESS_KEY
 S3_SECRET_KEY=$S3_SECRET_KEY
 S3_BUCKET_NAME=$S3_BUCKET_NAME
-S3_ENDPOINT=$S3_ENDPOINT
+S3_HOST=$S3_HOST
+S3_PORT=$S3_PORT
 EOF
 else
     cat >> "$DEPLOY_PATH/.env" << EOF
 S3_ACCESS_KEY=
 S3_SECRET_KEY=
 S3_BUCKET_NAME=
-S3_ENDPOINT=
+S3_HOST=
+S3_PORT=
 EOF
 fi
 
