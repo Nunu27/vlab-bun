@@ -1,7 +1,7 @@
 import "dotenv/config";
 
-import { Type as t, Static } from "typebox";
-import Value from "typebox/value";
+import { Static, Type as t } from "typebox";
+import { Compile } from "typebox/compile";
 
 const EnvSchema = t.Object({
 	// System
@@ -42,7 +42,18 @@ const EnvSchema = t.Object({
 	CLAB_PASSWORD: t.String()
 });
 
-const env = Value.Parse(EnvSchema, process.env);
+const validator = Compile(EnvSchema);
+
+const errors = validator.Errors(validator.Convert(validator.Default(process.env)));
+if (errors.length > 0) {
+	console.error("❌ Invalid environment variables:");
+	for (const error of errors) {
+		console.error(`- ${error.instancePath} ${error.message}`);
+	}
+	process.exit(1);
+}
+
+const env = validator.Parse(process.env);
 
 export default env;
 export type Env = Static<typeof EnvSchema>;
