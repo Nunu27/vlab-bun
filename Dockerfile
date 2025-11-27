@@ -49,7 +49,7 @@ RUN cd backend && bun run build
 ############################
 # Runtime image
 ############################
-FROM gcr.io/distroless/base-debian12:nonroot
+FROM gcr.io/distroless/base
 
 WORKDIR /app
 
