@@ -24,6 +24,6 @@ import { startServer } from "./services/server";
 
 await startServer();
 
-if (cluster.isPrimary && inProduction) {
-	for (let i = 1; i < os.availableParallelism(); i++) cluster.fork();
-}
+// if (cluster.isPrimary && inProduction) {
+// 	for (let i = 1; i < os.availableParallelism(); i++) cluster.fork();
+// }
