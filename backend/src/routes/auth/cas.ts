@@ -7,7 +7,7 @@ import { compile } from "elysia/type-system/utils";
 import { XMLParser } from "fast-xml-parser";
 import { CASRequestQuery, CASResponseSchema } from "./schema";
 
-const { BASE_URL, CAS_BASE_URL, SESSION_TTL } = env;
+const { BASE_URL, CAS_BASE_URL } = env;
 const parser = new XMLParser({
 	transformTagName: (tagName) => tagName.slice(4)
 });
@@ -26,15 +26,7 @@ export default createRouter()
 	})
 	.get(
 		"/cas",
-		async ({
-			sessionId,
-			session,
-			query: { ticket },
-			redirect,
-			redis,
-			db,
-			cookie
-		}) => {
+		async ({ session, query: { ticket }, redirect, redis, db, cookie }) => {
 			if (session) redirect(BASE_URL);
 
 			const service = `${BASE_URL}/api/auth/cas`;
@@ -111,7 +103,7 @@ export default createRouter()
 				await deleteCache("student:pagination:*");
 			}
 
-			await redis.set(sessionId, { ...user, useCAS: true }, SESSION_TTL);
+			await session.set({ ...user, useCAS: true });
 
 			cookie.toast.value = {
 				message: "Logged in successfully via CAS",

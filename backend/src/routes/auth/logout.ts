@@ -4,11 +4,11 @@ import { success } from "@backend/utils/response";
 
 export default createRouter().post(
 	"/logout",
-	async ({ sessionId, session, redis }) => {
-		await redis.del(sessionId);
+	async ({ session }) => {
+		await session.delete();
 		let data: string | undefined;
 
-		if (session.useCAS) {
+		if (session.data.useCAS) {
 			const casUrl = new URL(env.CAS_BASE_URL);
 			casUrl.searchParams.set("url", `${env.BASE_URL}/login`);
 

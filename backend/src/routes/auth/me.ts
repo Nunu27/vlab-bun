@@ -5,7 +5,7 @@ export default createRouter().get(
 	"/me",
 	async ({ session, db, status }) => {
 		const user = await db.query.users.findFirst({
-			where: (user, { eq }) => eq(user.id, session.id),
+			where: (user, { eq }) => eq(user.id, session.data.id),
 			columns: { passwordHash: false },
 			with: {
 				lecturer: {
