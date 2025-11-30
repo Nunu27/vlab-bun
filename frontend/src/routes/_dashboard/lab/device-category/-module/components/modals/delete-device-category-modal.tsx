@@ -38,8 +38,8 @@ export function DeleteDeviceCategoryModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Device category deleted successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
         exact: false,
@@ -47,7 +47,7 @@ export function DeleteDeviceCategoryModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete device category');
+      toast.error(error.message);
     },
   });
 

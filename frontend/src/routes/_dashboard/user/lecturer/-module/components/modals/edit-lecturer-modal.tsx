@@ -50,8 +50,8 @@ export function EditLecturerModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Lecturer updated successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['lecturer', 'pagination'],
         exact: false,
@@ -59,7 +59,7 @@ export function EditLecturerModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update lecturer');
+      toast.error(error.message);
     },
   });
 

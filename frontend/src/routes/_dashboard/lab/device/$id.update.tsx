@@ -71,8 +71,8 @@ function RouteComponent() {
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Device updated successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device'],
         exact: false,
@@ -80,7 +80,7 @@ function RouteComponent() {
       navigate({ to: '/lab/device' });
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update device');
+      toast.error(error.message);
     },
   });
 
@@ -157,57 +157,57 @@ function RouteComponent() {
       >
         {/* Basic Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle>Basic Information</CardTitle>
             <CardDescription>
               Basic device identification and configuration
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <DeviceBasicInfoForm form={form} initialFile={initialFile} />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle>Resources</CardTitle>
             <CardDescription>CPU and memory allocation</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <DeviceResourcesForm form={form} />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle>Environment Variables</CardTitle>
             <CardDescription>
               Define environment variables for the device
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <DeviceEnvForm form={form} />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle>Connection</CardTitle>
             <CardDescription>Remote access configuration</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <DeviceConnectionForm form={form} />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b">
             <CardTitle>Network Interfaces</CardTitle>
             <CardDescription>
               Define network interfaces for the device
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <DeviceNetworkInterfacesForm form={form} />
           </CardContent>
         </Card>

@@ -48,8 +48,8 @@ export function EditAdminModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Admin updated successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['admin', 'pagination'],
         exact: false,
@@ -57,7 +57,7 @@ export function EditAdminModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update admin');
+      toast.error(error.message);
     },
   });
 

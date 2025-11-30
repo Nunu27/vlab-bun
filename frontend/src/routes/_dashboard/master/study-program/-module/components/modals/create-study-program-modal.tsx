@@ -44,8 +44,8 @@ export function CreateStudyProgramModal() {
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Study program created successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
         exact: false,
@@ -54,7 +54,7 @@ export function CreateStudyProgramModal() {
       form.reset();
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to create study program');
+      toast.error(error.message);
     },
   });
 

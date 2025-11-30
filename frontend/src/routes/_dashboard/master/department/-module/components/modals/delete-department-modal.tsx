@@ -38,8 +38,8 @@ export function DeleteDepartmentModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Department deleted successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['department', 'pagination'],
         exact: false,
@@ -47,7 +47,7 @@ export function DeleteDepartmentModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete department');
+      toast.error(error.message);
     },
   });
 

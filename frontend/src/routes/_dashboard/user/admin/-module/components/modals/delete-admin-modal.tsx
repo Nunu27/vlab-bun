@@ -40,8 +40,8 @@ export function DeleteAdminModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Admin deleted successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['admin', 'pagination'],
         exact: false,
@@ -49,7 +49,7 @@ export function DeleteAdminModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete admin');
+      toast.error(error.message);
     },
   });
 

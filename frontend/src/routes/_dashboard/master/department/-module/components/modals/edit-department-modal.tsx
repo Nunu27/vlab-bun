@@ -46,8 +46,8 @@ export function EditDepartmentModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Department updated successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['department', 'pagination'],
         exact: false,
@@ -55,7 +55,7 @@ export function EditDepartmentModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update department');
+      toast.error(error.message);
     },
   });
 

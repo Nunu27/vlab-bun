@@ -40,8 +40,8 @@ export function DeleteStudyProgramModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Study program deleted successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
         exact: false,
@@ -49,7 +49,7 @@ export function DeleteStudyProgramModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete study program');
+      toast.error(error.message);
     },
   });
 

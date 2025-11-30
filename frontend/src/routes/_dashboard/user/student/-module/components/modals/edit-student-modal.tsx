@@ -63,8 +63,8 @@ export function EditStudentModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Student updated successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['student', 'pagination'],
         exact: false,
@@ -72,7 +72,7 @@ export function EditStudentModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update student');
+      toast.error(error.message);
     },
   });
 

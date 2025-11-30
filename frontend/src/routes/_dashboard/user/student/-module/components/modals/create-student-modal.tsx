@@ -54,8 +54,8 @@ export function CreateStudentModal() {
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Student created successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['student', 'pagination'],
         exact: false,
@@ -64,7 +64,7 @@ export function CreateStudentModal() {
       form.reset();
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to create student');
+      toast.error(error.message);
     },
   });
 

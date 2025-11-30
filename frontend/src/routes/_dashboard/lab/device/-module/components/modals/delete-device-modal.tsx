@@ -38,8 +38,8 @@ export function DeleteDeviceModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Device deleted successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device', 'pagination'],
         exact: false,
@@ -47,7 +47,7 @@ export function DeleteDeviceModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete device');
+      toast.error(error.message);
     },
   });
 

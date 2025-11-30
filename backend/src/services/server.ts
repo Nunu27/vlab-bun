@@ -5,6 +5,7 @@ import { clearCache } from "@backend/middlewares/caching";
 import services from "@backend/plugins/services";
 import ws from "@backend/plugins/ws";
 import routes from "@backend/routes";
+import { events } from "@backend/routes/events";
 import { initGuacamole, shutdownGuacamole } from "@backend/services/guacamole";
 import logger from "@backend/services/logger";
 import staticPlugin from "@elysiajs/static";
@@ -22,7 +23,7 @@ const app = new Elysia({
 				})
 			: undefined
 	)
-	.use(ws({}))
+	.use(ws(events))
 	.use(services)
 	.use(routes);
 

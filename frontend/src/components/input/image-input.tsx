@@ -73,7 +73,7 @@ export default function ImageInput({
     onImageChange?.(null);
   };
 
-  const hasImage = !!image?.preview;
+  const hasImage = Boolean(image);
 
   return (
     <div className={cn('w-full', className)}>

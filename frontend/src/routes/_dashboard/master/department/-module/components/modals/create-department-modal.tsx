@@ -38,8 +38,8 @@ export function CreateDepartmentModal() {
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Department created successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['department', 'pagination'],
         exact: false,
@@ -48,7 +48,7 @@ export function CreateDepartmentModal() {
       form.reset();
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to create department');
+      toast.error(error.message);
     },
   });
 

@@ -1,6 +1,7 @@
 import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
+import LoadingPage from '@frontend/components/pages/loading';
 
 const AdminDashboard = lazy(
   () => import('./-module/components/pages/admin-dashboard'),
@@ -39,7 +40,7 @@ function Dashboard() {
 
 function RouteComponent() {
   return (
-    <Suspense fallback={<div>Loading Dashboard...</div>}>
+    <Suspense fallback={<LoadingPage message="Loading Dashboard..." />}>
       <Dashboard />
     </Suspense>
   );

@@ -6,12 +6,12 @@ import { MediaType } from "openapi-typescript-helpers";
 const { CLAB_HOST, CLAB_USERNAME, CLAB_PASSWORD } = env;
 let token: string | null = null;
 
-const client = createClient<paths>({
+const clab = createClient<paths>({
 	baseUrl: `http://${CLAB_HOST}:8080`
 });
 
 const getToken = async () => {
-	const { data } = await client.POST("/login", {
+	const { data } = await clab.POST("/login", {
 		body: { username: CLAB_USERNAME, password: CLAB_PASSWORD }
 	});
 
@@ -49,6 +49,6 @@ export async function clabWrapper<
 	return response;
 }
 
-client.use(authMiddleware);
+clab.use(authMiddleware);
 
-export default client;
+export default clab;

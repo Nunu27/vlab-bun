@@ -73,7 +73,7 @@ function RouteComponent() {
           </div>
           <ThemeToggle />
         </header>
-        <div className="px-4">
+        <div className="flex-1 px-4">
           <Outlet />
         </div>
       </SidebarInset>

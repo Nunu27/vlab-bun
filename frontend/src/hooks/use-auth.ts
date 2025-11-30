@@ -16,7 +16,7 @@ type AuthUtils = {
 
 type AuthData = { user?: AuthUser | null } & AuthUtils;
 
-const options = queryOptions({
+export const authQueryOptions = queryOptions({
   queryKey: ['me'],
   queryFn: () =>
     api.auth.me.get().then(({ data: response }) => response?.data || null),
@@ -29,7 +29,7 @@ const options = queryOptions({
 
 function useAuth(): AuthData {
   const client = useQueryClient();
-  const query = useQuery(options);
+  const query = useQuery(authQueryOptions);
 
   useEffect(() => {
     router.invalidate();
@@ -55,7 +55,7 @@ function useAuth(): AuthData {
       });
     },
     ensureData: async () => {
-      const data = await client.ensureQueryData(options);
+      const data = await client.ensureQueryData(authQueryOptions);
       if (!data && location.pathname !== '/login') {
         await cookieStore.delete('session');
       }

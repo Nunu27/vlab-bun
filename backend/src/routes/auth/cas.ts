@@ -26,7 +26,17 @@ export default createRouter()
 	})
 	.get(
 		"/cas",
-		async ({ sessionId, query: { ticket }, redirect, redis, db, cookie }) => {
+		async ({
+			sessionId,
+			session,
+			query: { ticket },
+			redirect,
+			redis,
+			db,
+			cookie
+		}) => {
+			if (session) redirect(BASE_URL);
+
 			const service = `${BASE_URL}/api/auth/cas`;
 
 			const casUrl = new URL(CAS_BASE_URL);
@@ -111,7 +121,6 @@ export default createRouter()
 			return redirect(BASE_URL);
 		},
 		{
-			guest: true,
 			query: CASRequestQuery,
 			detail: {
 				description: "Login with email and password"

@@ -24,8 +24,7 @@ export default new Elysia({ name: "session" })
 	.macro({
 		guest: {
 			beforeHandle({ session, status }) {
-				if (!session) return;
-				return status(400, failure({ message: "Already logged in" }));
+				if (session) return status(400, failure({ message: "Already logged in" }));
 			}
 		},
 		protected: {
@@ -40,12 +39,9 @@ export default new Elysia({ name: "session" })
 		private(roles: Role[]) {
 			return {
 				async beforeHandle({ sessionId, session, status }) {
-					if (session && roles.includes(session.role)) {
-						await redis.expire(sessionId!, env.SESSION_TTL);
-						return;
-					}
-
-					return status(403, failure({ message: "Forbidden" }));
+					if (!session) status(401, failure({ message: "Unauthorized" }));
+					else if (roles.includes(session.role)) await redis.expire(sessionId!, env.SESSION_TTL);
+					else return status(403, failure({ message: "Forbidden" }));
 				},
 				resolve({ session }) {
 					return { session: session! };

@@ -18,7 +18,7 @@ export const fileDependencies = pgTable(
 		...base,
 		name: text().notNull(),
 		file: text()
-			.references(() => files.name, { onDelete: "restrict" })
+			.references(() => files.name, { onDelete: "cascade" })
 			.notNull()
 	},
 	(t) => [unique().on(t.file, t.name)]

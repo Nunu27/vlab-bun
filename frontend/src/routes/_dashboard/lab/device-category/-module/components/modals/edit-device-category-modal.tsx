@@ -52,8 +52,8 @@ export function EditDeviceCategoryModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Device category updated successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
         exact: false,
@@ -61,7 +61,7 @@ export function EditDeviceCategoryModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update device category');
+      toast.error(error.message);
     },
   });
 

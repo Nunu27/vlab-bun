@@ -38,8 +38,8 @@ export function CreateAdminModal() {
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Admin created successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['admin', 'pagination'],
       });
@@ -47,7 +47,7 @@ export function CreateAdminModal() {
       form.reset();
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to create admin');
+      toast.error(error.message);
     },
   });
 

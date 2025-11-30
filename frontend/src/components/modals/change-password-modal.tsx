@@ -45,13 +45,13 @@ export function ChangePasswordModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Password changed successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       onOpenChange(false);
       form.reset();
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to change password');
+      toast.error(error.message);
     },
   });
 

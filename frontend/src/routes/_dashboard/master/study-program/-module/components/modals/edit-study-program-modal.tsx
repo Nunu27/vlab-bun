@@ -57,8 +57,8 @@ export function EditStudyProgramModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Study program updated successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
         exact: false,
@@ -66,7 +66,7 @@ export function EditStudyProgramModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update study program');
+      toast.error(error.message);
     },
   });
 

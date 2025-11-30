@@ -40,8 +40,8 @@ export function DeleteLecturerModal({
 
       return result.data;
     },
-    onSuccess: () => {
-      toast.success('Lecturer deleted successfully');
+    onSuccess: ({ message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['lecturer', 'pagination'],
         exact: false,
@@ -49,7 +49,7 @@ export function DeleteLecturerModal({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete lecturer');
+      toast.error(error.message);
     },
   });
 
