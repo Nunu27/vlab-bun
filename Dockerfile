@@ -29,6 +29,8 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 FROM build-base AS frontend-builder
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/backend/node_modules ./backend/node_modules
+COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY package.json bun.lock* ./
 COPY frontend ./frontend
 COPY backend ./backend
@@ -41,6 +43,7 @@ RUN cd frontend && bun run build
 FROM build-base AS backend-builder
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/backend/node_modules ./backend/node_modules
 COPY package.json bun.lock* ./
 COPY backend ./backend
 

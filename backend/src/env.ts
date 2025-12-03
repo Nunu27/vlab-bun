@@ -28,7 +28,10 @@ const EnvSchema = t.Object({
 
 	// Auth
 	BASE_URL: t.String({ format: "uri" }),
-	CAS_BASE_URL: t.String({ format: "uri" }),
+	CAS_BASE_URL: t.String({
+		format: "uri",
+		default: "https://login.pens.ac.id"
+	}),
 
 	COOKIE_SECRET: t.String({ minLength: 32, maxLength: 64 }),
 
@@ -44,7 +47,9 @@ const EnvSchema = t.Object({
 
 const validator = Compile(EnvSchema);
 
-const errors = validator.Errors(validator.Convert(validator.Default(process.env)));
+const errors = validator.Errors(
+	validator.Convert(validator.Default(process.env))
+);
 if (errors.length > 0) {
 	console.error("❌ Invalid environment variables:");
 	for (const error of errors) {
