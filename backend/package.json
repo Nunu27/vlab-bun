@@ -17,6 +17,7 @@
     "@elysiajs/cron": "^1.4.1",
     "@elysiajs/openapi": "^1.4.11",
     "@elysiajs/static": "^1.4.7",
+    "croner": "6.0.7",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "drizzle-typebox": "^0.3.3",
