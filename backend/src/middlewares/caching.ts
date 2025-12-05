@@ -2,7 +2,7 @@ import env from "@backend/env";
 import logger from "@backend/services/logger";
 import redis from "@backend/services/redis";
 import type { CacheOptions } from "@backend/types/caching";
-import { Session } from "@backend/types/session";
+import type { Session } from "@backend/types/session";
 import { Elysia, status } from "elysia";
 
 const PREFIX = "cache:";
@@ -49,7 +49,7 @@ export const clearCache = async () => {
 export default new Elysia()
 	.resolve(
 		{ as: "global" },
-		() => ({}) as { cacheKey?: string; session: { data: Session | null } }
+		() => ({} as { cacheKey?: string; session: { data: Session | null } })
 	)
 	.macro({
 		cached(options: CacheOptions | boolean) {

@@ -22,17 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@frontend/components/ui/select';
-import { ComboBox } from '@frontend/components/ui/combobox';
+import { PaginatedComboBox } from '@frontend/components/ui/combobox';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import {
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
 import { PlusIcon } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import { degreeLevelEnum } from '@backend/db/schema';
@@ -41,7 +37,6 @@ type DegreeLevel = (typeof degreeLevelEnum.enumValues)[number];
 
 export function CreateStudentModal() {
   const [open, setOpen] = useState(false);
-  const [studyProgramSearch, setStudyProgramSearch] = useState('');
   const queryClient = useQueryClient();
 
   const createStudent = useMutation({
@@ -67,47 +62,6 @@ export function CreateStudentModal() {
       toast.error(error.message);
     },
   });
-
-  const {
-    data: studyProgramData,
-    fetchNextPage,
-    hasNextPage,
-    isFetching: isLoadingStudyPrograms,
-  } = useInfiniteQuery({
-    enabled: open,
-    queryKey: ['study-program', 'pagination', studyProgramSearch],
-    queryFn: async ({ pageParam = 1 }) => {
-      const result = await api['study-program'].pagination.post({
-        page: pageParam,
-        perPage: 20,
-        search: studyProgramSearch || undefined,
-      });
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data.data;
-    },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.pageInfo.page < lastPage.pageInfo.totalPages) {
-        return lastPage.pageInfo.page + 1;
-      }
-      return undefined;
-    },
-    initialPageParam: 1,
-  });
-
-  const studyProgramOptions = useMemo(() => {
-    return (
-      studyProgramData?.pages.flatMap((page) =>
-        page.items.map((item) => ({
-          value: item.id,
-          label: item.name,
-        })),
-      ) ?? []
-    );
-  }, [studyProgramData]);
 
   const form = useForm({
     defaultValues: {
@@ -305,8 +259,7 @@ export function CreateStudentModal() {
                     <FieldLabel htmlFor={field.name} required>
                       Study Program
                     </FieldLabel>
-                    <ComboBox
-                      options={studyProgramOptions}
+                    <PaginatedComboBox
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value ?? '')}
                       placeholder="Select study program"
@@ -314,11 +267,18 @@ export function CreateStudentModal() {
                       emptyMessage="No study program found."
                       width="w-full"
                       allowClear
-                      isLoading={isLoadingStudyPrograms}
-                      hasMore={hasNextPage}
-                      onLoadMore={() => fetchNextPage()}
-                      onSearchChange={setStudyProgramSearch}
-                      shouldFilter={false}
+                      queryKey={['study-program', 'pagination']}
+                      fetcher={({ page, search }) =>
+                        api['study-program'].pagination.post({
+                          page,
+                          perPage: 20,
+                          search: search || undefined,
+                        })
+                      }
+                      renderOption={(item) => ({
+                        value: item.id,
+                        label: item.name,
+                      })}
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />

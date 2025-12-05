@@ -1,18 +1,17 @@
 import { deviceKindEnum } from '@backend/db/schema';
 import ImageInput from '@frontend/components/input/image-input';
-import { ComboBox } from '@frontend/components/ui/combobox';
+import { ComboBox, PaginatedComboBox } from '@frontend/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
-import type { FileMetadata } from '@frontend/hooks/use-file-upload';
 import api from '@frontend/lib/api';
 import { withForm, type DeviceFormData } from '../hooks/use-device-form';
 
 export const DeviceBasicInfoForm = withForm({
   defaultValues: {} as DeviceFormData,
   props: {
-    initialFile: null as FileMetadata | null,
+    placeholder: null as string | null,
   },
-  render: function Render({ form, initialFile }) {
+  render: function Render({ form, placeholder }) {
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[200px_1fr]">
         <div className="md:row-span-2">
@@ -23,16 +22,10 @@ export const DeviceBasicInfoForm = withForm({
                   Device Icon
                 </FieldLabel>
                 <ImageInput
-                  initialFile={initialFile}
+                  placeholder={placeholder}
                   errors={field.state.meta.errors}
                   onImageChange={(file) =>
-                    initialFile
-                      ? field.handleChange(
-                          (file instanceof File
-                            ? file
-                            : undefined) as typeof field.state.value,
-                        )
-                      : field.handleChange(file as typeof field.state.value)
+                    field.handleChange(file as typeof field.state.value)
                   }
                 />
               </Field>
@@ -143,10 +136,16 @@ export const DeviceBasicInfoForm = withForm({
                     <FieldLabel htmlFor={field.name} required>
                       Category
                     </FieldLabel>
-                    <ComboBox
+                    <PaginatedComboBox
                       queryKey={['device-category', 'pagination']}
-                      apiEndpoint={api['device-category'].pagination}
-                      mapItemToOption={(item) => ({
+                      fetcher={({ page, search }) =>
+                        api['device-category'].pagination.post({
+                          page,
+                          perPage: 20,
+                          search: search || undefined,
+                        })
+                      }
+                      renderOption={(item) => ({
                         value: item.id,
                         label: item.name,
                       })}

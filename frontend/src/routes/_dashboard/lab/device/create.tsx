@@ -18,13 +18,16 @@ import { Compile } from '@sinclair/typemap';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { DeviceBasicInfoForm } from './-module/components/device-basic-info-form';
-import { DeviceResourcesForm } from './-module/components/device-resources-form';
-import { DeviceConnectionForm } from './-module/components/device-connection-form';
-import { DeviceNetworkInterfacesForm } from './-module/components/device-network-interfaces-form';
-import { DeviceEnvForm } from './-module/components/device-env-form';
-import { useAppForm } from './-module/hooks/use-device-form';
 import TestConnectionButton from './-module/components/buttons/test-connection-button';
+import { DeviceBasicInfoForm } from './-module/components/device-basic-info-form';
+import { DeviceConnectionForm } from './-module/components/device-connection-form';
+import { DeviceEnvForm } from './-module/components/device-env-form';
+import { DeviceNetworkInterfacesForm } from './-module/components/device-network-interfaces-form';
+import { DeviceResourcesForm } from './-module/components/device-resources-form';
+import {
+  type DeviceFormData,
+  useAppForm,
+} from './-module/hooks/use-device-form';
 
 const breadcrumbs = [
   { title: 'Lab Data' },
@@ -92,9 +95,10 @@ function RouteComponent() {
         },
       },
       interfaces: [],
-    } as unknown as typeof CreateDeviceRequest.static,
+    } as unknown as DeviceFormData,
     validators: { onSubmit: Compile(CreateDeviceRequest) },
-    onSubmit: ({ value }) => createDevice.mutateAsync(value),
+    onSubmit: ({ value }) =>
+      createDevice.mutateAsync(value as typeof CreateDeviceRequest.static),
     onSubmitInvalid: () => {
       toast.error('Validation failed', {
         description: 'Please check all required fields',
@@ -126,7 +130,7 @@ function RouteComponent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <DeviceBasicInfoForm form={form} initialFile={null} />
+              <DeviceBasicInfoForm form={form} placeholder={null} />
             </CardContent>
           </Card>
 
@@ -158,7 +162,7 @@ function RouteComponent() {
                 <CardTitle>Connection</CardTitle>
                 <CardDescription>Remote access configuration</CardDescription>
               </div>
-              <TestConnectionButton />
+              <TestConnectionButton form={form} />
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               <DeviceConnectionForm form={form} />

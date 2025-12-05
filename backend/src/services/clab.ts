@@ -1,7 +1,10 @@
 import env from "@backend/env";
-import { paths } from "@backend/types/clab";
-import createClient, { FetchResponse, Middleware } from "openapi-fetch";
-import { MediaType } from "openapi-typescript-helpers";
+import type { paths } from "@backend/types/clab";
+import createClient, {
+	type FetchResponse,
+	type Middleware
+} from "openapi-fetch";
+import type { MediaType } from "openapi-typescript-helpers";
 
 const { CLAB_HOST, CLAB_USERNAME, CLAB_PASSWORD } = env;
 let token: string | null = null;

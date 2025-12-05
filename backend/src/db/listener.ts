@@ -75,14 +75,11 @@ const processBatch = async (channel: string) => {
 	const listeners = registry.get(channel);
 	if (!listeners) return;
 
-	const groupedByOp = items.reduce(
-		(acc, item) => {
-			if (!acc[item.op]) acc[item.op] = [];
-			acc[item.op].push(item);
-			return acc;
-		},
-		{} as Record<Operations, typeof items>
-	);
+	const groupedByOp = items.reduce((acc, item) => {
+		if (!acc[item.op]) acc[item.op] = [];
+		acc[item.op].push(item);
+		return acc;
+	}, {} as Record<Operations, typeof items>);
 
 	for (const [op, opItems] of Object.entries(groupedByOp)) {
 		const listenersToCall = listeners.filter(({ events }) =>
@@ -102,20 +99,20 @@ const processBatch = async (channel: string) => {
 						const bulkData = opItems.map((item) => {
 							const filteredPrevious = item.previous
 								? Object.keys(item.previous).reduce((acc, key) => {
-									if (columns.has(key)) {
-										acc[key] = item.previous[key];
-									}
-									return acc;
-								}, {} as any)
+										if (columns.has(key)) {
+											acc[key] = item.previous[key];
+										}
+										return acc;
+								  }, {} as any)
 								: null;
 
 							const filteredCurrent = item.current
 								? Object.keys(item.current).reduce((acc, key) => {
-									if (columns.has(key)) {
-										acc[key] = item.current[key];
-									}
-									return acc;
-								}, {} as any)
+										if (columns.has(key)) {
+											acc[key] = item.current[key];
+										}
+										return acc;
+								  }, {} as any)
 								: null;
 
 							return { previous: filteredPrevious, current: filteredCurrent };
@@ -149,20 +146,20 @@ const processBatch = async (channel: string) => {
 							opItems.map((item) => {
 								const filteredPrevious = item.previous
 									? Object.keys(item.previous).reduce((acc, key) => {
-										if (columns.has(key)) {
-											acc[key] = item.previous[key];
-										}
-										return acc;
-									}, {} as any)
+											if (columns.has(key)) {
+												acc[key] = item.previous[key];
+											}
+											return acc;
+									  }, {} as any)
 									: null;
 
 								const filteredCurrent = item.current
 									? Object.keys(item.current).reduce((acc, key) => {
-										if (columns.has(key)) {
-											acc[key] = item.current[key];
-										}
-										return acc;
-									}, {} as any)
+											if (columns.has(key)) {
+												acc[key] = item.current[key];
+											}
+											return acc;
+									  }, {} as any)
 									: null;
 
 								return (listener as ListenerCallback<any, any>)({
@@ -407,8 +404,8 @@ function buildTriggerSQL(
 			op === "INSERT"
 				? "REFERENCING NEW TABLE AS new_table"
 				: op === "DELETE"
-					? "REFERENCING OLD TABLE AS old_table"
-					: "REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table";
+				? "REFERENCING OLD TABLE AS old_table"
+				: "REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table";
 
 		sql += `
         DROP TRIGGER IF EXISTS ${trigName} ON ${qualifiedTable};
@@ -531,8 +528,8 @@ async function _getDBState() {
             JOIN pg_class c ON c.oid = t.tgrelid
             JOIN pg_namespace n ON n.oid = c.relnamespace
             WHERE NOT t.tgisinternal AND t.tgname LIKE ${qLiteral(
-			`${TRIGGER_PREFIX}%`
-		)}
+							`${TRIGGER_PREFIX}%`
+						)}
         `)
 	]);
 
@@ -581,7 +578,7 @@ function _getTriggerDiffSQL(
 	// Track which channels were in use before (from existing triggers)
 	const previousChannels = new Set<string>();
 	for (const key of existing) {
-		const [schemaTable, tgname] = key.split(":");
+		const [, tgname] = key.split(":");
 		// Extract channel hash from trigger name (remove operation suffix if present)
 		const baseTrigName = tgname.replace(/_(?:insert|update|delete)$/, "");
 		const channelHash = baseTrigName.substring(TRIGGER_PREFIX.length);
@@ -616,7 +613,7 @@ function _getTriggerDiffSQL(
 		string,
 		typeof desired extends Map<any, infer V> ? V[] : never
 	>();
-	for (const [key, d] of desired) {
+	for (const [, d] of desired) {
 		if (!channelToTriggers.has(d.channel)) {
 			channelToTriggers.set(d.channel, []);
 		}

@@ -1,5 +1,5 @@
-import { createFormHookContexts, createFormHook } from '@tanstack/react-form';
-import type { CreateDeviceRequest } from '@backend/routes/device/schema';
+import type { UpdateDeviceRequest } from '@backend/routes/device/schema';
+import { createFormHook, createFormHookContexts } from '@tanstack/react-form';
 
 const contexts = createFormHookContexts();
 
@@ -13,5 +13,4 @@ export const { useAppForm, withForm } = createFormHook({
   formComponents: {},
 });
 
-// Type helper for form data
-export type DeviceFormData = typeof CreateDeviceRequest.static;
+export type DeviceFormData = typeof UpdateDeviceRequest.static;

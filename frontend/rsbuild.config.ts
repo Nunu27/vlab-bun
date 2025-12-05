@@ -1,9 +1,10 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { tanstackRouter } from '@tanstack/router-plugin/rspack';
+import { pluginTypeCheck } from '@rsbuild/plugin-type-check';
 
 export default defineConfig({
-  plugins: [pluginReact()],
+  plugins: [pluginReact(), pluginTypeCheck()],
   output: {
     distPath: { root: '../build/public' },
     cleanDistPath: {

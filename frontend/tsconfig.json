@@ -15,6 +15,7 @@
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "noUncheckedSideEffectImports": true,
+    "types": ["bun-types"],
 
     /* type checking */
     "strict": true,
@@ -27,5 +28,5 @@
       "@backend/*": ["../backend/src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "../backend/src/guacamole-lite.d.ts"]
 }

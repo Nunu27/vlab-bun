@@ -1,8 +1,8 @@
 import deviceWSSchemas from "@backend/routes/device/ws/schema";
-import { Session } from "@backend/types/session";
-import { ExtractEvents, ReplyFunction, WSSchema } from "@backend/types/ws";
+import type { Session } from "@backend/types/session";
+import type { ExtractEvents, ReplyFunction, WSSchema } from "@backend/types/ws";
 import { createWSSchema } from "@backend/utils/ws";
-import { MaybePromise } from "bun";
+import type { MaybePromise } from "bun";
 import { t } from "elysia/type-system";
 import { compile } from "elysia/type-system/utils";
 import { Socket } from "socket.io";

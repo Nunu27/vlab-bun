@@ -17,16 +17,20 @@ import {
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
 import { Spinner } from '@frontend/components/ui/spinner';
-import { cn } from '@frontend/lib/utils';
+import type { TreatyResponse } from '@frontend/lib/api-types';
+import { cn, getErrorMessageFromApi } from '@frontend/lib/utils';
+import type { PaginatedResponse } from '@frontend/types/pagination';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { useDebounceValue } from 'usehooks-ts';
 
 type Option = {
   value: string;
   label: string;
 };
 
-type ComboBoxProps = {
-  options?: Option[];
+type BaseComboBoxProps = {
   value?: string;
   onChange?: (value: string | undefined) => void;
   placeholder?: string;
@@ -35,11 +39,10 @@ type ComboBoxProps = {
   disabled?: boolean;
   width?: string;
   allowClear?: boolean;
-  isLoading?: boolean;
-  hasMore?: boolean;
-  onLoadMore?: () => void;
-  onSearchChange?: (search: string) => void;
-  shouldFilter?: boolean;
+};
+
+type ComboBoxProps = BaseComboBoxProps & {
+  options?: Option[];
 };
 
 export function ComboBox({
@@ -52,14 +55,8 @@ export function ComboBox({
   disabled = false,
   width = 'w-[150px]',
   allowClear = false,
-  isLoading = false,
-  hasMore = false,
-  onLoadMore,
-  onSearchChange,
-  shouldFilter = true,
 }: ComboBoxProps) {
   const [open, setOpen] = React.useState(false);
-  const searchRef = React.useRef('');
 
   const selectedOption = React.useMemo(() => {
     return options.find((option) => option.value === value) || null;
@@ -80,11 +77,6 @@ export function ComboBox({
     onChange?.(undefined);
   };
 
-  const handleSearchChange = (newSearch: string) => {
-    searchRef.current = newSearch;
-    onSearchChange?.(newSearch);
-  };
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -92,7 +84,7 @@ export function ComboBox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(width, 'justify-between cursor-pointer!')}
+          className={cn(width, 'cursor-pointer! justify-between')}
           disabled={disabled}
         >
           <span className="truncate">
@@ -105,14 +97,10 @@ export function ComboBox({
                 tabIndex={0}
                 aria-label="Clear selection"
                 className={cn(
-                  buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-                  'size-6 m-2',
+                  buttonVariants({ variant: 'ghost', size: 'icon' }),
+                  'm-2 size-6',
                 )}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleClear(e);
-                }}
+                onClick={handleClear}
               >
                 <XIcon className="opacity-50 hover:opacity-100" />
               </span>
@@ -128,11 +116,136 @@ export function ComboBox({
           onSelect={handleSelect}
           searchPlaceholder={searchPlaceholder}
           emptyMessage={emptyMessage}
-          isLoading={isLoading}
-          hasMore={hasMore}
-          onLoadMore={onLoadMore}
-          onSearchChange={handleSearchChange}
-          shouldFilter={shouldFilter}
+          shouldFilter={true}
+          onSearchChange={() => {}}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+type PaginatedComboBoxProps<TData> = BaseComboBoxProps & {
+  queryKey: unknown[];
+  fetcher: (params: {
+    page: number;
+    search?: string;
+  }) => Promise<TreatyResponse<{ data: PaginatedResponse<TData> }>>;
+  renderOption: (item: TData) => Option;
+};
+
+export function PaginatedComboBox<TData>({
+  value,
+  onChange,
+  placeholder = 'Select an option...',
+  searchPlaceholder = 'Search...',
+  emptyMessage = 'No option found.',
+  disabled = false,
+  width = 'w-[150px]',
+  allowClear = false,
+  queryKey,
+  fetcher,
+  renderOption,
+}: PaginatedComboBoxProps<TData>) {
+  const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = useDebounceValue('', 300);
+
+  const { data, fetchNextPage, hasNextPage, isFetching, error } =
+    useInfiniteQuery({
+      queryKey: [...queryKey, search],
+      queryFn: async ({ pageParam = 1 }) => {
+        const response = await fetcher({
+          page: pageParam,
+          search: search || undefined,
+        });
+        if (response.error) {
+          throw new Error(getErrorMessageFromApi(response.error.value));
+        }
+        return response.data!.data;
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage) => {
+        if (lastPage.pageInfo.page < lastPage.pageInfo.totalPages) {
+          return lastPage.pageInfo.page + 1;
+        }
+        return undefined;
+      },
+      enabled: open,
+      staleTime: 1000 * 60 * 5,
+    });
+
+  React.useEffect(() => {
+    if (error) {
+      toast.error(error.message);
+    }
+  }, [error]);
+
+  const options = React.useMemo(() => {
+    return data?.pages.flatMap((page) => page.items.map(renderOption)) ?? [];
+  }, [data, renderOption]);
+
+  const selectedOption = React.useMemo(() => {
+    return options.find((option) => option.value === value) || null;
+  }, [options, value]);
+
+  const handleSelect = (currentValue: string) => {
+    if (currentValue === value) {
+      onChange?.(undefined);
+    } else {
+      onChange?.(currentValue);
+    }
+    setOpen(false);
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange?.(undefined);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(width, 'cursor-pointer! justify-between')}
+          disabled={disabled}
+        >
+          <span className="truncate">
+            {selectedOption?.label ?? placeholder}
+          </span>
+          <div className="flex items-center">
+            {allowClear && value && !disabled && (
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label="Clear selection"
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'icon' }),
+                  'm-2 size-6',
+                )}
+                onClick={handleClear}
+              >
+                <XIcon className="opacity-50 hover:opacity-100" />
+              </span>
+            )}
+            <ChevronsUpDownIcon className="opacity-50" />
+          </div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className={cn(width, 'p-0')} align="start">
+        <OptionList
+          options={options}
+          value={value}
+          onSelect={handleSelect}
+          searchPlaceholder={searchPlaceholder}
+          emptyMessage={emptyMessage}
+          isLoading={isFetching}
+          hasMore={hasNextPage}
+          onLoadMore={() => fetchNextPage()}
+          onSearchChange={setSearch}
+          shouldFilter={false}
         />
       </PopoverContent>
     </Popover>
@@ -145,8 +258,8 @@ function OptionList({
   onSelect,
   searchPlaceholder,
   emptyMessage,
-  isLoading,
-  hasMore,
+  isLoading = false,
+  hasMore = false,
   onLoadMore,
   onSearchChange,
   shouldFilter,
@@ -156,8 +269,8 @@ function OptionList({
   onSelect: (value: string) => void;
   searchPlaceholder: string;
   emptyMessage: string;
-  isLoading: boolean;
-  hasMore: boolean;
+  isLoading?: boolean;
+  hasMore?: boolean;
   onLoadMore?: () => void;
   onSearchChange: (search: string) => void;
   shouldFilter: boolean;
@@ -191,6 +304,7 @@ function OptionList({
             <CommandItem
               key={option.value}
               value={option.value}
+              keywords={[option.label]}
               onSelect={onSelect}
             >
               <span className="truncate">{option.label}</span>

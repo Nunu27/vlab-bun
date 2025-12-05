@@ -1,30 +1,19 @@
 import { Button } from '@frontend/components/ui/button';
 import { useRouteContext } from '@tanstack/react-router';
+import { withForm, type DeviceFormData } from '../../hooks/use-device-form';
 
-function TestConnectionButton() {
-  const send = useRouteContext({
-    from: '__root__',
-    select: (ctx) => ctx.ws.send,
-  });
+const TestConnectionButton = withForm({
+  defaultValues: {} as DeviceFormData,
+  render: function Render({ form }) {
+    const send = useRouteContext({
+      from: '__root__',
+      select: (ctx) => ctx.ws.send,
+    });
 
-  const handleTestDevice = () => {
-    send(
-      'device/test',
-      {
-        name: 'test',
-        kind: 'mikrotik_ros',
-        image: 'test-image',
-        env: {},
-        resources: {},
-        connection: {
-          type: 'ssh',
-          data: {
-            port: 22,
-          },
-        },
-        interfaces: [],
-      },
-      {
+    const handleTestDevice = () => {
+      const value = form.state.values;
+
+      send('device/test', value, {
         message: (data) => {
           console.log('Message:', data);
         },
@@ -37,15 +26,15 @@ function TestConnectionButton() {
         done: () => {
           console.log('Done');
         },
-      },
-    );
-  };
+      });
+    };
 
-  return (
-    <Button onClick={handleTestDevice} type="button">
-      TestConnectionButton
-    </Button>
-  );
-}
+    return (
+      <Button onClick={handleTestDevice} type="button">
+        TestConnectionButton
+      </Button>
+    );
+  },
+});
 
 export default TestConnectionButton;

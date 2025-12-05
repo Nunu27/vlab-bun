@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { Static, Type as t } from "typebox";
+import { type Static, Type as t } from "typebox";
 import { Compile } from "typebox/compile";
 
 const EnvSchema = t.Object({

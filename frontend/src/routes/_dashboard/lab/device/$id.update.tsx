@@ -15,15 +15,15 @@ import {
   getTitleFromBreadcrumbs,
 } from '@frontend/lib/utils';
 import { Compile } from '@sinclair/typemap';
-import { useForm } from '@tanstack/react-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { DeviceBasicInfoForm } from './-module/components/device-basic-info-form';
-import { DeviceResourcesForm } from './-module/components/device-resources-form';
 import { DeviceConnectionForm } from './-module/components/device-connection-form';
-import { DeviceNetworkInterfacesForm } from './-module/components/device-network-interfaces-form';
 import { DeviceEnvForm } from './-module/components/device-env-form';
+import { DeviceNetworkInterfacesForm } from './-module/components/device-network-interfaces-form';
+import { DeviceResourcesForm } from './-module/components/device-resources-form';
+import { useAppForm } from './-module/hooks/use-device-form';
 
 const breadcrumbs = [
   { title: 'Lab Data' },
@@ -84,30 +84,27 @@ function RouteComponent() {
     },
   });
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       name: deviceData?.name ?? '',
       kind: deviceData?.kind ?? 'linux',
       image: deviceData?.image ?? '',
-      icon: undefined as File | undefined,
+      icon: undefined,
       categoryId: deviceData?.categoryId ?? '',
-      env: (deviceData?.env ?? {}) as Record<string, string>,
+      env: deviceData?.env ?? {},
       resources: deviceData?.resources ?? {
         cpu: 1,
         memory: '512M',
       },
       connection: deviceData?.connection ?? {
-        type: 'ssh' as 'rdp' | 'vnc' | 'ssh' | 'telnet',
+        type: 'ssh',
         data: {
           port: 22,
           username: '',
           password: '',
         },
       },
-      interfaces: (deviceData?.interfaces ?? []) as Array<{
-        code: string;
-        name: string;
-      }>,
+      interfaces: deviceData?.interfaces ?? [],
     } as typeof UpdateDeviceRequest.static,
     validators: { onSubmit: Compile(UpdateDeviceRequest) },
     onSubmit: ({ value }) => updateDevice.mutateAsync(value),
@@ -118,19 +115,9 @@ function RouteComponent() {
     },
   });
 
-  const initialFile = deviceData?.icon
-    ? {
-        id: deviceData.icon,
-        name: deviceData.icon,
-        size: 0,
-        type: 'image/*',
-        url: `/api/file/${deviceData.icon}`,
-      }
-    : undefined;
-
   if (isLoadingDevice) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
+      <div className="flex h-[50vh] items-center justify-center">
         <div className="text-muted-foreground">Loading device data...</div>
       </div>
     );
@@ -138,7 +125,7 @@ function RouteComponent() {
 
   if (!deviceData) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
+      <div className="flex h-[50vh] items-center justify-center">
         <div className="text-destructive">Device not found</div>
       </div>
     );
@@ -155,81 +142,86 @@ function RouteComponent() {
         }}
         className="space-y-6"
       >
-        {/* Basic Information */}
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Basic Information</CardTitle>
-            <CardDescription>
-              Basic device identification and configuration
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <DeviceBasicInfoForm form={form} initialFile={initialFile} />
-          </CardContent>
-        </Card>
+        <form.AppForm>
+          {/* Basic Information */}
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>
+                Basic device identification and configuration
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <DeviceBasicInfoForm
+                form={form}
+                placeholder={`/api/file/${deviceData.icon}`}
+              />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Resources</CardTitle>
-            <CardDescription>CPU and memory allocation</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <DeviceResourcesForm form={form} />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Resources</CardTitle>
+              <CardDescription>CPU and memory allocation</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <DeviceResourcesForm form={form} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Environment Variables</CardTitle>
-            <CardDescription>
-              Define environment variables for the device
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <DeviceEnvForm form={form} />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Environment Variables</CardTitle>
+              <CardDescription>
+                Define environment variables for the device
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <DeviceEnvForm form={form} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Connection</CardTitle>
-            <CardDescription>Remote access configuration</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <DeviceConnectionForm form={form} />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Connection</CardTitle>
+              <CardDescription>Remote access configuration</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <DeviceConnectionForm form={form} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Network Interfaces</CardTitle>
-            <CardDescription>
-              Define network interfaces for the device
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <DeviceNetworkInterfacesForm form={form} />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Network Interfaces</CardTitle>
+              <CardDescription>
+                Define network interfaces for the device
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <DeviceNetworkInterfacesForm form={form} />
+            </CardContent>
+          </Card>
 
-        <div className="flex gap-4 justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate({ to: '/lab/device' })}
-          >
-            Cancel
-          </Button>
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-          >
-            {([canSubmit, isSubmitting]) => (
-              <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                {isSubmitting ? 'Updating...' : 'Update Device'}
-              </Button>
-            )}
-          </form.Subscribe>
-        </div>
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate({ to: '/lab/device' })}
+            >
+              Cancel
+            </Button>
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
+            >
+              {([canSubmit, isSubmitting]) => (
+                <Button type="submit" disabled={!canSubmit || isSubmitting}>
+                  {isSubmitting ? 'Updating...' : 'Update Device'}
+                </Button>
+              )}
+            </form.Subscribe>
+          </div>
+        </form.AppForm>
       </form>
     </div>
   );

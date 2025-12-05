@@ -1,7 +1,12 @@
 import env from "@backend/env";
 import logger from "@backend/services/logger";
 import redis from "@backend/services/redis";
-import { RDPParameters } from "@backend/types/guacamole";
+import type {
+	RDPParameters,
+	SSHParameters,
+	TelnetParameters,
+	VNCParameters
+} from "@backend/types/guacamole";
 import GuacamoleLite from "guacamole-lite";
 import type { Server } from "node:http";
 
@@ -67,7 +72,19 @@ const clientOptions = {
 		vnc: {
 			"swap-red-blue": false,
 			"disable-paste": false
-		}
+		} as Omit<VNCParameters, "hostname">,
+		ssh: {
+			"swap-red-blue": false,
+			"disable-paste": false,
+			"terminal-type": "vt100",
+			scrollback: "1000"
+		} as Omit<SSHParameters, "hostname">,
+		telnet: {
+			"swap-red-blue": false,
+			"disable-paste": false,
+			"terminal-type": "vt100",
+			scrollback: "1000"
+		} as Omit<TelnetParameters, "hostname">
 	},
 	allowedUnencryptedConnectionSettings: {
 		rdp: ["width", "height", "dpi", "audio", "video", "image", "timezone"],

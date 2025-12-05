@@ -15,23 +15,18 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
-import { ComboBox } from '@frontend/components/ui/combobox';
+import { PaginatedComboBox } from '@frontend/components/ui/combobox';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import {
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import { PlusIcon } from 'lucide-react';
 
 export function CreateStudyProgramModal() {
   const [open, setOpen] = useState(false);
-  const [departmentSearch, setDepartmentSearch] = useState('');
   const queryClient = useQueryClient();
 
   const createStudyProgram = useMutation({
@@ -57,47 +52,6 @@ export function CreateStudyProgramModal() {
       toast.error(error.message);
     },
   });
-
-  const {
-    data: departmentData,
-    fetchNextPage,
-    hasNextPage,
-    isFetching: isLoadingDepartments,
-  } = useInfiniteQuery({
-    enabled: open,
-    queryKey: ['department', 'pagination', departmentSearch],
-    queryFn: async ({ pageParam = 1 }) => {
-      const result = await api.department.pagination.post({
-        page: pageParam,
-        perPage: 20,
-        search: departmentSearch || undefined,
-      });
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data.data;
-    },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.pageInfo.page < lastPage.pageInfo.totalPages) {
-        return lastPage.pageInfo.page + 1;
-      }
-      return undefined;
-    },
-    initialPageParam: 1,
-  });
-
-  const departmentOptions = useMemo(() => {
-    return (
-      departmentData?.pages.flatMap((page) =>
-        page.items.map((item) => ({
-          value: item.id,
-          label: item.name,
-        })),
-      ) ?? []
-    );
-  }, [departmentData]);
 
   const form = useForm({
     defaultValues: {
@@ -167,8 +121,7 @@ export function CreateStudyProgramModal() {
                     <FieldLabel htmlFor={field.name} required>
                       Department
                     </FieldLabel>
-                    <ComboBox
-                      options={departmentOptions}
+                    <PaginatedComboBox
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value ?? '')}
                       placeholder="Select department"
@@ -176,11 +129,18 @@ export function CreateStudyProgramModal() {
                       emptyMessage="No department found."
                       width="w-full"
                       allowClear
-                      isLoading={isLoadingDepartments}
-                      hasMore={hasNextPage}
-                      onLoadMore={() => fetchNextPage()}
-                      onSearchChange={setDepartmentSearch}
-                      shouldFilter={false}
+                      queryKey={['department', 'pagination']}
+                      fetcher={({ page, search }) =>
+                        api.department.pagination.post({
+                          page,
+                          perPage: 20,
+                          search: search || undefined,
+                        })
+                      }
+                      renderOption={(item) => ({
+                        value: item.id,
+                        label: item.name,
+                      })}
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />

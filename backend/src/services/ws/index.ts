@@ -3,10 +3,10 @@ import deviceWSHandler from "@backend/routes/device/ws";
 import { Server as Engine } from "@socket.io/bun-engine";
 import { Server } from "socket.io";
 import {
-	Client2ServerEvents,
-	InterServerEvents,
-	Server2ClientEvents,
-	SocketData,
+	type Client2ServerEvents,
+	type InterServerEvents,
+	type Server2ClientEvents,
+	type SocketData,
 	wsSchemas
 } from "./schema";
 

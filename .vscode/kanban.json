@@ -34,16 +34,8 @@
             "title": "Doing",
             "tasks": [
                 {
-                    "text": "Websocket for realtime update",
-                    "id": "q6smwdhjlhoccosra4w3ichb"
-                },
-                {
-                    "text": "Containerlab Planning",
-                    "id": "jefgvjf88i3xc5gdvlasuolc"
-                },
-                {
-                    "text": "CRUD Device",
-                    "id": "uaqubgfsndqyyk0flrjre4nm"
+                    "text": "Topology Editor",
+                    "id": "of8nyhovsw4hwi46k2vxj285"
                 }
             ],
             "id": "ppj2h8a0u0o1d4cyw3jf9ifh",
@@ -75,6 +67,18 @@
                 {
                     "text": "Caching",
                     "id": "bp1y2t8rclamszbyp75ggoc1"
+                },
+                {
+                    "text": "CRUD Device",
+                    "id": "uaqubgfsndqyyk0flrjre4nm"
+                },
+                {
+                    "text": "Websocket for realtime update",
+                    "id": "q6smwdhjlhoccosra4w3ichb"
+                },
+                {
+                    "text": "Containerlab Planning",
+                    "id": "jefgvjf88i3xc5gdvlasuolc"
                 }
             ],
             "id": "evooddvl4dgf4mputmvav45v",
@@ -83,5 +87,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1762366682225
+    "timestamp": 1764949204995
 }

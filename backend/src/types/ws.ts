@@ -1,6 +1,6 @@
-import { Role } from "@backend/db/schema/auth";
-import { TSchema, t } from "elysia";
-import { Static, TProperties } from "typebox/type";
+import type { Role } from "@backend/db/schema/auth";
+import type { TSchema } from "elysia";
+import type { Static, TProperties } from "typebox/type";
 
 export type WSEventType = "client2server" | "server2client" | "inter";
 
