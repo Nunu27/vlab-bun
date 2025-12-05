@@ -6,14 +6,13 @@ import { failure } from "@backend/utils/response";
 import { DrizzleError, DrizzleQueryError } from "drizzle-orm";
 import { Elysia, type ValidationError } from "elysia";
 import { DatabaseError } from "pg";
-import S3 from "@aws-lite/s3";
 
 const errorHandler = new Elysia({ name: "error-handler" })
 	.error({
 		DrizzleQueryError,
 		DrizzleError
 	})
-	.onError(({ code, error, status, path }) => {
+	.onError(({ code, error, status }) => {
 		switch (code) {
 			case "VALIDATION":
 				return status(

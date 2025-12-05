@@ -7,8 +7,7 @@ import { CreateDeviceRequest } from "./schema";
 
 export default createRouter().post(
 	"/",
-	async ({ body, db, publish }) => {
-		publish("", { body });
+	async ({ body, db }) => {
 		const id = Bun.randomUUIDv7();
 		const dependency = `device:${id}`;
 

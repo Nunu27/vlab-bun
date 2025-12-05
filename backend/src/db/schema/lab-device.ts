@@ -113,5 +113,7 @@ export const devicesRelations = relations(devices, ({ one }) => ({
 
 export const deviceTestSessions = pgTable("device_test_session", {
 	...base,
+	name: text().notNull(),
+	socketId: text().notNull(),
 	leasedPorts: jsonb().$type<number[]>().notNull()
 });

@@ -534,9 +534,6 @@ if 'services' in compose and 'clab-api' in compose['services']:
     # Add cgroup mount to volumes
     if 'volumes' not in service:
         service['volumes'] = []
-    cgroup_mount = '/sys/fs/cgroup:/sys/fs/cgroup:ro'
-    if cgroup_mount not in service['volumes']:
-        service['volumes'].insert(0, cgroup_mount)
     
     # Add .env file mount - mount from docker/common/.env to /app/.env
     env_mount = '../common/.env:/app/.env:ro'

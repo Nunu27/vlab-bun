@@ -6,6 +6,23 @@ import { ToastItemSchema } from "@backend/types/toast";
 import { failure } from "@backend/utils/response";
 import { Elysia, t } from "elysia";
 
+export const getSession = async (id: string) => {
+	const key = `session:${id}`;
+
+	return {
+		data: await redis.get<Session>(key),
+		extend: async () => {
+			await redis.expire(key, env.SESSION_TTL);
+		},
+		set: async (data: Session) => {
+			await redis.set(key, data, env.SESSION_TTL);
+		},
+		delete: async () => {
+			await redis.del(key);
+		}
+	};
+};
+
 export default new Elysia({ name: "session" })
 	.guard({
 		cookie: t.Object({
@@ -15,21 +32,9 @@ export default new Elysia({ name: "session" })
 	})
 	.resolve(async ({ cookie: { session } }) => {
 		session.value ??= Bun.randomUUIDv7();
-		const key = `session:${session.value}`;
 
 		return {
-			session: {
-				data: await redis.get<Session>(key),
-				extend: async () => {
-					await redis.expire(key, env.SESSION_TTL);
-				},
-				set: async (data: Session) => {
-					await redis.set(key, data, env.SESSION_TTL);
-				},
-				delete: async () => {
-					await redis.del(key);
-				}
-			}
+			session: await getSession(session.value)
 		};
 	})
 	.as("global")

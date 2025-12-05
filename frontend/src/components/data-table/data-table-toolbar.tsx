@@ -25,7 +25,7 @@ export function DataTableToolbar<TData>({
   onRefresh,
   filters,
 }: DataTableToolbarProps<TData>) {
-  const debouncedSearch = useDebounceCallback(onSearchChange, 500);
+  const setSearch = useDebounceCallback(onSearchChange, 500);
 
   const hideableColumns = useMemo(
     () =>
@@ -58,7 +58,7 @@ export function DataTableToolbar<TData>({
           type="search"
           placeholder={searchPlaceholder}
           defaultValue={searchValue}
-          onChange={(e) => debouncedSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
         />
         <Button

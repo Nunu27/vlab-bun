@@ -3,14 +3,15 @@ import { cleanupDBListeners, syncDBListeners } from "@backend/db/listener";
 import env, { inProduction } from "@backend/env";
 import { clearCache } from "@backend/middlewares/caching";
 import services from "@backend/plugins/services";
-import ws from "@backend/plugins/ws";
 import routes from "@backend/routes";
-import { events } from "@backend/routes/events";
 import { initGuacamole, shutdownGuacamole } from "@backend/services/guacamole";
 import logger from "@backend/services/logger";
 import staticPlugin from "@elysiajs/static";
+import { WebSocketData } from "@socket.io/bun-engine";
+import { Server } from "bun";
 import { Elysia } from "elysia";
 import cluster from "node:cluster";
+import { engine } from "./ws";
 
 const app = new Elysia({
 	cookie: { secrets: env.COOKIE_SECRET, secure: inProduction }
@@ -20,12 +21,15 @@ const app = new Elysia({
 			? staticPlugin({
 					prefix: "/static",
 					assets: "public/static"
-				})
+			  })
 			: undefined
 	)
-	.use(ws(events))
 	.use(services)
-	.use(routes);
+	.use(routes)
+	.resolve(() => {})
+	.all("/ws", async ({ request, server }) => {
+		return engine.handleRequest(request, server as Server<WebSocketData>);
+	});
 
 const shutdown = async (signal: string) => {
 	logger.info(`${signal} received, shutting down...`);
@@ -47,7 +51,7 @@ export async function startServer() {
 		initGuacamole();
 	}
 
-	app.listen(env.PORT, (app) => {
+	app.listen({ port: env.PORT, ...engine.handler() }, (app) => {
 		logger.info(`Server running on ${app.url.origin}`);
 	});
 }
