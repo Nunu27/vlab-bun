@@ -31,6 +31,7 @@ import {
   restrictToParentElement,
 } from '@dnd-kit/modifiers';
 import { GripVerticalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { withForm, type DeviceFormData } from '../hooks/use-device-form';
 
 interface SortableInterfaceRowProps {
   id: string;
@@ -65,7 +66,7 @@ function SortableInterfaceRow({
       <TableCell className="w-12 text-center">
         <button
           type="button"
-          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
@@ -94,7 +95,7 @@ function SortableInterfaceRow({
           variant="ghost"
           size="icon"
           onClick={onDelete}
-          className="text-destructive hover:text-destructive"
+          className="text-destructive hover:text-destructive size-8"
         >
           <Trash2Icon className="size-4" />
         </Button>
@@ -103,116 +104,126 @@ function SortableInterfaceRow({
   );
 }
 
-interface DeviceNetworkInterfacesFormProps {
-  form: any;
-}
+export const DeviceNetworkInterfacesForm = withForm({
+  defaultValues: {} as DeviceFormData,
+  render: function Render({ form }) {
+    const sensors = useSensors(
+      useSensor(PointerSensor),
+      useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+      }),
+    );
 
-export function DeviceNetworkInterfacesForm({
-  form,
-}: DeviceNetworkInterfacesFormProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+    return (
+      <form.Field name="interfaces">
+        {(field) => {
+          const handleDragEnd = (event: DragEndEvent) => {
+            const { active, over } = event;
 
-  return (
-    <form.Field name="interfaces">
-      {(field: any) => {
-        const handleDragEnd = (event: DragEndEvent) => {
-          const { active, over } = event;
+            if (over && active.id !== over.id) {
+              const oldIndex = field.state.value.findIndex(
+                (_, i) => `interface-${i}` === active.id,
+              );
+              const newIndex = field.state.value.findIndex(
+                (_, i) => `interface-${i}` === over.id,
+              );
 
-          if (over && active.id !== over.id) {
-            const oldIndex = field.state.value.findIndex(
-              (_: any, i: number) => `interface-${i}` === active.id,
-            );
-            const newIndex = field.state.value.findIndex(
-              (_: any, i: number) => `interface-${i}` === over.id,
-            );
+              const reordered = arrayMove(
+                field.state.value,
+                oldIndex,
+                newIndex,
+              );
+              field.handleChange(reordered);
+            }
+          };
 
-            const reordered = arrayMove(field.state.value, oldIndex, newIndex);
-            field.handleChange(reordered);
-          }
-        };
+          return (
+            <div className="space-y-4">
+              {field.state.value.length > 0 ? (
+                <div className="overflow-hidden rounded-lg border">
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                    modifiers={[
+                      restrictToVerticalAxis,
+                      restrictToParentElement,
+                    ]}
+                  >
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12"></TableHead>
+                          <TableHead>Interface Code</TableHead>
+                          <TableHead>Interface Name</TableHead>
+                          <TableHead className="w-16"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <SortableContext
+                          items={field.state.value.map(
+                            (_, i) => `interface-${i}`,
+                          )}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {field.state.value.map((iface, index) => (
+                            <SortableInterfaceRow
+                              key={`interface-${index}`}
+                              id={`interface-${index}`}
+                              code={iface.code}
+                              name={iface.name}
+                              onCodeChange={(value) => {
+                                const updated = [...field.state.value];
+                                updated[index] = {
+                                  ...updated[index],
+                                  code: value,
+                                };
+                                field.handleChange(updated);
+                              }}
+                              onNameChange={(value) => {
+                                const updated = [...field.state.value];
+                                updated[index] = {
+                                  ...updated[index],
+                                  name: value,
+                                };
+                                field.handleChange(updated);
+                              }}
+                              onDelete={() => {
+                                field.handleChange(
+                                  field.state.value.filter(
+                                    (_, i) => i !== index,
+                                  ),
+                                );
+                              }}
+                            />
+                          ))}
+                        </SortableContext>
+                      </TableBody>
+                    </Table>
+                  </DndContext>
+                </div>
+              ) : (
+                <div className="text-muted-foreground rounded-lg border border-dashed py-8 text-center">
+                  No interfaces defined. Click the button below to add one.
+                </div>
+              )}
 
-        return (
-          <div className="space-y-4">
-            {field.state.value.length > 0 ? (
-              <div className="border rounded-lg overflow-hidden">
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                  modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-                >
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12"></TableHead>
-                        <TableHead>Interface Code</TableHead>
-                        <TableHead>Interface Name</TableHead>
-                        <TableHead className="w-16"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <SortableContext
-                        items={field.state.value.map(
-                          (_: any, i: number) => `interface-${i}`,
-                        )}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {field.state.value.map((iface: any, index: number) => (
-                          <SortableInterfaceRow
-                            key={`interface-${index}`}
-                            id={`interface-${index}`}
-                            code={iface.code}
-                            name={iface.name}
-                            onCodeChange={(value) => {
-                              const updated = [...field.state.value];
-                              updated[index].code = value;
-                              field.handleChange(updated);
-                            }}
-                            onNameChange={(value) => {
-                              const updated = [...field.state.value];
-                              updated[index].name = value;
-                              field.handleChange(updated);
-                            }}
-                            onDelete={() => {
-                              field.handleChange(
-                                field.state.value.filter(
-                                  (_: any, i: number) => i !== index,
-                                ),
-                              );
-                            }}
-                          />
-                        ))}
-                      </SortableContext>
-                    </TableBody>
-                  </Table>
-                </DndContext>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
-                No interfaces defined. Click the button below to add one.
-              </div>
-            )}
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                field.handleChange([
-                  ...field.state.value,
-                  { code: '', name: '' },
-                ]);
-              }}
-            >
-              <PlusIcon /> Add Interface
-            </Button>
-          </div>
-        );
-      }}
-    </form.Field>
-  );
-}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  field.handleChange([
+                    ...field.state.value,
+                    { code: '', name: '' },
+                  ]);
+                }}
+              >
+                <PlusIcon /> Add Interface
+              </Button>
+            </div>
+          );
+        }}
+      </form.Field>
+    );
+  },
+});

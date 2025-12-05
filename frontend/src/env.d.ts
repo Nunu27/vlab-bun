@@ -11,7 +11,7 @@ declare module '*.svg?react' {
   export default ReactComponent;
 }
 
-declare module '@tanstack/table-core' {
+declare module '@tanstack/react-table' {
   interface ColumnMeta {
     label?: string;
     center?: boolean;
