@@ -1,12 +1,27 @@
 import db from "@backend/db";
 import { deviceTestSessions } from "@backend/db/schema/lab-device";
+import clab, { clabWrapper } from "@backend/services/clab";
 import logger from "@backend/services/logger";
+import { releasePorts } from "@backend/services/port-manager";
 import { chunk } from "@backend/utils/chunk";
 import cron, { Patterns } from "@elysiajs/cron";
 import { inArray } from "drizzle-orm";
 import cluster from "node:cluster";
 
-async function destroyTestSession(id: string): Promise<void> {}
+async function destroyTestSession(id: string): Promise<void> {
+	await clabWrapper(() =>
+		clab.DELETE("/api/v1/labs/{labName}", {
+			params: {
+				path: {
+					labName: `device-${id}`
+				},
+				query: {
+					cleanup: true
+				}
+			}
+		})
+	);
+}
 
 export default cron({
 	name: "device-test-session-cleanup",
@@ -17,7 +32,7 @@ export default cron({
 
 		await db.transaction(async (tx) => {
 			const sessions = await tx.query.deviceTestSessions.findMany({
-				columns: { id: true },
+				columns: { id: true, leasedPorts: true },
 				where: (deviceTestSessions, { lte }) => {
 					return lte(deviceTestSessions.createdAt, cutoff);
 				}
@@ -27,6 +42,7 @@ export default cron({
 
 			const sessionChunks = chunk(sessions, 10);
 			const sessionsToDelete: string[] = [];
+			const portsToRelease: number[] = [];
 
 			for (const sessionChunk of sessionChunks) {
 				const results = await Promise.allSettled(
@@ -38,6 +54,7 @@ export default cron({
 					const result = results[i];
 					if (result.status === "fulfilled") {
 						sessionsToDelete.push(sessionChunk[i].id);
+						portsToRelease.push(...sessionChunk[i].leasedPorts);
 					}
 				}
 			}
@@ -47,6 +64,7 @@ export default cron({
 				await tx
 					.delete(deviceTestSessions)
 					.where(inArray(deviceTestSessions.id, sessionsToDelete));
+				await releasePorts(portsToRelease);
 			}
 		});
 	},

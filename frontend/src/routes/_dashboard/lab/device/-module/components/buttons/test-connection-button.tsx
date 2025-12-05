@@ -12,7 +12,7 @@ function TestConnectionButton() {
       'device/test',
       {
         name: 'test',
-        kind: 'nokia_srlinux',
+        kind: 'mikrotik_ros',
         image: 'test-image',
         env: {},
         resources: {},

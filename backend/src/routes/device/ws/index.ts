@@ -11,22 +11,24 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 	"device/test": async (socket, data, reply) => {
 		reply("message", "Provisioning device...");
 
-		const deviceName = data.name.replaceAll(/\s+/, "-");
+		const deviceName = data.name.replaceAll(/\s+/g, "-");
 
 		await db.transaction(async (tx) => {
 			const port = await leasePort();
 
-			await tx.insert(deviceTestSessions).values({
-				name: data.name,
-				socketId: socket.id,
-				leasedPorts: [port]
-			});
+			const [{ id }] = await tx
+				.insert(deviceTestSessions)
+				.values({
+					socketId: socket.id,
+					leasedPorts: [port]
+				})
+				.returning({ id: deviceTestSessions.id });
 
 			const response = await clabWrapper(() =>
 				clab.POST("/api/v1/labs", {
 					body: {
 						topologyContent: {
-							name: `device-${socket.id}`,
+							name: `device-${id}`,
 							topology: {
 								nodes: {
 									[deviceName]: {

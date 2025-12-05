@@ -1,8 +1,8 @@
 import { ComboBox } from '@frontend/components/ui/combobox';
 import type { PaginatedResponse } from '@frontend/types/pagination';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import { useDebounceCallback } from 'usehooks-ts';
+import { useMemo } from 'react';
+import { useDebounceValue } from 'usehooks-ts';
 
 export type FilterComboboxProps<TItem> = {
   label: string;
@@ -36,9 +36,7 @@ export function DataTableFilterCombobox<TItem>({
   disabled = false,
   width = 'w-[200px]',
 }: FilterComboboxProps<TItem>) {
-  const [search, setSearch] = useState('');
-
-  const debouncedSetSearch = useDebounceCallback(setSearch, 300);
+  const [search, setSearch] = useDebounceValue('', 300);
 
   const { data, fetchNextPage, hasNextPage, isLoading } = useInfiniteQuery({
     queryKey: [...queryKey({ page: 1, search }), search],
@@ -78,7 +76,7 @@ export function DataTableFilterCombobox<TItem>({
         isLoading={isLoading}
         hasMore={hasNextPage}
         onLoadMore={fetchNextPage}
-        onSearchChange={debouncedSetSearch}
+        onSearchChange={setSearch}
         shouldFilter={false}
       />
     </div>
