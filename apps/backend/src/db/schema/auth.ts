@@ -1,0 +1,90 @@
+import { integer, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm/relations";
+import {
+	degreeLevelEnum as degreeLevelValues,
+	roleEnum as roleValues
+} from "@vlab/shared/enums";
+import { base } from "./base";
+
+export const departments = pgTable("department", {
+	...base,
+	name: text().unique().notNull()
+});
+
+export const degreeLevelEnum = pgEnum("degree_level", degreeLevelValues);
+
+export const studyPrograms = pgTable("study_program", {
+	...base,
+	name: text().unique().notNull(),
+	departmentId: uuid()
+		.references(() => departments.id, { onDelete: "restrict" })
+		.notNull()
+});
+
+export const studyProgramsRelations = relations(studyPrograms, ({ one }) => ({
+	department: one(departments, {
+		fields: [studyPrograms.departmentId],
+		references: [departments.id]
+	})
+}));
+
+export const roleEnum = pgEnum("role", roleValues);
+export type Role = (typeof roleEnum.enumValues)[number];
+
+export const users = pgTable("user", {
+	...base,
+	name: text().notNull(),
+	email: text().notNull().unique(),
+	passwordHash: text(),
+	role: roleEnum().notNull().default("student")
+});
+
+export const usersRelations = relations(users, ({ one }) => ({
+	student: one(students, {
+		fields: [users.id],
+		references: [students.id]
+	}),
+	lecturer: one(lecturers, {
+		fields: [users.id],
+		references: [lecturers.id]
+	})
+}));
+
+export const students = pgTable("student", {
+	...base,
+	id: uuid()
+		.primaryKey()
+		.references(() => users.id, { onDelete: "cascade" }),
+	nrp: text().notNull().unique(),
+	year: integer().notNull(),
+	degreeLevel: degreeLevelEnum().notNull(),
+	studyProgramId: uuid()
+		.references(() => studyPrograms.id, { onDelete: "restrict" })
+		.notNull()
+});
+
+export const studentsRelations = relations(students, ({ one }) => ({
+	user: one(users, {
+		fields: [students.id],
+		references: [users.id]
+	}),
+	studyProgram: one(studyPrograms, {
+		fields: [students.studyProgramId],
+		references: [studyPrograms.id]
+	})
+}));
+
+export const lecturers = pgTable("lecturer", {
+	...base,
+	id: uuid()
+		.primaryKey()
+		.references(() => users.id, { onDelete: "cascade" }),
+	nip: text().notNull().unique()
+});
+
+export const lecturersRelations = relations(lecturers, ({ one }) => ({
+	user: one(users, {
+		fields: [lecturers.id],
+		references: [users.id]
+	})
+}));

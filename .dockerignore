@@ -10,15 +10,19 @@ build
 coverage
 
 # Backend specific
-backend/node_modules
-backend/dist
-backend/.env
+apps/backend/node_modules
+apps/backend/dist
+apps/backend/.env
 
 # Frontend specific
-frontend/node_modules
-frontend/dist
-frontend/.rsbuild
-frontend/.env
+apps/frontend/node_modules
+apps/frontend/dist
+apps/frontend/.rsbuild
+apps/frontend/.env
+
+# Shared specific
+packages/shared/node_modules
+packages/shared/dist
 
 # OS files
 .DS_Store

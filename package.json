@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "workspaces": [
-    "backend",
-    "frontend"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev": "bun frontend dev & bun backend dev",

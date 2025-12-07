@@ -17,8 +17,9 @@ RUN apt-get update && \
 FROM build-base AS deps
 
 COPY bun.lock* package.json ./
-COPY frontend/package.json ./frontend/
-COPY backend/package.json ./backend/
+COPY apps/frontend/package.json ./apps/frontend/
+COPY apps/backend/package.json ./apps/backend/
+COPY packages/shared/package.json ./packages/shared/
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
@@ -29,13 +30,15 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 FROM build-base AS frontend-builder
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/backend/node_modules ./backend/node_modules
-COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
+COPY --from=deps /app/apps/frontend/node_modules ./apps/frontend/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY package.json bun.lock* ./
-COPY frontend ./frontend
-COPY backend ./backend
+copy apps/backend ./apps/backend
+COPY apps/frontend ./apps/frontend
+COPY packages/shared ./packages/shared
 
-RUN cd frontend && bun run build
+RUN bun frontend build
 
 ############################
 # Backend build
@@ -43,11 +46,13 @@ RUN cd frontend && bun run build
 FROM build-base AS backend-builder
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/backend/node_modules ./backend/node_modules
+COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY package.json bun.lock* ./
-COPY backend ./backend
+COPY apps/backend ./apps/backend
+COPY packages/shared ./packages/shared
 
-RUN cd backend && bun run build
+RUN bun backend build
 
 ############################
 # Runtime image
