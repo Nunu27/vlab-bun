@@ -131,6 +131,7 @@ jobs:
               $NETWORK_FLAGS \
               $PORT_FLAG \
               --env-file ${{ secrets.VPS_DEPLOY_PATH }}/.env \
+              -v ${{ secrets.VPS_DEPLOY_PATH }}/docker.sock:/var/run/docker.sock:rw \
               "$IMAGE_NAME"
 
             # Wait for health check

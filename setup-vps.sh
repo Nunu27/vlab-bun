@@ -429,13 +429,63 @@ CLAB_REPO_PATH="$DEPLOY_PATH/clab-api-server"
 
 # Check if containerlab is already running
 if docker ps --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"; then
-    print_success "Containerlab API server already running"
-    
-    # Ensure it's connected to vlab network
     ACTUAL_CONTAINER_NAME=$(docker ps --filter "name=clab-api" --format "{{.Names}}" | head -1)
+    
+    # Check if docker socket is properly mounted
+    DOCKER_SOCK_MOUNTED=false
+    if docker inspect "$ACTUAL_CONTAINER_NAME" --format '{{json .Mounts}}' | grep -q "\"Destination\":\"/var/run/docker.sock\""; then
+        # Check if it's mounted to the correct host path
+        MOUNT_SOURCE=$(docker inspect "$ACTUAL_CONTAINER_NAME" --format '{{range .Mounts}}{{if eq .Destination "/var/run/docker.sock"}}{{.Source}}{{end}}{{end}}')
+        if [ "$MOUNT_SOURCE" = "$DEPLOY_PATH/docker.sock" ]; then
+            DOCKER_SOCK_MOUNTED=true
+        fi
+    fi
+    
+    # Check if connected to vlab network
+    NETWORK_CONNECTED=true
     if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$ACTUAL_CONTAINER_NAME\""; then
-        print_step "Connecting API server to vlab network..."
-        docker network connect "$VLAB_NETWORK" "$ACTUAL_CONTAINER_NAME" 2>/dev/null || true
+        NETWORK_CONNECTED=false
+    fi
+    
+    # If configuration is correct, skip recreation
+    if [ "$DOCKER_SOCK_MOUNTED" = true ] && [ "$NETWORK_CONNECTED" = true ]; then
+        print_success "Containerlab API server already running with correct configuration"
+    else
+        print_warning "Containerlab API server running but configuration needs updating"
+        
+        if [ "$DOCKER_SOCK_MOUNTED" = false ]; then
+            print_info "Docker socket not properly mounted to $DEPLOY_PATH/docker.sock"
+        fi
+        
+        if [ "$NETWORK_CONNECTED" = false ]; then
+            print_info "Not connected to vlab network"
+        fi
+        
+        print_step "Stopping and recreating container with correct configuration..."
+        
+        if [ -d "$CLAB_REPO_PATH" ]; then
+            cd "$CLAB_REPO_PATH"
+            ./clab-api-manager.sh dind stop 2>/dev/null || true
+            cd "$DEPLOY_PATH"
+        fi
+        
+        docker ps -a --filter "name=clab-api" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+        docker ps -a --filter "name=dind" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+        
+        # Force recreation by falling through to the setup block
+        print_info "Proceeding with fresh setup..."
+    fi
+    
+    # Only skip setup if configuration is correct
+    if [ "$DOCKER_SOCK_MOUNTED" = true ] && [ "$NETWORK_CONNECTED" = true ]; then
+        # Ensure connected to vlab network (in case it got disconnected)
+        if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$ACTUAL_CONTAINER_NAME\""; then
+            print_step "Connecting API server to vlab network..."
+            docker network connect "$VLAB_NETWORK" "$ACTUAL_CONTAINER_NAME" 2>/dev/null || true
+        fi
+        SKIP_CLAB_SETUP=true
+    else
+        SKIP_CLAB_SETUP=false
     fi
 elif docker ps -a --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"; then
     print_warning "Found stopped Containerlab containers. Cleaning up..."
@@ -457,7 +507,11 @@ elif docker ps -a --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab
     fi
     
     print_info "Starting fresh setup..."
-else
+    SKIP_CLAB_SETUP=false
+fi
+
+# Only proceed with setup if needed
+if [ "${SKIP_CLAB_SETUP:-false}" = "false" ]; then
     print_step "Setting up Containerlab API server with DinD..."
     
     # Define repository path
@@ -507,7 +561,7 @@ rm -f /var/run/docker.pid /var/run/docker/*.pid 2>/dev/null || true' docker/dind
     
     # Create a patched docker-compose.yml
     print_step "Patching docker-compose.yml..."
-    python3 - <<'PYEOF'
+    DEPLOY_PATH="$DEPLOY_PATH" python3 - <<'PYEOF'
 import yaml
 import sys
 
@@ -539,6 +593,11 @@ if 'services' in compose and 'clab-api' in compose['services']:
     env_mount = '../common/.env:/app/.env:ro'
     if env_mount not in service['volumes']:
         service['volumes'].append(env_mount)
+    
+    # Add docker socket mount to host
+    docker_sock_mount = '/var/run/docker.sock:${DEPLOY_PATH}/docker.sock:rw'
+    if docker_sock_mount not in service['volumes']:
+        service['volumes'].append(docker_sock_mount)
 
 # Add vlab network
 if 'networks' not in compose:
@@ -548,8 +607,15 @@ compose['networks']['default'] = {
     'external': True
 }
 
+# Replace ${DEPLOY_PATH} placeholder with actual path
+import os
+deploy_path = os.environ.get('DEPLOY_PATH', '/opt/vlab')
+
 with open('docker/dind/docker-compose.yml', 'w') as f:
-    yaml.dump(compose, f, default_flow_style=False, sort_keys=False)
+    content = yaml.dump(compose, default_flow_style=False, sort_keys=False)
+    # Replace placeholder with actual deployment path
+    content = content.replace('${DEPLOY_PATH}', deploy_path)
+    f.write(content)
 
 print("docker-compose.yml patched successfully")
 PYEOF
@@ -609,7 +675,7 @@ PYEOF
     fi
     
     cd "$DEPLOY_PATH"
-fi
+fi  # End of SKIP_CLAB_SETUP check
 
 # Verify containerlab API server is healthy
 print_step "Verifying containerlab API server..."
@@ -732,10 +798,10 @@ MAX_BATCH_WAIT_MS=500
 NODE_ENV=production
 BASE_URL=$BASE_URL
 CAS_BASE_URL=$CAS_BASE_URL
-COOKIE_SECRET=$(openssl rand -hex 32)
+COOKIE_SECRET=$(openssl rand -hex 16)
 GUACD_HOST=$GUACD_CONTAINER
 GUACD_PORT=4822
-GUACD_SECRET=$(openssl rand -hex 32)
+GUACD_SECRET=$(openssl rand -hex 16)
 CONTAINERLAB_API_URL=http://$CONTAINERLAB_CONTAINER:8080
 EOF
 
