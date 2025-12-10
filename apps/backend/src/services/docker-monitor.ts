@@ -591,12 +591,10 @@ async function handleContainerEvent(event: any) {
 	}
 }
 async function handleHealthUpdate(nodeId: string, action: string) {
-	await db
-		.update(labNodes)
-		.set({
-			health: action.substring(15) as NodeHealth
-		})
-		.where(eq(labNodes.id, nodeId));
+	const health = action.substring(15) as NodeHealth;
+
+	logger.info(`Updating health for node ${nodeId} to ${health}`);
+	await db.update(labNodes).set({ health }).where(eq(labNodes.id, nodeId));
 }
 
 // Sync only interfaces for a specific container
@@ -802,8 +800,6 @@ async function startEventListener() {
 
 				try {
 					const event = JSON.parse(line);
-					logger.info("Received Docker event: %s", event.Type);
-
 					switch (event.Type) {
 						case "container":
 							await handleContainerEvent(event);

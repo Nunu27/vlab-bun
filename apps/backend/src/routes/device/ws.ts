@@ -29,7 +29,7 @@ addDBListener(
 	{ ops: ["INSERT", "UPDATE"] }
 );
 
-function waitForHealth(nodeId: string, timeoutMs = 60000) {
+function waitForHealth(nodeId: string, timeoutMs = 120000) {
 	return new Promise<NodeHealth | null>(async (resolve) => {
 		let resolved = false;
 		let currentHealth: NodeHealth | null = null;
