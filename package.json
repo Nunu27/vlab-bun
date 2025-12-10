@@ -12,9 +12,21 @@
     "build": "bun frontend build && bun backend build",
     "lint": "bun lint",
     "frontend": "bun run --filter vlab-frontend",
-    "backend": "bun run --filter vlab-backend"
+    "backend": "bun run --filter vlab-backend",
+    "prepare": "husky"
   },
-  "devDependencies": {},
+  "lint-staged": {
+    "apps/frontend/**/*.{ts,tsx,js,jsx,json,css,md}": [
+      "bun run --filter vlab-frontend format:staged"
+    ],
+    "apps/frontend/**/*.{ts,tsx,js,jsx}": [
+      "bun run --filter vlab-frontend lint:staged --fix"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
   "peerDependencies": {},
   "trustedDependencies": [
     "core-js",
