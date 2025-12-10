@@ -1,6 +1,7 @@
 import { t } from "elysia/type-system";
 import { deviceKindEnum } from "../enums";
 import { createWSSchema } from "../types/ws";
+import { Stringified } from "../utils";
 
 export const CreateDeviceRequest = t.Object({
 	name: t.String({ minLength: 1 }),
@@ -8,12 +9,12 @@ export const CreateDeviceRequest = t.Object({
 	image: t.String({ minLength: 1 }),
 	icon: t.File({ type: "image/*", maxSize: "10m" }),
 	categoryId: t.String({ format: "uuid" }),
-	env: t.Record(t.String(), t.String()),
-	resources: t.Object({
+	env: Stringified(t.Record(t.String(), t.String())),
+	resources: t.ObjectString({
 		cpu: t.Optional(t.Number()),
 		memory: t.Optional(t.String())
 	}),
-	connection: t.Object({
+	connection: t.ObjectString({
 		type: t.UnionEnum(["rdp", "vnc", "ssh", "telnet"]),
 		data: t.Object({
 			port: t.Number(),
@@ -21,10 +22,12 @@ export const CreateDeviceRequest = t.Object({
 			password: t.Optional(t.String({ minLength: 1 }))
 		})
 	}),
-	interfaces: t.Array(
+	interfaces: t.ArrayString(
 		t.Object({
-			code: t.String({ minLength: 1 }),
-			name: t.String({ minLength: 1 })
+			internalCode: t.String({ minLength: 1 }),
+			displayedCode: t.String({ minLength: 1 }),
+			name: t.String({ minLength: 1 }),
+			configurable: t.Boolean()
 		})
 	)
 });
@@ -35,12 +38,12 @@ export const UpdateDeviceRequest = t.Object({
 	image: t.String({ minLength: 1 }),
 	icon: t.Optional(t.File({ type: "image/*", maxSize: "10m" })),
 	categoryId: t.String({ format: "uuid" }),
-	env: t.Record(t.String(), t.String()),
-	resources: t.Object({
+	env: Stringified(t.Record(t.String(), t.String())),
+	resources: t.ObjectString({
 		cpu: t.Optional(t.Number()),
 		memory: t.Optional(t.String())
 	}),
-	connection: t.Object({
+	connection: t.ObjectString({
 		type: t.UnionEnum(["rdp", "vnc", "ssh", "telnet"]),
 		data: t.Object({
 			port: t.Number(),
@@ -48,10 +51,12 @@ export const UpdateDeviceRequest = t.Object({
 			password: t.Optional(t.String({ minLength: 1 }))
 		})
 	}),
-	interfaces: t.Array(
+	interfaces: t.ArrayString(
 		t.Object({
-			code: t.String({ minLength: 1 }),
-			name: t.String({ minLength: 1 })
+			internalCode: t.String({ minLength: 1 }),
+			displayedCode: t.String({ minLength: 1 }),
+			name: t.String({ minLength: 1 }),
+			configurable: t.Boolean()
 		})
 	)
 });
@@ -75,8 +80,10 @@ export const DeviceTestRequest = t.Object({
 	}),
 	interfaces: t.Array(
 		t.Object({
-			code: t.String({ minLength: 1 }),
-			name: t.String({ minLength: 1 })
+			internalCode: t.String({ minLength: 1 }),
+			displayedCode: t.String({ minLength: 1 }),
+			name: t.String({ minLength: 1 }),
+			configurable: t.Boolean()
 		})
 	)
 });

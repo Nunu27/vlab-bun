@@ -1,0 +1,1 @@
+ALTER TABLE "lab_session" DROP COLUMN "name";

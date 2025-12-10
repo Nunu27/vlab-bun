@@ -527,9 +527,10 @@ if [ "${SKIP_CLAB_SETUP:-false}" = "false" ]; then
     else
         print_info "Repository already exists at $CLAB_REPO_PATH"
         cd "$CLAB_REPO_PATH"
+        print_step "Resetting repository to clean state..."
+        git reset --hard
         print_step "Pulling latest changes..."
         git pull origin main 2>/dev/null || print_warning "Could not pull latest changes, using existing version"
-        git reset --hard
         cd "$DEPLOY_PATH"
     fi
     
@@ -549,14 +550,20 @@ if [ "${SKIP_CLAB_SETUP:-false}" = "false" ]; then
     sed -i 's|templates/redoc.html|internal/templates/redoc.html|g' docker/dind/Dockerfile
     sed -i 's|cp -r templates/redoc.html /templates/|cp -r internal/templates/redoc.html /templates/|g' docker/dind/Dockerfile
     
-    # Fix entrypoint to clean up stale PID file
-    print_step "Patching entrypoint script to clean stale PID files..."
+    # Fix entrypoint to clean up stale PID file and enable TCP socket
+    print_step "Patching entrypoint script to clean stale PID files and enable TCP socket..."
     if ! grep -q "rm -f /var/run/docker.pid" docker/dind/entrypoint.sh; then
         # Add cleanup right after sourcing common functions
         sed -i '/# Source common functions/a\
 \
 # Clean up any stale PID file from previous runs\
 rm -f /var/run/docker.pid /var/run/docker/*.pid 2>/dev/null || true' docker/dind/entrypoint.sh
+    fi
+    
+    # Enable TCP socket on port 2375
+    if ! grep -q "tcp://0.0.0.0:2375" docker/dind/entrypoint.sh; then
+        print_step "Enabling Docker TCP socket on port 2375..."
+        sed -i 's|dockerd > "$LOG_FILE" 2>&1 &|dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 > "$LOG_FILE" 2>\&1 \&|' docker/dind/entrypoint.sh
     fi
     
     # Create a patched docker-compose.yml
@@ -593,11 +600,6 @@ if 'services' in compose and 'clab-api' in compose['services']:
     env_mount = '../common/.env:/app/.env:ro'
     if env_mount not in service['volumes']:
         service['volumes'].append(env_mount)
-    
-    # Add docker socket mount to host
-    docker_sock_mount = '/var/run/docker.sock:${DEPLOY_PATH}/docker.sock:rw'
-    if docker_sock_mount not in service['volumes']:
-        service['volumes'].append(docker_sock_mount)
 
 # Add vlab network
 if 'networks' not in compose:

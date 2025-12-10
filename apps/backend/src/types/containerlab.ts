@@ -355,6 +355,8 @@ export interface Defaults {
 	exec?: string[];
 	/** Default variables */
 	vars?: Record<string, unknown>;
+	/** Default labels */
+	labels?: Record<string, string>;
 	/** Any other default node properties */
 	[key: string]: unknown;
 }

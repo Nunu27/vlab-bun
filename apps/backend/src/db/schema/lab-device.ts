@@ -4,10 +4,11 @@ import { deviceKindEnum as deviceKindValues } from "@vlab/shared/enums";
 import { base } from "./base";
 
 export const deviceKindEnum = pgEnum("device_kind", deviceKindValues);
-export type DeviceKind = (typeof deviceKindEnum.enumValues)[number];
 export type DeviceInterface = {
-	code: string;
+	internalCode: string;
+	displayedCode: string;
 	name: string;
+	configurable: boolean;
 };
 export type DeviceEnv = {
 	[key: string]: string;
@@ -59,8 +60,3 @@ export const devicesRelations = relations(devices, ({ one }) => ({
 		references: [deviceCategories.id]
 	})
 }));
-
-export const deviceTestSessions = pgTable("device_test_session", {
-	...base,
-	leasedPorts: jsonb().$type<number[]>().notNull()
-});

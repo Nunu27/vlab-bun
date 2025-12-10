@@ -15,6 +15,7 @@ export type WSSchema<
 	data: TData;
 	reply?: TReply;
 	private?: Role[];
+	volatile?: boolean;
 	cleanup?: (id: string) => Promise<void> | void;
 };
 

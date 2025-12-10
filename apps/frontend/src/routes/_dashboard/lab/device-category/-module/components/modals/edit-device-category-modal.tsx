@@ -78,16 +78,6 @@ export function EditDeviceCategoryModal({
     form.reset({ name: deviceCategoryName, icon: undefined });
   }, [deviceCategoryName, deviceCategoryIcon, form]);
 
-  const initialFile = deviceCategoryIcon
-    ? {
-        id: deviceCategoryIcon,
-        name: deviceCategoryIcon,
-        size: 0,
-        type: 'image/*',
-        url: `/api/file/${deviceCategoryIcon}`,
-      }
-    : undefined;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
@@ -112,7 +102,11 @@ export function EditDeviceCategoryModal({
                       <Field>
                         <FieldLabel>Icon</FieldLabel>
                         <ImageInput
-                          initialFile={initialFile}
+                          placeholder={
+                            deviceCategoryIcon
+                              ? `/api/file/${deviceCategoryIcon}`
+                              : null
+                          }
                           errors={field.state.meta.errors}
                           onImageChange={(file) =>
                             field.handleChange(

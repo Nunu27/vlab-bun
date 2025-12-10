@@ -58,3 +58,20 @@ export type DegreeLevel = (typeof degreeLevelEnum)[number];
 
 export const roleEnum = ["student", "lecturer", "admin"] as const;
 export type Role = (typeof roleEnum)[number];
+
+export const labTypeEnum = ["user", "device-test"] as const;
+export type LabType = (typeof labTypeEnum)[number];
+
+export const nodeHealthEnum = ["healthy", "unhealthy", "starting"] as const;
+export type NodeHealth = (typeof nodeHealthEnum)[number];
+
+export const nodeStatusEnum = [
+	"created",
+	"restarting",
+	"running",
+	"removing",
+	"paused",
+	"exited",
+	"dead"
+] as const;
+export type NodeStatus = (typeof nodeStatusEnum)[number];

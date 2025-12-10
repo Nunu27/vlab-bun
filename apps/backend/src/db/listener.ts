@@ -622,13 +622,14 @@ function _getTriggerDiffSQL(
 
 	const functionsCreated = new Set<string>();
 	for (const [key, d] of desired) {
+		// Always update the function definition to ensure columns are up to date
+		if (!functionsCreated.has(d.channel)) {
+			addSQL += buildFunctionSQL(d.channel, d.cols);
+			functionsCreated.add(d.channel);
+		}
+
 		const existingKey = Array.from(existing).find((k) => k === key);
 		if (!existingKey) {
-			// Create function once per channel
-			if (!functionsCreated.has(d.channel)) {
-				addSQL += buildFunctionSQL(d.channel, d.cols);
-				functionsCreated.add(d.channel);
-			}
 			// Create trigger (one per operation)
 			addSQL += buildTriggerSQL(d.channel, d.schema, d.table, d.events);
 		}

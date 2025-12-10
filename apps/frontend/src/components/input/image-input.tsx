@@ -17,8 +17,8 @@ interface ImageInputProps {
   accept?: string;
   className?: string;
   onImageChange?: (file: File | FileMetadata | null) => void;
-  initialFile?: FileMetadata | null;
-  placeholder?: React.ReactNode;
+  placeholder?: string | null;
+  label?: React.ReactNode;
   errors?: Array<{ message?: string } | undefined> | undefined;
   onError?: (errors: string[]) => void;
 }
@@ -28,11 +28,21 @@ export default function ImageInput({
   accept = 'image/*',
   className,
   onImageChange,
-  initialFile,
   placeholder,
+  label,
   errors: propErrors,
   onError,
 }: ImageInputProps) {
+  const initialFile: FileMetadata | null = placeholder
+    ? {
+        id: 'placeholder',
+        url: placeholder,
+        name: 'Image',
+        size: 0,
+        type: 'image/*',
+      }
+    : null;
+
   const [image, setImage] = useState<FileWithPreview | null>(
     initialFile
       ? { id: initialFile.id, file: initialFile, preview: initialFile.url }
@@ -163,7 +173,7 @@ export default function ImageInput({
             </div>
             <div className="space-y-2">
               <h3 className="text-sm font-semibold">
-                {placeholder ?? 'Upload Image'}
+                {label ?? 'Upload Image'}
               </h3>
             </div>
           </div>

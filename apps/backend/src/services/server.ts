@@ -11,8 +11,9 @@ import type { WebSocketData } from "@socket.io/bun-engine";
 import type { Server } from "bun";
 import { Elysia } from "elysia";
 import cluster from "node:cluster";
-import { engine, io } from "./ws";
+import { startDockerMonitor } from "./docker-monitor";
 import { redisClient } from "./redis";
+import { engine, io } from "./ws";
 
 const app = new Elysia({
 	cookie: { secrets: env.COOKIE_SECRET, secure: inProduction }
@@ -50,6 +51,8 @@ export async function startServer() {
 		await checkAndRunMigration();
 		await syncDBListeners();
 		await clearCache();
+
+		await startDockerMonitor();
 
 		initGuacamole();
 	}

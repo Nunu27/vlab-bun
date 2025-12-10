@@ -22,6 +22,7 @@
     "@socket.io/redis-streams-adapter": "^0.2.3",
     "@vlab/shared": "workspace:*",
     "croner": "6.0.7",
+    "dockerode": "^4.0.9",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "drizzle-typebox": "^0.3.3",
@@ -41,6 +42,7 @@
     "typebox": "^1.0.61"
   },
   "devDependencies": {
+    "@types/dockerode": "^3.3.47",
     "@types/pg": "^8.15.6",
     "bun-types": "latest",
     "drizzle-kit": "^0.31.8"

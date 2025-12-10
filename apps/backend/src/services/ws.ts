@@ -77,7 +77,10 @@ io.on("connection", (socket) => {
 
 			const id = Bun.randomUUIDv7();
 			const reply = ((type: any, data?: any) => {
-				socket.emit(`${event}/reply`, { type, data });
+				(schema.volatile ? socket.volatile : socket).emit(`${event}/reply`, {
+					type,
+					data
+				});
 			}) as unknown as Parameters<typeof handler>[0]["reply"];
 
 			const room = `${event}::${id}`;

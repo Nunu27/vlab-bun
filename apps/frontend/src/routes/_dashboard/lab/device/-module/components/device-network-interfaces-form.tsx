@@ -1,4 +1,5 @@
 import { Button } from '@frontend/components/ui/button';
+import { Checkbox } from '@frontend/components/ui/checkbox';
 import { Input } from '@frontend/components/ui/input';
 import {
   Table,
@@ -35,19 +36,27 @@ import { withForm, type DeviceFormData } from '../hooks/use-device-form';
 
 interface SortableInterfaceRowProps {
   id: string;
-  code: string;
+  internalCode: string;
+  displayedCode: string;
   name: string;
-  onCodeChange: (value: string) => void;
+  configurable: boolean;
+  onInternalCodeChange: (value: string) => void;
+  onDisplayedCodeChange: (value: string) => void;
   onNameChange: (value: string) => void;
+  onConfigurableChange: (value: boolean) => void;
   onDelete: () => void;
 }
 
 function SortableInterfaceRow({
   id,
-  code,
+  internalCode,
+  displayedCode,
   name,
-  onCodeChange,
+  configurable,
+  onInternalCodeChange,
+  onDisplayedCodeChange,
   onNameChange,
+  onConfigurableChange,
   onDelete,
 }: SortableInterfaceRowProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -76,8 +85,16 @@ function SortableInterfaceRow({
       <TableCell>
         <Input
           placeholder="e.g., eth0"
-          value={code}
-          onChange={(e) => onCodeChange(e.target.value)}
+          value={internalCode}
+          onChange={(e) => onInternalCodeChange(e.target.value)}
+          className="h-9"
+        />
+      </TableCell>
+      <TableCell>
+        <Input
+          placeholder="e.g., eth1"
+          value={displayedCode}
+          onChange={(e) => onDisplayedCodeChange(e.target.value)}
           className="h-9"
         />
       </TableCell>
@@ -87,6 +104,12 @@ function SortableInterfaceRow({
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           className="h-9"
+        />
+      </TableCell>
+      <TableCell className="w-24 text-center">
+        <Checkbox
+          checked={configurable}
+          onCheckedChange={onConfigurableChange}
         />
       </TableCell>
       <TableCell className="w-16 text-center">
@@ -154,8 +177,10 @@ export const DeviceNetworkInterfacesForm = withForm({
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12"></TableHead>
-                          <TableHead>Interface Code</TableHead>
+                          <TableHead>Internal Code</TableHead>
+                          <TableHead>Displayed Code</TableHead>
                           <TableHead>Interface Name</TableHead>
+                          <TableHead className="w-24 text-center">Configurable</TableHead>
                           <TableHead className="w-16"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -170,13 +195,23 @@ export const DeviceNetworkInterfacesForm = withForm({
                             <SortableInterfaceRow
                               key={`interface-${index}`}
                               id={`interface-${index}`}
-                              code={iface.code}
+                              internalCode={iface.internalCode}
+                              displayedCode={iface.displayedCode}
                               name={iface.name}
-                              onCodeChange={(value) => {
+                              configurable={iface.configurable}
+                              onInternalCodeChange={(value) => {
                                 const updated = [...field.state.value];
                                 updated[index] = {
                                   ...updated[index],
-                                  code: value,
+                                  internalCode: value,
+                                };
+                                field.handleChange(updated);
+                              }}
+                              onDisplayedCodeChange={(value) => {
+                                const updated = [...field.state.value];
+                                updated[index] = {
+                                  ...updated[index],
+                                  displayedCode: value,
                                 };
                                 field.handleChange(updated);
                               }}
@@ -185,6 +220,14 @@ export const DeviceNetworkInterfacesForm = withForm({
                                 updated[index] = {
                                   ...updated[index],
                                   name: value,
+                                };
+                                field.handleChange(updated);
+                              }}
+                              onConfigurableChange={(value) => {
+                                const updated = [...field.state.value];
+                                updated[index] = {
+                                  ...updated[index],
+                                  configurable: value,
                                 };
                                 field.handleChange(updated);
                               }}
@@ -214,7 +257,7 @@ export const DeviceNetworkInterfacesForm = withForm({
                 onClick={() => {
                   field.handleChange([
                     ...field.state.value,
-                    { code: '', name: '' },
+                    { internalCode: '', displayedCode: '', name: '', configurable: true },
                   ]);
                 }}
               >
