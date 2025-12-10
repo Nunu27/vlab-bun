@@ -19,6 +19,7 @@ FROM build-base AS deps
 COPY bun.lock* package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/backend/package.json ./apps/backend/
+COPY packages/evaluator/package.json ./packages/evaluator/
 COPY packages/shared/package.json ./packages/shared/
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
