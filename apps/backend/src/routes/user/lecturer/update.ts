@@ -25,7 +25,7 @@ export default createRouter().put(
 
 			return lecturerCount;
 		});
-		if (rowCount === 0) {
+		if (!rowCount) {
 			return status(404, failure({ message: "Lecturer not found" }));
 		}
 

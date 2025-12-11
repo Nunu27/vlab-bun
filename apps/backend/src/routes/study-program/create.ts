@@ -7,7 +7,7 @@ import { CreateStudyProgramRequest } from "@vlab/shared/schemas";
 export default createRouter().post(
 	"/",
 	async ({ body, db }) => {
-		const [studyProgram] = await db
+		const [{ id }] = await db
 			.insert(studyPrograms)
 			.values(body)
 			.returning({ id: studyPrograms.id });
@@ -15,7 +15,7 @@ export default createRouter().post(
 
 		return success({
 			message: "Study program created",
-			data: { id: studyProgram.id }
+			data: { id }
 		});
 	},
 	{

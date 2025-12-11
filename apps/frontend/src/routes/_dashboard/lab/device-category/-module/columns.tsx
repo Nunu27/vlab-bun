@@ -22,30 +22,30 @@ export const deviceCategoryColumns: ColumnDef<Item>[] = [
     ),
   },
   {
-    accessorKey: 'icon',
-    size: 140,
-    enableSorting: false,
-    meta: {
-      label: 'Icon',
-      center: true,
-    },
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <img
-          src={`/api/file/${row.original.icon}`}
-          alt={row.original.name}
-          className="size-32 rounded-md object-cover border"
-        />
-      </div>
-    ),
-  },
-  {
     accessorKey: 'name',
     enableHiding: false,
     meta: {
       label: 'Category Name',
       isGrow: true,
     },
+  },
+  {
+    accessorKey: 'color',
+    size: 100,
+    meta: {
+      label: 'Color',
+    },
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <div
+          className="size-4 rounded-full border"
+          style={{ backgroundColor: row.original.color }}
+        />
+        <span className="text-muted-foreground font-mono text-xs">
+          {row.original.color}
+        </span>
+      </div>
+    ),
   },
   {
     id: 'actions',

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
 import Guacamole from 'guacamole-common-js';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface GuacamoleConnectionProps {
   token: string;
@@ -13,21 +13,25 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
   token,
   onDisconnect,
   onConnect,
-  onError
+  onError,
 }) => {
   const displayContainerRef = useRef<HTMLDivElement>(null);
   const guacClientRef = useRef<Guacamole.Client | null>(null);
   const guacKeyboardRef = useRef<Guacamole.Keyboard | null>(null);
-  const guacMouseRef = useRef<Guacamole.Mouse | null>(null);
+  const guacMouseCleanupRef = useRef<(() => void) | null>(null);
 
-  const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'error'>('connecting');
+  const [connectionState, setConnectionState] = useState<
+    'connecting' | 'connected' | 'error' | 'disconnected'
+  >('connecting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isGuacConnectedRef = useRef(false);
+  const hasErrorRef = useRef(false);
 
   useEffect(() => {
     setConnectionState('connecting');
     setErrorMessage(null);
+    hasErrorRef.current = false;
 
     const tunnel = new Guacamole.WebSocketTunnel('/display');
     const guac = new Guacamole.Client(tunnel);
@@ -93,9 +97,10 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
         case ClientState.DISCONNECTED:
           console.log('Guacamole state: Disconnected.');
           isGuacConnectedRef.current = false;
-          setConnectionState('error');
-          setErrorMessage('Session Disconnected');
-          onDisconnect?.();
+          if (!hasErrorRef.current) {
+            setConnectionState('disconnected');
+            onDisconnect?.();
+          }
           break;
         case ClientState.WAITING:
           console.log('Guacamole state: Waiting for server response...');
@@ -109,6 +114,7 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
     guac.onerror = (error: Guacamole.Status) => {
       console.error('Guacamole client error:', error);
       isGuacConnectedRef.current = false;
+      hasErrorRef.current = true;
       let message = 'Connection error.';
 
       const StatusCodes = Guacamole.Status.Code;
@@ -132,8 +138,9 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
           message = 'Forbidden.';
           break;
         default:
-          message = `Guacamole error (code 0x${error.code.toString(16)}): ${error.message || 'Unknown'
-            }`;
+          message = `Guacamole error (code 0x${error.code.toString(16)}): ${
+            error.message || 'Unknown'
+          }`;
       }
 
       // alert(`Connection Error: ${message}`);
@@ -144,6 +151,22 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 
       if (guacClientRef.current) {
         guacClientRef.current.disconnect();
+      }
+    };
+
+    // Clipboard handling
+    guac.onclipboard = (stream: Guacamole.InputStream, mimetype: string) => {
+      if (/^text\//.test(mimetype)) {
+        const reader = new Guacamole.StringReader(stream);
+        let data = '';
+        reader.ontext = (text: string) => {
+          data += text;
+        };
+        reader.onend = () => {
+          navigator.clipboard.writeText(data).catch((err) => {
+            console.error('Failed to write to clipboard:', err);
+          });
+        };
       }
     };
 
@@ -158,8 +181,17 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 
     // Custom mouse state handler - calculates position relative to container bounds
     // Custom mouse state handler
-    const sendMouseState = (clientX: number, clientY: number, buttons: number) => {
-      if (!isGuacConnectedRef.current || !guacClientRef.current || !displayContainerRef.current) return;
+    const sendMouseState = (
+      clientX: number,
+      clientY: number,
+      buttons: number,
+    ) => {
+      if (
+        !isGuacConnectedRef.current ||
+        !guacClientRef.current ||
+        !displayContainerRef.current
+      )
+        return;
 
       // Calculate position relative to container (modal-safe)
       const rect = displayContainerRef.current.getBoundingClientRect();
@@ -176,16 +208,15 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
       state.y = clampedY;
 
       // Set button states from e.buttons bitmask
-      state.left = !!(buttons & 1);    // Left button (bit 0)
-      state.middle = !!(buttons & 4);  // Middle button (bit 2)  
-      state.right = !!(buttons & 2);   // Right button (bit 1)
-      state.up = !!(buttons & 8);      // Scroll up (bit 3)
-      state.down = !!(buttons & 16);   // Scroll down (bit 4)
+      state.left = !!(buttons & 1); // Left button (bit 0)
+      state.middle = !!(buttons & 4); // Middle button (bit 2)
+      state.right = !!(buttons & 2); // Right button (bit 1)
+      state.up = !!(buttons & 8); // Scroll up (bit 3)
+      state.down = !!(buttons & 16); // Scroll down (bit 4)
 
       // Forward to Guacamole
       guacClientRef.current.sendMouseState(state);
     };
-
 
     // Mouse event handlers using clientX/Y directly
     const handleMouseDown = (e: MouseEvent) => {
@@ -219,23 +250,67 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
       e.preventDefault();
     };
 
+    const handlePaste = (e: ClipboardEvent) => {
+      if (e.clipboardData) {
+        const text = e.clipboardData.getData('text/plain');
+        if (text && guacClientRef.current) {
+          console.log(
+            'Sending clipboard data to remote:',
+            text.length,
+            'chars',
+          );
+          const stream =
+            guacClientRef.current.createClipboardStream('text/plain');
+          const writer = new Guacamole.StringWriter(stream);
+          for (let i = 0; i < text.length; i += 4096) {
+            writer.sendText(text.slice(i, i + 4096));
+          }
+          writer.sendEnd();
+        }
+      }
+    };
+
+    const handleWindowFocus = () => {
+      if (!isGuacConnectedRef.current || !guacClientRef.current) return;
+
+      navigator.clipboard
+        .readText()
+        .then((text) => {
+          if (text) {
+            console.log('Syncing clipboard on focus:', text.length, 'chars');
+            const stream =
+              guacClientRef.current!.createClipboardStream('text/plain');
+            const writer = new Guacamole.StringWriter(stream);
+            for (let i = 0; i < text.length; i += 4096) {
+              writer.sendText(text.slice(i, i + 4096));
+            }
+            writer.sendEnd();
+          }
+        })
+        .catch((err) => {
+          console.debug('Clipboard read failed (focus sync):', err);
+        });
+    };
+
     // Attach handlers directly to display element
     displayElement.addEventListener('mousedown', handleMouseDown);
     displayElement.addEventListener('mouseup', handleMouseUp);
     displayElement.addEventListener('mousemove', handleMouseMove);
     displayElement.addEventListener('wheel', handleWheel, { passive: false });
     displayElement.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('paste', handlePaste);
+    window.addEventListener('focus', handleWindowFocus);
 
     // Store for cleanup
-    guacMouseRef.current = {
-      cleanup: () => {
-        displayElement.removeEventListener('mousedown', handleMouseDown);
-        displayElement.removeEventListener('mouseup', handleMouseUp);
-        displayElement.removeEventListener('mousemove', handleMouseMove);
-        displayElement.removeEventListener('wheel', handleWheel);
-        displayElement.removeEventListener('contextmenu', handleContextMenu);
-      }
-    } as any;
+    guacMouseCleanupRef.current = () => {
+      displayElement.removeEventListener('mousedown', handleMouseDown);
+      displayElement.removeEventListener('mouseup', handleMouseUp);
+      displayElement.removeEventListener('mousemove', handleMouseMove);
+      displayElement.removeEventListener('wheel', handleWheel);
+      displayElement.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('paste', handlePaste);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
 
     const keyboard = new Guacamole.Keyboard(document);
     keyboard.onkeydown = (keysym: number) => {
@@ -280,6 +355,8 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
         resizeObserver.unobserve(container);
       }
       if (guacClientRef.current) {
+        guacClientRef.current.onstatechange = null;
+        guacClientRef.current.onerror = null;
         guacClientRef.current.disconnect();
       }
 
@@ -289,15 +366,16 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
       }
       guacKeyboardRef.current = null;
 
-      if (guacMouseRef.current && (guacMouseRef.current as any).cleanup) {
-        (guacMouseRef.current as any).cleanup();
+      if (guacMouseCleanupRef.current) {
+        guacMouseCleanupRef.current();
       }
-      guacMouseRef.current = null;
+      guacMouseCleanupRef.current = null;
 
       if (container && displayElement && container.contains(displayElement)) {
         container.removeChild(displayElement);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   return (
@@ -323,9 +401,19 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
             <div className="absolute inset-0 rounded-full bg-blue-500 opacity-20 blur-xl"></div>
             <Loader2 className="relative z-10 h-12 w-12 animate-spin text-blue-500" />
           </div>
-          <div className="text-center space-y-1">
-            <p className="font-medium text-slate-200">Connecting to Desktop</p>
-            <p className="font-mono text-xs text-slate-500">Establishing secure tunnel...</p>
+          <div className="space-y-1 text-center">
+            <p className="font-medium text-slate-200">Connecting to Device</p>
+            <p className="font-mono text-xs text-slate-500">
+              Establishing secure tunnel...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {connectionState === 'disconnected' && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-gray-900 text-white">
+          <div className="space-y-1 px-8 text-center">
+            <p className="font-medium text-slate-400">Session Ended</p>
           </div>
         </div>
       )}
@@ -335,7 +423,7 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
           <div className="rounded-full bg-red-500/10 p-4">
             <AlertCircle className="h-12 w-12 text-red-500" />
           </div>
-          <div className="text-center space-y-1 px-8">
+          <div className="space-y-1 px-8 text-center">
             <p className="font-medium text-red-400">Connection Failed</p>
             <p className="text-sm text-slate-400">{errorMessage}</p>
           </div>

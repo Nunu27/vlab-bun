@@ -8,7 +8,7 @@ export default createRouter().post(
 	"/",
 	async ({ body, db }) => {
 		const userId = await db.transaction(async (tx) => {
-			const [user] = await tx
+			const [{ id }] = await tx
 				.insert(users)
 				.values({
 					email: body.email,
@@ -18,14 +18,11 @@ export default createRouter().post(
 				.returning({ id: users.id });
 
 			await tx.insert(students).values({
-				id: user.id,
-				nrp: body.nrp,
-				year: body.year,
-				degreeLevel: body.degreeLevel,
-				studyProgramId: body.studyProgramId
+				id,
+				...body
 			});
 
-			return user.id;
+			return id;
 		});
 		await deleteCache("student:pagination:*");
 

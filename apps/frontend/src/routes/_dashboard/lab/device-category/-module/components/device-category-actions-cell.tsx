@@ -58,7 +58,7 @@ export function DeviceCategoryActionsCell({
         onOpenChange={setEditDialogOpen}
         deviceCategoryId={deviceCategory.id}
         deviceCategoryName={deviceCategory.name}
-        deviceCategoryIcon={deviceCategory.icon}
+        deviceCategoryColor={deviceCategory.color}
       />
       <DeleteDeviceCategoryModal
         open={deleteDialogOpen}

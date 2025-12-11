@@ -27,7 +27,7 @@ export const DeviceConnectionForm = withForm({
                   Connection Type
                 </FieldLabel>
                 <Select
-                  value={field.state.value}
+                  value={field.state.value ?? ''}
                   onValueChange={(value) =>
                     field.handleChange(value as typeof field.state.value)
                   }

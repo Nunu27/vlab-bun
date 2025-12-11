@@ -26,7 +26,11 @@ export const labSessions = pgTable(
 	(t) => [index().on(t.type, t.createdAt)]
 );
 
-export const labSessionsRelations = relations(labSessions, ({ many }) => ({
+export const labSessionsRelations = relations(labSessions, ({ many, one }) => ({
+	lab: one(labs, {
+		fields: [labSessions.labId],
+		references: [labs.id]
+	}),
 	nodes: many(labNodes)
 }));
 
@@ -44,9 +48,9 @@ export const labNodes = pgTable("lab_node", {
 	name: text().notNull(),
 	health: nodeHealthEnum(),
 	status: nodeStatusEnum().default("created").notNull(),
-	deviceId: uuid().references(() => devices.id),
+	deviceId: uuid().references(() => devices.id, { onDelete: "set null" }),
 	labSessionId: uuid()
-		.references(() => labSessions.id)
+		.references(() => labSessions.id, { onDelete: "cascade" })
 		.notNull(),
 	ports: jsonb().$type<Record<number, number>>().notNull(),
 	interfaces: jsonb().$type<Record<string, LabNodeInterfaceData>>().notNull()

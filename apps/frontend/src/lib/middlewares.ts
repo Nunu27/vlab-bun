@@ -1,4 +1,5 @@
 import { redirect } from '@tanstack/react-router';
+import type { Role } from '@vlab/shared/enums';
 import type { RouterContext } from './router';
 
 export const guestRoute =
@@ -18,9 +19,11 @@ export const protectedRoute =
   };
 
 export const privateRoute =
-  (roles: string[]) =>
+  (roles: Role[]) =>
   ({ context }: { context: RouterContext }) => {
-    if (!roles.includes(context.auth.user?.role ?? '')) {
+    const user = context.auth.user;
+
+    if (!user || !roles.includes(user.role)) {
       throw redirect({ to: '/' });
     }
   };

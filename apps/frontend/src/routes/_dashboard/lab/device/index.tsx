@@ -41,6 +41,7 @@ function RouteComponent() {
   >({
     queryKey: (params) => ['device', 'pagination', params],
     queryFn: pagination.post,
+    staleTime: 0,
   });
 
   return (

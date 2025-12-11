@@ -10,7 +10,7 @@ async function destroyTestSession(id: string): Promise<void> {
 		clab.DELETE("/api/v1/labs/{labName}", {
 			params: {
 				path: {
-					labName: `device-${id}`
+					labName: `device-${id.replace(/-/g, "")}`
 				},
 				query: {
 					cleanup: true

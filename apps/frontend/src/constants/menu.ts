@@ -31,12 +31,22 @@ export const menuByRole: Record<Role, MenuItem[]> = {
       url: '/',
       icon: LayoutDashboardIcon,
     },
+    {
+      title: 'Labs',
+      url: '/lab',
+      icon: FlaskConicalIcon,
+    },
   ],
   lecturer: [
     {
       title: 'Dashboard',
       url: '/',
       icon: LayoutDashboardIcon,
+    },
+    {
+      title: 'Labs',
+      url: '/lab',
+      icon: FlaskConicalIcon,
     },
   ],
   admin: [

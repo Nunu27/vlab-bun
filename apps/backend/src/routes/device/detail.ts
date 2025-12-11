@@ -20,7 +20,8 @@ export default createRouter().guard(
 				const { id } = params;
 
 				const data = await db.query.devices.findFirst({
-					where: (devices, { eq }) => eq(devices.id, id)
+					where: (devices, { eq }) => eq(devices.id, id),
+					with: { category: true }
 				});
 
 				if (!data) {

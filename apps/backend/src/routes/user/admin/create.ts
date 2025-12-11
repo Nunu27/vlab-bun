@@ -7,7 +7,7 @@ import { CreateAdminRequest } from "@vlab/shared/schemas";
 export default createRouter().post(
 	"/",
 	async ({ body, db }) => {
-		const [user] = await db
+		const [{ id }] = await db
 			.insert(users)
 			.values({
 				email: body.email,
@@ -18,7 +18,7 @@ export default createRouter().post(
 			.returning({ id: users.id });
 		await deleteCache("admin:pagination:*");
 
-		return success({ message: "Admin created", data: { id: user.id } });
+		return success({ message: "Admin created", data: { id } });
 	},
 	{
 		private: ["admin"],

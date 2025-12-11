@@ -1,5 +1,4 @@
 import { CreateDeviceCategoryRequest } from '@vlab/shared/schemas';
-import ImageInput from '@frontend/components/input/image-input';
 import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
@@ -16,7 +15,6 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
-import type { FileMetadata } from '@frontend/hooks/use-file-upload';
 import api from '@frontend/lib/api';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import { Compile } from '@sinclair/typemap';
@@ -57,7 +55,7 @@ export function CreateDeviceCategoryModal() {
   const form = useForm({
     defaultValues: {
       name: '',
-      icon: undefined,
+      color: '#000000',
     } as unknown as typeof CreateDeviceCategoryRequest.static,
     validators: { onSubmit: Compile(CreateDeviceCategoryRequest) },
     onSubmit: ({ value }) => createDeviceCategory.mutateAsync(value),
@@ -83,23 +81,6 @@ export function CreateDeviceCategoryModal() {
         >
           <FieldGroup>
             <div className="flex flex-col items-start gap-4 md:flex-row">
-              <div className="w-full shrink-0 md:w-48">
-                <form.Field name="icon">
-                  {(field) => {
-                    return (
-                      <Field>
-                        <FieldLabel required>Icon</FieldLabel>
-                        <ImageInput
-                          errors={field.state.meta.errors}
-                          onImageChange={(file: File | FileMetadata | null) =>
-                            form.setFieldValue('icon', file as File)
-                          }
-                        />
-                      </Field>
-                    );
-                  }}
-                </form.Field>
-              </div>
               <div className="flex-1">
                 <form.Field name="name">
                   {(field) => {
@@ -120,6 +101,43 @@ export function CreateDeviceCategoryModal() {
                           onChange={(e) => field.handleChange(e.target.value)}
                           aria-invalid={isInvalid}
                         />
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                </form.Field>
+              </div>
+              <div>
+                <form.Field name="color">
+                  {(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+
+                    return (
+                      <Field>
+                        <FieldLabel htmlFor={field.name} required>
+                          Color
+                        </FieldLabel>
+                        <div className="flex gap-2">
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            type="color"
+                            className="h-10 w-12 p-1"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                          />
+                          <Input
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="#000000"
+                            className="w-24"
+                          />
+                        </div>
                         {isInvalid && (
                           <FieldError errors={field.state.meta.errors} />
                         )}

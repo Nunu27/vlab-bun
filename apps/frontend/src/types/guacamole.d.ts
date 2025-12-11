@@ -8,8 +8,10 @@ declare module 'guacamole-common-js' {
       sendKeyEvent(pressed: number, keysym: number): void;
       sendSize(width: number, height: number): void;
       getDisplay(): Display;
+      createClipboardStream(mimetype: string): OutputStream;
       onstatechange: ((state: number) => void) | null;
       onerror: ((status: Status) => void) | null;
+      onclipboard: ((stream: InputStream, mimetype: string) => void) | null;
     }
 
     namespace Client {
@@ -32,7 +34,9 @@ declare module 'guacamole-common-js' {
       statisticWindow: number;
 
       // Event handlers
-      oncursor: ((canvas: HTMLCanvasElement, x: number, y: number) => void) | null;
+      oncursor:
+        | ((canvas: HTMLCanvasElement, x: number, y: number) => void)
+        | null;
       onresize: ((width: number, height: number) => void) | null;
       onstatistics: ((stats: Display.Statistics) => void) | null;
 
@@ -44,71 +48,186 @@ declare module 'guacamole-common-js' {
       getCursorLayer(): Display.VisibleLayer;
       createLayer(): Display.VisibleLayer;
       createBuffer(): Layer;
-      
+
       // Methods - Frame management
-      flush(callback?: () => void, timestamp?: number, logicalFrames?: number): void;
+      flush(
+        callback?: () => void,
+        timestamp?: number,
+        logicalFrames?: number,
+      ): void;
       cancel(): void;
-      
+
       // Methods - Cursor
-      setCursor(hotspotX: number, hotspotY: number, layer: Layer, srcx: number, srcy: number, srcw: number, srch: number): void;
+      setCursor(
+        hotspotX: number,
+        hotspotY: number,
+        layer: Layer,
+        srcx: number,
+        srcy: number,
+        srcw: number,
+        srch: number,
+      ): void;
       showCursor(shown?: boolean): void;
       moveCursor(x: number, y: number): void;
-      
+
       // Methods - Layer operations
       resize(layer: Layer, width: number, height: number): void;
-      
+
       // Methods - Drawing images
-      drawImage(layer: Layer, x: number, y: number, image: CanvasImageSource): void;
+      drawImage(
+        layer: Layer,
+        x: number,
+        y: number,
+        image: CanvasImageSource,
+      ): void;
       drawBlob(layer: Layer, x: number, y: number, blob: Blob): void;
-      drawStream(layer: Layer, x: number, y: number, stream: InputStream, mimetype: string): void;
+      drawStream(
+        layer: Layer,
+        x: number,
+        y: number,
+        stream: InputStream,
+        mimetype: string,
+      ): void;
       draw(layer: Layer, x: number, y: number, url: string): void;
-      
+
       // Methods - Video
       play(layer: Layer, mimetype: string, duration: number, url: string): void;
-      
+
       // Methods - Copy operations
-      put(srcLayer: Layer, srcx: number, srcy: number, srcw: number, srch: number, dstLayer: Layer, x: number, y: number): void;
-      copy(srcLayer: Layer, srcx: number, srcy: number, srcw: number, srch: number, dstLayer: Layer, x: number, y: number): void;
-      transfer(srcLayer: Layer, srcx: number, srcy: number, srcw: number, srch: number, dstLayer: Layer, x: number, y: number, transferFunction: (src: Uint8ClampedArray, dst: Uint8ClampedArray) => void): void;
-      
+      put(
+        srcLayer: Layer,
+        srcx: number,
+        srcy: number,
+        srcw: number,
+        srch: number,
+        dstLayer: Layer,
+        x: number,
+        y: number,
+      ): void;
+      copy(
+        srcLayer: Layer,
+        srcx: number,
+        srcy: number,
+        srcw: number,
+        srch: number,
+        dstLayer: Layer,
+        x: number,
+        y: number,
+      ): void;
+      transfer(
+        srcLayer: Layer,
+        srcx: number,
+        srcy: number,
+        srcw: number,
+        srch: number,
+        dstLayer: Layer,
+        x: number,
+        y: number,
+        transferFunction: (
+          src: Uint8ClampedArray,
+          dst: Uint8ClampedArray,
+        ) => void,
+      ): void;
+
       // Methods - Path operations
       moveTo(layer: Layer, x: number, y: number): void;
       lineTo(layer: Layer, x: number, y: number): void;
-      arc(layer: Layer, x: number, y: number, radius: number, startAngle: number, endAngle: number, negative: boolean): void;
-      curveTo(layer: Layer, cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
+      arc(
+        layer: Layer,
+        x: number,
+        y: number,
+        radius: number,
+        startAngle: number,
+        endAngle: number,
+        negative: boolean,
+      ): void;
+      curveTo(
+        layer: Layer,
+        cp1x: number,
+        cp1y: number,
+        cp2x: number,
+        cp2y: number,
+        x: number,
+        y: number,
+      ): void;
       close(layer: Layer): void;
       rect(layer: Layer, x: number, y: number, w: number, h: number): void;
-      
+
       // Methods - Path styling
       clip(layer: Layer): void;
-      strokeColor(layer: Layer, cap: string, join: string, thickness: number, r: number, g: number, b: number, a: number): void;
+      strokeColor(
+        layer: Layer,
+        cap: string,
+        join: string,
+        thickness: number,
+        r: number,
+        g: number,
+        b: number,
+        a: number,
+      ): void;
       fillColor(layer: Layer, r: number, g: number, b: number, a: number): void;
-      strokeLayer(layer: Layer, cap: string, join: string, thickness: number, srcLayer: Layer): void;
+      strokeLayer(
+        layer: Layer,
+        cap: string,
+        join: string,
+        thickness: number,
+        srcLayer: Layer,
+      ): void;
       fillLayer(layer: Layer, srcLayer: Layer): void;
-      
+
       // Methods - State management
       push(layer: Layer): void;
       pop(layer: Layer): void;
       reset(layer: Layer): void;
-      
+
       // Methods - Transform operations
-      setTransform(layer: Layer, a: number, b: number, c: number, d: number, e: number, f: number): void;
-      transform(layer: Layer, a: number, b: number, c: number, d: number, e: number, f: number): void;
-      
+      setTransform(
+        layer: Layer,
+        a: number,
+        b: number,
+        c: number,
+        d: number,
+        e: number,
+        f: number,
+      ): void;
+      transform(
+        layer: Layer,
+        a: number,
+        b: number,
+        c: number,
+        d: number,
+        e: number,
+        f: number,
+      ): void;
+
       // Methods - Layer properties
       setChannelMask(layer: Layer, mask: number): void;
       setMiterLimit(layer: Layer, limit: number): void;
-      
+
       // Methods - Visible layer operations
       dispose(layer: Display.VisibleLayer): void;
-      distort(layer: Display.VisibleLayer, a: number, b: number, c: number, d: number, e: number, f: number): void;
-      move(layer: Display.VisibleLayer, parent: Display.VisibleLayer, x: number, y: number, z: number): void;
+      distort(
+        layer: Display.VisibleLayer,
+        a: number,
+        b: number,
+        c: number,
+        d: number,
+        e: number,
+        f: number,
+      ): void;
+      move(
+        layer: Display.VisibleLayer,
+        parent: Display.VisibleLayer,
+        x: number,
+        y: number,
+        z: number,
+      ): void;
       shade(layer: Display.VisibleLayer, alpha: number): void;
-      
+
       // Methods - Scale
       scale(scale: number): void;
       getScale(): number;
-      
+
       // Methods - Utility
       flatten(): HTMLCanvasElement;
     }
@@ -157,7 +276,11 @@ declare module 'guacamole-common-js' {
         right: boolean;
         up: boolean;
         down: boolean;
-        fromClientPosition(element: HTMLElement, clientX: number, clientY: number): void;
+        fromClientPosition(
+          element: HTMLElement,
+          clientX: number,
+          clientY: number,
+        ): void;
         static Buttons: {
           LEFT: string;
           MIDDLE: string;
@@ -172,6 +295,22 @@ declare module 'guacamole-common-js' {
       constructor(element: Element | Document);
       onkeydown: ((keysym: number) => void) | null;
       onkeyup: ((keysym: number) => void) | null;
+    }
+
+    class StringReader {
+      constructor(stream: InputStream);
+      ontext: ((text: string) => void) | null;
+      onend: (() => void) | null;
+    }
+
+    class StringWriter {
+      constructor(stream: OutputStream);
+      sendText(text: string): void;
+      sendEnd(): void;
+    }
+
+    class OutputStream {
+      // OutputStream class definition
     }
 
     interface Status {

@@ -64,8 +64,7 @@ function RouteComponent() {
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
-        queryKey: ['device', 'pagination'],
-        exact: false,
+        queryKey: ['device'],
       });
       navigate({ to: '/lab/device' });
     },
@@ -120,7 +119,7 @@ function RouteComponent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <DeviceBasicInfoForm form={form} placeholder={null} />
+              <DeviceBasicInfoForm form={form} defaultCategory={undefined} />
             </CardContent>
           </Card>
 

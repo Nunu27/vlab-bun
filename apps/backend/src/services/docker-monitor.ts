@@ -16,7 +16,14 @@ import type {
 } from "@vlab/shared/enums";
 import Docker from "dockerode";
 import docker from "@backend/services/docker";
-import { eq, inArray, sql, type InferSelectModel } from "drizzle-orm";
+import {
+	eq,
+	inArray,
+	notInArray,
+	sql,
+	type InferSelectModel
+} from "drizzle-orm";
+import { deleteCache } from "@backend/middlewares/caching";
 
 type LabNode = InferSelectModel<typeof labNodes>;
 type LabSession = InferSelectModel<typeof labSessions>;
@@ -131,7 +138,7 @@ async function ensureLabSession(
 
 		const ports = getSessionPorts(inspect);
 
-		await db
+		const { rowCount } = await db
 			.insert(labSessions)
 			.values({
 				id: data.labSessionId,
@@ -141,6 +148,10 @@ async function ensureLabSession(
 				ports
 			})
 			.onConflictDoNothing();
+
+		if (rowCount) {
+			await deleteCache("lab:pagination:*");
+		}
 	});
 }
 
@@ -169,6 +180,81 @@ function extractPortMappings(
 	}
 
 	return portMappings;
+}
+
+async function extractInterfacesFromFilesystem(
+	container: Docker.Container,
+	inspect: Docker.ContainerInspectInfo
+): Promise<Record<string, LabNodeInterfaceData>> {
+	const interfaces: Record<string, LabNodeInterfaceData> = {};
+	const macLookup = new Map<string, string>();
+
+	// Build MAC -> IP lookup from Docker inspect
+	if (inspect.NetworkSettings?.Networks) {
+		for (const net of Object.values(inspect.NetworkSettings.Networks)) {
+			if (net?.MacAddress) {
+				macLookup.set(net.MacAddress.toLowerCase(), net.IPAddress);
+			}
+		}
+	}
+
+	try {
+		const exec = await container.exec({
+			Cmd: [
+				"sh",
+				"-c",
+				'for p in /sys/class/net/*; do echo "${p##*/}"; cat "$p/address"; cat "$p/operstate"; echo "__END__"; done'
+			],
+			AttachStdout: true,
+			AttachStderr: true,
+			Tty: false
+		});
+
+		const stream = await exec.start({ Detach: false, Tty: false });
+
+		let stdoutData = "";
+		const stdout = new (require("stream").Writable)({
+			write(chunk: any, _encoding: any, callback: any) {
+				stdoutData += chunk.toString();
+				callback();
+			}
+		});
+
+		container.modem.demuxStream(stream, stdout, process.stderr);
+
+		await new Promise((resolve, reject) => {
+			stream.on("end", resolve);
+			stream.on("error", reject);
+			setTimeout(() => reject(new Error("Timeout")), 5000);
+		});
+
+		const parts = stdoutData.split("__END__");
+		for (const part of parts) {
+			const lines = part
+				.trim()
+				.split("\n")
+				.map((l) => l.trim())
+				.filter(Boolean);
+			if (lines.length < 3) continue;
+
+			const name = lines[0];
+			const mac = lines[1].toLowerCase();
+			const state = lines[2].toLowerCase();
+
+			if (name === "lo") continue;
+
+			interfaces[name] = {
+				state: state === "up" ? "UP" : "DOWN",
+				macAddress: mac,
+				ipAddress: macLookup.get(mac)
+			};
+		}
+	} catch (err) {
+		logger.debug({ err }, "Failed to extract interfaces via filesystem");
+		throw err;
+	}
+
+	return interfaces;
 }
 
 async function extractInterfaces(
@@ -231,7 +317,12 @@ async function extractInterfaces(
 		});
 
 		// Parse JSON output from stdout
-		const interfaceList = JSON.parse(stdoutData);
+		let interfaceList;
+		try {
+			interfaceList = JSON.parse(stdoutData);
+		} catch (err) {
+			return await extractInterfacesFromFilesystem(container, inspect);
+		}
 
 		for (const iface of interfaceList) {
 			// Skip loopback interface
@@ -338,6 +429,7 @@ async function cleanupInvalidData() {
 	logger.debug("Starting cleanup of invalid data");
 	const containers = await docker.listContainers({ all: true });
 	const activeNodeIds = new Set<string>();
+	const activeSessionIds = new Set<string>();
 	const activeNodeKeys = new Set<string>();
 
 	// Build sets of active nodes in one pass
@@ -353,6 +445,7 @@ async function cleanupInvalidData() {
 		const sessionId = labels[LABELS.SESSION_ID];
 		const name = labels[LABELS.CLAB_NODE_NAME];
 		if (sessionId && name) {
+			activeSessionIds.add(sessionId);
 			activeNodeKeys.add(`${sessionId}:${name}`);
 		}
 	}
@@ -367,7 +460,6 @@ async function cleanupInvalidData() {
 		.from(labNodes);
 
 	// Batch updates for stale nodes
-	const sessionsToDelete: string[] = [];
 	const nodesToDelete: string[] = [];
 
 	for (const node of existingNodes) {
@@ -376,10 +468,8 @@ async function cleanupInvalidData() {
 			logger.info(
 				`Found stale node (no container), deleting. NodeId: ${node.id}, NodeName: ${node.name}`
 			);
+
 			nodesToDelete.push(node.id);
-			if (sessionsToDelete.includes(node.labSessionId)) {
-				sessionsToDelete.push(node.labSessionId);
-			}
 		}
 	}
 
@@ -391,12 +481,11 @@ async function cleanupInvalidData() {
 	}
 
 	// Batch delete sessions
-	if (sessionsToDelete.length > 0) {
-		await db
-			.delete(labSessions)
-			.where(inArray(labSessions.id, sessionsToDelete));
-		logger.info(`Removed ${sessionsToDelete.length} empty sessions`);
-	}
+	const { rowCount } = await db
+		.delete(labSessions)
+		.where(notInArray(labSessions.id, [...activeSessionIds]));
+
+	logger.info(`Removed ${rowCount} empty sessions`);
 }
 
 async function initializeData() {
@@ -539,6 +628,7 @@ async function handleContainerRemoval(nodeId: string, labSessionId: string) {
 	await db.delete(labNodes).where(eq(labNodes.id, nodeId));
 	await throttler.run(labSessionId, async () => {
 		await db.delete(labSessions).where(eq(labSessions.id, labSessionId));
+		await deleteCache("lab:pagination:*");
 	});
 }
 
@@ -680,6 +770,17 @@ async function startInterfaceMonitor(
 
 				for (const line of lines) {
 					if (!line.trim()) continue;
+
+					if (
+						line.includes("OCI runtime exec failed") ||
+						line.includes("executable file not found")
+					) {
+						logger.warn(
+							`Interface monitor failed for ${nodeName} (missing ip command?): ${line}`
+						);
+						stopInterfaceMonitor(containerId);
+						return;
+					}
 
 					logger.debug(
 						`Interface change detected in ${nodeName}: ${line.substring(

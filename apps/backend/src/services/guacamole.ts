@@ -67,21 +67,26 @@ const clientOptions = {
 			"create-recording-path": true,
 			audio: ["audio/L16"],
 			image: ["image/png", "image/jpeg"],
-			"resize-method": "display-update"
+			"resize-method": "display-update",
+			"disable-copy": false,
+			"disable-paste": false
 		} as Omit<RDPParameters, "hostname">,
 		vnc: {
 			"swap-red-blue": false,
-			"disable-paste": false
+			"disable-paste": false,
+			"disable-copy": false
 		} as Omit<VNCParameters, "hostname">,
 		ssh: {
 			"swap-red-blue": false,
 			"disable-paste": false,
+			"disable-copy": false,
 			"terminal-type": "vt100",
 			scrollback: "1000"
 		} as Omit<SSHParameters, "hostname">,
 		telnet: {
 			"swap-red-blue": false,
 			"disable-paste": false,
+			"disable-copy": false,
 			"terminal-type": "vt100",
 			scrollback: "1000"
 		} as Omit<TelnetParameters, "hostname">

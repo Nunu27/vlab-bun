@@ -8,7 +8,7 @@ import { initGuacamole, shutdownGuacamole } from "@backend/services/guacamole";
 import logger from "@backend/services/logger";
 import staticPlugin from "@elysiajs/static";
 import type { WebSocketData } from "@socket.io/bun-engine";
-import type { Server } from "bun";
+import { file, type Server } from "bun";
 import { Elysia } from "elysia";
 import cluster from "node:cluster";
 import { startDockerMonitor } from "./docker-monitor";
@@ -28,10 +28,20 @@ const app = new Elysia({
 	)
 	.use(services)
 	.use(routes)
-	.resolve(() => {})
-	.all("/ws", async ({ request, server }) => {
-		return engine.handleRequest(request, server as Server<WebSocketData>);
-	});
+	.all(
+		"/favicon.ico",
+		({ status }) => status(200, file("public/favicon.ico")),
+		{
+			detail: { hide: true }
+		}
+	)
+	.all(
+		"/ws",
+		async ({ request, server }) => {
+			return engine.handleRequest(request, server as Server<WebSocketData>);
+		},
+		{ detail: { hide: true } }
+	);
 
 const shutdown = async (signal: string) => {
 	logger.info(`${signal} received, shutting down...`);

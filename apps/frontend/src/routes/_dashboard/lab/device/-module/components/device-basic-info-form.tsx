@@ -1,4 +1,4 @@
-import ImageInput from '@frontend/components/input/image-input';
+import { IconPicker } from '@frontend/components/ui/icon-picker';
 import { ComboBox, PaginatedComboBox } from '@frontend/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
@@ -9,27 +9,31 @@ import { withForm, type DeviceFormData } from '../hooks/use-device-form';
 export const DeviceBasicInfoForm = withForm({
   defaultValues: {} as DeviceFormData,
   props: {
-    placeholder: null as string | null,
+    defaultCategory: undefined as { id: string; name: string } | undefined,
   },
-  render: function Render({ form, placeholder }) {
+  render: function Render({ form, defaultCategory }) {
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[200px_1fr]">
         <div className="md:row-span-2">
           <form.Field name="icon">
-            {(field) => (
-              <Field>
-                <FieldLabel htmlFor={field.name} required>
-                  Device Icon
-                </FieldLabel>
-                <ImageInput
-                  placeholder={placeholder}
-                  errors={field.state.meta.errors}
-                  onImageChange={(file) =>
-                    field.handleChange(file as typeof field.state.value)
-                  }
-                />
-              </Field>
-            )}
+            {(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+
+              return (
+                <Field>
+                  <FieldLabel htmlFor={field.name} required>
+                    Device Icon
+                  </FieldLabel>
+                  <IconPicker
+                    value={field.state.value}
+                    onChange={(value) => field.handleChange(value)}
+                    placeholder="Select icon..."
+                  />
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </Field>
+              );
+            }}
           </form.Field>
         </div>
 
@@ -131,6 +135,8 @@ export const DeviceBasicInfoForm = withForm({
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
 
+                console.log(field.state.value);
+
                 return (
                   <Field>
                     <FieldLabel htmlFor={field.name} required>
@@ -149,6 +155,16 @@ export const DeviceBasicInfoForm = withForm({
                         value: item.id,
                         label: item.name,
                       })}
+                      defaultOptions={
+                        defaultCategory
+                          ? [
+                              {
+                                value: defaultCategory.id,
+                                label: defaultCategory.name,
+                              },
+                            ]
+                          : []
+                      }
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value ?? '')}
                       placeholder="Select category"

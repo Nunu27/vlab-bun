@@ -131,6 +131,7 @@ type PaginatedComboBoxProps<TData> = BaseComboBoxProps & {
     search?: string;
   }) => Promise<TreatyResponse<{ data: PaginatedResponse<TData> }>>;
   renderOption: (item: TData) => Option;
+  defaultOptions?: Option[];
 };
 
 export function PaginatedComboBox<TData>({
@@ -145,6 +146,7 @@ export function PaginatedComboBox<TData>({
   queryKey,
   fetcher,
   renderOption,
+  defaultOptions = [],
 }: PaginatedComboBoxProps<TData>) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = useDebounceValue('', 300);
@@ -180,8 +182,17 @@ export function PaginatedComboBox<TData>({
   }, [error]);
 
   const options = React.useMemo(() => {
-    return data?.pages.flatMap((page) => page.items.map(renderOption)) ?? [];
-  }, [data, renderOption]);
+    const fetchedOptions =
+      data?.pages.flatMap((page) => page.items.map(renderOption)) ?? [];
+    const allOptions = [...defaultOptions, ...fetchedOptions];
+
+    // Deduplicate by value
+    const uniqueOptions = Array.from(
+      new Map(allOptions.map((item) => [item.value, item])).values(),
+    );
+
+    return uniqueOptions;
+  }, [data, renderOption, defaultOptions]);
 
   const selectedOption = React.useMemo(() => {
     return options.find((option) => option.value === value) || null;

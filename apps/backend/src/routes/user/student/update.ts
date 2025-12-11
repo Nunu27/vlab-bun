@@ -24,7 +24,7 @@ export default createRouter().put(
 				.where(eq(students.id, id));
 			return studentCount;
 		});
-		if (rowCount === 0) {
+		if (!rowCount) {
 			return status(404, failure({ message: "Student not found" }));
 		}
 

@@ -8,14 +8,16 @@ export default createRouter().get(
 			columns: {
 				id: true,
 				name: true,
-				icon: true
+				color: true
 			},
 			with: {
 				devices: {
 					columns: {
 						id: true,
 						name: true,
-						icon: true
+						icon: true,
+						resources: true,
+						interfaces: true
 					}
 				}
 			}
@@ -26,7 +28,7 @@ export default createRouter().get(
 		});
 	},
 	{
-		private: ["lecturer"],
+		protected: true,
 		cached: { key: "device:list" },
 		detail: {
 			description: "Get device list grouped by category"

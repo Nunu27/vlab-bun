@@ -28,8 +28,8 @@ export type DeviceConnection = {
 
 export const deviceCategories = pgTable("device_category", {
 	...base,
-	icon: text().notNull(),
-	name: text().notNull()
+	name: text().notNull(),
+	color: text().notNull()
 });
 
 export const deviceCategoriesRelations = relations(
@@ -46,7 +46,7 @@ export const devices = pgTable("device", {
 	image: text().notNull(),
 	icon: text().notNull(),
 	categoryId: uuid()
-		.references(() => deviceCategories.id)
+		.references(() => deviceCategories.id, { onDelete: "restrict" })
 		.notNull(),
 	env: jsonb().$type<DeviceEnv>().notNull(),
 	resources: jsonb().$type<DeviceResources>().notNull(),

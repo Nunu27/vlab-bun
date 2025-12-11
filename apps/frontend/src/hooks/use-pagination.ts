@@ -160,7 +160,6 @@ export function usePagination<
     staleTime,
     retry: false,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     refetchOnReconnect: false,
   });
 

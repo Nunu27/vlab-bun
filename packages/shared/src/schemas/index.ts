@@ -5,6 +5,7 @@ export * from "./department";
 export * from "./device";
 export * from "./device-category";
 export * from "./file";
+export * from "./lab";
 export * from "./lecturer";
 export * from "./student";
 export * from "./study-program";

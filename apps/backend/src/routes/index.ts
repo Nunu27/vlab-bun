@@ -7,6 +7,7 @@ import departmentRouter from "./department";
 import deviceRouter from "./device";
 import deviceCategoryRouter from "./device-category";
 import fileRouter from "./file";
+import labRouter from "./lab";
 import studyProgramRouter from "./study-program";
 import userRouter from "./user";
 
@@ -16,6 +17,7 @@ export default new Elysia({ prefix: "/api" })
 	// System
 	.group("/auth", (app) => app.use(authRouter))
 	.group("/file", (app) => app.use(fileRouter))
+	.group("/lab", (app) => app.use(labRouter))
 	.group("/department", (app) => app.use(departmentRouter))
 	.group("/study-program", (app) => app.use(studyProgramRouter))
 	.group("/user", (app) => app.use(userRouter))

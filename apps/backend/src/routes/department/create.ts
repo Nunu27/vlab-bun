@@ -7,7 +7,7 @@ import { CreateDepartmentRequest } from "@vlab/shared/schemas";
 export default createRouter().post(
 	"/",
 	async ({ body, db }) => {
-		const [department] = await db
+		const [{ id }] = await db
 			.insert(departments)
 			.values(body)
 			.returning({ id: departments.id });
@@ -15,7 +15,7 @@ export default createRouter().post(
 
 		return success({
 			message: "Department created",
-			data: { id: department.id }
+			data: { id }
 		});
 	},
 	{

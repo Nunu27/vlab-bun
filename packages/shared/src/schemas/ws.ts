@@ -11,10 +11,12 @@ import {
 	type WSSchema
 } from "../types/ws";
 import { deviceWSSchemas } from "./device";
+import { labWSSchemas } from "./lab";
 import type { MaybePromise } from "bun";
 
 const schemas = [
 	...deviceWSSchemas,
+	...labWSSchemas,
 	createWSSchema({
 		type: "server2client",
 		name: "error",
