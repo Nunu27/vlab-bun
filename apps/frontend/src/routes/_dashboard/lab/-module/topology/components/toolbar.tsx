@@ -1,6 +1,6 @@
 import React from 'react';
 import { Unplug, Group, Ungroup, StickyNote, Trash2 } from 'lucide-react';
-import { useTopologyStore } from '../store';
+import { useTopologyStore } from '../hooks';
 
 interface ToolbarButtonProps {
   onClick: () => void;

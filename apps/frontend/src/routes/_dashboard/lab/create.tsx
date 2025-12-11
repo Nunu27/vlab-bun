@@ -20,8 +20,9 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
-import { useTopologyStore } from './-module/topology/store';
+import { useTopologyStore } from './-module/topology/hooks';
 import { privateRoute } from '@frontend/lib/middlewares';
+import { TopologyProvider } from './-module/topology/provider';
 
 const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Create Lab' }];
 
@@ -34,10 +35,18 @@ export const Route = createFileRoute('/_dashboard/lab/create')({
 
     context.breadcrumbs = breadcrumbs;
   },
-  component: RouteComponent,
+  component: CreateLabPage,
 });
 
-function RouteComponent() {
+function CreateLabPage() {
+  return (
+    <TopologyProvider>
+      <CreateLabForm />
+    </TopologyProvider>
+  );
+}
+
+function CreateLabForm() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');

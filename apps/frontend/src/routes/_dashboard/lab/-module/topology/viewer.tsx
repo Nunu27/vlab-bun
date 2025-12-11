@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useTopologyStore, useTopologyStoreApi } from './store';
+import { useTopologyStore, useTopologyStoreApi } from './hooks';
 import type { GroupNodeData, NodeData, EdgeData } from './types';
 import { BackgroundComponent } from './components/canvas/background';
 import { LayersComponent } from './components/canvas/layers';
@@ -10,7 +10,7 @@ import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import type { TreatyData } from '@frontend/lib/api-types';
 import LoadingPage from '@frontend/components/pages/loading';
 
-import { TopologyProvider } from './TopologyProvider';
+import { TopologyProvider } from './provider';
 
 type Item = TreatyData<typeof api.device.list.get>['data'][number];
 type DeviceType = Item['devices'][number];

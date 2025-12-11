@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useTopologyStore } from '../../store';
+import { useTopologyStore } from '../../hooks';
 
 export const BackgroundComponent = memo(() => {
   const view = useTopologyStore((state) => state.view);

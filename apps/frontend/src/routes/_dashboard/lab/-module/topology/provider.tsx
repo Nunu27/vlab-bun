@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { TopologyContext, createTopologyStore } from './store';
+import { createTopologyStore } from './store';
+import { TopologyContext } from './context';
 
 export const TopologyProvider = ({
   children,

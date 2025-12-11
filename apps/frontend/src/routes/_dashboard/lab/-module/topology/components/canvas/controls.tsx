@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Maximize, ZoomIn, ZoomOut } from 'lucide-react';
-import { useTopologyStore } from '../../store';
+import { useTopologyStore } from '../../hooks';
 
 interface ControlsProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;

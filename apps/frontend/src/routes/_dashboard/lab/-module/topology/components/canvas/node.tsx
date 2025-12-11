@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useTopologyStore } from '../../store';
+import { useTopologyStore } from '../../hooks';
 import type { NodeData } from '../../types';
 import { getIcon } from '../../utils';
 

@@ -1,6 +1,6 @@
 import { Unplug } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useTopologyStore, useTopologyStoreApi } from './store';
+import { useTopologyStore, useTopologyStoreApi } from './hooks';
 import type {
   DeviceNodeData,
   EdgeData,
@@ -22,15 +22,13 @@ import { useQuery } from '@tanstack/react-query';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import LoadingPage from '@frontend/components/pages/loading';
 
-import { TopologyProvider } from './TopologyProvider';
-
 type Item = TreatyData<typeof api.device.list.get>['data'][number];
 type DeviceType = Item['devices'][number];
 type NodeType = DeviceType & {
   category: string;
 };
 
-function TopologyEditorContent() {
+export default function TopologyEditor() {
   const store = useTopologyStoreApi();
   const { data: categories, isLoading } = useQuery({
     queryKey: ['device', 'list'],
@@ -671,13 +669,5 @@ function TopologyEditorContent() {
         onClose={handleModalClose}
       />
     </div>
-  );
-}
-
-export default function TopologyEditor() {
-  return (
-    <TopologyProvider>
-      <TopologyEditorContent />
-    </TopologyProvider>
   );
 }

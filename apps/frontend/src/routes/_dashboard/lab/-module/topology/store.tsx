@@ -1,5 +1,4 @@
-import { createStore, useStore } from 'zustand';
-import { createContext, useContext } from 'react';
+import { createStore } from 'zustand';
 import type {
   NodeData,
   EdgeData,
@@ -9,7 +8,7 @@ import type {
 } from './types';
 import { GROUP_COLORS, GROUP_PADDING } from './constants';
 
-interface TopologyState {
+export interface TopologyState {
   nodes: NodeData[];
   edges: EdgeData[];
   view: ViewState;
@@ -447,25 +446,3 @@ export const createTopologyStore = () =>
   }));
 
 export type TopologyStore = ReturnType<typeof createTopologyStore>;
-
-export const TopologyContext = createContext<TopologyStore | null>(null);
-
-export function useTopologyStore(): TopologyState;
-export function useTopologyStore<T>(selector: (state: TopologyState) => T): T;
-export function useTopologyStore<T>(selector?: (state: TopologyState) => T) {
-  const store = useContext(TopologyContext);
-  if (!store) {
-    throw new Error('useTopologyStore must be used within a TopologyProvider');
-  }
-  return useStore(store, selector as (state: TopologyState) => T);
-}
-
-export const useTopologyStoreApi = () => {
-  const store = useContext(TopologyContext);
-  if (!store) {
-    throw new Error(
-      'useTopologyStoreApi must be used within a TopologyProvider',
-    );
-  }
-  return store;
-};

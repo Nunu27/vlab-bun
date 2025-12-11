@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { X, AlertCircle, Cpu, Database, Palette } from 'lucide-react';
-import { useTopologyStore } from '../store';
+import { useTopologyStore } from '../hooks';
 import { GROUP_COLORS } from '../constants';
 import api from '@frontend/lib/api';
 import { useQuery } from '@tanstack/react-query';
