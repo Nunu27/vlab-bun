@@ -1,10 +1,5 @@
 import type { Role } from '@vlab/shared/enums';
-import {
-  DatabaseIcon,
-  FlaskConicalIcon,
-  LayoutDashboardIcon,
-  UsersIcon,
-} from 'lucide-react';
+import { DatabaseIcon, FlaskConicalIcon, UsersIcon } from 'lucide-react';
 import type { ElementType } from 'react';
 
 type Menu = {
@@ -26,11 +21,11 @@ export type MenuItem = Menu | MenuWithSub;
 
 export const menuByRole: Record<Role, MenuItem[]> = {
   student: [
-    {
-      title: 'Dashboard',
-      url: '/',
-      icon: LayoutDashboardIcon,
-    },
+    // {
+    //   title: 'Dashboard',
+    //   url: '/',
+    //   icon: LayoutDashboardIcon,
+    // },
     {
       title: 'Labs',
       url: '/lab',
@@ -38,11 +33,11 @@ export const menuByRole: Record<Role, MenuItem[]> = {
     },
   ],
   lecturer: [
-    {
-      title: 'Dashboard',
-      url: '/',
-      icon: LayoutDashboardIcon,
-    },
+    // {
+    //   title: 'Dashboard',
+    //   url: '/',
+    //   icon: LayoutDashboardIcon,
+    // },
     {
       title: 'Labs',
       url: '/lab',
@@ -50,11 +45,11 @@ export const menuByRole: Record<Role, MenuItem[]> = {
     },
   ],
   admin: [
-    {
-      title: 'Dashboard',
-      url: '/',
-      icon: LayoutDashboardIcon,
-    },
+    // {
+    //   title: 'Dashboard',
+    //   url: '/',
+    //   icon: LayoutDashboardIcon,
+    // },
     {
       title: 'Master Data',
       icon: DatabaseIcon,
