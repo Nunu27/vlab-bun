@@ -1,6 +1,6 @@
 import Guacamole from 'guacamole-common-js';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 interface GuacamoleConnectionProps {
   token: string;
@@ -8,6 +8,8 @@ interface GuacamoleConnectionProps {
   onConnect?: () => void;
   onError?: (message: string) => void;
 }
+
+type ConnectionState = 'connecting' | 'connected' | 'error' | 'disconnected';
 
 const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
   token,
@@ -18,106 +20,78 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
   const displayContainerRef = useRef<HTMLDivElement>(null);
   const guacClientRef = useRef<Guacamole.Client | null>(null);
   const guacKeyboardRef = useRef<Guacamole.Keyboard | null>(null);
-  const guacMouseCleanupRef = useRef<(() => void) | null>(null);
+  const displayElementRef = useRef<HTMLElement | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const sizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [connectionState, setConnectionState] = useState<
-    'connecting' | 'connected' | 'error' | 'disconnected'
-  >('connecting');
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>('connecting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isGuacConnectedRef = useRef(false);
   const hasErrorRef = useRef(false);
 
-  useEffect(() => {
-    setConnectionState('connecting');
-    setErrorMessage(null);
-    hasErrorRef.current = false;
-
-    const tunnel = new Guacamole.WebSocketTunnel('/display');
-    const guac = new Guacamole.Client(tunnel);
-    guacClientRef.current = guac;
-
-    const displayElement = guac.getDisplay().getElement();
-    const displayContainer = displayContainerRef.current;
-
-    if (displayContainer && displayElement) {
-      while (displayContainer.firstChild) {
-        displayContainer.removeChild(displayContainer.firstChild);
-      }
-      displayContainer.appendChild(displayElement);
-      displayElement.style.outline = 'none';
-    } else {
-      console.error(
-        'React display container ref or Guacamole display element not found.',
-      );
-      setConnectionState('error');
-      setErrorMessage('Display container not found');
-      if (guac) guac.disconnect();
-      return;
+  // Debounced size update to prevent excessive calls
+  const sendSize = useCallback(() => {
+    if (sizeTimeoutRef.current) {
+      clearTimeout(sizeTimeoutRef.current);
     }
 
-    guac.onstatechange = (state: number) => {
-      const ClientState = Guacamole.Client.State;
-      switch (state) {
-        case ClientState.CONNECTING:
-          console.log('Guacamole state: Connecting...');
-          setConnectionState('connecting');
-          isGuacConnectedRef.current = false;
-          break;
-        case ClientState.CONNECTED: {
-          console.log('Guacamole state: Connected.');
-          setConnectionState('connected');
-          isGuacConnectedRef.current = true;
-          onConnect?.();
-
-          // Send initial size when connected with small delays to ensure it takes effect
-          const sendInitialSize = () => {
-            if (displayContainerRef.current && guacClientRef.current) {
-              const width = Math.floor(displayContainerRef.current.clientWidth);
-              const height = Math.floor(
-                displayContainerRef.current.clientHeight,
-              );
-              if (width > 0 && height > 0) {
-                console.log(`Sending initial size: ${width}x${height}`);
-                guacClientRef.current.sendSize(width, height);
-              }
-            }
-          };
-          // Send immediately
-          sendInitialSize();
-          // Send again after delays to ensure it takes effect
-          setTimeout(sendInitialSize, 100);
-          setTimeout(sendInitialSize, 300);
-          setTimeout(sendInitialSize, 5000);
-          break;
+    sizeTimeoutRef.current = setTimeout(() => {
+      if (
+        displayContainerRef.current &&
+        guacClientRef.current &&
+        isGuacConnectedRef.current
+      ) {
+        const width = Math.floor(displayContainerRef.current.clientWidth);
+        const height = Math.floor(displayContainerRef.current.clientHeight);
+        if (width > 0 && height > 0) {
+          console.log(`Sending size: ${width}x${height}`);
+          guacClientRef.current.sendSize(width, height);
         }
-        case ClientState.DISCONNECTING:
-          console.log('Guacamole state: Disconnecting...');
-          break;
-        case ClientState.DISCONNECTED:
-          console.log('Guacamole state: Disconnected.');
-          isGuacConnectedRef.current = false;
-          if (!hasErrorRef.current) {
-            setConnectionState('disconnected');
-            onDisconnect?.();
-          }
-          break;
-        case ClientState.WAITING:
-          console.log('Guacamole state: Waiting for server response...');
-          isGuacConnectedRef.current = false;
-          break;
-        case ClientState.IDLE:
-          console.log('Guacamole state: Idle.');
       }
-    };
+    }, 100);
+  }, []);
 
-    guac.onerror = (error: Guacamole.Status) => {
+  // Memoized mouse state handler
+  const sendMouseState = useCallback(
+    (clientX: number, clientY: number, buttons: number) => {
+      const client = guacClientRef.current;
+      const container = displayContainerRef.current;
+
+      if (!isGuacConnectedRef.current || !client || !container) return;
+
+      const rect = container.getBoundingClientRect();
+      const x = Math.floor(clientX - rect.left);
+      const y = Math.floor(clientY - rect.top);
+
+      const clampedX = Math.max(0, Math.min(x, Math.floor(rect.width) - 1));
+      const clampedY = Math.max(0, Math.min(y, Math.floor(rect.height) - 1));
+
+      const state = new Guacamole.Mouse.State();
+      state.x = clampedX;
+      state.y = clampedY;
+      state.left = !!(buttons & 1);
+      state.middle = !!(buttons & 4);
+      state.right = !!(buttons & 2);
+      state.up = !!(buttons & 8);
+      state.down = !!(buttons & 16);
+
+      client.sendMouseState(state);
+    },
+    [],
+  );
+
+  // Error handler
+  const handleGuacError = useCallback(
+    (error: Guacamole.Status) => {
       console.error('Guacamole client error:', error);
       isGuacConnectedRef.current = false;
       hasErrorRef.current = true;
-      let message = 'Connection error.';
 
       const StatusCodes = Guacamole.Status.Code;
+      let message: string;
+
       switch (error.code) {
         case StatusCodes.UPSTREAM_TIMEOUT:
           message = 'Server timeout.';
@@ -143,16 +117,91 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
           }`;
       }
 
-      // alert(`Connection Error: ${message}`);
       console.error(`Connection Error: ${message}`);
       setConnectionState('error');
       setErrorMessage(message);
       onError?.(message);
 
-      if (guacClientRef.current) {
-        guacClientRef.current.disconnect();
+      guacClientRef.current?.disconnect();
+    },
+    [onError],
+  );
+
+  useEffect(() => {
+    setConnectionState('connecting');
+    setErrorMessage(null);
+    hasErrorRef.current = false;
+    isGuacConnectedRef.current = false;
+
+    const tunnel = new Guacamole.WebSocketTunnel('/display');
+    const guac = new Guacamole.Client(tunnel);
+    guacClientRef.current = guac;
+
+    const displayElement = guac.getDisplay().getElement();
+    displayElementRef.current = displayElement;
+    // Capture refs for cleanup
+    const displayContainer = displayContainerRef.current;
+
+    if (!displayContainer || !displayElement) {
+      console.error(
+        'Display container ref or Guacamole display element not found.',
+      );
+      setConnectionState('error');
+      setErrorMessage('Display container not found');
+      guac.disconnect();
+      return;
+    }
+
+    // Clear and append display element
+    displayContainer.innerHTML = '';
+    displayContainer.appendChild(displayElement);
+    displayElement.style.outline = 'none';
+    displayElement.style.zIndex = '10';
+
+    // State change handler
+    guac.onstatechange = (state: number) => {
+      const ClientState = Guacamole.Client.State;
+
+      switch (state) {
+        case ClientState.CONNECTING:
+          console.log('Guacamole state: Connecting...');
+          setConnectionState('connecting');
+          isGuacConnectedRef.current = false;
+          break;
+
+        case ClientState.CONNECTED:
+          console.log('Guacamole state: Connected.');
+          setConnectionState('connected');
+          isGuacConnectedRef.current = true;
+          onConnect?.();
+          sendSize(); // Single debounced size update
+          break;
+
+        case ClientState.DISCONNECTING:
+          console.log('Guacamole state: Disconnecting...');
+          break;
+
+        case ClientState.DISCONNECTED:
+          console.log('Guacamole state: Disconnected.');
+          isGuacConnectedRef.current = false;
+          if (!hasErrorRef.current) {
+            setConnectionState('disconnected');
+            onDisconnect?.();
+          }
+          break;
+
+        case ClientState.WAITING:
+          console.log('Guacamole state: Waiting for server response...');
+          isGuacConnectedRef.current = false;
+          break;
+
+        case ClientState.IDLE:
+          console.log('Guacamole state: Idle.');
+          break;
       }
     };
+
+    guac.onerror = handleGuacError;
 
     // Clipboard handling
     guac.onclipboard = (stream: Guacamole.InputStream, mimetype: string) => {
@@ -170,55 +219,15 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
       }
     };
 
+    // Connect
     try {
       guac.connect('token=' + token);
-      const element = guac.getDisplay().getElement();
-      element.style.zIndex = '10';
     } catch (e) {
       console.error('Error on guac.connect():', e);
       return;
     }
 
-    // Custom mouse state handler - calculates position relative to container bounds
-    // Custom mouse state handler
-    const sendMouseState = (
-      clientX: number,
-      clientY: number,
-      buttons: number,
-    ) => {
-      if (
-        !isGuacConnectedRef.current ||
-        !guacClientRef.current ||
-        !displayContainerRef.current
-      )
-        return;
-
-      // Calculate position relative to container (modal-safe)
-      const rect = displayContainerRef.current.getBoundingClientRect();
-      const x = Math.floor(clientX - rect.left);
-      const y = Math.floor(clientY - rect.top);
-
-      // Clamp to container bounds
-      const clampedX = Math.max(0, Math.min(x, Math.floor(rect.width) - 1));
-      const clampedY = Math.max(0, Math.min(y, Math.floor(rect.height) - 1));
-
-      // Create state and set position directly
-      const state = new Guacamole.Mouse.State();
-      state.x = clampedX;
-      state.y = clampedY;
-
-      // Set button states from e.buttons bitmask
-      state.left = !!(buttons & 1); // Left button (bit 0)
-      state.middle = !!(buttons & 4); // Middle button (bit 2)
-      state.right = !!(buttons & 2); // Right button (bit 1)
-      state.up = !!(buttons & 8); // Scroll up (bit 3)
-      state.down = !!(buttons & 16); // Scroll down (bit 4)
-
-      // Forward to Guacamole
-      guacClientRef.current.sendMouseState(state);
-    };
-
-    // Mouse event handlers using clientX/Y directly
+    // Mouse event handlers
     const handleMouseDown = (e: MouseEvent) => {
       e.preventDefault();
       sendMouseState(e.clientX, e.clientY, e.buttons);
@@ -231,18 +240,33 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 
     const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
+      guacClientRef.current?.getDisplay().showCursor(true);
       sendMouseState(e.clientX, e.clientY, e.buttons);
+    };
+
+    const handleMouseLeave = () => {
+      const client = guacClientRef.current;
+      if (!isGuacConnectedRef.current || !client) return;
+
+      client.getDisplay().showCursor(false);
+
+      const state = new Guacamole.Mouse.State();
+      state.x = -1;
+      state.y = -1;
+      state.left = false;
+      state.middle = false;
+      state.right = false;
+      state.up = false;
+      state.down = false;
+      client.sendMouseState(state);
     };
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (e.deltaY === 0) return;
 
-      const mask = e.deltaY < 0 ? 8 : 16; // 8 for up, 16 for down
-
-      // Send press
+      const mask = e.deltaY < 0 ? 8 : 16;
       sendMouseState(e.clientX, e.clientY, e.buttons | mask);
-      // Send release
       sendMouseState(e.clientX, e.clientY, e.buttons);
     };
 
@@ -250,23 +274,23 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
       e.preventDefault();
     };
 
+    const sendClipboardText = (text: string) => {
+      const client = guacClientRef.current;
+      if (!text || !client) return;
+
+      const stream = client.createClipboardStream('text/plain');
+      const writer = new Guacamole.StringWriter(stream);
+      for (let i = 0; i < text.length; i += 4096) {
+        writer.sendText(text.slice(i, i + 4096));
+      }
+      writer.sendEnd();
+    };
+
     const handlePaste = (e: ClipboardEvent) => {
-      if (e.clipboardData) {
-        const text = e.clipboardData.getData('text/plain');
-        if (text && guacClientRef.current) {
-          console.log(
-            'Sending clipboard data to remote:',
-            text.length,
-            'chars',
-          );
-          const stream =
-            guacClientRef.current.createClipboardStream('text/plain');
-          const writer = new Guacamole.StringWriter(stream);
-          for (let i = 0; i < text.length; i += 4096) {
-            writer.sendText(text.slice(i, i + 4096));
-          }
-          writer.sendEnd();
-        }
+      const text = e.clipboardData?.getData('text/plain');
+      if (text) {
+        console.log('Sending clipboard data to remote:', text.length, 'chars');
+        sendClipboardText(text);
       }
     };
 
@@ -278,13 +302,7 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
         .then((text) => {
           if (text) {
             console.log('Syncing clipboard on focus:', text.length, 'chars');
-            const stream =
-              guacClientRef.current!.createClipboardStream('text/plain');
-            const writer = new Guacamole.StringWriter(stream);
-            for (let i = 0; i < text.length; i += 4096) {
-              writer.sendText(text.slice(i, i + 4096));
-            }
-            writer.sendEnd();
+            sendClipboardText(text);
           }
         })
         .catch((err) => {
@@ -292,26 +310,17 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
         });
     };
 
-    // Attach handlers directly to display element
+    // Attach event listeners
     displayElement.addEventListener('mousedown', handleMouseDown);
     displayElement.addEventListener('mouseup', handleMouseUp);
     displayElement.addEventListener('mousemove', handleMouseMove);
+    displayElement.addEventListener('mouseleave', handleMouseLeave);
     displayElement.addEventListener('wheel', handleWheel, { passive: false });
     displayElement.addEventListener('contextmenu', handleContextMenu);
     window.addEventListener('paste', handlePaste);
     window.addEventListener('focus', handleWindowFocus);
 
-    // Store for cleanup
-    guacMouseCleanupRef.current = () => {
-      displayElement.removeEventListener('mousedown', handleMouseDown);
-      displayElement.removeEventListener('mouseup', handleMouseUp);
-      displayElement.removeEventListener('mousemove', handleMouseMove);
-      displayElement.removeEventListener('wheel', handleWheel);
-      displayElement.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('paste', handlePaste);
-      window.removeEventListener('focus', handleWindowFocus);
-    };
-
+    // Keyboard setup
     const keyboard = new Guacamole.Keyboard(document);
     keyboard.onkeydown = (keysym: number) => {
       if (isGuacConnectedRef.current && guacClientRef.current) {
@@ -325,35 +334,30 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
     };
     guacKeyboardRef.current = keyboard;
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      if (
-        isGuacConnectedRef.current &&
-        guacClientRef.current &&
-        entries.length > 0 &&
-        displayContainerRef.current
-      ) {
-        const entry = entries[0];
-        if (entry) {
-          const width = Math.floor(entry.contentRect.width);
-          const height = Math.floor(entry.contentRect.height);
-          if (width > 0 && height > 0) {
-            guacClientRef.current.sendSize(width, height);
-          }
-        }
+    // Resize observer
+    const resizeObserver = new ResizeObserver(() => {
+      if (isGuacConnectedRef.current) {
+        sendSize();
       }
     });
+    resizeObserverRef.current = resizeObserver;
 
-    if (displayContainerRef.current) {
-      resizeObserver.observe(displayContainerRef.current);
+    if (displayContainer) {
+      resizeObserver.observe(displayContainer);
     }
 
+    // Cleanup function
     return () => {
-      const containerRef = displayContainerRef;
-      const container = containerRef.current;
-
-      if (resizeObserver && container) {
-        resizeObserver.unobserve(container);
+      if (sizeTimeoutRef.current) {
+        clearTimeout(sizeTimeoutRef.current);
       }
+
+      // Use captured values from effect scope
+      if (resizeObserverRef.current && displayContainer) {
+        resizeObserverRef.current.unobserve(displayContainer);
+        resizeObserverRef.current.disconnect();
+      }
+
       if (guacClientRef.current) {
         guacClientRef.current.onstatechange = null;
         guacClientRef.current.onerror = null;
@@ -364,19 +368,40 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
         guacKeyboardRef.current.onkeydown = null;
         guacKeyboardRef.current.onkeyup = null;
       }
+
+      if (displayElement) {
+        displayElement.removeEventListener('mousedown', handleMouseDown);
+        displayElement.removeEventListener('mouseup', handleMouseUp);
+        displayElement.removeEventListener('mousemove', handleMouseMove);
+        displayElement.removeEventListener('mouseleave', handleMouseLeave);
+        displayElement.removeEventListener('wheel', handleWheel);
+        displayElement.removeEventListener('contextmenu', handleContextMenu);
+      }
+
+      window.removeEventListener('paste', handlePaste);
+      window.removeEventListener('focus', handleWindowFocus);
+
+      if (
+        displayContainer &&
+        displayElement &&
+        displayContainer.contains(displayElement)
+      ) {
+        displayContainer.removeChild(displayElement);
+      }
+
+      guacClientRef.current = null;
       guacKeyboardRef.current = null;
-
-      if (guacMouseCleanupRef.current) {
-        guacMouseCleanupRef.current();
-      }
-      guacMouseCleanupRef.current = null;
-
-      if (container && displayElement && container.contains(displayElement)) {
-        container.removeChild(displayElement);
-      }
+      displayElementRef.current = null;
+      resizeObserverRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [
+    token,
+    onConnect,
+    onDisconnect,
+    handleGuacError,
+    sendMouseState,
+    sendSize,
+  ]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-gray-900 outline-none focus:outline-none focus-visible:outline-none">

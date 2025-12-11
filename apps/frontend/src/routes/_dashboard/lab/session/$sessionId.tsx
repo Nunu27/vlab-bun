@@ -47,18 +47,16 @@ function SessionPage() {
   if (!session) return <div className="p-4">Session not found</div>;
 
   const handleNodeDoubleClick = (nodeId: string) => {
-    // Find the node in the topology
     const node = session.lab.topology.nodes.find((n) => n.id === nodeId);
 
     if (node && node.type === 'device' && node.token) {
-      // Open connection window
       const width = 1024;
       const height = 768;
       const left = (window.screen.width - width) / 2;
       const top = (window.screen.height - height) / 2;
 
       window.open(
-        `/connect?token=${encodeURIComponent(node.token)}`,
+        `/connect?token=${encodeURIComponent(node.token)}&title=${encodeURIComponent(node.label)}`,
         `vlab-session-${nodeId}`,
         `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,location=no,toolbar=no,menubar=no`,
       );

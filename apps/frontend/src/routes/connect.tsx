@@ -1,17 +1,27 @@
 import { createFileRoute } from '@tanstack/react-router';
 import GuacamoleConnection from '@frontend/components/guacamole-connection';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/connect')({
   component: ConnectPage,
-  validateSearch: (search: Record<string, unknown>): { token: string } => {
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { token: string; title?: string } => {
     return {
       token: (search.token as string) || '',
+      title: (search.title as string) || undefined,
     };
   },
 });
 
 function ConnectPage() {
-  const { token } = Route.useSearch();
+  const { token, title } = Route.useSearch();
+
+  useEffect(() => {
+    if (title) {
+      document.title = title;
+    }
+  }, [title]);
 
   if (!token) {
     return (
