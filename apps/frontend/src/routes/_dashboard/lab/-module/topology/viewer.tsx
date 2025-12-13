@@ -172,7 +172,7 @@ function TopologyViewerContent({
 
   return (
     <div
-      className={`relative h-full w-full overflow-hidden bg-gray-50 ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+      className={`bg-background relative h-full w-full overflow-hidden ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
     >
       <div
         ref={canvasRef}

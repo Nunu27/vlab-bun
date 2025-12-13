@@ -313,78 +313,104 @@ fi
 print_header "Step 7: Guacamole Daemon"
 
 GUACD_CONTAINER="guacd"
+GUACD_VERSION="1.5.3"
+
+# Detect platform architecture first to determine expected image
+HOST_ARCH=$(uname -m)
+BUILD_REQUIRED=false
+
+case "$HOST_ARCH" in
+    x86_64)
+        GUACD_IMAGE="guacamole/guacd:${GUACD_VERSION}"
+        ;;
+    aarch64|arm64|armv7l)
+        BUILD_REQUIRED=true
+        GUACD_IMAGE="guacd-local:${GUACD_VERSION}"
+        ;;
+    *)
+        GUACD_IMAGE="guacamole/guacd:${GUACD_VERSION}"
+        print_warning "Unknown arch: $HOST_ARCH, trying official image"
+        ;;
+esac
 
 # Check if guacd container exists
 if docker ps -a --format '{{.Names}}' | grep -q "^${GUACD_CONTAINER}$"; then
-    # Container exists, check if it's running
-    if docker ps --format '{{.Names}}' | grep -q "^${GUACD_CONTAINER}$"; then
-        print_success "guacd container running"
-        
-        # Ensure it's connected to vlab network
-        if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$GUACD_CONTAINER\""; then
-            print_step "Connecting guacd to vlab network..."
-            docker network connect "$VLAB_NETWORK" "$GUACD_CONTAINER" 2>/dev/null || true
-        fi
+    # Check version/image
+    CURRENT_IMAGE=$(docker inspect --format='{{.Config.Image}}' "$GUACD_CONTAINER")
+    
+    if [ "$CURRENT_IMAGE" != "$GUACD_IMAGE" ]; then
+        print_warning "guacd version mismatch. Current: $CURRENT_IMAGE, Expected: $GUACD_IMAGE"
+        print_step "Removing old guacd container..."
+        docker rm -f "$GUACD_CONTAINER"
     else
-        print_step "Starting guacd container..."
-        docker start "$GUACD_CONTAINER"
-        
-        # Ensure vlab network connection
-        if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$GUACD_CONTAINER\""; then
-            docker network connect "$VLAB_NETWORK" "$GUACD_CONTAINER" 2>/dev/null || true
-        fi
-        print_success "guacd container started"
-    fi
-else
-    # Detect platform architecture
-    HOST_ARCH=$(uname -m)
-    BUILD_REQUIRED=false
-    
-    case "$HOST_ARCH" in
-        x86_64)
-            GUACD_IMAGE="guacamole/guacd:latest"
-            print_info "Using official image for amd64"
-            ;;
-        aarch64|arm64)
-            BUILD_REQUIRED=true
-            print_warning "ARM64 detected - official image not available"
-            ;;
-        armv7l)
-            BUILD_REQUIRED=true
-            print_warning "ARMv7 detected - official image not available"
-            ;;
-        *)
-            GUACD_IMAGE="guacamole/guacd:latest"
-            print_warning "Unknown arch: $HOST_ARCH, trying official image"
-            ;;
-    esac
-    
-    # Build guacd from source if required
-    if [ "$BUILD_REQUIRED" = true ]; then
-        # Check if image already exists
-        if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^guacd-local:latest$"; then
-            print_info "Using existing locally-built guacd image"
-            GUACD_IMAGE="guacd-local:latest"
+        # Container exists and version matches, check if it's running
+        if docker ps --format '{{.Names}}' | grep -q "^${GUACD_CONTAINER}$"; then
+            print_success "guacd container running ($GUACD_VERSION)"
+            
+            # Ensure it's connected to vlab network
+            if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$GUACD_CONTAINER\""; then
+                print_step "Connecting guacd to vlab network..."
+                docker network connect "$VLAB_NETWORK" "$GUACD_CONTAINER" 2>/dev/null || true
+            fi
         else
-            print_step "Building guacd from source (this may take 5-10 minutes)..."
+            print_step "Starting guacd container..."
+            docker start "$GUACD_CONTAINER"
+            
+            # Ensure vlab network connection
+            if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$GUACD_CONTAINER\""; then
+                docker network connect "$VLAB_NETWORK" "$GUACD_CONTAINER" 2>/dev/null || true
+            fi
+            print_success "guacd container started"
+        fi
+    fi
+fi
+
+# If container doesn't exist (was removed or never existed)
+if ! docker ps -a --format '{{.Names}}' | grep -q "^${GUACD_CONTAINER}$"; then
+    if [ "$BUILD_REQUIRED" = true ]; then
+        print_warning "ARM detected - official image not available for $GUACD_VERSION"
+        
+        # Check if image already exists
+        if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^guacd-local:${GUACD_VERSION}$"; then
+            print_info "Using existing locally-built guacd image: $GUACD_IMAGE"
+        else
+            print_step "Building guacd $GUACD_VERSION from source (this may take 5-10 minutes)..."
             
             # Create temporary build directory
             BUILD_DIR=$(mktemp -d)
             cd "$BUILD_DIR"
             
-            print_step "Cloning guacamole-server repository..."
-            if ! git clone --depth 1 https://github.com/apache/guacamole-server.git; then
-                print_error "Failed to clone repository"
+            print_step "Cloning guacamole-server repository (tag $GUACD_VERSION)..."
+            if ! git clone --depth 1 --branch "$GUACD_VERSION" https://github.com/apache/guacamole-server.git; then
+                print_error "Failed to clone repository or tag $GUACD_VERSION not found"
                 rm -rf "$BUILD_DIR"
                 exit 1
             fi
             
             cd guacamole-server
             
+            # Apply patches for ARM/Newer Distros
+            print_step "Patching build files for compatibility..."
+            
+            # Patch Dockerfile to fix build on newer Alpine (openssl1.1-compat-dev is missing)
+            sed -i 's/openssl1.1-compat-dev/openssl-dev/g' Dockerfile
+            sed -i 's/openssl1.1-compat/openssl/g' Dockerfile
+            
+            # Patch build-all.sh to fix FreeRDP CMake compatibility and relax compiler flags
+            BUILD_ALL_SCRIPT="src/guacd-docker/bin/build-all.sh"
+            if [ -f "$BUILD_ALL_SCRIPT" ]; then
+                sed -i 's/if \[ -e CMakeLists.txt \]; then/if [ -e CMakeLists.txt ]; then\n        find . -name CMakeLists.txt -exec sed -i "s\/cmake_minimum_required(VERSION [0-9]\\+\\.[0-9]\\+\\(\\.[0-9]\\+\\)\\?)\/cmake_minimum_required(VERSION 3.5)\/g" {} \\;/g' "$BUILD_ALL_SCRIPT"
+                sed -i 's|export CFLAGS="-I${PREFIX_DIR}/include"|export CFLAGS="-I${PREFIX_DIR}/include -Wno-error=incompatible-pointer-types"|g' "$BUILD_ALL_SCRIPT"
+                
+                # Disable SSE2 for FreeRDP (fixes build on ARM)
+                sed -i 's/install_from_git "https:\/\/github.com\/FreeRDP\/FreeRDP" "$WITH_FREERDP" $FREERDP_OPTS/install_from_git "https:\/\/github.com\/FreeRDP\/FreeRDP" "$WITH_FREERDP" $FREERDP_OPTS -DWITH_SSE2=OFF/g' "$BUILD_ALL_SCRIPT"
+            else
+                print_warning "Could not find build-all.sh to patch"
+            fi
+            
             print_step "Building Docker image..."
-            if docker build -t guacd-local:latest .; then
+            if docker build -t "$GUACD_IMAGE" .; then
                 print_success "guacd image built successfully"
-                GUACD_IMAGE="guacd-local:latest"
             else
                 print_error "Failed to build guacd image"
                 cd "$DEPLOY_PATH"
@@ -396,10 +422,12 @@ else
             cd "$DEPLOY_PATH"
             rm -rf "$BUILD_DIR"
         fi
+    else
+        print_info "Using official image: $GUACD_IMAGE"
     fi
     
     # Create and start guacd container
-    print_step "Creating guacd container..."
+    print_step "Creating guacd container ($GUACD_VERSION)..."
     docker run -d \
         --name "$GUACD_CONTAINER" \
         --network "$VLAB_NETWORK" \

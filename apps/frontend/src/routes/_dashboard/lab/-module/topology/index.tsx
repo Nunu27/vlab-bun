@@ -587,7 +587,7 @@ export default function TopologyEditor() {
         {/* --- Canvas --- */}
         <div
           id="topology-canvas"
-          className="bg-muted/20 relative flex-1 overflow-hidden"
+          className="bg-background relative flex-1 overflow-hidden"
           style={{
             cursor: isPanning
               ? 'grabbing'
