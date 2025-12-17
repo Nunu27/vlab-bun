@@ -99,20 +99,20 @@ const processBatch = async (channel: string) => {
 						const bulkData = opItems.map((item) => {
 							const filteredPrevious = item.previous
 								? Object.keys(item.previous).reduce((acc, key) => {
-										if (columns.has(key)) {
-											acc[key] = item.previous[key];
-										}
-										return acc;
-								  }, {} as any)
+									if (columns.has(key)) {
+										acc[key] = item.previous[key];
+									}
+									return acc;
+								}, {} as any)
 								: null;
 
 							const filteredCurrent = item.current
 								? Object.keys(item.current).reduce((acc, key) => {
-										if (columns.has(key)) {
-											acc[key] = item.current[key];
-										}
-										return acc;
-								  }, {} as any)
+									if (columns.has(key)) {
+										acc[key] = item.current[key];
+									}
+									return acc;
+								}, {} as any)
 								: null;
 
 							return { previous: filteredPrevious, current: filteredCurrent };
@@ -146,20 +146,20 @@ const processBatch = async (channel: string) => {
 							opItems.map((item) => {
 								const filteredPrevious = item.previous
 									? Object.keys(item.previous).reduce((acc, key) => {
-											if (columns.has(key)) {
-												acc[key] = item.previous[key];
-											}
-											return acc;
-									  }, {} as any)
+										if (columns.has(key)) {
+											acc[key] = item.previous[key];
+										}
+										return acc;
+									}, {} as any)
 									: null;
 
 								const filteredCurrent = item.current
 									? Object.keys(item.current).reduce((acc, key) => {
-											if (columns.has(key)) {
-												acc[key] = item.current[key];
-											}
-											return acc;
-									  }, {} as any)
+										if (columns.has(key)) {
+											acc[key] = item.current[key];
+										}
+										return acc;
+									}, {} as any)
 									: null;
 
 								return (listener as ListenerCallback<any, any>)({
@@ -404,8 +404,8 @@ function buildTriggerSQL(
 			op === "INSERT"
 				? "REFERENCING NEW TABLE AS new_table"
 				: op === "DELETE"
-				? "REFERENCING OLD TABLE AS old_table"
-				: "REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table";
+					? "REFERENCING OLD TABLE AS old_table"
+					: "REFERENCING OLD TABLE AS old_table NEW TABLE AS new_table";
 
 		sql += `
         DROP TRIGGER IF EXISTS ${trigName} ON ${qualifiedTable};
@@ -419,6 +419,17 @@ function buildTriggerSQL(
 
 	return sql;
 }
+
+export const syncDBChannels = async () => {
+	const desiredChannels = new Set(registry.keys());
+	const { currentChannels } = await _getDBState();
+	const listenSQL = _getListenSQL(currentChannels, desiredChannels);
+
+	if (listenSQL) {
+		await client.query(listenSQL);
+		logger.info("DB Channels Synced");
+	}
+};
 
 export const syncDBListeners = async () => {
 	const desiredListeners = Array.from(registry.entries()).map(
@@ -446,10 +457,7 @@ export const syncDBListeners = async () => {
 		}
 	);
 
-	const { currentChannels, existingTriggers } = await _getDBState();
-
-	const desiredChannels = new Set(desiredListeners.map((d) => d.channel));
-	const listenSQL = _getListenSQL(currentChannels, desiredChannels);
+	const { existingTriggers } = await _getDBState();
 
 	const desiredTriggers = new Map<
 		string,
@@ -482,7 +490,7 @@ export const syncDBListeners = async () => {
 		desiredTriggers
 	);
 
-	const fullSQL = listenSQL + addSQL + dropSQL;
+	const fullSQL = addSQL + dropSQL;
 	if (fullSQL) {
 		await client.query(fullSQL);
 	}
@@ -528,8 +536,8 @@ async function _getDBState() {
             JOIN pg_class c ON c.oid = t.tgrelid
             JOIN pg_namespace n ON n.oid = c.relnamespace
             WHERE NOT t.tgisinternal AND t.tgname LIKE ${qLiteral(
-							`${TRIGGER_PREFIX}%`
-						)}
+			`${TRIGGER_PREFIX}%`
+		)}
         `)
 	]);
 

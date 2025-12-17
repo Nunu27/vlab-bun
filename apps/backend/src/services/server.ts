@@ -1,5 +1,5 @@
 import { checkAndRunMigration } from "@backend/db";
-import { cleanupDBListeners, syncDBListeners } from "@backend/db/listener";
+import { cleanupDBListeners, syncDBListeners, syncDBChannels } from "@backend/db/listener";
 import env, { inProduction } from "@backend/env";
 import { clearCache } from "@backend/middlewares/caching";
 import services from "@backend/plugins/services";
@@ -21,9 +21,9 @@ const app = new Elysia({
 	.use(
 		inProduction
 			? staticPlugin({
-					prefix: "/static",
-					assets: "public/static"
-			  })
+				prefix: "/static",
+				assets: "public/static"
+			})
 			: undefined
 	)
 	.use(services)
@@ -66,6 +66,8 @@ export async function startServer() {
 
 		initGuacamole();
 	}
+
+	await syncDBChannels();
 
 	app.listen({ port: env.PORT, ...engine.handler() }, (app) => {
 		logger.info(`Server running on ${app.url.origin}`);
