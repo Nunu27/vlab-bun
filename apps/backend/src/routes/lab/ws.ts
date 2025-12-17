@@ -47,7 +47,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 		reply("message", "Starting lab session...");
 
 		const sessionId = Bun.randomUUIDv7();
-		const labName = `session-${sessionId.replace(/-/g, "")}`;
+		const labName = sessionId.replace(/-/g, "");
 		const ports: number[] = [];
 
 		const deviceNodes = lab.topology.nodes.filter(
@@ -142,21 +142,17 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 
 			reply("message", "Lab deployed successfully.");
 			reply("sessionId", sessionId);
-		} catch (error: any) {
+		} catch (error) {
 			await clabWrapper(() =>
 				clab.DELETE(`/api/v1/labs/{labName}`, {
 					params: {
-						path: {
-							labName: labName
-						},
-						query: {
-							cleanup: true
-						}
+						path: { labName },
+						query: { cleanup: true }
 					}
 				})
 			);
 
-			reply("error", error.message || "Failed to start lab");
+			reply("error", "Failed to start lab");
 		}
 	},
 	"lab/stop": async ({ data: { sessionId }, reply }) => {
@@ -171,30 +167,17 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 
 		reply("message", "Stopping lab session...");
 
-		try {
-			const labName = `session-${sessionId.replace(/-/g, "")}`;
+		await clabWrapper(() =>
+			clab.DELETE(`/api/v1/labs/{labName}`, {
+				params: {
+					path: { labName: sessionId.replace(/-/g, "") },
+					query: { cleanup: true }
+				}
+			})
+		);
 
-			await clabWrapper(() =>
-				clab.DELETE(`/api/v1/labs/{labName}`, {
-					params: {
-						path: {
-							labName: labName
-						},
-						query: {
-							cleanup: true
-						}
-					}
-				})
-			);
-
-			await db.delete(labSessions).where(eq(labSessions.id, sessionId));
-			await deleteCache("lab:pagination:*");
-		} catch (error: any) {
-			reply("error", error.message || "Failed to stop lab");
-			return;
-		}
-
-		reply("done", true);
+		await db.delete(labSessions).where(eq(labSessions.id, sessionId));
+		await deleteCache("lab:pagination:*");
 	}
 };
 

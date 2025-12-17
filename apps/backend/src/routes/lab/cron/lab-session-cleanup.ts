@@ -5,16 +5,14 @@ import { chunk } from "@backend/utils/chunk";
 import cron, { Patterns } from "@elysiajs/cron";
 import cluster from "node:cluster";
 
-async function destroyTestSession(id: string): Promise<void> {
+async function destroySession(id: string): Promise<void> {
 	await clabWrapper(() =>
 		clab.DELETE("/api/v1/labs/{labName}", {
 			params: {
 				path: {
-					labName: `user-${id.replace(/-/g, "")}`
+					labName: id.replace(/-/g, "")
 				},
-				query: {
-					cleanup: true
-				}
+				query: { cleanup: true }
 			}
 		})
 	);
@@ -47,7 +45,7 @@ export default cron({
 
 			for (const sessionChunk of sessionChunks) {
 				const results = await Promise.allSettled(
-					sessionChunk.map(({ id }) => destroyTestSession(id))
+					sessionChunk.map(({ id }) => destroySession(id))
 				);
 
 				// Collect IDs of successfully destroyed sessions

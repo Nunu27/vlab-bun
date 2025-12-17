@@ -16,6 +16,7 @@ import { eq } from "drizzle-orm";
 import { EventEmitter } from "events";
 import docker from "@backend/services/docker";
 import type { NodeHealth } from "@vlab/shared/enums";
+import { toKebabCase } from "@backend/utils/string";
 
 const labNodeEvents = new EventEmitter();
 addDBListener(
@@ -82,8 +83,8 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 	}) => {
 		reply("message", "Provisioning device...");
 
-		const deviceName = data.name.replace(/\s+/g, "-").toLowerCase();
-		const labName = `device-${id.replace(/-/g, "")}`;
+		const deviceName = toKebabCase(data.name);
+		const labName = id.replace(/-/g, "");
 		const port = await leasePort();
 		const nodeId = Bun.randomUUIDv7();
 
@@ -186,12 +187,8 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 			await clabWrapper(() =>
 				clab.DELETE(`/api/v1/labs/{labName}`, {
 					params: {
-						path: {
-							labName: labName
-						},
-						query: {
-							cleanup: true
-						}
+						path: { labName },
+						query: { cleanup: true }
 					}
 				})
 			);
@@ -202,17 +199,13 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 };
 
 onDispose("device/test", async (id) => {
-	const labName = `device-${id.replace(/-/g, "")}`;
+	const labName = id.replace(/-/g, "");
 
 	await clabWrapper(() =>
 		clab.DELETE(`/api/v1/labs/{labName}`, {
 			params: {
-				path: {
-					labName
-				},
-				query: {
-					cleanup: true
-				}
+				path: { labName },
+				query: { cleanup: true }
 			}
 		})
 	);
