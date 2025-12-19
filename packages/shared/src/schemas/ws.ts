@@ -60,7 +60,7 @@ export type WSSchemas = {
 						done: () => void;
 						error: (data: string) => void;
 					}
-			  >;
+				>;
 	};
 };
 export type Client2ServerEvents = ExtractEvents<Events, "client2server">;
@@ -97,5 +97,5 @@ export function onDispose(
 	event: keyof Omit<Client2ServerEvents & InterServerEvents, "unsubscribe">,
 	handler: (id: string) => MaybePromise<void>
 ) {
-	wsSchemas[event].cleanup = handler;
+	wsSchemas[event]!.cleanup = handler;
 }

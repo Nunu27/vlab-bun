@@ -31,6 +31,23 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
   const isGuacConnectedRef = useRef(false);
   const hasErrorRef = useRef(false);
 
+  // Refs for callbacks to avoid re-connecting on prop changes
+  const onConnectRef = useRef(onConnect);
+  const onDisconnectRef = useRef(onDisconnect);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onConnectRef.current = onConnect;
+  }, [onConnect]);
+
+  useEffect(() => {
+    onDisconnectRef.current = onDisconnect;
+  }, [onDisconnect]);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
   // Debounced size update to prevent excessive calls
   const sendSize = useCallback(() => {
     if (sizeTimeoutRef.current) {
@@ -83,49 +100,46 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
   );
 
   // Error handler
-  const handleGuacError = useCallback(
-    (error: Guacamole.Status) => {
-      console.error('Guacamole client error:', error);
-      isGuacConnectedRef.current = false;
-      hasErrorRef.current = true;
+  const handleGuacError = useCallback((error: Guacamole.Status) => {
+    console.error('Guacamole client error:', error);
+    isGuacConnectedRef.current = false;
+    hasErrorRef.current = true;
 
-      const StatusCodes = Guacamole.Status.Code;
-      let message: string;
+    const StatusCodes = Guacamole.Status.Code;
+    let message: string;
 
-      switch (error.code) {
-        case StatusCodes.UPSTREAM_TIMEOUT:
-          message = 'Server timeout.';
-          break;
-        case StatusCodes.UPSTREAM_ERROR:
-          message = 'Upstream server error.';
-          break;
-        case StatusCodes.RESOURCE_NOT_FOUND:
-          message = 'Resource not found.';
-          break;
-        case StatusCodes.CLIENT_BAD_REQUEST:
-          message = 'Client sent a bad request.';
-          break;
-        case StatusCodes.CLIENT_UNAUTHORIZED:
-          message = 'Permission Denied. Check token/permissions.';
-          break;
-        case StatusCodes.CLIENT_FORBIDDEN:
-          message = 'Forbidden.';
-          break;
-        default:
-          message = `Guacamole error (code 0x${error.code.toString(16)}): ${
-            error.message || 'Unknown'
-          }`;
-      }
+    switch (error.code) {
+      case StatusCodes.UPSTREAM_TIMEOUT:
+        message = 'Server timeout.';
+        break;
+      case StatusCodes.UPSTREAM_ERROR:
+        message = 'Upstream server error.';
+        break;
+      case StatusCodes.RESOURCE_NOT_FOUND:
+        message = 'Resource not found.';
+        break;
+      case StatusCodes.CLIENT_BAD_REQUEST:
+        message = 'Client sent a bad request.';
+        break;
+      case StatusCodes.CLIENT_UNAUTHORIZED:
+        message = 'Permission Denied. Check token/permissions.';
+        break;
+      case StatusCodes.CLIENT_FORBIDDEN:
+        message = 'Forbidden.';
+        break;
+      default:
+        message = `Guacamole error (code 0x${error.code.toString(16)}): ${
+          error.message || 'Unknown'
+        }`;
+    }
 
-      console.error(`Connection Error: ${message}`);
-      setConnectionState('error');
-      setErrorMessage(message);
-      onError?.(message);
+    console.error(`Connection Error: ${message}`);
+    setConnectionState('error');
+    setErrorMessage(message);
+    onErrorRef.current?.(message);
 
-      guacClientRef.current?.disconnect();
-    },
-    [onError],
-  );
+    guacClientRef.current?.disconnect();
+  }, []);
 
   useEffect(() => {
     setConnectionState('connecting');
@@ -173,7 +187,7 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
           console.log('Guacamole state: Connected.');
           setConnectionState('connected');
           isGuacConnectedRef.current = true;
-          onConnect?.();
+          onConnectRef.current?.();
           sendSize(); // Single debounced size update
           break;
 
@@ -186,7 +200,7 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
           isGuacConnectedRef.current = false;
           if (!hasErrorRef.current) {
             setConnectionState('disconnected');
-            onDisconnect?.();
+            onDisconnectRef.current?.();
           }
           break;
 
@@ -394,14 +408,7 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
       displayElementRef.current = null;
       resizeObserverRef.current = null;
     };
-  }, [
-    token,
-    onConnect,
-    onDisconnect,
-    handleGuacError,
-    sendMouseState,
-    sendSize,
-  ]);
+  }, [token, handleGuacError, sendMouseState, sendSize]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-gray-900 outline-none focus:outline-none focus-visible:outline-none">

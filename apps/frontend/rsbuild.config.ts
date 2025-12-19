@@ -21,12 +21,14 @@ export default defineConfig({
   html: {
     title: 'vLab',
   },
+  performance: {
+    removeConsole: true,
+  },
   tools: {
     rspack: {
       plugins: [
         tanstackRouter({
           target: 'react',
-          autoCodeSplitting: true,
         }),
       ],
     },

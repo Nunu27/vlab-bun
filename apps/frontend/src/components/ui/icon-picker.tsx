@@ -5,9 +5,9 @@ import {
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
 import { cn } from '@frontend/lib/utils';
-import * as LucideIcons from 'lucide-react';
+import { DynamicIcon } from '@frontend/components/dynamic-icon';
 import { Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface IconPickerProps {
   value: string;
@@ -24,24 +24,23 @@ export function IconPicker({
 }: IconPickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [iconNames, setIconNames] = useState<string[]>([]);
 
-  const iconList = useMemo(() => {
-    return Object.keys(LucideIcons)
-      .filter((key) => key !== 'icons' && key !== 'createLucideIcon')
-      .map((key) => ({
-        name: key,
-        Icon: (LucideIcons as any)[key] as LucideIcons.LucideIcon,
-      }));
+  useEffect(() => {
+    import('lucide-react').then((module) => {
+      const names = Object.keys(module).filter(
+        (key) => key !== 'icons' && key !== 'createLucideIcon',
+      );
+      setIconNames(names);
+    });
   }, []);
 
   const filteredIcons = useMemo(() => {
-    if (!search) return iconList.slice(0, 100); // Limit initial render
-    return iconList
-      .filter((icon) => icon.name.toLowerCase().includes(search.toLowerCase()))
+    if (!search) return iconNames.slice(0, 100); // Limit initial render
+    return iconNames
+      .filter((name) => name.toLowerCase().includes(search.toLowerCase()))
       .slice(0, 100); // Limit search results
-  }, [iconList, search]);
-
-  const SelectedIcon = value ? (LucideIcons as any)[value] : null;
+  }, [iconNames, search]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,8 +60,8 @@ export function IconPicker({
             }
           }}
         >
-          {value && SelectedIcon ? (
-            <SelectedIcon className="text-primary size-10" />
+          {value ? (
+            <DynamicIcon name={value} className="text-primary size-10" />
           ) : (
             <>
               <Search className="text-muted-foreground/50 size-8" />
@@ -85,7 +84,7 @@ export function IconPicker({
         </div>
         <div className="max-h-[300px] overflow-y-auto p-2">
           <div className="grid grid-cols-4 gap-2">
-            {filteredIcons.map(({ name, Icon }) => (
+            {filteredIcons.map((name) => (
               <Button
                 key={name}
                 variant="ghost"
@@ -98,7 +97,7 @@ export function IconPicker({
                   setOpen(false);
                 }}
               >
-                <Icon className="h-6 w-6" />
+                <DynamicIcon name={name} className="h-6 w-6" />
                 <span className="w-full truncate text-center text-[10px]">
                   {name}
                 </span>

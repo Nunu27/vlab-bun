@@ -347,11 +347,11 @@ When running in development, OpenAPI documentation is available at:
 
 ### In Progress 🔄
 
-- [ ] Containerlab integration
-- [ ] Guacamole integration
+- [x] Containerlab integration
+- [x] Guacamole integration
 - [ ] Real-time scoring system
-- [ ] MikroTik lab templates
-- [ ] Lab session management
+- [x] MikroTik lab templates
+- [x] Lab session management
 
 ### Planned 📋
 

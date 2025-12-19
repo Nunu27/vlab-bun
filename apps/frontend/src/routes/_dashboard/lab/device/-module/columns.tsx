@@ -1,7 +1,7 @@
 import type api from '@frontend/lib/api';
 import type { ExtractPaginationData } from '@frontend/lib/api-types';
 import { type ColumnDef } from '@tanstack/react-table';
-import * as LucideIcons from 'lucide-react';
+import { DynamicIcon } from '@frontend/components/dynamic-icon';
 import { DeviceActionsCell } from './components/device-actions-cell';
 
 type Item = ExtractPaginationData<(typeof api)['device']['pagination']>;
@@ -28,23 +28,14 @@ export const deviceColumns: ColumnDef<Item>[] = [
       label: 'Icon',
       center: true,
     },
-    cell: ({ row }) => {
-      const Icon = (
-        LucideIcons as unknown as Record<string, LucideIcons.LucideIcon>
-      )[row.original.icon];
-
-      return (
-        <div className="flex items-center justify-center">
-          {Icon ? (
-            <Icon className="text-muted-foreground size-8" />
-          ) : (
-            <span className="text-muted-foreground text-xs">
-              {row.original.icon}
-            </span>
-          )}
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        <DynamicIcon
+          name={row.original.icon}
+          className="text-muted-foreground size-8"
+        />
+      </div>
+    ),
   },
   {
     accessorKey: 'image',

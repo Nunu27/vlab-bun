@@ -1,4 +1,3 @@
-import GuacamoleConnection from '@frontend/components/guacamole-connection';
 import { LogIssuesButton, LogViewer } from '@frontend/components/log-viewer';
 import { Button } from '@frontend/components/ui/button';
 import {
@@ -12,10 +11,14 @@ import { Compile } from '@sinclair/typemap';
 import { useRouteContext } from '@tanstack/react-router';
 import { DeviceTestRequest } from '@vlab/shared/schemas';
 import { Monitor } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { create } from 'zustand';
 import { withForm, type DeviceFormData } from '../../hooks/use-device-form';
+
+const GuacamoleConnection = lazy(
+  () => import('@frontend/components/guacamole-connection'),
+);
 
 interface TestDeviceState {
   open: boolean;
@@ -150,13 +153,21 @@ const TestConnectionButton = withForm({
               />
             ) : (
               <div className="relative flex aspect-video w-full flex-col overflow-hidden bg-slate-950">
-                <GuacamoleConnection
-                  token={token}
-                  onError={(msg) => log('error', msg)}
-                  onConnect={() =>
-                    log('info', 'Desktop connection established')
+                <Suspense
+                  fallback={
+                    <div className="flex h-full w-full items-center justify-center text-slate-400">
+                      Loading viewer...
+                    </div>
                   }
-                />
+                >
+                  <GuacamoleConnection
+                    token={token}
+                    onError={(msg) => log('error', msg)}
+                    onConnect={() =>
+                      log('info', 'Desktop connection established')
+                    }
+                  />
+                </Suspense>
               </div>
             )}
 
