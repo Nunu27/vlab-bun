@@ -178,6 +178,8 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 
 		await db.delete(labSessions).where(eq(labSessions.id, sessionId));
 		await deleteCache("lab:pagination:*");
+
+		reply("message", "Lab stopped successfully.");
 	}
 };
 

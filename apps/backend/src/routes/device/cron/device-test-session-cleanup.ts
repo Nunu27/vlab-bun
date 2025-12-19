@@ -1,9 +1,9 @@
 import db from "@backend/db";
 import clab, { clabWrapper } from "@backend/services/clab";
 import logger from "@backend/services/logger";
-import { chunk } from "@backend/utils/chunk";
 import cron, { Patterns } from "@elysiajs/cron";
-import cluster from "node:cluster";
+import { chunk } from "@vlab/shared/utils";
+import cluster from "cluster";
 
 async function destroyTestSession(id: string): Promise<void> {
 	await clabWrapper(() =>

@@ -1,5 +1,5 @@
 import logger from "@backend/services/logger";
-import process from "node:process";
+import process from "process";
 
 const command = process.argv[2];
 
@@ -17,10 +17,10 @@ if (command === "seed") {
 	process.exit(1);
 }
 
-import os from "node:os";
-import cluster from "node:cluster";
-import { startServer } from "./services/server";
+import cluster from "cluster";
+import os from "os";
 import { inProduction } from "./env";
+import { startServer } from "./services/server";
 
 await startServer();
 

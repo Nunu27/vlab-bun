@@ -9,7 +9,8 @@
 	"exports": {
 		"./enums": "./src/enums.ts",
 		"./types": "./src/types/index.ts",
-		"./schemas": "./src/schemas/index.ts"
+		"./schemas": "./src/schemas/index.ts",
+		"./utils": "./src/utils.ts"
 	},
 	"scripts": {
 		"lint": "eslint ."

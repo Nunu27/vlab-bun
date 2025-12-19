@@ -1,4 +1,5 @@
 import { getSession } from "@backend/middlewares/session";
+import { wsHandlers } from "@backend/routes/ws";
 import { Server as Engine } from "@socket.io/bun-engine";
 import { createAdapter } from "@socket.io/redis-streams-adapter";
 import {
@@ -8,9 +9,9 @@ import {
 	type Server2ClientEvents,
 	type SocketData
 } from "@vlab/shared/schemas";
+import cluster from "cluster";
 import { Server } from "socket.io";
 import { redisClient } from "./redis";
-import { wsHandlers } from "@backend/routes/ws";
 
 type HandlerKey = keyof Client2ServerEvents | keyof InterServerEvents;
 
@@ -30,9 +31,11 @@ const io = new Server<
 	}
 });
 
-setInterval(() => {
-	io.emit("ping", null);
-}, 1000);
+if (cluster.isPrimary) {
+	setInterval(() => {
+		io.emit("ping", null);
+	}, 1000);
+}
 
 const engine = new Engine({
 	path: "/ws"
@@ -113,12 +116,15 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 		if (isConnected) {
 			void schema.cleanup?.(executionId);
 		} else {
-			setTimeout(async () => {
-				const sockets = await io.in(room).fetchSockets();
-				if (sockets.length === 0) {
-					void schema.cleanup?.(executionId);
-				}
-			}, 2 * 60 * 1000);
+			setTimeout(
+				async () => {
+					const sockets = await io.in(room).fetchSockets();
+					if (sockets.length === 0) {
+						void schema.cleanup?.(executionId);
+					}
+				},
+				2 * 60 * 1000
+			);
 		}
 	});
 });
