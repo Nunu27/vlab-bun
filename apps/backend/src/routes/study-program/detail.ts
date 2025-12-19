@@ -1,6 +1,6 @@
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { RequestWithId } from "../schema";
+import { RequestWithId } from "@vlab/shared/schemas";
 
 export default createRouter().guard(
 	{

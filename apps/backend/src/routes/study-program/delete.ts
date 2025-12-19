@@ -2,8 +2,8 @@ import { studyPrograms } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
+import { RequestWithId } from "@vlab/shared/schemas";
 import { eq } from "drizzle-orm";
-import { RequestWithId } from "../schema";
 
 export default createRouter().delete(
 	"/:id",

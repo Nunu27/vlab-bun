@@ -3,8 +3,10 @@ import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
-import { RequestWithId } from "../schema";
-import { UpdateDeviceCategoryRequest } from "@vlab/shared/schemas";
+import {
+	RequestWithId,
+	UpdateDeviceCategoryRequest
+} from "@vlab/shared/schemas";
 
 export default createRouter().put(
 	"/:id",

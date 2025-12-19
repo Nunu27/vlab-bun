@@ -4,7 +4,7 @@ import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { UpdateLabRequest } from "@vlab/shared/schemas";
 import { and, eq } from "drizzle-orm";
-import { RequestWithId } from "../schema";
+import { RequestWithId } from "@vlab/shared/schemas";
 
 export default createRouter().put(
 	"/:id",
