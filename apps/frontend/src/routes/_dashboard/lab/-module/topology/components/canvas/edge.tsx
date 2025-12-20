@@ -30,7 +30,7 @@ export const EdgeComponent = memo(
       if (!device || !Array.isArray(device.interfaces)) return '?';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const iface = (device.interfaces as any[]).find(
-        (i) => i.internalCode === handleId,
+        (i) => i.name === handleId,
       );
       return iface ? iface.name : '?';
     };

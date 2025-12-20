@@ -48,10 +48,7 @@ export function EditDepartmentModal({
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['department', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['department', 'pagination'] });
       onOpenChange(false);
     },
     onError: (error) => {

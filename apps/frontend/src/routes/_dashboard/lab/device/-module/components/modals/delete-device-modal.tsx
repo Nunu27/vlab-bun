@@ -40,10 +40,7 @@ export function DeleteDeviceModal({
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['device', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['device', 'pagination'] });
       onOpenChange(false);
     },
     onError: (error) => {

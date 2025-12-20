@@ -52,10 +52,7 @@ export function EditLecturerModal({
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['lecturer', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
       onOpenChange(false);
     },
     onError: (error) => {

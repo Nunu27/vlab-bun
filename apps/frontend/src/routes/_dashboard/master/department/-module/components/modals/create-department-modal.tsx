@@ -40,10 +40,7 @@ export function CreateDepartmentModal() {
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['department', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['department', 'pagination'] });
       setOpen(false);
       form.reset();
     },

@@ -40,10 +40,7 @@ export function CreateLecturerModal() {
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['lecturer', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
       setOpen(false);
       form.reset();
     },

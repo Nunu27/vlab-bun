@@ -84,7 +84,10 @@ export function ComboBox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(width, 'cursor-pointer! justify-between')}
+          className={cn(
+            width,
+            'dark:bg-input/30 cursor-pointer! justify-between bg-transparent',
+          )}
           disabled={disabled}
         >
           <span className="truncate">
@@ -220,7 +223,10 @@ export function PaginatedComboBox<TData>({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(width, 'cursor-pointer! justify-between')}
+          className={cn(
+            width,
+            'dark:bg-input/30 cursor-pointer! justify-between bg-transparent',
+          )}
           disabled={disabled}
         >
           <span className="truncate">

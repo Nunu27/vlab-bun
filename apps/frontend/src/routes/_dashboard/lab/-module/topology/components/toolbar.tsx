@@ -50,7 +50,7 @@ function ToolbarButton({
 export default function Toolbar({
   deviceMap,
 }: {
-  deviceMap: Map<string, { interfaces: { internalCode: string }[] }>;
+  deviceMap: Map<string, { interfaces: { name: string }[] }>;
 }) {
   const {
     connectMode,

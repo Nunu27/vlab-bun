@@ -15,8 +15,6 @@ export interface LabDeviceInterface {
   id: string;
   name: string;
   connected: boolean;
-  internalCode?: string;
-  displayedCode?: string;
   configurable?: boolean;
 }
 

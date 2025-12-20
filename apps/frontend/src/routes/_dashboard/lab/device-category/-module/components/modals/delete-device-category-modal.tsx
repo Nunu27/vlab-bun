@@ -42,7 +42,6 @@ export function DeleteDeviceCategoryModal({
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
-        exact: false,
       });
       onOpenChange(false);
     },

@@ -94,13 +94,8 @@ function UpdateLabForm() {
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['lab', 'pagination'],
-        exact: false,
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['lab', id],
-      });
+      queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
+      queryClient.invalidateQueries({ queryKey: ['lab', id] });
       navigate({ to: '/lab' });
     },
     onError: (error) => {

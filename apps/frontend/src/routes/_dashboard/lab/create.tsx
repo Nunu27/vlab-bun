@@ -72,10 +72,7 @@ function CreateLabForm() {
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['lab', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
       navigate({ to: '/lab' });
     },
     onError: (error) => {

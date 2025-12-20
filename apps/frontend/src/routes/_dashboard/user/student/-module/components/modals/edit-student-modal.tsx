@@ -59,10 +59,7 @@ export function EditStudentModal({
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['student', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
       onOpenChange(false);
     },
     onError: (error) => {

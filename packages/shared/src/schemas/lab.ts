@@ -84,17 +84,6 @@ export const StopLabSessionRequest = t.Object({
 	sessionId: t.String({ format: "uuid" })
 });
 
-export const LabSessionResponse = t.Object({
-	id: t.String(),
-	type: t.String(),
-	createdAt: t.String(),
-	lab: t.Object({
-		id: t.String(),
-		name: t.String(),
-		topology: LabTopologySchema
-	})
-});
-
 export const labWSSchemas = [
 	createWSSchema({
 		type: "client2server",

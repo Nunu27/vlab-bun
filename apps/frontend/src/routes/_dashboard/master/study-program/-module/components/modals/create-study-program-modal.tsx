@@ -43,7 +43,6 @@ export function CreateStudyProgramModal() {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
-        exact: false,
       });
       setOpen(false);
       form.reset();

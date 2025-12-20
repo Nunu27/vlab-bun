@@ -62,6 +62,7 @@ export function MultiComboBox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
+          className="dark:bg-input/30 bg-transparent"
         >
           {icon}
           {label && <span className="hidden lg:inline">{label}</span>}

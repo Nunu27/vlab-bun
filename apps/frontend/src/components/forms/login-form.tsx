@@ -1,4 +1,3 @@
-import { LoginRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import {
   Card,
@@ -18,7 +17,8 @@ import { cn } from '@frontend/lib/utils';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useRouteContext } from '@tanstack/react-router';
-import { ServerIcon } from 'lucide-react';
+import { LoginRequest } from '@vlab/shared/schemas';
+import { FlaskConicalIcon } from 'lucide-react';
 
 export function LoginForm({
   className,
@@ -45,7 +45,7 @@ export function LoginForm({
         <CardHeader className="pb-4 text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-xl font-bold">
             <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-              <ServerIcon className="size-4" />
+              <FlaskConicalIcon className="size-4" />
             </div>
             vLab
           </CardTitle>

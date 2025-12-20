@@ -1,5 +1,14 @@
 import type { Role } from '@vlab/shared/enums';
-import { DatabaseIcon, FlaskConicalIcon, UsersIcon } from 'lucide-react';
+import {
+  BookOpenIcon,
+  Building2Icon,
+  FlaskConicalIcon,
+  GraduationCapIcon,
+  MonitorIcon,
+  ShieldCheckIcon,
+  TagsIcon,
+  UserCheckIcon,
+} from 'lucide-react';
 import type { ElementType } from 'react';
 
 type Menu = {
@@ -19,80 +28,84 @@ type MenuWithSub = {
 
 export type MenuItem = Menu | MenuWithSub;
 
-export const menuByRole: Record<Role, MenuItem[]> = {
+export type MenuSection = {
+  title?: string;
+  items: MenuItem[];
+};
+
+export const menuByRole: Record<Role, MenuSection[]> = {
   student: [
-    // {
-    //   title: 'Dashboard',
-    //   url: '/',
-    //   icon: LayoutDashboardIcon,
-    // },
     {
-      title: 'Labs',
-      url: '/lab',
-      icon: FlaskConicalIcon,
+      title: 'Main',
+      items: [
+        {
+          title: 'Labs',
+          url: '/lab',
+          icon: FlaskConicalIcon,
+        },
+      ],
     },
   ],
   lecturer: [
-    // {
-    //   title: 'Dashboard',
-    //   url: '/',
-    //   icon: LayoutDashboardIcon,
-    // },
     {
-      title: 'Labs',
-      url: '/lab',
-      icon: FlaskConicalIcon,
+      title: 'Main',
+      items: [
+        {
+          title: 'Labs',
+          url: '/lab',
+          icon: FlaskConicalIcon,
+        },
+      ],
     },
   ],
   admin: [
-    // {
-    //   title: 'Dashboard',
-    //   url: '/',
-    //   icon: LayoutDashboardIcon,
-    // },
     {
       title: 'Master Data',
-      icon: DatabaseIcon,
       items: [
         {
           title: 'Department',
           url: '/master/department',
+          icon: Building2Icon,
         },
         {
           title: 'Study Program',
           url: '/master/study-program',
+          icon: BookOpenIcon,
         },
       ],
     },
     {
       title: 'Lab Data',
-      icon: FlaskConicalIcon,
       items: [
         {
           title: 'Device Category',
           url: '/lab/device-category',
+          icon: TagsIcon,
         },
         {
           title: 'Device',
           url: '/lab/device',
+          icon: MonitorIcon,
         },
       ],
     },
     {
-      title: 'User',
-      icon: UsersIcon,
+      title: 'User Management',
       items: [
         {
           title: 'Student',
           url: '/user/student',
+          icon: GraduationCapIcon,
         },
         {
           title: 'Lecturer',
           url: '/user/lecturer',
+          icon: UserCheckIcon,
         },
         {
           title: 'Admin',
           url: '/user/admin',
+          icon: ShieldCheckIcon,
         },
       ],
     },

@@ -49,10 +49,7 @@ export function CreateStudentModal() {
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['student', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
       setOpen(false);
       form.reset();
     },

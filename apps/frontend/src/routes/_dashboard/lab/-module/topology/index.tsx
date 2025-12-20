@@ -96,7 +96,6 @@ export default function TopologyEditor() {
     setConnectSource,
     setModalOpen,
     setModalNodeId,
-    deleteSelected,
 
     recalculateGroupBounds,
     moveNodeTree,
@@ -141,7 +140,7 @@ export default function TopologyEditor() {
 
     return deviceDef.interfaces.map((iface, index) => ({
       ...iface,
-      id: iface.internalCode,
+      id: iface.name,
       connected: node.interfaces[index] || false,
     }));
   }, [nodes, modalNodeId, deviceMap]);
@@ -241,7 +240,7 @@ export default function TopologyEditor() {
     return () => {
       canvas.removeEventListener('wheel', onWheel);
     };
-  }, [store]);
+  }, [store, isLoading]);
 
   const startPan = (e: React.MouseEvent) => {
     if (e.button === 1 || e.button === 2) {
@@ -516,7 +515,7 @@ export default function TopologyEditor() {
           if (!deviceDef) return n;
 
           const ifaceIndex = deviceDef.interfaces.findIndex(
-            (i) => i.internalCode === ifaceId,
+            (i) => i.name === ifaceId,
           );
           if (ifaceIndex === -1) return n;
 
@@ -559,21 +558,52 @@ export default function TopologyEditor() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        // Check if we are editing a text input (like note label)
-        if (
-          document.activeElement?.tagName === 'TEXTAREA' ||
-          document.activeElement?.tagName === 'INPUT'
-        ) {
-          return;
-        }
-        deleteSelected(deviceMap);
+      // Check if we are editing a text input (like note label)
+      if (
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        document.activeElement?.tagName === 'INPUT'
+      ) {
+        return;
+      }
+
+      const state = store.getState();
+
+      switch (e.key.toLowerCase()) {
+        case 'delete':
+        case 'backspace':
+          e.preventDefault();
+          state.deleteSelected(deviceMap);
+          break;
+        case 'c':
+          e.preventDefault();
+          state.setConnectMode(!state.connectMode);
+          state.setConnectSource(null);
+          break;
+        case 'g':
+          e.preventDefault();
+          if (state.nodes.filter((n) => n.selected).length >= 2) {
+            state.groupSelected();
+          }
+          break;
+        case 'u':
+          e.preventDefault();
+          if (state.nodes.some((n) => n.selected && n.type === 'group')) {
+            state.ungroupSelected();
+          }
+          break;
+        case 'n':
+          e.preventDefault();
+          if (canvasRef.current) {
+            const rect = canvasRef.current.getBoundingClientRect();
+            state.addNote({ x: rect.width / 2, y: rect.height / 2 });
+          }
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [deleteSelected, deviceMap]);
+  }, [store, deviceMap]);
 
   if (isLoading) {
     return <LoadingPage />;

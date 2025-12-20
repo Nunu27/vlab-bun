@@ -52,7 +52,7 @@ export interface TopologyState {
 
   // Complex Actions
   deleteSelected: (
-    deviceMap: Map<string, { interfaces: { internalCode: string }[] }>,
+    deviceMap: Map<string, { interfaces: { name: string }[] }>,
   ) => void;
   addNote: (center: Position) => void;
   groupSelected: () => void;
@@ -272,7 +272,7 @@ export const createTopologyStore = () =>
               interfaces: (n.interfaces || []).map((connected, index) => {
                 if (!deviceDef || !deviceDef.interfaces[index])
                   return connected;
-                const ifaceId = deviceDef.interfaces[index].internalCode;
+                const ifaceId = deviceDef.interfaces[index].name;
                 return remainingEdges.some(
                   (e) =>
                     (e.source === n.id && e.sourceHandle === ifaceId) ||

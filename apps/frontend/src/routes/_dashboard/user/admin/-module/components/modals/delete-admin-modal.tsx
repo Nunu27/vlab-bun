@@ -42,10 +42,7 @@ export function DeleteAdminModal({
     },
     onSuccess: ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['admin', 'pagination'],
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
       onOpenChange(false);
     },
     onError: (error) => {

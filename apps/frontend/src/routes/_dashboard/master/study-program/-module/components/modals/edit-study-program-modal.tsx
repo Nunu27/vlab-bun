@@ -55,7 +55,6 @@ export function EditStudyProgramModal({
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
-        exact: false,
       });
       onOpenChange(false);
     },

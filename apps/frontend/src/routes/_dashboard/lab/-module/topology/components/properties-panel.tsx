@@ -88,22 +88,17 @@ export default function PropertiesPanel() {
 
   return (
     <div className="animate-in slide-in-from-right dark:border-border dark:bg-card z-20 flex w-80 flex-col border-l border-gray-200 bg-white shadow-xl duration-300">
-      <div className="dark:border-border flex items-start justify-between border-b border-gray-100 p-5">
-        <div>
-          <h2 className="dark:text-card-foreground text-lg font-bold text-gray-900">
-            Configuration
-          </h2>
-          <p className="dark:text-muted-foreground mt-1 font-mono text-xs text-gray-500">
-            {primarySelection.id}
-          </p>
-        </div>
+      <div className="dark:border-border dark:bg-card flex items-center justify-between border-b border-gray-200 bg-white p-4">
+        <h2 className="dark:text-muted-foreground text-xs font-semibold tracking-wider text-gray-500 uppercase">
+          Configuration
+        </h2>
         <button
           onClick={() =>
             setNodes((ns) => ns.map((n) => ({ ...n, selected: false })))
           }
           className="dark:text-muted-foreground dark:hover:text-destructive text-gray-400 hover:text-red-500"
         >
-          <X size={20} />
+          <X size={16} />
         </button>
       </div>
 

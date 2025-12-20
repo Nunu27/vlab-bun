@@ -36,12 +36,8 @@ import { withForm, type DeviceFormData } from '../hooks/use-device-form';
 
 interface SortableInterfaceRowProps {
   id: string;
-  internalCode: string;
-  displayedCode: string;
   name: string;
   configurable: boolean;
-  onInternalCodeChange: (value: string) => void;
-  onDisplayedCodeChange: (value: string) => void;
   onNameChange: (value: string) => void;
   onConfigurableChange: (value: boolean) => void;
   onDelete: () => void;
@@ -49,12 +45,8 @@ interface SortableInterfaceRowProps {
 
 function SortableInterfaceRow({
   id,
-  internalCode,
-  displayedCode,
   name,
   configurable,
-  onInternalCodeChange,
-  onDisplayedCodeChange,
   onNameChange,
   onConfigurableChange,
   onDelete,
@@ -81,22 +73,6 @@ function SortableInterfaceRow({
         >
           <GripVerticalIcon className="size-5" />
         </button>
-      </TableCell>
-      <TableCell>
-        <Input
-          placeholder="e.g., eth0"
-          value={internalCode}
-          onChange={(e) => onInternalCodeChange(e.target.value)}
-          className="h-9"
-        />
-      </TableCell>
-      <TableCell>
-        <Input
-          placeholder="e.g., eth1"
-          value={displayedCode}
-          onChange={(e) => onDisplayedCodeChange(e.target.value)}
-          className="h-9"
-        />
       </TableCell>
       <TableCell>
         <Input
@@ -177,10 +153,10 @@ export const DeviceNetworkInterfacesForm = withForm({
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12"></TableHead>
-                          <TableHead>Internal Code</TableHead>
-                          <TableHead>Displayed Code</TableHead>
                           <TableHead>Interface Name</TableHead>
-                          <TableHead className="w-24 text-center">Configurable</TableHead>
+                          <TableHead className="w-24 text-center">
+                            Configurable
+                          </TableHead>
                           <TableHead className="w-16"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -195,26 +171,8 @@ export const DeviceNetworkInterfacesForm = withForm({
                             <SortableInterfaceRow
                               key={`interface-${index}`}
                               id={`interface-${index}`}
-                              internalCode={iface.internalCode}
-                              displayedCode={iface.displayedCode}
                               name={iface.name}
                               configurable={iface.configurable}
-                              onInternalCodeChange={(value) => {
-                                const updated = [...field.state.value];
-                                updated[index] = {
-                                  ...updated[index],
-                                  internalCode: value,
-                                };
-                                field.handleChange(updated);
-                              }}
-                              onDisplayedCodeChange={(value) => {
-                                const updated = [...field.state.value];
-                                updated[index] = {
-                                  ...updated[index],
-                                  displayedCode: value,
-                                };
-                                field.handleChange(updated);
-                              }}
                               onNameChange={(value) => {
                                 const updated = [...field.state.value];
                                 updated[index] = {
@@ -257,7 +215,7 @@ export const DeviceNetworkInterfacesForm = withForm({
                 onClick={() => {
                   field.handleChange([
                     ...field.state.value,
-                    { internalCode: '', displayedCode: '', name: '', configurable: true },
+                    { name: '', configurable: true },
                   ]);
                 }}
               >

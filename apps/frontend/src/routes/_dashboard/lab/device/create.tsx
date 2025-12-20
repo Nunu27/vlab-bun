@@ -75,9 +75,9 @@ function RouteComponent() {
 
   const form = useAppForm({
     defaultValues: {
-      name: undefined,
+      name: '',
       kind: null,
-      image: undefined,
+      image: '',
       icon: null,
       categoryId: null,
       env: {},

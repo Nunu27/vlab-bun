@@ -25,10 +25,10 @@ export const Route = createFileRoute('/_dashboard/')({
     const menu = menuByRole[role];
 
     for (const item of menu) {
-      if ('url' in item) {
-        throw redirect({ to: item.url });
-      } else {
-        throw redirect({ to: item.items[0].url });
+      for (const subItem of item.items) {
+        if ('url' in subItem) {
+          throw redirect({ to: subItem.url });
+        }
       }
     }
 

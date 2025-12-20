@@ -37,7 +37,7 @@ function SessionPage() {
       if (result.error) {
         throw new Error(getErrorMessageFromApi(result.error.value));
       }
-      return result.data;
+      return result.data.data;
     },
   });
 

@@ -18,13 +18,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { UpdateDeviceRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
+import TestConnectionButton from './-module/components/buttons/test-connection-button';
 import { DeviceBasicInfoForm } from './-module/components/device-basic-info-form';
 import { DeviceConnectionForm } from './-module/components/device-connection-form';
 import { DeviceEnvForm } from './-module/components/device-env-form';
 import { DeviceNetworkInterfacesForm } from './-module/components/device-network-interfaces-form';
 import { DeviceResourcesForm } from './-module/components/device-resources-form';
 import { useAppForm } from './-module/hooks/use-device-form';
-import TestConnectionButton from './-module/components/buttons/test-connection-button';
 
 const breadcrumbs = [
   { title: 'Lab Data' },
