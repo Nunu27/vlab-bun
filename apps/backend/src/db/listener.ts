@@ -10,6 +10,7 @@ import { md5 } from "@backend/utils/crypto";
 import type { ExtractTablesWithRelations, InferSelectModel } from "drizzle-orm";
 import { toSnakeCase } from "drizzle-orm/casing";
 import { PgTable, getTableConfig } from "drizzle-orm/pg-core";
+import { EventEmitter } from "events";
 import db from ".";
 
 const client = await db.$client.connect();
@@ -75,11 +76,14 @@ const processBatch = async (channel: string) => {
 	const listeners = registry.get(channel);
 	if (!listeners) return;
 
-	const groupedByOp = items.reduce((acc, item) => {
-		if (!acc[item.op]) acc[item.op] = [];
-		acc[item.op].push(item);
-		return acc;
-	}, {} as Record<Operations, typeof items>);
+	const groupedByOp = items.reduce(
+		(acc, item) => {
+			if (!acc[item.op]) acc[item.op] = [];
+			acc[item.op].push(item);
+			return acc;
+		},
+		{} as Record<Operations, typeof items>
+	);
 
 	for (const [op, opItems] of Object.entries(groupedByOp)) {
 		const listenersToCall = listeners.filter(({ events }) =>
@@ -99,20 +103,20 @@ const processBatch = async (channel: string) => {
 						const bulkData = opItems.map((item) => {
 							const filteredPrevious = item.previous
 								? Object.keys(item.previous).reduce((acc, key) => {
-									if (columns.has(key)) {
-										acc[key] = item.previous[key];
-									}
-									return acc;
-								}, {} as any)
+										if (columns.has(key)) {
+											acc[key] = item.previous[key];
+										}
+										return acc;
+									}, {} as any)
 								: null;
 
 							const filteredCurrent = item.current
 								? Object.keys(item.current).reduce((acc, key) => {
-									if (columns.has(key)) {
-										acc[key] = item.current[key];
-									}
-									return acc;
-								}, {} as any)
+										if (columns.has(key)) {
+											acc[key] = item.current[key];
+										}
+										return acc;
+									}, {} as any)
 								: null;
 
 							return { previous: filteredPrevious, current: filteredCurrent };
@@ -146,20 +150,20 @@ const processBatch = async (channel: string) => {
 							opItems.map((item) => {
 								const filteredPrevious = item.previous
 									? Object.keys(item.previous).reduce((acc, key) => {
-										if (columns.has(key)) {
-											acc[key] = item.previous[key];
-										}
-										return acc;
-									}, {} as any)
+											if (columns.has(key)) {
+												acc[key] = item.previous[key];
+											}
+											return acc;
+										}, {} as any)
 									: null;
 
 								const filteredCurrent = item.current
 									? Object.keys(item.current).reduce((acc, key) => {
-										if (columns.has(key)) {
-											acc[key] = item.current[key];
-										}
-										return acc;
-									}, {} as any)
+											if (columns.has(key)) {
+												acc[key] = item.current[key];
+											}
+											return acc;
+										}, {} as any)
 									: null;
 
 								return (listener as ListenerCallback<any, any>)({
@@ -319,6 +323,78 @@ export const removeDBListener = <
 	}
 };
 
+export class DBWatcher<TData> extends EventEmitter {
+	public on(event: string, listener: (data: TData) => void): this {
+		return super.on(event, listener);
+	}
+
+	public wait<TResult>(
+		key: string,
+		predicate: (data: TData) => TResult | undefined,
+		timeoutMs: number,
+		defaultValue: TResult
+	): Promise<TResult> {
+		return new Promise((resolve) => {
+			let resolved = false;
+
+			const timer = setTimeout(() => {
+				if (!resolved) {
+					resolved = true;
+					this.off(key, handler);
+					resolve(defaultValue);
+				}
+			}, timeoutMs);
+
+			const handler = (data: TData) => {
+				if (resolved) return;
+
+				const result = predicate(data);
+
+				if (result === undefined) return;
+
+				resolved = true;
+				clearTimeout(timer);
+				this.off(key, handler);
+				resolve(result);
+			};
+
+			this.on(key, handler);
+		});
+	}
+}
+
+export const createDBEventEmitter = <
+	TData,
+	TEntity extends keyof TSchema,
+	TTable extends TFullSchema[TEntity],
+	TKeys extends keyof InferSelectModel<TTable>,
+	TOps extends Array<Operations> = ["INSERT", "UPDATE"]
+>(
+	entity: TEntity,
+	columns: TKeys[],
+	keyBuilder: (row: Pick<InferSelectModel<TTable>, TKeys>) => string,
+	valueBuilder: (row: Pick<InferSelectModel<TTable>, TKeys>) => TData,
+	opts?: { ops?: TOps }
+) => {
+	const emitter = new DBWatcher<TData>();
+
+	addDBListener(
+		entity,
+		columns,
+		async ({ data }) => {
+			const item = (data.current ?? data.previous)!;
+
+			const eventKey = keyBuilder(item);
+			const eventValue = valueBuilder(item);
+
+			emitter.emit(eventKey, eventValue);
+		},
+		{ ops: opts?.ops, bulk: false }
+	);
+
+	return emitter;
+};
+
 function buildFunctionSQL(channel: string, columns: string[]): string {
 	const fnName = funcNameFor(channel);
 	const colsArray = columns.map(qLiteral).join(", ");
@@ -396,8 +472,6 @@ function buildTriggerSQL(
 
 	let sql = "";
 
-	// Create a separate trigger for each operation since PostgreSQL doesn't support
-	// transition tables (OLD TABLE/NEW TABLE) with multiple events in one trigger
 	for (const op of ops) {
 		const trigName = qIdent(`${trigNameFor(channel)}_${op.toLowerCase()}`);
 		const referencing =
@@ -470,7 +544,6 @@ export const syncDBListeners = async () => {
 		}
 	>();
 
-	// Create entries for each operation separately since we now have one trigger per operation
 	for (const d of desiredListeners) {
 		for (const op of d.events) {
 			const trigName = `${trigNameFor(d.channel)}_${op.toLowerCase()}`;
@@ -536,8 +609,8 @@ async function _getDBState() {
             JOIN pg_class c ON c.oid = t.tgrelid
             JOIN pg_namespace n ON n.oid = c.relnamespace
             WHERE NOT t.tgisinternal AND t.tgname LIKE ${qLiteral(
-			`${TRIGGER_PREFIX}%`
-		)}
+							`${TRIGGER_PREFIX}%`
+						)}
         `)
 	]);
 
@@ -577,17 +650,14 @@ function _getTriggerDiffSQL(
 	let addSQL = "";
 	let dropSQL = "";
 
-	// Track which channels are still in use to avoid dropping their functions
 	const channelsInUse = new Set<string>();
 	for (const d of desired.values()) {
 		channelsInUse.add(d.channel);
 	}
 
-	// Track which channels were in use before (from existing triggers)
 	const previousChannels = new Set<string>();
 	for (const key of existing) {
 		const [, tgname] = key.split(":");
-		// Extract channel hash from trigger name (remove operation suffix if present)
 		const baseTrigName = tgname.replace(/_(?:insert|update|delete)$/, "");
 		const channelHash = baseTrigName.substring(TRIGGER_PREFIX.length);
 		previousChannels.add(channelHash);
@@ -630,7 +700,6 @@ function _getTriggerDiffSQL(
 
 	const functionsCreated = new Set<string>();
 	for (const [key, d] of desired) {
-		// Always update the function definition to ensure columns are up to date
 		if (!functionsCreated.has(d.channel)) {
 			addSQL += buildFunctionSQL(d.channel, d.cols);
 			functionsCreated.add(d.channel);
@@ -638,7 +707,6 @@ function _getTriggerDiffSQL(
 
 		const existingKey = Array.from(existing).find((k) => k === key);
 		if (!existingKey) {
-			// Create trigger (one per operation)
 			addSQL += buildTriggerSQL(d.channel, d.schema, d.table, d.events);
 		}
 	}

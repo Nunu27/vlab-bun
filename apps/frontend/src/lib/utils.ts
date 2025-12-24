@@ -48,15 +48,17 @@ export async function errorHandler<
     const { data, error } = await promise;
 
     if (error) {
+      const { status, value } = error;
+
       if (
-        error.status === 401 &&
-        (data as BaseResponse).message === 'Unauthorized'
+        status === 401 &&
+        (value as BaseResponse).message === 'Unauthorized'
       ) {
         await cookieStore.delete('session');
         toast.error('Session expired');
         return redirect({ to: '/login' });
       }
-      throw new Error(getErrorMessageFromApi(error.value));
+      throw new Error(getErrorMessageFromApi(value));
     }
 
     if (showToast.onSuccess ?? true) {
@@ -69,6 +71,7 @@ export async function errorHandler<
 
     await callback?.(data as TData);
   } catch (error) {
+    console.error(error);
     if (showToast.onError ?? true) {
       toast.error(getErrorMessage(error));
     }

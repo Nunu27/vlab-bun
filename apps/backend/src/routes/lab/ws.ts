@@ -1,15 +1,20 @@
-import db from "@backend/db";
-import { labSessions, labs, devices } from "@backend/db/schema";
-import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas";
-
-import { eq, and, inArray } from "drizzle-orm";
-import clab, { clabWrapper } from "@backend/services/clab";
-import { leasePort } from "@backend/services/port-manager";
 import { LABELS } from "@backend/constants";
-import { encode } from "@msgpack/msgpack";
+import db from "@backend/db";
+import { createDBEventEmitter } from "@backend/db/listener";
+import { devices, labSessions, labs } from "@backend/db/schema";
+import { deleteCache } from "@backend/middlewares/caching";
+import clab, { clabWrapper } from "@backend/services/clab";
 import type { Link, Node } from "@backend/types/containerlab";
 import { toKebabCase } from "@backend/utils/string";
-import { deleteCache } from "@backend/middlewares/caching";
+import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas";
+import { and, eq, inArray } from "drizzle-orm";
+
+const sessionDeleteEmitter = createDBEventEmitter(
+	"labSessions",
+	["id"],
+	(session) => session.id,
+	() => null
+);
 
 const labWSHandler: WSHandler<typeof labWSSchemas> = {
 	"lab/start": async ({
@@ -48,7 +53,6 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 
 		const sessionId = Bun.randomUUIDv7();
 		const labName = sessionId.replace(/-/g, "");
-		const ports: number[] = [];
 
 		const deviceNodes = lab.topology.nodes.filter(
 			(node) => node.type === "device"
@@ -74,8 +78,6 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 			if (!template) continue;
 
 			const nodeName = toKebabCase(node.label);
-			const port = await leasePort();
-			ports.push(port);
 
 			nodeMap.set(node.id, nodeName);
 
@@ -85,7 +87,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 				env: template.env,
 				cpu: node.resources?.cpu || template.resources.cpu,
 				memory: node.resources?.memory || template.resources.memory,
-				ports: [`${port}:${template.connection.data.port}`],
+				ports: [`0:${template.connection.data.port}`],
 				labels: {
 					[LABELS.NODE_ID]: Bun.randomUUIDv7(),
 					[LABELS.DEVICE_ID]: node.deviceId
@@ -122,8 +124,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 										[LABELS.SESSION_ID]: sessionId,
 										[LABELS.LAB_TYPE]: "user",
 										[LABELS.LAB_ID]: labId,
-										[LABELS.OWNER_ID]: session.id,
-										[LABELS.LAB_PORTS]: encode(ports).toBase64()
+										[LABELS.OWNER_ID]: session.id
 									}
 								},
 								nodes: nodes,
@@ -167,6 +168,12 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 
 		reply("message", "Stopping lab session...");
 
+		const sessionPromise = sessionDeleteEmitter.wait(
+			sessionId,
+			(session) => session,
+			120000,
+			null
+		);
 		await clabWrapper(() =>
 			clab.DELETE(`/api/v1/labs/{labName}`, {
 				params: {
@@ -176,7 +183,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 			})
 		);
 
-		await db.delete(labSessions).where(eq(labSessions.id, sessionId));
+		await sessionPromise;
 		await deleteCache("lab:pagination:*");
 
 		reply("message", "Lab stopped successfully.");

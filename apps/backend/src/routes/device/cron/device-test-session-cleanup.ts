@@ -27,7 +27,7 @@ export default cron({
 
 		await db.transaction(async (tx) => {
 			const sessions = await tx.query.labSessions.findMany({
-				columns: { id: true, ports: true },
+				columns: { id: true },
 				where: (labSessions, { lte, eq, and }) => {
 					return and(
 						eq(labSessions.type, "device-test"),

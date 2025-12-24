@@ -20,8 +20,7 @@ export const labSessions = pgTable(
 		labId: uuid().references(() => labs.id, { onDelete: "restrict" }),
 		ownerId: uuid()
 			.references(() => users.id, { onDelete: "cascade" })
-			.notNull(),
-		ports: jsonb().$type<number[]>().notNull()
+			.notNull()
 	},
 	(t) => [index().on(t.type, t.createdAt)]
 );

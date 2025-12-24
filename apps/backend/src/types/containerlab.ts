@@ -228,7 +228,7 @@ export interface Node {
 	/** Commands to execute */
 	exec?: string[];
 	/** Network mode */
-	networkMode?: string;
+	"network-mode"?: string;
 	/** Custom entrypoint */
 	entrypoint?: string;
 	/** Custom command */

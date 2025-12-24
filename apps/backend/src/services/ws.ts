@@ -11,6 +11,7 @@ import {
 } from "@vlab/shared/schemas";
 import cluster from "cluster";
 import { Server } from "socket.io";
+import parser from "socket.io-msgpack-parser";
 import { redisClient } from "./redis";
 
 type HandlerKey = keyof Client2ServerEvents | keyof InterServerEvents;
@@ -21,6 +22,7 @@ const io = new Server<
 	InterServerEvents,
 	SocketData
 >({
+	parser,
 	adapter: createAdapter(redisClient, {
 		streamName: "ws",
 		sessionKeyPrefix: "session:ws:"

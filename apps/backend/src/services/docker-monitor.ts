@@ -5,9 +5,10 @@ import {
 	labSessions,
 	type LabNodeInterfaceData
 } from "@backend/db/schema";
+import { deleteCache } from "@backend/middlewares/caching";
+import docker from "@backend/services/docker";
 import logger from "@backend/services/logger";
 import Throttler from "@backend/utils/throttler";
-import { decode } from "@msgpack/msgpack";
 import type {
 	DeviceKind,
 	LabType,
@@ -15,7 +16,6 @@ import type {
 	NodeStatus
 } from "@vlab/shared/enums";
 import Docker from "dockerode";
-import docker from "@backend/services/docker";
 import {
 	eq,
 	inArray,
@@ -23,7 +23,6 @@ import {
 	sql,
 	type InferSelectModel
 } from "drizzle-orm";
-import { deleteCache } from "@backend/middlewares/caching";
 
 type LabNode = InferSelectModel<typeof labNodes>;
 type LabSession = InferSelectModel<typeof labSessions>;
@@ -66,23 +65,6 @@ const SYNC_ACTIONS = new Set([
 	"exec_create",
 	"exec_start"
 ]);
-
-function getSessionPorts(inspect: Docker.ContainerInspectInfo): number[] {
-	const labels = inspect.Config?.Labels;
-	if (!labels) return [];
-
-	const portsLabel = labels[LABELS.LAB_PORTS];
-	if (!portsLabel) return [];
-
-	try {
-		const buffer = Buffer.from(portsLabel, "base64");
-		const decoded = decode(buffer);
-		return Array.isArray(decoded) ? (decoded as number[]) : [];
-	} catch (err) {
-		logger.error({ err }, "Failed to decode vlab.lab.ports");
-		return [];
-	}
-}
 
 type ExtractedNodeData = Pick<LabNode, "name" | "deviceId" | "ports"> &
 	Pick<LabSession, "labId" | "ownerId"> & {
@@ -136,16 +118,13 @@ async function ensureLabSession(
 			`Creating lab session for container ${container.id}. SessionId: ${data.labSessionId}, LabId: ${data.labId}`
 		);
 
-		const ports = getSessionPorts(inspect);
-
 		const { rowCount } = await db
 			.insert(labSessions)
 			.values({
 				id: data.labSessionId,
 				type: data.labType,
 				labId: data.labId,
-				ownerId: data.ownerId,
-				ports
+				ownerId: data.ownerId
 			})
 			.onConflictDoNothing();
 
@@ -159,23 +138,28 @@ function extractPortMappings(
 	inspect: Docker.ContainerInspectInfo
 ): Record<number, number> {
 	const portMappings: Record<number, number> = {};
-	const portBindings = inspect.HostConfig?.PortBindings;
+	const ports = inspect.NetworkSettings?.Ports;
 
-	if (!portBindings) return portMappings;
+	if (!ports) return portMappings;
 
-	for (const [containerPort, bindings] of Object.entries(portBindings)) {
+	for (const [containerPort, bindings] of Object.entries(ports)) {
 		const match = containerPort.match(/(\d+)/);
 		if (!match) continue;
 
 		const containerPortNum = parseInt(match[1]);
-		if (isNaN(containerPortNum) || !Array.isArray(bindings)) continue;
 
-		for (const binding of bindings) {
-			const hostPort = parseInt(binding.HostPort);
-			if (!isNaN(hostPort)) {
-				portMappings[containerPortNum] = hostPort;
-				break;
-			}
+		if (
+			isNaN(containerPortNum) ||
+			!Array.isArray(bindings) ||
+			bindings.length === 0
+		)
+			continue;
+
+		const binding = bindings[0];
+		const hostPort = parseInt(binding.HostPort);
+
+		if (!isNaN(hostPort)) {
+			portMappings[containerPortNum] = hostPort;
 		}
 	}
 
@@ -515,13 +499,11 @@ async function initializeData() {
 
 					// Prepare session data
 					if (!sessionsMap.has(data.labSessionId)) {
-						const ports = getSessionPorts(inspect);
 						sessionsMap.set(data.labSessionId, {
 							id: data.labSessionId,
 							type: data.labType,
 							labId: data.labId,
-							ownerId: data.ownerId,
-							ports
+							ownerId: data.ownerId
 						});
 					}
 

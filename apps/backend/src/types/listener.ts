@@ -7,7 +7,7 @@ export type ListenerCallback<
 	TTable extends PgTable,
 	TOp extends Operations,
 	TKeys extends keyof InferSelectModel<TTable> = keyof InferSelectModel<TTable>,
-	TData = { [P in TKeys]: InferSelectModel<TTable>[P] }
+	TData = Pick<InferSelectModel<TTable>, TKeys>
 > = (event: {
 	op: TOp;
 	table: TTable["_"]["name"];
@@ -21,7 +21,7 @@ export type BulkListenerCallback<
 	TTable extends PgTable,
 	TOp extends Operations,
 	TKeys extends keyof InferSelectModel<TTable> = keyof InferSelectModel<TTable>,
-	TData = { [P in TKeys]: InferSelectModel<TTable>[P] }
+	TData = Pick<InferSelectModel<TTable>, TKeys>
 > = (event: {
 	op: TOp;
 	table: TTable["_"]["name"];

@@ -68,10 +68,9 @@ export const DeviceEnvForm = withForm({
                       </Field>
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="destructive"
                         size="icon"
                         onClick={() => removeEnvVar(key)}
-                        className="text-destructive hover:text-destructive"
                       >
                         <Trash2Icon className="size-4" />
                       </Button>

@@ -39,6 +39,7 @@
     "redis": "^5.10.0",
     "s3mini": "^0.7.1",
     "socket.io": "^4.8.1",
+    "socket.io-msgpack-parser": "^3.0.2",
     "typebox": "^1.0.61"
   },
   "devDependencies": {

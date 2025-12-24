@@ -1,5 +1,4 @@
 export const LABELS = {
-	LAB_PORTS: "vlab.lab.ports",
 	NODE_ID: "vlab.lab.node.id",
 	SESSION_ID: "vlab.lab.session.id",
 	OWNER_ID: "vlab.lab.owner.id",

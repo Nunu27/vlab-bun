@@ -57,6 +57,13 @@
       "when": 1765412269191,
       "tag": "0007_alter-reference-rule",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1766570730512,
+      "tag": "0008_alter-lab-session-remove-ports",
+      "breakpoints": true
     }
   ]
 }

@@ -76,7 +76,7 @@ function SortableInterfaceRow({
       </TableCell>
       <TableCell>
         <Input
-          placeholder="e.g., Management"
+          placeholder="e.g., eth1"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           className="h-9"
@@ -91,10 +91,9 @@ function SortableInterfaceRow({
       <TableCell className="w-16 text-center">
         <Button
           type="button"
-          variant="ghost"
+          variant="destructive"
           size="icon"
           onClick={onDelete}
-          className="text-destructive hover:text-destructive size-8"
         >
           <Trash2Icon className="size-4" />
         </Button>

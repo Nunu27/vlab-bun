@@ -453,7 +453,7 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
       {connectionState === 'error' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-gray-900 text-white">
           <div className="rounded-full bg-red-500/10 p-4">
-            <AlertCircle className="h-12 w-12 text-red-500" />
+            <AlertCircle className="size-12 text-red-500" />
           </div>
           <div className="space-y-1 px-8 text-center">
             <p className="font-medium text-red-400">Connection Failed</p>

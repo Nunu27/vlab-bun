@@ -1,3 +1,4 @@
+import { DynamicIcon } from '@frontend/components/dynamic-icon';
 import { Button } from '@frontend/components/ui/button';
 import {
   Popover,
@@ -5,7 +6,6 @@ import {
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
 import { cn } from '@frontend/lib/utils';
-import { DynamicIcon } from '@frontend/components/dynamic-icon';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -29,7 +29,11 @@ export function IconPicker({
   useEffect(() => {
     import('lucide-react').then((module) => {
       const names = Object.keys(module).filter(
-        (key) => key !== 'icons' && key !== 'createLucideIcon',
+        (key) =>
+          key !== 'icons' &&
+          key !== 'createLucideIcon' &&
+          !key.startsWith('Lucide') &&
+          !key.endsWith('Icon'),
       );
       setIconNames(names);
     });

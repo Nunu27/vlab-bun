@@ -1,77 +1,32 @@
 import { LABELS } from "@backend/constants";
-import db from "@backend/db";
-import { addDBListener } from "@backend/db/listener";
-import { labNodes } from "@backend/db/schema";
+import { createDBEventEmitter } from "@backend/db/listener";
 import env from "@backend/env";
 import clab, { clabWrapper } from "@backend/services/clab";
 import docker from "@backend/services/docker";
-import { leasePort } from "@backend/services/port-manager";
 import { createGuacamoleToken } from "@backend/utils/crypto";
 import { toKebabCase } from "@backend/utils/string";
-import { encode } from "@msgpack/msgpack";
-import type { NodeHealth } from "@vlab/shared/enums";
 import {
 	deviceWSSchemas,
 	onDispose,
 	type WSHandler
 } from "@vlab/shared/schemas";
 import { sleep } from "@vlab/shared/utils";
-import { eq } from "drizzle-orm";
-import { EventEmitter } from "events";
 
-const labNodeEvents = new EventEmitter();
-addDBListener(
+const healthEmitter = createDBEventEmitter(
 	"labNodes",
-	["health", "id", "updatedAt"],
-	async ({ data: { current } }) => {
-		if (current) {
-			labNodeEvents.emit(`update:${current.id}`, current.health);
-		}
-	},
+	["id", "health"],
+	(node) => node.id,
+	(node) => node.health,
 	{ ops: ["INSERT", "UPDATE"] }
 );
 
-function waitForHealth(nodeId: string, timeoutMs = 120000) {
-	return new Promise<NodeHealth | null>(async (resolve) => {
-		let resolved = false;
-		let currentHealth: NodeHealth | null = null;
-
-		const onUpdate = (health: any) => {
-			currentHealth = health;
-
-			if (!health || health === "healthy") {
-				resolved = true;
-				cleanup();
-			}
-		};
-
-		const cleanup = () => {
-			resolve(currentHealth);
-			labNodeEvents.off(`update:${nodeId}`, onUpdate);
-			clearTimeout(timer);
-		};
-
-		const timer = setTimeout(() => {
-			if (!resolved) {
-				cleanup();
-			}
-		}, timeoutMs);
-
-		labNodeEvents.on(`update:${nodeId}`, onUpdate);
-
-		const labNode = await db.query.labNodes.findFirst({
-			where: eq(labNodes.id, nodeId),
-			columns: {
-				health: true
-			}
-		});
-
-		if ((!labNode?.health || labNode?.health === "healthy") && !resolved) {
-			cleanup();
-			resolve(labNode?.health || null);
-		}
-	});
-}
+const portEmitter = createDBEventEmitter(
+	"labNodes",
+	["id", "ports"],
+	(node) => node.id,
+	(node) => node.ports,
+	{ ops: ["INSERT", "UPDATE"] }
+);
 
 const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 	"device/test": async ({
@@ -86,7 +41,6 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 
 		const deviceName = toKebabCase(data.name);
 		const labName = id.replace(/-/g, "");
-		const port = await leasePort();
 		const nodeId = Bun.randomUUIDv7();
 
 		reply("message", `Pulling image ${data.image}...`);
@@ -103,6 +57,22 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		});
 		reply("message", "Image pulled successfully.");
 
+		const healthPromise = healthEmitter.wait(
+			nodeId,
+			(health) => {
+				if (!health) return null;
+				else return health === "healthy" || undefined;
+			},
+			120000,
+			false
+		);
+		const portPromise = portEmitter.wait(
+			nodeId,
+			(ports) => ports[data.connection.data.port] || null,
+			120000,
+			null
+		);
+
 		const response = await clabWrapper(() =>
 			clab.POST("/api/v1/labs", {
 				body: {
@@ -113,8 +83,7 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 								labels: {
 									[LABELS.SESSION_ID]: id,
 									[LABELS.LAB_TYPE]: "device-test",
-									[LABELS.OWNER_ID]: session.id,
-									[LABELS.LAB_PORTS]: encode([port]).toBase64()
+									[LABELS.OWNER_ID]: session.id
 								}
 							},
 							nodes: {
@@ -124,7 +93,7 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 									env: data.env,
 									cpu: data.resources.cpu,
 									memory: data.resources.memory,
-									ports: [`${port}:${data.connection.data.port}`],
+									ports: [`0:${data.connection.data.port}`],
 									labels: {
 										[LABELS.NODE_ID]: nodeId
 									}
@@ -146,18 +115,16 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 
 		reply("message", "Waiting for device to become healthy...");
 
-		await sleep(1000);
-
-		const health = await waitForHealth(nodeId);
-		if (health === "healthy") {
+		const isHealthy = await healthPromise;
+		if (isHealthy) {
 			reply("message", "Device is healthy.");
-		} else if (!health) {
+		} else if (isHealthy === null) {
 			reply("warn", "Device does not have health check configured.");
 			await sleep(5000);
 		} else {
 			reply(
 				"warn",
-				"Device did not become healthy in time. Health status: " + health
+				"Device did not become healthy in time. Health status: " + isHealthy
 			);
 		}
 
@@ -171,6 +138,11 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		}
 
 		reply("message", "Generating access token...");
+
+		const port = await portPromise;
+		if (port === null) {
+			throw new Error("Failed to retrieve device port mapping.");
+		}
 
 		const token = createGuacamoleToken({
 			connection: {
