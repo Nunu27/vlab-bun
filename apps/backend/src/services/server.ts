@@ -1,5 +1,9 @@
 import { checkAndRunMigration } from "@backend/db";
-import { cleanupDBListeners, syncDBListeners, syncDBChannels } from "@backend/db/listener";
+import {
+	cleanupDBListeners,
+	syncDBChannels,
+	syncDBListeners
+} from "@backend/db/listener";
 import env, { inProduction } from "@backend/env";
 import { clearCache } from "@backend/middlewares/caching";
 import services from "@backend/plugins/services";
@@ -9,8 +13,8 @@ import logger from "@backend/services/logger";
 import staticPlugin from "@elysiajs/static";
 import type { WebSocketData } from "@socket.io/bun-engine";
 import { file, type Server } from "bun";
+import cluster from "cluster";
 import { Elysia } from "elysia";
-import cluster from "node:cluster";
 import { startDockerMonitor } from "./docker-monitor";
 import { redisClient } from "./redis";
 import { engine, io } from "./ws";
@@ -21,9 +25,9 @@ const app = new Elysia({
 	.use(
 		inProduction
 			? staticPlugin({
-				prefix: "/static",
-				assets: "public/static"
-			})
+					prefix: "/static",
+					assets: "public/static"
+				})
 			: undefined
 	)
 	.use(services)

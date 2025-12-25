@@ -2,9 +2,8 @@ import { labs } from "@backend/db/schema/lab";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { UpdateLabRequest } from "@vlab/shared/schemas";
+import { RequestWithId, UpdateLabRequest } from "@vlab/shared/schemas";
 import { and, eq } from "drizzle-orm";
-import { RequestWithId } from "@vlab/shared/schemas";
 
 export default createRouter().put(
 	"/:id",

@@ -43,10 +43,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 			where: eq(labs.id, labId)
 		});
 
-		if (!lab) {
-			reply("error", "Lab not found");
-			return;
-		}
+		if (!lab) throw new Error("Lab not found");
 
 		reply("message", "Starting lab session...");
 
@@ -58,10 +55,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 		);
 		const deviceIds = new Set(deviceNodes.map((node) => node.deviceId));
 
-		if (deviceIds.size === 0) {
-			reply("error", "Lab has no devices");
-			return;
-		}
+		if (!deviceIds.size) throw new Error("No devices in lab topology");
 
 		const deviceTemplates = await db.query.devices.findMany({
 			where: inArray(devices.id, [...deviceIds])
@@ -124,61 +118,45 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 			});
 		}
 
-		try {
-			reply("message", "Deploying lab...");
+		reply("message", "Deploying lab...");
 
-			const response = await clabWrapper(() =>
-				clab.POST("/api/v1/labs", {
-					body: {
-						topologyContent: {
-							name: labName,
-							topology: {
-								defaults: {
-									labels: {
-										[LABELS.SESSION_ID]: sessionId,
-										[LABELS.LAB_TYPE]: "user",
-										[LABELS.LAB_ID]: labId,
-										[LABELS.OWNER_ID]: session.id
-									}
-								},
-								nodes: nodes,
-								links: links
-							}
+		const response = await clabWrapper(() =>
+			clab.POST("/api/v1/labs", {
+				body: {
+					topologyContent: {
+						name: labName,
+						topology: {
+							defaults: {
+								labels: {
+									[LABELS.SESSION_ID]: sessionId,
+									[LABELS.LAB_TYPE]: "user",
+									[LABELS.LAB_ID]: labId,
+									[LABELS.OWNER_ID]: session.id
+								}
+							},
+							nodes: nodes,
+							links: links
 						}
 					}
-				})
+				}
+			})
+		);
+
+		if (!response.response.ok) {
+			throw new Error(
+				`Error during lab provisioning: ${response.response.statusText}`
 			);
-
-			if (!response.response.ok) {
-				throw new Error(
-					`Error during lab provisioning: ${response.response.statusText}`
-				);
-			}
-
-			reply("message", "Lab deployed successfully.");
-			reply("sessionId", sessionId);
-		} catch (error) {
-			await clabWrapper(() =>
-				clab.DELETE(`/api/v1/labs/{labName}`, {
-					params: {
-						path: { labName },
-						query: { cleanup: true }
-					}
-				})
-			);
-
-			reply("error", "Failed to start lab");
 		}
+
+		reply("message", "Lab deployed successfully.");
+		reply("sessionId", sessionId);
 	},
 	"lab/stop": async ({ data: { sessionId }, reply }) => {
 		const session = await db.query.labSessions.findFirst({
 			where: eq(labSessions.id, sessionId)
 		});
 
-		if (!session) {
-			reply("error", "Session not found");
-			return;
-		}
+		if (!session) throw new Error("Session not found");
 
 		reply("message", "Stopping lab session...");
 

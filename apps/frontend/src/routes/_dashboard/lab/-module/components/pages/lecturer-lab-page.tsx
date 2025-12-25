@@ -25,7 +25,6 @@ export default function LecturerLabPage() {
   >({
     queryKey: (params) => ['lab', 'pagination', params],
     queryFn: pagination.post,
-    staleTime: 0,
   });
 
   return (

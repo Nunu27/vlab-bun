@@ -1,8 +1,8 @@
 import logger from "@backend/services/logger";
 import { storageCleanup } from "@backend/services/storage";
 import { cron, Patterns } from "@elysiajs/cron";
+import cluster from "cluster";
 import { Elysia } from "elysia";
-import cluster from "node:cluster";
 
 import view from "./view";
 

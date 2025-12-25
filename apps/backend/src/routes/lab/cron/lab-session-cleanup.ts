@@ -25,40 +25,34 @@ export default cron({
 		const cutoff = new Date();
 		cutoff.setHours(cutoff.getHours() - 3);
 
-		await db.transaction(async (tx) => {
-			const sessions = await tx.query.labSessions.findMany({
-				columns: { id: true },
-				where: (labSessions, { lte, eq, and }) => {
-					return and(
-						eq(labSessions.type, "user"),
-						lte(labSessions.createdAt, cutoff)
-					);
-				}
-			});
-
-			if (!sessions.length) return;
-
-			logger.info("Found %d lab sessions to cleanup", sessions.length);
-
-			const sessionChunks = chunk(sessions, 10);
-			const sessionsToDelete: string[] = [];
-
-			for (const sessionChunk of sessionChunks) {
-				const results = await Promise.allSettled(
-					sessionChunk.map(({ id }) => destroySession(id))
+		const sessions = await db.query.labSessions.findMany({
+			columns: { id: true },
+			where: (labSessions, { lte, eq, and }) => {
+				return and(
+					eq(labSessions.type, "user"),
+					lte(labSessions.createdAt, cutoff)
 				);
-
-				// Collect IDs of successfully destroyed sessions
-				for (let i = 0; i < results.length; i++) {
-					const result = results[i];
-					if (result.status === "fulfilled") {
-						sessionsToDelete.push(sessionChunk[i].id);
-					}
-				}
 			}
-
-			logger.info("Cleaned up %d lab sessions", sessionsToDelete.length);
 		});
+		if (!sessions.length) return;
+
+		logger.info("Found %d lab sessions to cleanup", sessions.length);
+
+		const sessionChunks = chunk(sessions, 10);
+		let deletedSessions = 0;
+
+		for (const sessionChunk of sessionChunks) {
+			const results = await Promise.allSettled(
+				sessionChunk.map(({ id }) => destroySession(id))
+			);
+
+			const successfulDeletions = results.filter(
+				(r) => r.status === "fulfilled"
+			).length;
+			deletedSessions += successfulDeletions;
+		}
+
+		logger.info("Cleaned up %d lab sessions", deletedSessions);
 	},
 	pattern: Patterns.everyMinutes(15),
 	catch: (error) => {

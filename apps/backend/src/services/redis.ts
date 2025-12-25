@@ -19,7 +19,7 @@ logger.info("Connecting to Redis...");
 export const redisClient = client;
 
 export default {
-	async get<T>(key: string): Promise<T | null> {
+	async get<T>(key: string) {
 		const value = await client.getBuffer(key);
 		if (!value) {
 			return null;
@@ -101,30 +101,26 @@ export default {
 		return deletedCount;
 	},
 
-	async sadd(key: string, ...members: (string | number)[]): Promise<number> {
+	async sadd(key: string, ...members: (string | number)[]) {
 		if (members.length === 0) return 0;
 		return client.sadd(key, ...members.map(String));
 	},
 
-	async srem(key: string, ...members: (string | number)[]): Promise<number> {
+	async srem(key: string, ...members: (string | number)[]) {
 		if (members.length === 0) return 0;
 		return client.srem(key, ...members.map(String));
 	},
 
-	async sismember(key: string, member: string | number): Promise<number> {
+	async sismember(key: string, member: string | number) {
 		const exists = await client.sismember(key, String(member));
 		return exists;
 	},
 
-	async smembers(key: string): Promise<string[]> {
+	async smembers(key: string) {
 		return client.smembers(key);
 	},
 
-	async eval(
-		script: string,
-		keys: string[],
-		args: (string | number)[] = []
-	): Promise<any> {
+	async eval(script: string, keys: string[], args: (string | number)[] = []) {
 		return client.eval(script, keys.length, ...keys, ...args.map(String));
 	}
 };

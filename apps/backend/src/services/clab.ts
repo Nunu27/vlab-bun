@@ -38,9 +38,7 @@ export async function clabWrapper<
 	T extends Record<string | number, any>,
 	Options,
 	Media extends MediaType
->(
-	func: () => Promise<FetchResponse<T, Options, Media>>
-): Promise<FetchResponse<T, Options, Media>> {
+>(func: () => Promise<FetchResponse<T, Options, Media>>) {
 	const response = await func();
 
 	if (response.response.status === 401) {

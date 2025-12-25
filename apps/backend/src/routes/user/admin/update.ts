@@ -18,7 +18,7 @@ export default createRouter().put(
 			return status(404, failure({ message: "Admin not found" }));
 		}
 
-		await deleteCache("admin:pagination:*", `admin:${id}`);
+		await deleteCache("admin:pagination:*", `admin:${id}`, `me:${id}`);
 
 		return { message: "Admin updated" };
 	},
@@ -27,7 +27,7 @@ export default createRouter().put(
 		params: RequestWithId,
 		body: UpdateAdminRequest,
 		detail: {
-			description: "Update a admin"
+			description: "Update an admin"
 		}
 	}
 );

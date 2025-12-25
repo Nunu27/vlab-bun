@@ -1,5 +1,6 @@
 import { users } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
+import { deleteSession } from "@backend/middlewares/session";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
 import { RequestWithId } from "@vlab/shared/schemas";
@@ -17,7 +18,8 @@ export default createRouter().delete(
 			return status(404, failure({ message: "Lecturer not found" }));
 		}
 
-		await deleteCache("lecturer:pagination:*", `lecturer:${id}`);
+		await deleteCache("lecturer:pagination:*", `lecturer:${id}`, `me:${id}`);
+		await deleteSession(id);
 
 		return success({ message: "Lecturer deleted" });
 	},

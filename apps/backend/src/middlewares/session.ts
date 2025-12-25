@@ -6,18 +6,29 @@ import type { Session } from "@vlab/shared/types";
 import { ToastItemSchema } from "@vlab/shared/types";
 import { Elysia, t } from "elysia";
 
+export const deleteSession = async (userId: string) => {
+	await redis.del(`session:data:${userId}`);
+};
+
 export const getSession = async (id: string) => {
 	const key = `session:rest:${id}`;
+	let userId = await redis.get<string>(key);
 
 	return {
-		data: await redis.get<Session>(key),
+		data: await redis.get<Session>(`session:data:${userId}`),
 		extend: async () => {
 			await redis.expire(key, env.SESSION_TTL);
+			if (userId) {
+				await redis.expire(`session:data:${userId}`, env.SESSION_TTL);
+			}
 		},
 		set: async (data: Session) => {
-			await redis.set(key, data, env.SESSION_TTL);
+			userId = data.id;
+			await redis.set(key, data.id, env.SESSION_TTL);
+			await redis.set(`session:data:${data.id}`, data, env.SESSION_TTL);
 		},
 		delete: async () => {
+			userId = null;
 			await redis.del(key);
 		}
 	};
