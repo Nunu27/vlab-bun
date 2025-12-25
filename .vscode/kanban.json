@@ -13,18 +13,6 @@
                 {
                     "text": "[Checker] RouterOS",
                     "id": "k7piar066jbqss2a8q8gpkp1"
-                },
-                {
-                    "text": "Containerlab deployment",
-                    "id": "boq8hudsaxuwxo0zkro64tzr"
-                },
-                {
-                    "text": "Lab Access",
-                    "id": "o9ivjqa6uukm9uo4wwy4ao15"
-                },
-                {
-                    "text": "CRUD Lab",
-                    "id": "gus0tl2s8tcmi2kt4780tj5b"
                 }
             ],
             "id": "v29x67aeud6wsrex3bp68yln",
@@ -32,12 +20,7 @@
         },
         {
             "title": "Doing",
-            "tasks": [
-                {
-                    "text": "Topology Editor",
-                    "id": "of8nyhovsw4hwi46k2vxj285"
-                }
-            ],
+            "tasks": [],
             "id": "ppj2h8a0u0o1d4cyw3jf9ifh",
             "color": "#0693e3"
         },
@@ -79,6 +62,22 @@
                 {
                     "text": "Containerlab Planning",
                     "id": "jefgvjf88i3xc5gdvlasuolc"
+                },
+                {
+                    "text": "Containerlab deployment",
+                    "id": "boq8hudsaxuwxo0zkro64tzr"
+                },
+                {
+                    "text": "Topology Editor",
+                    "id": "of8nyhovsw4hwi46k2vxj285"
+                },
+                {
+                    "text": "CRUD Lab",
+                    "id": "gus0tl2s8tcmi2kt4780tj5b"
+                },
+                {
+                    "text": "Lab Access",
+                    "id": "o9ivjqa6uukm9uo4wwy4ao15"
                 }
             ],
             "id": "evooddvl4dgf4mputmvav45v",
@@ -87,5 +86,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1764949204995
+    "timestamp": 1766666726747
 }

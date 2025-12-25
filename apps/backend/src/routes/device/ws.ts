@@ -2,7 +2,7 @@ import { LABELS } from "@backend/constants";
 import { createDBEventEmitter } from "@backend/db/listener";
 import env from "@backend/env";
 import clab, { clabWrapper } from "@backend/services/clab";
-import docker from "@backend/services/docker";
+import { clabDocker as docker } from "@backend/services/docker";
 import { createGuacamoleToken } from "@backend/utils/crypto";
 import { toKebabCase } from "@backend/utils/string";
 import {

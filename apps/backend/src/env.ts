@@ -42,7 +42,8 @@ const EnvSchema = t.Object({
 
 	CLAB_HOST: t.String(),
 	CLAB_USERNAME: t.String(),
-	CLAB_PASSWORD: t.String()
+	CLAB_PASSWORD: t.String(),
+	CLAB_DIND: t.Boolean({ default: true })
 });
 
 const validator = Compile(EnvSchema);

@@ -25,26 +25,20 @@ type GuacamoleConnectionConfig<TType extends GuacamoleProtocol> = {
 	settings: TType extends "rdp"
 		? RDPParameters
 		: TType extends "vnc"
-		? VNCParameters
-		: TType extends "ssh"
-		? SSHParameters
-		: TType extends "telnet"
-		? TelnetParameters
-		: TType extends "kubernetes"
-		? KubernetesParameters
-		: never;
+			? VNCParameters
+			: TType extends "ssh"
+				? SSHParameters
+				: TType extends "telnet"
+					? TelnetParameters
+					: TType extends "kubernetes"
+						? KubernetesParameters
+						: never;
 };
 
 type GuacamoleTokenObject<TType extends GuacamoleProtocol = GuacamoleProtocol> =
+	| { connection: GuacamoleConnectionConfig<TType> }
+	| { connection: JoinConnectionSettings };
 
-		| { connection: GuacamoleConnectionConfig<TType> }
-		| { connection: JoinConnectionSettings };
-
-/**
- * Encrypts a token object for Guacamole connection
- * @param tokenObject - The connection configuration object with protocol type and settings
- * @returns Base64 encoded encrypted token
- */
 export function createGuacamoleToken(
 	tokenObject: GuacamoleTokenObject
 ): string {
