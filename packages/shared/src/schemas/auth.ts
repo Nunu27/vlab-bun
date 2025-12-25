@@ -32,10 +32,12 @@ export const LoginRequest = t.Object({
 });
 
 export const AuthChangePasswordRequest = t.Object({
-	oldPassword: t.String({
-		minLength: 8,
-		maxLength: 128
-	}),
+	oldPassword: t.Nullable(
+		t.String({
+			minLength: 8,
+			maxLength: 128
+		})
+	),
 	newPassword: t.String({
 		minLength: 8,
 		maxLength: 128

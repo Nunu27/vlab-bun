@@ -14,19 +14,19 @@ function NotFoundPage() {
   };
 
   return (
-    <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-linear-to-br from-background via-muted/30 to-background p-6">
-      <div className="relative z-10 w-full max-w-2xl text-center space-y-8">
+    <div className="flex h-full flex-col items-center justify-center overflow-hidden bg-linear-to-br p-6">
+      <div className="z-10 w-full max-w-2xl space-y-8 text-center">
         {/* Main 404 Display */}
         <div className="space-y-4">
-          <div className="text-[12rem] md:text-[16rem] font-bold leading-none bg-linear-to-br from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent drop-shadow-2xl">
+          <div className="from-primary via-primary/80 to-primary/60 bg-linear-to-br bg-clip-text text-[12rem] leading-none font-bold text-transparent drop-shadow-2xl md:text-[16rem]">
             404
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
               Page Not Found
             </h1>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-md mx-auto">
+            <p className="text-muted-foreground mx-auto max-w-md text-lg md:text-xl">
               The page you are looking for does not exist or has been moved to a
               different location.
             </p>
@@ -34,7 +34,7 @@ function NotFoundPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+        <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
           <Button
             onClick={handleGoBack}
             variant="outline"
@@ -51,7 +51,7 @@ function NotFoundPage() {
         </div>
 
         {/* Additional helpful text */}
-        <p className="text-muted-foreground text-sm pt-8">
+        <p className="text-muted-foreground pt-8 text-sm">
           If you believe this is an error, please contact support.
         </p>
       </div>

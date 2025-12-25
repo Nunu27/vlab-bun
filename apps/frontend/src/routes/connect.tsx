@@ -1,8 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import GuacamoleConnection from '@frontend/components/guacamole-connection';
 import { useEffect } from 'react';
+import { protectedRoute } from '@frontend/lib/middlewares';
 
 export const Route = createFileRoute('/connect')({
+  beforeLoad: protectedRoute(),
   component: ConnectPage,
   validateSearch: (
     search: Record<string, unknown>,

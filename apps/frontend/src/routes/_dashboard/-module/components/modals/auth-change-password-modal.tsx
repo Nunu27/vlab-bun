@@ -1,4 +1,3 @@
-import { AuthChangePasswordRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
@@ -15,11 +14,13 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import { Compile } from '@sinclair/typemap';
-import { useMutation } from '@tanstack/react-query';
-import { useForm } from '@tanstack/react-form';
-import { toast } from 'sonner';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { Compile } from '@sinclair/typemap';
+import { useForm } from '@tanstack/react-form';
+import { useMutation } from '@tanstack/react-query';
+import { useRouteContext } from '@tanstack/react-router';
+import { AuthChangePasswordRequest } from '@vlab/shared/schemas';
+import { toast } from 'sonner';
 
 interface AuthChangePasswordModalProps {
   open: boolean;
@@ -30,6 +31,10 @@ export function AuthChangePasswordModal({
   open,
   onOpenChange,
 }: AuthChangePasswordModalProps) {
+  const casOnly = useRouteContext({
+    from: '__root__',
+    select: (context) => context.auth.user?.casOnly,
+  });
   const changePassword = useMutation({
     mutationFn: async (data: typeof AuthChangePasswordRequest.static) => {
       const request = api.auth['change-password'];
@@ -53,10 +58,10 @@ export function AuthChangePasswordModal({
 
   const form = useForm({
     defaultValues: {
-      oldPassword: '',
+      oldPassword: casOnly ? null : '',
       newPassword: '',
       confirmPassword: '',
-    },
+    } as typeof AuthChangePasswordRequest.static,
     validators: {
       onSubmit: Compile(AuthChangePasswordRequest),
     },
@@ -77,34 +82,36 @@ export function AuthChangePasswordModal({
           }}
         >
           <FieldGroup>
-            <form.Field name="oldPassword">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
+            {!casOnly && (
+              <form.Field name="oldPassword">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
 
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name} required>
-                      Old Password
-                    </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="password"
-                      placeholder="Enter current password"
-                      autoComplete="current-password"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
+                  return (
+                    <Field>
+                      <FieldLabel htmlFor={field.name} required>
+                        Old Password
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="password"
+                        placeholder="Enter current password"
+                        autoComplete="current-password"
+                        value={field.state.value!}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+            )}
             <form.Field name="newPassword">
               {(field) => {
                 const isInvalid =

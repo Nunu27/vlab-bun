@@ -2,7 +2,6 @@ import { LABELS } from "@backend/constants";
 import db from "@backend/db";
 import { createDBEventEmitter } from "@backend/db/listener";
 import { devices, labSessions, labs } from "@backend/db/schema";
-import { deleteCache } from "@backend/middlewares/caching";
 import clab, { clabWrapper } from "@backend/services/clab";
 import type { Link, Node } from "@backend/types/containerlab";
 import { toKebabCase } from "@backend/utils/string";
@@ -88,11 +87,26 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 				cpu: node.resources?.cpu || template.resources.cpu,
 				memory: node.resources?.memory || template.resources.memory,
 				ports: [`0:${template.connection.data.port}`],
+				dns: { servers: ["1.1.1.1", "1.0.0.1"] },
 				labels: {
 					[LABELS.NODE_ID]: Bun.randomUUIDv7(),
 					[LABELS.DEVICE_ID]: node.deviceId
 				}
 			};
+
+			if (nodeMap.size === 1) {
+				nodes[nodeName].stages = {
+					exit: {
+						exec: [
+							{
+								command: `rm -rf /home/admin/.clab/${labName}`,
+								phase: "on-exit",
+								target: "host"
+							}
+						]
+					}
+				};
+			}
 		}
 
 		// Map Edges (Links)
@@ -182,9 +196,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 				}
 			})
 		);
-
 		await sessionPromise;
-		await deleteCache("lab:pagination:*");
 
 		reply("message", "Lab stopped successfully.");
 	}

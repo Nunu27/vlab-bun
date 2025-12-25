@@ -36,7 +36,7 @@ const io = new Server<
 if (cluster.isPrimary) {
 	setInterval(() => {
 		io.emit("ping", null);
-	}, 1000);
+	}, 30 * 1000);
 }
 
 const engine = new Engine({
@@ -98,6 +98,7 @@ io.on("connection", (socket) => {
 				console.error(error);
 				reply("error", (error as Error).message);
 				socket.emit("error", `Error handling event ${event}: ${error}`);
+				socket.leave(room);
 			} finally {
 				reply("done");
 			}
@@ -132,9 +133,3 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 });
 
 export { engine, io };
-export type {
-	Client2ServerEvents,
-	InterServerEvents,
-	Server2ClientEvents,
-	SocketData
-};

@@ -8,177 +8,181 @@ import {
 import { deleteCache } from "@backend/middlewares/caching";
 import docker from "@backend/services/docker";
 import logger from "@backend/services/logger";
+import type { DockerEvent } from "@backend/types/docker";
+import Debouncer from "@backend/utils/debouncer";
 import Throttler from "@backend/utils/throttler";
-import type {
-	DeviceKind,
-	LabType,
-	NodeHealth,
-	NodeStatus
-} from "@vlab/shared/enums";
-import Docker from "dockerode";
-import {
-	eq,
-	inArray,
-	notInArray,
-	sql,
-	type InferSelectModel
-} from "drizzle-orm";
+import type { LabType, NodeHealth, NodeStatus } from "@vlab/shared/enums";
+import type { Container, ContainerInspectInfo } from "dockerode";
+import { eq, notInArray, type InferInsertModel } from "drizzle-orm";
+import { Duplex } from "stream";
 
-type LabNode = InferSelectModel<typeof labNodes>;
-type LabSession = InferSelectModel<typeof labSessions>;
+let initialized = false;
+const sessionIds = new Set<string>();
+const sessionThrottler = new Throttler(1000);
+const interfaceDebouncer = new Debouncer(750);
+const interfaceMonitors = new Map<string, Duplex>();
 
-const throttler = new Throttler(500);
-
-const interfaceMonitors = new Map<
-	string,
-	{ exec: Docker.Exec; stream: NodeJS.ReadableStream }
->();
-
-const statusMap: Record<string, NodeStatus> = {
-	create: "created",
-	start: "running",
-	started: "running",
-	stop: "exited",
-	stopped: "exited",
-	restart: "restarting",
-	restarting: "restarting",
-	kill: "dead",
-	killed: "dead",
-	remove: "removing",
-	die: "dead",
-	pause: "paused",
-	paused: "paused",
-	unpause: "running",
-	unpaused: "running"
-};
-
-// Actions that require syncing container state
-const SYNC_ACTIONS = new Set([
-	"start",
-	"stop",
-	"die",
-	"kill",
-	"restart",
-	"pause",
-	"unpause",
-	"health_status",
-	"exec_create",
-	"exec_start"
-]);
-
-type ExtractedNodeData = Pick<LabNode, "name" | "deviceId" | "ports"> &
-	Pick<LabSession, "labId" | "ownerId"> & {
-		id: string;
-		deviceKind: DeviceKind;
-		labSessionId: string;
-		labType: LabType;
-	};
-
-function extractNodeData(
-	inspect: Docker.ContainerInspectInfo
-): ExtractedNodeData | null {
-	const labels = inspect.Config?.Labels;
-	if (!labels) return null;
-
-	// Early return if required labels are missing
-	const nodeId = labels[LABELS.NODE_ID];
-	const nodeName = labels[LABELS.CLAB_NODE_NAME];
-	const nodeKind = labels[LABELS.CLAB_NODE_KIND];
-	const sessionId = labels[LABELS.SESSION_ID];
-	const ownerId = labels[LABELS.OWNER_ID];
-
-	if (!nodeId || !nodeName || !nodeKind || !sessionId || !ownerId) {
-		return null;
-	}
-
-	return {
-		id: nodeId,
-		name: nodeName,
-		deviceKind: nodeKind as DeviceKind,
-		labId: labels[LABELS.LAB_ID] || null,
-		labSessionId: sessionId,
-		labType: labels[LABELS.LAB_TYPE] as LabType,
-		ownerId: ownerId,
-		deviceId: labels[LABELS.DEVICE_ID] || null,
-		ports: extractPortMappings(inspect)
-	};
+function isKey<T extends object>(key: PropertyKey, obj: T): key is keyof T {
+	return key in obj;
 }
 
-async function ensureLabSession(
-	container: Docker.Container,
-	inspect: Docker.ContainerInspectInfo
+// --- Network Monitor ---
+
+async function startInterfaceMonitor(
+	container: Container,
+	nodeId: string,
+	networks: ContainerInspectInfo["NetworkSettings"]["Networks"]
 ) {
-	const data = extractNodeData(inspect);
-	if (!data) return null;
+	if (interfaceMonitors.has(nodeId)) return;
 
-	const { labSessionId } = data;
+	try {
+		logger.debug("Starting interface monitor for node %s", nodeId);
 
-	return await throttler.run(labSessionId, async () => {
-		logger.debug(
-			`Creating lab session for container ${container.id}. SessionId: ${data.labSessionId}, LabId: ${data.labId}`
-		);
+		const exec = await container.exec({
+			Cmd: ["ip", "monitor", "address", "link"],
+			AttachStdout: true,
+			AttachStderr: false,
+			Tty: false
+		});
 
-		const { rowCount } = await db
-			.insert(labSessions)
-			.values({
-				id: data.labSessionId,
-				type: data.labType,
-				labId: data.labId,
-				ownerId: data.ownerId
-			})
-			.onConflictDoNothing();
+		const stream = await exec.start({ Detach: false, Tty: false });
+		interfaceMonitors.set(nodeId, stream);
 
-		if (rowCount) {
-			await deleteCache("lab:pagination:*");
+		stream.on("data", (chunk: Buffer) => {
+			const text = chunk.toString();
+			if (!text.trim()) return;
+			if (text.includes("OCI runtime exec failed")) {
+				return stopInterfaceMonitor(nodeId);
+			}
+
+			interfaceDebouncer.run(nodeId, async () => {
+				await db
+					.update(labNodes)
+					.set({ interfaces: await extractInterfaces(container, networks) })
+					.where(eq(labNodes.id, nodeId));
+			});
+		});
+
+		stream.on("end", () => {
+			logger.debug("Interface monitor for node %s ended", nodeId);
+			return interfaceMonitors.delete(nodeId);
+		});
+		stream.on("error", () => stopInterfaceMonitor(nodeId));
+	} catch (err: any) {
+		if (err.statusCode !== 409) {
+			logger.error({ err, id: nodeId }, "Failed to start interface monitor");
 		}
-	});
+	}
 }
 
-function extractPortMappings(
-	inspect: Docker.ContainerInspectInfo
-): Record<number, number> {
+function stopInterfaceMonitor(nodeId: string) {
+	const monitor = interfaceMonitors.get(nodeId);
+
+	if (monitor) {
+		logger.debug("Stopping interface monitor for node %s", nodeId);
+		monitor.destroy();
+		interfaceMonitors.delete(nodeId);
+	}
+}
+
+// --- Event Handlers ---
+
+type ContainerEvent = Extract<DockerEvent, { Type: "container" }>;
+
+function extractPortMappings(inspect: ContainerInspectInfo) {
 	const portMappings: Record<number, number> = {};
-	const ports = inspect.NetworkSettings?.Ports;
 
-	if (!ports) return portMappings;
+	for (const [containerPortKey, bindings] of Object.entries(
+		inspect.NetworkSettings?.Ports
+	)) {
+		if (!bindings || bindings.length === 0) continue;
 
-	for (const [containerPort, bindings] of Object.entries(ports)) {
-		const match = containerPort.match(/(\d+)/);
-		if (!match) continue;
+		const containerPort = parseInt(containerPortKey);
+		const hostPort = parseInt(bindings[0].HostPort);
 
-		const containerPortNum = parseInt(match[1]);
-
-		if (
-			isNaN(containerPortNum) ||
-			!Array.isArray(bindings) ||
-			bindings.length === 0
-		)
-			continue;
-
-		const binding = bindings[0];
-		const hostPort = parseInt(binding.HostPort);
-
-		if (!isNaN(hostPort)) {
-			portMappings[containerPortNum] = hostPort;
+		if (!isNaN(containerPort) && !isNaN(hostPort)) {
+			portMappings[containerPort] = hostPort;
 		}
 	}
 
 	return portMappings;
 }
 
-async function extractInterfacesFromFilesystem(
-	container: Docker.Container,
-	inspect: Docker.ContainerInspectInfo
+async function extractInterfaces(
+	container: Container,
+	networks: ContainerInspectInfo["NetworkSettings"]["Networks"]
 ): Promise<Record<string, LabNodeInterfaceData>> {
+	const interfaces: Record<string, LabNodeInterfaceData> = {};
+
+	try {
+		const exec = await container.exec({
+			Cmd: ["ip", "-j", "addr", "show"],
+			AttachStdout: true,
+			AttachStderr: false,
+			Tty: true
+		});
+
+		const stream = await exec.start({ Detach: false, Tty: true });
+		let output = "";
+
+		await new Promise<void>((resolve, reject) => {
+			const timer = setTimeout(() => {
+				stream.destroy();
+				reject(new Error("Timeout extracting interfaces"));
+			}, 3000);
+
+			stream.on("data", (chunk) => (output += chunk.toString()));
+			stream.on("end", () => {
+				clearTimeout(timer);
+				resolve();
+			});
+			stream.on("error", (err) => {
+				clearTimeout(timer);
+				reject(err);
+			});
+		});
+
+		const cleanOutput = output.replace(/^[^{[]+/, "");
+
+		try {
+			const data = JSON.parse(cleanOutput);
+			for (const iface of data) {
+				if (iface.ifname === "lo") continue;
+
+				const ipv4 = iface.addr_info?.find((a: any) => a.family === "inet");
+
+				interfaces[iface.ifname] = {
+					state: iface.operstate === "UP" ? "UP" : "DOWN",
+					macAddress: iface.address,
+					ipAddress: ipv4?.local
+				};
+			}
+			return interfaces;
+		} catch (e) {
+			logger.debug(
+				{ err: e },
+				"JSON parsing failed, falling back to filesystem"
+			);
+			return await extractInterfacesFromFilesystem(container, networks);
+		}
+	} catch (err: any) {
+		if (![409, 404].includes(err.statusCode)) {
+			logger.warn({ err, id: container.id }, "Failed to extract interfaces");
+		}
+	}
+	return interfaces;
+}
+
+async function extractInterfacesFromFilesystem(
+	container: Container,
+	networks: ContainerInspectInfo["NetworkSettings"]["Networks"]
+) {
 	const interfaces: Record<string, LabNodeInterfaceData> = {};
 	const macLookup = new Map<string, string>();
 
-	// Build MAC -> IP lookup from Docker inspect
-	if (inspect.NetworkSettings?.Networks) {
-		for (const net of Object.values(inspect.NetworkSettings.Networks)) {
-			if (net?.MacAddress) {
-				macLookup.set(net.MacAddress.toLowerCase(), net.IPAddress);
-			}
+	for (const net of Object.values(networks)) {
+		if (net?.MacAddress) {
+			macLookup.set(net.MacAddress.toLowerCase(), net.IPAddress);
 		}
 	}
 
@@ -190,42 +194,38 @@ async function extractInterfacesFromFilesystem(
 				'for p in /sys/class/net/*; do echo "${p##*/}"; cat "$p/address"; cat "$p/operstate"; echo "__END__"; done'
 			],
 			AttachStdout: true,
-			AttachStderr: true,
+			AttachStderr: false,
 			Tty: false
 		});
 
 		const stream = await exec.start({ Detach: false, Tty: false });
+		let data = "";
 
-		let stdoutData = "";
-		const stdout = new (require("stream").Writable)({
-			write(chunk: any, _encoding: any, callback: any) {
-				stdoutData += chunk.toString();
-				callback();
-			}
-		});
-
-		container.modem.demuxStream(stream, stdout, process.stderr);
-
-		await new Promise((resolve, reject) => {
+		await new Promise<void>((resolve, reject) => {
+			stream.on("data", (c) => (data += c.toString()));
 			stream.on("end", resolve);
 			stream.on("error", reject);
-			setTimeout(() => reject(new Error("Timeout")), 5000);
+			setTimeout(() => {
+				stream.destroy();
+				reject(new Error("Timeout"));
+			}, 3000);
 		});
 
-		const parts = stdoutData.split("__END__");
+		const parts = data.split("__END__");
 		for (const part of parts) {
-			const lines = part
-				.trim()
+			const cleanPart = part.replace(/[\x00-\x1F\x7F]/g, "\n");
+			const lines = cleanPart
 				.split("\n")
 				.map((l) => l.trim())
 				.filter(Boolean);
+
 			if (lines.length < 3) continue;
 
 			const name = lines[0];
+			if (name === "lo") continue;
+
 			const mac = lines[1].toLowerCase();
 			const state = lines[2].toLowerCase();
-
-			if (name === "lo") continue;
 
 			interfaces[name] = {
 				state: state === "up" ? "UP" : "DOWN",
@@ -233,688 +233,238 @@ async function extractInterfacesFromFilesystem(
 				ipAddress: macLookup.get(mac)
 			};
 		}
-	} catch (err) {
-		logger.debug({ err }, "Failed to extract interfaces via filesystem");
-		throw err;
-	}
-
-	return interfaces;
-}
-
-async function extractInterfaces(
-	container: Docker.Container,
-	inspect?: Docker.ContainerInspectInfo
-): Promise<Record<string, LabNodeInterfaceData>> {
-	const interfaces: Record<string, LabNodeInterfaceData> = {};
-
-	try {
-		// Check if container is running first
-		if (!inspect) {
-			inspect = await container.inspect();
-		}
-
-		// Only extract interfaces if container is running
-		if (!inspect.State?.Running) {
-			logger.debug(
-				`Container ${
-					inspect.Name || container.id
-				} is not running, skipping interface extraction`
-			);
-			return interfaces;
-		}
-
-		// Use 'ip -j addr show' to get JSON output of all interfaces
-		const exec = await container.exec({
-			Cmd: ["ip", "-j", "addr", "show"],
-			AttachStdout: true,
-			AttachStderr: true,
-			Tty: false
-		});
-
-		const stream = await exec.start({ Detach: false, Tty: false });
-
-		// Collect output with proper demuxing using dockerode's demuxStream
-		let stdoutData = "";
-		let stderrData = "";
-
-		const stdout = new (require("stream").Writable)({
-			write(chunk: any, _encoding: any, callback: any) {
-				stdoutData += chunk.toString();
-				callback();
-			}
-		});
-
-		const stderr = new (require("stream").Writable)({
-			write(chunk: any, _encoding: any, callback: any) {
-				stderrData += chunk.toString();
-				callback();
-			}
-		});
-
-		// Demux the stream
-		container.modem.demuxStream(stream, stdout, stderr);
-
-		await new Promise((resolve, reject) => {
-			stream.on("end", resolve);
-			stream.on("error", reject);
-			setTimeout(() => reject(new Error("Timeout")), 5000);
-		});
-
-		// Parse JSON output from stdout
-		let interfaceList;
-		try {
-			interfaceList = JSON.parse(stdoutData);
-		} catch (err) {
-			return await extractInterfacesFromFilesystem(container, inspect);
-		}
-
-		for (const iface of interfaceList) {
-			// Skip loopback interface
-			if (iface.ifname === "lo") continue;
-
-			const ifaceData: LabNodeInterfaceData = {
-				state: iface.operstate === "UP" ? "UP" : "DOWN"
-			};
-
-			// Extract MAC address
-			if (iface.address) {
-				ifaceData.macAddress = iface.address;
-			}
-
-			// Extract IP addresses
-			if (iface.addr_info && Array.isArray(iface.addr_info)) {
-				const ipv4 = iface.addr_info.find(
-					(addr: any) => addr.family === "inet"
-				);
-
-				if (ipv4) {
-					ifaceData.ipAddress = ipv4.local;
-				}
-			}
-
-			interfaces[iface.ifname] = ifaceData;
-		}
 	} catch (err: any) {
-		// Only log error if it's not the expected "container not running" error
-		if (err.statusCode === 409 || err.reason === "container stopped/paused") {
-			logger.debug(
-				`Container not running, cannot extract interfaces: ${err.message}`
-			);
-		} else {
-			logger.debug({ err }, "Failed to extract interfaces from container");
+		if (err.statusCode !== 409) {
+			logger.debug({ err }, "Filesystem interface extraction failed");
 		}
 	}
 
 	return interfaces;
 }
 
-async function syncLabNode(
-	container: Docker.Container,
-	sessionId: string,
-	inspect: Docker.ContainerInspectInfo
-) {
-	const data = extractNodeData(inspect);
-	if (!data) return;
+async function onContainerCreate(event: ContainerEvent) {
+	logger.debug("Container created: %s", event.Actor.ID);
 
-	const health = (inspect.State?.Health?.Status as NodeHealth) || null;
-	const isRunning = inspect.State?.Running === true;
-	const status = (inspect.State?.Status as NodeStatus) || "created";
+	const { ID, Attributes } = event.Actor;
 
-	if (status === "removing") {
-		await handleContainerRemoval(data.id, sessionId);
-		return;
+	const {
+		[LABELS.SESSION_ID]: sessionId,
+		[LABELS.LAB_TYPE]: type,
+		[LABELS.LAB_ID]: labId,
+		[LABELS.OWNER_ID]: ownerId
+	} = Attributes;
+
+	if (!sessionIds.has(sessionId!)) {
+		await sessionThrottler.run(sessionId!, async () => {
+			logger.debug("Creating session: %s", sessionId);
+
+			await db.insert(labSessions).values({
+				id: sessionId!,
+				type: type as LabType,
+				labId,
+				ownerId: ownerId!
+			});
+			await deleteCache("lab:pagination:*");
+
+			sessionIds.add(sessionId!);
+		});
 	}
 
-	// Extract interfaces from the running container (pass inspect to avoid re-fetching)
-	const interfaces = await extractInterfaces(container, inspect);
+	const {
+		[LABELS.NODE_ID]: id,
+		[LABELS.CLAB_NODE_NAME]: name,
+		[LABELS.DEVICE_ID]: deviceId
+	} = Attributes;
 
-	logger.debug(
-		`Syncing lab node ${data.name}. SessionId: ${sessionId}, ContainerId: ${container.id}`
-	);
+	const container = docker.getContainer(ID);
+	const info = await container.inspect();
 
-	// Check if node exists - only select id
-	const existingNode = await db.query.labNodes.findFirst({
-		where: eq(labNodes.id, data.id),
-		columns: { id: true }
+	await db.insert(labNodes).values({
+		id,
+		name: name!,
+		health: info.State.Health?.Status as NodeHealth,
+		status: info.State.Status as NodeStatus,
+		labSessionId: sessionId!,
+		deviceId,
+		ports: extractPortMappings(info),
+		interfaces: await extractInterfaces(
+			container,
+			info.NetworkSettings.Networks
+		)
 	});
 
-	if (existingNode) {
-		await db
-			.update(labNodes)
-			.set({
-				health,
-				status,
-				ports: data.ports,
-				interfaces,
-				updatedAt: new Date()
-			})
-			.where(eq(labNodes.id, existingNode.id));
-	} else {
-		await db.insert(labNodes).values({
-			id: data.id,
-			name: data.name,
-			health,
-			status,
-			deviceId: data.deviceId,
-			labSessionId: sessionId,
-			ports: data.ports,
-			interfaces
-		});
-	}
+	await startInterfaceMonitor(container, id!, info.NetworkSettings.Networks);
+}
 
-	// Start interface monitor for running containers
-	if (isRunning) {
-		await startInterfaceMonitor(container, data.id, data.name);
+async function onContainerRemove(event: ContainerEvent) {
+	logger.debug("Container removed: %s", event.Actor.ID);
+
+	const { [LABELS.SESSION_ID]: sessionId, [LABELS.NODE_ID]: nodeId } =
+		event.Actor.Attributes;
+	stopInterfaceMonitor(nodeId!);
+
+	if (!sessionIds.has(sessionId!)) return;
+
+	await sessionThrottler.run(sessionId!, async () => {
+		logger.debug("Deleting session: %s", sessionId);
+
+		await db.delete(labSessions).where(eq(labSessions.id, sessionId!));
+		await deleteCache("lab:pagination:*", `lab:session:${sessionId}`);
+
+		sessionIds.delete(sessionId!);
+	});
+}
+
+async function onContainerHealthStatus(event: ContainerEvent) {
+	const { Action, Actor } = event;
+
+	const { [LABELS.NODE_ID]: nodeId, [LABELS.SESSION_ID]: sessionId } =
+		Actor.Attributes;
+	const health = Action.split(": ")[1] as NodeHealth;
+
+	logger.debug("Container health status: %s, %s", Actor.ID, health);
+
+	await db.update(labNodes).set({ health }).where(eq(labNodes.id, nodeId!));
+	await deleteCache(`lab:session:${sessionId}`);
+}
+
+const eventHandler = {
+	create: onContainerCreate,
+	destroy: onContainerRemove,
+	health_status: onContainerHealthStatus
+};
+
+// --- Event Listener ---
+
+async function handleDockerEvent(event: ContainerEvent) {
+	const key = event.Action.startsWith("health_status:")
+		? "health_status"
+		: event.Action;
+	if (!isKey(key, eventHandler)) return;
+
+	try {
+		await eventHandler[key](event);
+	} catch (error) {
+		logger.error({ err: error }, "Error handling docker event");
 	}
 }
 
-// Cleanup invalid nodes/sessions (no corresponding containers)
-async function cleanupInvalidData() {
-	logger.debug("Starting cleanup of invalid data");
-	const containers = await docker.listContainers({ all: true });
-	const activeNodeIds = new Set<string>();
-	const activeSessionIds = new Set<string>();
-	const activeNodeKeys = new Set<string>();
-
-	// Build sets of active nodes in one pass
-	for (const c of containers) {
-		const labels = c.Labels;
-		if (!labels) continue;
-
-		const nodeId = labels[LABELS.NODE_ID];
-		if (nodeId) {
-			activeNodeIds.add(nodeId);
-		}
-
-		const sessionId = labels[LABELS.SESSION_ID];
-		const name = labels[LABELS.CLAB_NODE_NAME];
-		if (sessionId && name) {
-			activeSessionIds.add(sessionId);
-			activeNodeKeys.add(`${sessionId}:${name}`);
-		}
-	}
-
-	// Find all lab nodes to check against active containers
-	const existingNodes = await db
-		.select({
-			id: labNodes.id,
-			name: labNodes.name,
-			labSessionId: labNodes.labSessionId
-		})
-		.from(labNodes);
-
-	// Batch updates for stale nodes
-	const nodesToDelete: string[] = [];
-
-	for (const node of existingNodes) {
-		const key = `${node.labSessionId}:${node.name}`;
-		if (!activeNodeIds.has(node.id) && !activeNodeKeys.has(key)) {
-			logger.info(
-				`Found stale node (no container), deleting. NodeId: ${node.id}, NodeName: ${node.name}`
-			);
-
-			nodesToDelete.push(node.id);
-		}
-	}
-
-	// Batch delete nodes
-	if (nodesToDelete.length > 0) {
-		await db.delete(labNodes).where(inArray(labNodes.id, nodesToDelete));
-
-		logger.info(`Deleted ${nodesToDelete.length} stale nodes`);
-	}
-
-	// Batch delete sessions
-	const { rowCount } = await db
-		.delete(labSessions)
-		.where(notInArray(labSessions.id, [...activeSessionIds]));
-
-	logger.info(`Removed ${rowCount} empty sessions`);
-}
+// --- Initialization ---
 
 async function initializeData() {
-	logger.info("Dehydrating existing containers...");
-	const containers = await docker.listContainers({ all: true });
+	logger.info("Initializing Docker Monitor...");
 
-	// Filter vlab containers first to avoid unnecessary inspections
-	const vlabContainers = containers.filter((c) => c.Labels?.[LABELS.LAB_TYPE]);
+	const containers = await docker.listContainers();
+	const sessionsToCreate: InferInsertModel<typeof labSessions>[] = [];
+	const nodesToCreate: InferInsertModel<typeof labNodes>[] = [];
+	const nodeIds: string[] = [];
 
-	logger.info("Found %d nodes", vlabContainers.length);
+	for (const container of containers) {
+		if (!("Health" in container)) continue;
 
-	const sessionsMap = new Map<string, typeof labSessions.$inferInsert>();
-	const nodes: (typeof labNodes.$inferInsert)[] = [];
+		const health = container.Health as ContainerInspectInfo["State"]["Health"];
+		const healthStatus = health?.Status === "none" ? null : health?.Status;
 
-	// Process containers in parallel with concurrency limit
-	const BATCH_SIZE = 10;
-	for (let i = 0; i < vlabContainers.length; i += BATCH_SIZE) {
-		const batch = vlabContainers.slice(i, i + BATCH_SIZE);
-		await Promise.allSettled(
-			batch.map(async (container) => {
-				try {
-					const cont = docker.getContainer(container.Id);
-					const inspect = await cont.inspect();
+		const {
+			[LABELS.NODE_ID]: nodeId,
+			[LABELS.CLAB_NODE_NAME]: name,
+			[LABELS.DEVICE_ID]: deviceId,
+			[LABELS.SESSION_ID]: sessionId,
+			[LABELS.LAB_TYPE]: type,
+			[LABELS.LAB_ID]: labId,
+			[LABELS.OWNER_ID]: ownerId
+		} = container.Labels;
 
-					const data = extractNodeData(inspect);
-					if (!data) return;
+		const ports: Record<number, number> = {};
 
-					// Prepare session data
-					if (!sessionsMap.has(data.labSessionId)) {
-						sessionsMap.set(data.labSessionId, {
-							id: data.labSessionId,
-							type: data.labType,
-							labId: data.labId,
-							ownerId: data.ownerId
-						});
-					}
+		for (const { PublicPort, PrivatePort } of container.Ports) {
+			if (!PublicPort) continue;
 
-					// Extract interfaces from the running container
-					const interfaces = await extractInterfaces(cont);
+			ports[PrivatePort] = PublicPort;
+		}
 
-					// Prepare node data
-					const health = (inspect.State?.Health?.Status as NodeHealth) || null;
-					nodes.push({
-						id: data.id,
-						name: data.name,
-						health,
-						status: statusMap["start"] || "created",
-						deviceId: data.deviceId,
-						labSessionId: data.labSessionId,
-						ports: data.ports,
-						interfaces
-					});
-				} catch (err) {
-					logger.error(
-						{ err, containerId: container.Id },
-						`Failed to sync container ${container.Id}`
-					);
-				}
-			})
-		);
-	}
+		nodeIds.push(nodeId);
+		nodesToCreate.push({
+			id: nodeId,
+			name: name!,
+			health: healthStatus as NodeHealth,
+			status: container.State as NodeStatus,
+			labSessionId: sessionId!,
+			deviceId,
+			ports,
+			interfaces: await extractInterfaces(
+				docker.getContainer(container.Id),
+				container.NetworkSettings.Networks
+			)
+		});
 
-	if (sessionsMap.size > 0) {
-		await db
-			.insert(labSessions)
-			.values(Array.from(sessionsMap.values()))
-			.onConflictDoNothing();
-	}
+		if (!sessionIds.has(sessionId)) {
+			sessionIds.add(sessionId);
 
-	if (nodes.length > 0) {
-		await db
-			.insert(labNodes)
-			.values(nodes)
-			.onConflictDoUpdate({
-				target: labNodes.id,
-				set: {
-					health: sql`excluded.health`,
-					status: sql`excluded.status`,
-					ports: sql`excluded.ports`,
-					interfaces: sql`excluded.interfaces`,
-					updatedAt: new Date()
-				}
+			sessionsToCreate.push({
+				id: sessionId,
+				type: type as LabType,
+				labId,
+				ownerId
 			});
-	}
-
-	await cleanupInvalidData();
-	logger.info("Initialization complete");
-}
-
-// Shared function to sync container state - used by both container and network events
-async function syncContainerState(containerId: string, action?: string) {
-	const container = docker.getContainer(containerId);
-
-	try {
-		const inspect = await container.inspect();
-
-		// Verify it's a vlab container
-		if (!inspect.Config?.Labels?.[LABELS.LAB_TYPE]) return;
-
-		const data = extractNodeData(inspect);
-		if (!data) return;
-
-		if (action === "start" || action === "connect") {
-			await ensureLabSession(container, inspect);
-		} else {
-			await throttler.wait(data.labSessionId);
-		}
-
-		await syncLabNode(container, data.labSessionId, inspect);
-	} catch (err: any) {
-		if (err.statusCode !== 404) {
-			logger.error({ err, containerId }, "Error syncing container state");
-		}
-	}
-}
-
-async function handleContainerRemoval(nodeId: string, labSessionId: string) {
-	logger.info(`Node removed, cleaning up. NodeId: ${nodeId}`);
-
-	// Find container ID for this node to stop monitor
-	for (const [containerId] of interfaceMonitors.entries()) {
-		// Check if this monitor belongs to the removed node
-		const container = docker.getContainer(containerId);
-		try {
-			const inspect = await container.inspect();
-			const data = extractNodeData(inspect);
-			if (data?.id === nodeId) {
-				stopInterfaceMonitor(containerId);
-				break;
-			}
-		} catch (err) {
-			// Container already removed, clean up monitor
-			stopInterfaceMonitor(containerId);
 		}
 	}
 
-	// Delete node
-	await db.delete(labNodes).where(eq(labNodes.id, nodeId));
-	await throttler.run(labSessionId, async () => {
-		await db.delete(labSessions).where(eq(labSessions.id, labSessionId));
-		await deleteCache("lab:pagination:*");
-	});
-}
-
-async function handleContainerEvent(event: any) {
-	const attrs = event.Actor?.Attributes;
-	const { Action: action, id: containerId } = event;
-
-	// Handle container removal separately
-	if (action === "remove") {
-		const nodeId = attrs?.[LABELS.NODE_ID];
-		const labSessionId = attrs?.[LABELS.SESSION_ID];
-
-		if (nodeId && labSessionId) {
-			await handleContainerRemoval(nodeId, labSessionId);
-		}
-		return;
-	}
-
-	if (!attrs?.[LABELS.LAB_TYPE]) return;
-
-	// Stop interface monitor for stopped/paused containers
-	if (
-		action === "stop" ||
-		action === "die" ||
-		action === "kill" ||
-		action === "pause"
-	) {
-		stopInterfaceMonitor(containerId);
-	}
-
-	// Handle exec events that might change network configuration
-	if (action === "exec_start") {
-		const execCmd = attrs.execID;
-		// Check if this exec might be a network configuration command
-		// Common commands: ip, ifconfig, dhclient, etc.
-		if (execCmd) {
-			// Re-sync interfaces after a brief delay to allow command to complete
-			setTimeout(async () => {
-				await syncContainerInterfaces(containerId);
-			}, 1000);
-		}
-		return;
-	}
-
-	// Handle state sync actions
-	if (SYNC_ACTIONS.has(action)) {
-		await syncContainerState(containerId, action);
-	} else if (action.startsWith("health_status")) {
-		await handleHealthUpdate(attrs[LABELS.NODE_ID], action);
-	}
-}
-async function handleHealthUpdate(nodeId: string, action: string) {
-	const health = action.substring(15) as NodeHealth;
-
-	logger.info(`Updating health for node ${nodeId} to ${health}`);
-	await db.update(labNodes).set({ health }).where(eq(labNodes.id, nodeId));
-}
-
-// Sync only interfaces for a specific container
-async function syncContainerInterfaces(containerId: string) {
-	const container = docker.getContainer(containerId);
-
-	try {
-		const inspect = await container.inspect();
-
-		// Verify it's a vlab container
-		if (!inspect.Config?.Labels?.[LABELS.LAB_TYPE]) return;
-
-		const data = extractNodeData(inspect);
-		if (!data) return;
-
-		// Extract updated interfaces
-		const interfaces = await extractInterfaces(container);
-
-		logger.debug(
-			`Updating interfaces for node ${data.name}. NodeId: ${data.id}`
-		);
-
-		// Update only interfaces field
+	if (sessionsToCreate.length) {
+		await db.insert(labSessions).values(sessionsToCreate).onConflictDoNothing();
 		await db
-			.update(labNodes)
-			.set({
-				interfaces,
-				updatedAt: new Date()
-			})
-			.where(eq(labNodes.id, data.id));
-	} catch (err: any) {
-		if (err.statusCode !== 404) {
-			logger.error({ err, containerId }, "Error syncing container interfaces");
-		}
+			.delete(labSessions)
+			.where(notInArray(labSessions.id, Array.from(sessionIds.values())));
+	} else {
+		await db.delete(labSessions);
 	}
-}
 
-// Start monitoring interface changes for a container using 'ip monitor'
-async function startInterfaceMonitor(
-	container: Docker.Container,
-	nodeId: string,
-	nodeName: string
-) {
-	const containerId = container.id;
-
-	// Stop existing monitor if any
-	stopInterfaceMonitor(containerId);
-
-	try {
-		// Verify container is running before starting monitor
-		const inspect = await container.inspect();
-		if (!inspect.State?.Running) {
-			logger.debug(
-				`Container ${nodeName} is not running, skipping interface monitor`
-			);
-			return;
-		}
-
-		// Run 'ip monitor address link' to watch for interface changes
-		const exec = await container.exec({
-			Cmd: ["ip", "monitor", "address", "link"],
-			AttachStdout: true,
-			AttachStderr: true,
-			Tty: false
-		});
-
-		const stream = await exec.start({ Detach: false, Tty: false });
-
-		// Store the monitor
-		interfaceMonitors.set(containerId, { exec, stream });
-
-		logger.info(`Started interface monitor for node ${nodeName} (${nodeId})`);
-
-		// Create writable stream to collect stdout
-		let dataBuffer = "";
-		const stdout = new (require("stream").Writable)({
-			write(chunk: any, _encoding: any, callback: any) {
-				dataBuffer += chunk.toString();
-
-				// Process complete lines
-				const lines = dataBuffer.split("\n");
-				dataBuffer = lines.pop() || ""; // Keep incomplete line
-
-				for (const line of lines) {
-					if (!line.trim()) continue;
-
-					if (
-						line.includes("OCI runtime exec failed") ||
-						line.includes("executable file not found")
-					) {
-						logger.warn(
-							`Interface monitor failed for ${nodeName} (missing ip command?): ${line}`
-						);
-						stopInterfaceMonitor(containerId);
-						return;
-					}
-
-					logger.debug(
-						`Interface change detected in ${nodeName}: ${line.substring(
-							0,
-							100
-						)}`
-					);
-
-					// Sync interfaces after a change is detected
-					syncContainerInterfaces(containerId).catch((err) => {
-						logger.error(
-							{ err },
-							"Error syncing interfaces after monitor event"
-						);
-					});
-					break; // Only sync once per batch of changes
-				}
-
-				callback();
-			}
-		});
-
-		const stderr = new (require("stream").Writable)({
-			write(chunk: any, _encoding: any, callback: any) {
-				logger.debug(
-					`Interface monitor stderr for ${nodeName}: ${chunk.toString()}`
-				);
-				callback();
-			}
-		});
-
-		// Demux the stream
-		container.modem.demuxStream(stream, stdout, stderr);
-
-		stream.on("error", (err) => {
-			logger.error(
-				{ err, nodeId, nodeName },
-				`Interface monitor stream error for ${nodeName}`
-			);
-			interfaceMonitors.delete(containerId);
-		});
-
-		stream.on("end", () => {
-			logger.debug(`Interface monitor ended for ${nodeName}`);
-			interfaceMonitors.delete(containerId);
-		});
-	} catch (err: any) {
-		// Don't log error if container is not running
-		if (err.statusCode === 409 || err.reason === "container stopped/paused") {
-			logger.debug(
-				`Cannot start interface monitor for ${nodeName}: container not running`
-			);
-		} else {
-			logger.error(
-				{ err, nodeId, nodeName },
-				`Failed to start interface monitor for ${nodeName}`
-			);
-		}
+	if (nodesToCreate.length) {
+		await db.insert(labNodes).values(nodesToCreate).onConflictDoNothing();
 	}
-}
 
-// Stop interface monitor for a container
-function stopInterfaceMonitor(containerId: string) {
-	const monitor = interfaceMonitors.get(containerId);
-	if (monitor) {
-		try {
-			if (
-				monitor.stream &&
-				typeof (monitor.stream as any).destroy === "function"
-			) {
-				(monitor.stream as any).destroy();
-			}
-		} catch (err) {
-			logger.debug(
-				{ err },
-				`Error stopping interface monitor for ${containerId}`
-			);
-		}
-		interfaceMonitors.delete(containerId);
+	for (const container of containers) {
+		await startInterfaceMonitor(
+			docker.getContainer(container.Id),
+			container.Labels[LABELS.NODE_ID],
+			container.NetworkSettings.Networks
+		);
 	}
+
+	logger.info(
+		"Initialization complete (%d sessions, %d nodes)",
+		sessionIds.size,
+		nodeIds.length
+	);
 }
 
-async function handleNetworkEvent(event: any) {
-	const { Action: action } = event;
-
-	// Only handle connect/disconnect events
-	if (action !== "connect" && action !== "disconnect") return;
-
-	const containerId = event.Actor?.Attributes?.container;
-	if (!containerId) return;
-
-	await syncContainerState(containerId, action);
-}
-
-async function startEventListener() {
-	const filters = {
-		type: ["container", "network"] as ("container" | "network")[],
-		event: [
-			...Array.from(SYNC_ACTIONS),
-			"remove",
-			"connect",
-			"disconnect",
-			"exec_start"
-		]
-	};
-
-	docker.getEvents({ filters }, (err, stream) => {
-		if (err || !stream) {
-			logger.error({ err }, "Error getting Docker events");
-			return;
-		}
-
-		stream.on("data", async (chunk: Buffer) => {
-			const lines = chunk.toString().split("\n");
-
-			for (const line of lines) {
-				if (!line.trim()) continue;
-
-				try {
-					const event = JSON.parse(line);
-					switch (event.Type) {
-						case "container":
-							await handleContainerEvent(event);
-							break;
-						case "network":
-							await handleNetworkEvent(event);
-							break;
-					}
-				} catch (err) {
-					logger.error({ err, line }, "Error processing event");
-				}
-			}
-		});
-
-		stream.on("error", (err) => {
-			logger.error({ err }, "Docker events stream error");
-		});
-
-		stream.on("end", () => {
-			logger.warn("Docker events stream ended, reconnecting...");
-			setTimeout(startEventListener, 5000);
-		});
-	});
-}
-
-let initialized = false;
-
-// Startup
 export async function startDockerMonitor() {
 	if (initialized) return;
 	initialized = true;
 
 	await initializeData();
-	await startEventListener();
+
+	const stream = await docker.getEvents({
+		filters: {
+			type: ["container"],
+			event: ["create", "destroy", "health_status"]
+		}
+	});
+	stream.on("data", (chunk: string) => {
+		try {
+			const str = chunk.toString();
+			const lines = str.split("\n").filter((l) => l.trim());
+			for (const line of lines) {
+				handleDockerEvent(JSON.parse(line));
+			}
+		} catch (err) {
+			logger.error({ err }, "Error parsing docker event");
+		}
+	});
+
+	stream.on("error", (err) => {
+		initialized = false;
+		logger.error({ err }, "Docker event stream failed, restarting...");
+		setTimeout(startDockerMonitor, 5000);
+	});
 }

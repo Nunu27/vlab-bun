@@ -94,6 +94,17 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 									cpu: data.resources.cpu,
 									memory: data.resources.memory,
 									ports: [`0:${data.connection.data.port}`],
+									stages: {
+										exit: {
+											exec: [
+												{
+													command: `rm -rf /home/admin/.clab/${labName}`,
+													phase: "on-exit",
+													target: "host"
+												}
+											]
+										}
+									},
 									labels: {
 										[LABELS.NODE_ID]: nodeId
 									}

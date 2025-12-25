@@ -29,16 +29,13 @@ interface GuacamoleSessionData {
 }
 
 const sessionRegistry = {
-	async get(sessionId: string): Promise<GuacamoleSessionData | null> {
+	async get(sessionId: string) {
 		return redis.get<GuacamoleSessionData>(`session:guac:${sessionId}`);
 	},
-	async set(
-		sessionId: string,
-		sessionData: GuacamoleSessionData
-	): Promise<void> {
+	async set(sessionId: string, sessionData: GuacamoleSessionData) {
 		await redis.set(`session:guac:${sessionId}`, sessionData, 86400);
 	},
-	async delete(sessionId: string): Promise<void> {
+	async delete(sessionId: string) {
 		await redis.del(`session:guac:${sessionId}`);
 	}
 };

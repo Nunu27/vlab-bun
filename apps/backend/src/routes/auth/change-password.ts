@@ -13,11 +13,15 @@ export default createRouter().post(
 			where: (user, { eq }) => eq(user.id, userId),
 			columns: { passwordHash: true }
 		});
-
 		if (!user) return status(404, failure({ message: "User not found" }));
+
+		if (!body.oldPassword && user.passwordHash) {
+			return status(400, failure({ message: "Old password is required" }));
+		}
+
 		if (
 			!user.passwordHash ||
-			(await Bun.password.verify(body.oldPassword, user.passwordHash))
+			(await Bun.password.verify(body.oldPassword!, user.passwordHash))
 		) {
 			if (body.newPassword !== body.confirmPassword) {
 				return status(400, failure({ message: "Passwords do not match" }));

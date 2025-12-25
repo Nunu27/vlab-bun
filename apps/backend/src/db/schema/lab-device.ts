@@ -5,7 +5,8 @@ import { base } from "./base";
 
 export const deviceKindEnum = pgEnum("device_kind", deviceKindValues);
 export type DeviceInterface = {
-	name: string;
+	displayCode: string;
+	internalCode: string;
 	configurable: boolean;
 };
 export type DeviceEnv = {

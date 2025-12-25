@@ -19,6 +19,9 @@ export default class Throttler {
 	public async run(id: string, promise: () => MaybePromise<void>) {
 		const entry = this.map.get(id);
 		const currentPromise = entry?.promise ?? promise();
+
+		if (entry) clearTimeout(entry.timeout);
+
 		this.map.set(id, {
 			timeout: setTimeout(() => {
 				this.map.delete(id);

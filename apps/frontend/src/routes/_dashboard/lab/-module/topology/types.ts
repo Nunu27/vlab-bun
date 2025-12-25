@@ -13,7 +13,8 @@ export interface Position {
 
 export interface LabDeviceInterface {
   id: string;
-  name: string;
+  displayCode: string;
+  internalCode: string;
   connected: boolean;
   configurable?: boolean;
 }

@@ -54,7 +54,7 @@ export default function InterfaceModal({
                   }
                 />
                 <span className="dark:text-foreground font-medium">
-                  {iface.name}
+                  {iface.displayCode}
                 </span>
               </div>
               {iface.connected && (

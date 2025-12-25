@@ -36,18 +36,22 @@ import { withForm, type DeviceFormData } from '../hooks/use-device-form';
 
 interface SortableInterfaceRowProps {
   id: string;
-  name: string;
+  displayCode: string;
+  internalCode: string;
   configurable: boolean;
-  onNameChange: (value: string) => void;
+  onDisplayCodeChange: (value: string) => void;
+  onInternalCodeChange: (value: string) => void;
   onConfigurableChange: (value: boolean) => void;
   onDelete: () => void;
 }
 
 function SortableInterfaceRow({
   id,
-  name,
+  displayCode,
+  internalCode,
   configurable,
-  onNameChange,
+  onDisplayCodeChange,
+  onInternalCodeChange,
   onConfigurableChange,
   onDelete,
 }: SortableInterfaceRowProps) {
@@ -76,9 +80,17 @@ function SortableInterfaceRow({
       </TableCell>
       <TableCell>
         <Input
-          placeholder="e.g., eth1"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
+          placeholder="Display Code"
+          value={displayCode}
+          onChange={(e) => onDisplayCodeChange(e.target.value)}
+          className="h-9"
+        />
+      </TableCell>
+      <TableCell>
+        <Input
+          placeholder="Internal Code"
+          value={internalCode}
+          onChange={(e) => onInternalCodeChange(e.target.value)}
           className="h-9"
         />
       </TableCell>
@@ -152,7 +164,8 @@ export const DeviceNetworkInterfacesForm = withForm({
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12"></TableHead>
-                          <TableHead>Interface Name</TableHead>
+                          <TableHead>Display Code</TableHead>
+                          <TableHead>Internal Code</TableHead>
                           <TableHead className="w-24 text-center">
                             Configurable
                           </TableHead>
@@ -170,13 +183,22 @@ export const DeviceNetworkInterfacesForm = withForm({
                             <SortableInterfaceRow
                               key={`interface-${index}`}
                               id={`interface-${index}`}
-                              name={iface.name}
+                              displayCode={iface.displayCode}
+                              internalCode={iface.internalCode}
                               configurable={iface.configurable}
-                              onNameChange={(value) => {
+                              onDisplayCodeChange={(value) => {
                                 const updated = [...field.state.value];
                                 updated[index] = {
                                   ...updated[index],
-                                  name: value,
+                                  displayCode: value,
+                                };
+                                field.handleChange(updated);
+                              }}
+                              onInternalCodeChange={(value) => {
+                                const updated = [...field.state.value];
+                                updated[index] = {
+                                  ...updated[index],
+                                  internalCode: value,
                                 };
                                 field.handleChange(updated);
                               }}
@@ -214,7 +236,7 @@ export const DeviceNetworkInterfacesForm = withForm({
                 onClick={() => {
                   field.handleChange([
                     ...field.state.value,
-                    { name: '', configurable: true },
+                    { displayCode: '', internalCode: '', configurable: true },
                   ]);
                 }}
               >

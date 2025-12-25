@@ -23,7 +23,8 @@ export const CreateDeviceRequest = t.Object({
 	}),
 	interfaces: t.Array(
 		t.Object({
-			name: t.String({ minLength: 1 }),
+			displayCode: t.String({ minLength: 1 }),
+			internalCode: t.String({ minLength: 1 }),
 			configurable: t.Boolean()
 		})
 	)
@@ -50,7 +51,8 @@ export const UpdateDeviceRequest = t.Object({
 	}),
 	interfaces: t.Array(
 		t.Object({
-			name: t.String({ minLength: 1 }),
+			displayCode: t.String({ minLength: 1 }),
+			internalCode: t.String({ minLength: 1 }),
 			configurable: t.Boolean()
 		})
 	)
@@ -75,7 +77,8 @@ export const DeviceTestRequest = t.Object({
 	}),
 	interfaces: t.Array(
 		t.Object({
-			name: t.String({ minLength: 1 }),
+			displayCode: t.String({ minLength: 1 }),
+			internalCode: t.String({ minLength: 1 }),
 			configurable: t.Boolean()
 		})
 	)

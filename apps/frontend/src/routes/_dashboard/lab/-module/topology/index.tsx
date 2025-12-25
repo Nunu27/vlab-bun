@@ -140,7 +140,7 @@ export default function TopologyEditor() {
 
     return deviceDef.interfaces.map((iface, index) => ({
       ...iface,
-      id: iface.name,
+      id: iface.displayCode,
       connected: node.interfaces[index] || false,
     }));
   }, [nodes, modalNodeId, deviceMap]);
@@ -515,7 +515,7 @@ export default function TopologyEditor() {
           if (!deviceDef) return n;
 
           const ifaceIndex = deviceDef.interfaces.findIndex(
-            (i) => i.name === ifaceId,
+            (i) => i.displayCode === ifaceId,
           );
           if (ifaceIndex === -1) return n;
 

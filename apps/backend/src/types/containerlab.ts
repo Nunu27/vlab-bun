@@ -203,6 +203,39 @@ export type ExtendedLink =
  */
 export type Link = BriefLink | ExtendedLink;
 
+export interface NodeDNS {
+	/** List of DNS servers */
+	servers: string[];
+	/** List of DNS search domains */
+	search?: string[];
+	/** List of DNS options */
+	options?: string[];
+}
+
+export interface NodeStageWaitForConfig {
+	node: string;
+	stage: string;
+}
+
+export interface NodeStageExecConfig {
+	command: string;
+	target?: "container" | "host";
+	phase?: "on-enter" | "on-exit";
+}
+
+export interface NodeStageConfig {
+	"wait-for"?: NodeStageWaitForConfig[];
+	exec?: NodeStageExecConfig[];
+}
+
+export interface NodeStage {
+	create?: NodeStageConfig;
+	"create-links"?: NodeStageConfig;
+	configure?: NodeStageConfig;
+	healthy?: NodeStageConfig;
+	exit?: NodeStageConfig;
+}
+
 /**
  * Node configuration
  */
@@ -260,7 +293,7 @@ export interface Node {
 	/** Extra hosts entries */
 	extraHosts?: string[];
 	/** DNS servers */
-	dns?: string[];
+	dns?: NodeDNS;
 	/** Management IPv4 address */
 	mgmtIpv4?: string;
 	/** Management IPv6 address */
@@ -274,7 +307,7 @@ export interface Node {
 	/** Wait-for setting */
 	waitFor?: string;
 	/** Staged configuration */
-	stagedConfig?: string;
+	stages?: NodeStage;
 	/** Enforced startup config */
 	enforceStartupConfig?: boolean;
 	/** Suppress startup config */
