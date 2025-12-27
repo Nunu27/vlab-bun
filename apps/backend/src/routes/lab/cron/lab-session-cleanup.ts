@@ -54,7 +54,7 @@ export default cron({
 
 		logger.info("Cleaned up %d lab sessions", deletedSessions);
 	},
-	pattern: Patterns.everyMinutes(15),
+	pattern: Patterns.everyMinutes(30),
 	catch: (error) => {
 		logger.error({ error }, "lab session cleanup task failed");
 	}

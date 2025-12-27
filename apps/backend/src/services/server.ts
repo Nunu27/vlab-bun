@@ -15,7 +15,7 @@ import type { WebSocketData } from "@socket.io/bun-engine";
 import { file, type Server } from "bun";
 import cluster from "cluster";
 import { Elysia } from "elysia";
-import { startDockerMonitor } from "./docker-monitor";
+import { startSync } from "./clab-sync";
 import { redisClient } from "./redis";
 import { engine, io } from "./ws";
 
@@ -66,7 +66,7 @@ export async function startServer() {
 		await syncDBListeners();
 		await clearCache();
 
-		await startDockerMonitor();
+		startSync();
 
 		initGuacamole();
 	}

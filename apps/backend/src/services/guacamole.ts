@@ -1,5 +1,4 @@
 import env from "@backend/env";
-import logger from "@backend/services/logger";
 import redis from "@backend/services/redis";
 import type {
 	RDPParameters,
@@ -9,6 +8,9 @@ import type {
 } from "@backend/types/guacamole";
 import GuacamoleLite from "guacamole-lite";
 import type { Server } from "node:http";
+import { childLogger } from "./logger";
+
+const logger = childLogger("guacamole");
 
 interface GuacamoleSessionData {
 	guacdHost: string;
@@ -105,10 +107,10 @@ const clientOptions = {
 	log: {
 		level: "VERBOSE" as const,
 		stdLog: (...args: unknown[]) => {
-			logger.info(`[Guacamole] ${args.join(" ")}`);
+			logger.debug(`${args.join(" ")}`);
 		},
 		errorLog: (...args: unknown[]) => {
-			logger.error(`[Guacamole] ${args.join(" ")}`);
+			logger.error(`${args.join(" ")}`);
 		}
 	}
 };
@@ -134,7 +136,7 @@ let guacServer: GuacamoleLite | null = null;
 
 export function initGuacamole(server?: Server) {
 	if (guacServer) {
-		logger.warn("[Guacamole] server already initialized");
+		logger.warn("server already initialized");
 		return guacServer;
 	}
 
@@ -149,41 +151,41 @@ export function initGuacamole(server?: Server) {
 
 	// Event handlers
 	guacServer.on("open", (clientConnection: any) => {
-		logger.info(
-			`[Guacamole] connection opened: ${clientConnection.connectionId} (${clientConnection.guacamoleConnectionId})`
+		logger.debug(
+			`connection opened: ${clientConnection.connectionId} (${clientConnection.guacamoleConnectionId})`
 		);
 	});
 
 	guacServer.on("close", (clientConnection: any, error?: Error) => {
 		const msg = error
-			? `[Guacamole] connection closed: ${clientConnection.connectionId} - ${error.message}`
-			: `[Guacamole] connection closed: ${clientConnection.connectionId}`;
-		logger.info(msg);
+			? `connection closed: ${clientConnection.connectionId} - ${error.message}`
+			: `connection closed: ${clientConnection.connectionId}`;
+		logger.debug(msg);
 	});
 
 	guacServer.on("error", (clientConnection: any, error: Error) => {
 		logger.error(
 			{ error },
-			`[Guacamole] connection error: ${clientConnection.connectionId}`
+			`connection error: ${clientConnection.connectionId}`
 		);
 	});
 
 	const port = server ? "attached to HTTP server" : env.DISPLAY_PORT;
-	logger.info(`[Guacamole] server initialized on ${port}`);
+	logger.info(`server initialized on ${port}`);
 
 	return guacServer;
 }
 
 export function getGuacamoleServer() {
 	if (!guacServer) {
-		throw new Error("[Guacamole] server not initialized");
+		throw new Error("server not initialized");
 	}
 	return guacServer;
 }
 
 export async function shutdownGuacamole() {
 	if (guacServer) {
-		logger.info("Shutting down Guacamole server...");
+		logger.debug("Shutting down Guacamole server...");
 		guacServer = null;
 	}
 }

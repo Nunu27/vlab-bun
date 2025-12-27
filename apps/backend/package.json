@@ -20,6 +20,7 @@
     "@msgpack/msgpack": "^3.1.2",
     "@socket.io/bun-engine": "^0.1.0",
     "@socket.io/redis-streams-adapter": "^0.2.3",
+    "@vlab/monitor": "workspace:*",
     "@vlab/shared": "workspace:*",
     "croner": "6.0.7",
     "dockerode": "^4.0.9",

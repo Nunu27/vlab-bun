@@ -64,6 +64,13 @@
       "when": 1766570730512,
       "tag": "0008_alter-lab-session-remove-ports",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1766812202371,
+      "tag": "0009_alter-lab-node-remove-status",
+      "breakpoints": true
     }
   ]
 }

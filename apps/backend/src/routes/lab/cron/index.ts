@@ -1,4 +1,4 @@
 import Elysia from "elysia";
-import deviceTestSessionCleanup from "./lab-session-cleanup";
+import labSessionCleanup from "./lab-session-cleanup";
 
-export default new Elysia().use(deviceTestSessionCleanup);
+export default new Elysia().use(labSessionCleanup);

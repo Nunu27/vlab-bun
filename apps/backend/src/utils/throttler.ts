@@ -7,12 +7,24 @@ export default class Throttler {
 		string,
 		{ timeout: NodeJS.Timeout; promise: MaybePromise<void> }
 	>();
+	private callbacks = new Map<string, () => MaybePromise<void>>();
 
-	public async wait(id: string) {
+	public async wait(
+		id: string,
+		callback?: { id: string; execute: () => MaybePromise<void> }
+	) {
 		const entry = this.map.get(id);
+		const callbackId = `${id}:${callback?.id}`;
 
-		if (entry) {
-			return await entry.promise;
+		if (callback) {
+			this.callbacks.set(callbackId, callback.execute);
+		}
+
+		if (entry) await entry.promise;
+
+		const cb = this.callbacks.get(callbackId);
+		if (cb && cb === callback?.execute) {
+			await cb();
 		}
 	}
 

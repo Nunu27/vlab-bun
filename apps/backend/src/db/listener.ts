@@ -1,5 +1,5 @@
 import env from "@backend/env";
-import logger from "@backend/services/logger";
+import { childLogger } from "@backend/services/logger";
 import type {
 	BulkListenerCallback,
 	ListenerCallback,
@@ -13,6 +13,7 @@ import { PgTable, getTableConfig } from "drizzle-orm/pg-core";
 import { EventEmitter } from "events";
 import db from ".";
 
+const logger = childLogger("db-listener");
 const client = await db.$client.connect();
 type DB = typeof db;
 type TFullSchema = DB["_"]["fullSchema"];

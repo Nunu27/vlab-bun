@@ -1,10 +1,10 @@
-import { LABELS } from "@backend/constants";
 import db from "@backend/db";
 import { createDBEventEmitter } from "@backend/db/listener";
 import { devices, labSessions, labs } from "@backend/db/schema";
 import clab, { clabWrapper } from "@backend/services/clab";
 import type { Link, Node } from "@backend/types/containerlab";
 import { toKebabCase } from "@backend/utils/string";
+import { LABELS } from "@vlab/monitor/constants";
 import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas";
 import { and, eq, inArray } from "drizzle-orm";
 

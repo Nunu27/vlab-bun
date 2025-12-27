@@ -37,7 +37,9 @@ const sessionRoutes = createRouter().guard(
 						nodes: {
 							columns: {
 								name: true,
-								ports: true
+								health: true,
+								ports: true,
+								interfaces: true
 							}
 						}
 					}
@@ -61,7 +63,7 @@ const sessionRoutes = createRouter().guard(
 				const deviceTemplates =
 					deviceIds.size > 0
 						? await db.query.devices.findMany({
-								where: inArray(devices.id, [...deviceIds]),
+								where: inArray(devices.id, Array.from(deviceIds)),
 								columns: {
 									id: true,
 									connection: true

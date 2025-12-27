@@ -1,20 +1,21 @@
 import env from "@backend/env";
 import Redis from "ioredis";
 import { encode, decode } from "@msgpack/msgpack";
-import logger from "./logger";
+import { childLogger } from "./logger";
 
 const patternRegex = /\*|\?|\[/;
 const client = new Redis(env.REDIS_URL);
+const logger = childLogger("redis");
 
 client.on("connect", () => {
-	logger.info("Connected to Redis");
+	logger.debug("Connected to Redis");
 });
 
 client.on("error", (error) => {
 	logger.error({ error }, "Redis connection error");
 });
 
-logger.info("Connecting to Redis...");
+logger.debug("Connecting to Redis...");
 
 export const redisClient = client;
 

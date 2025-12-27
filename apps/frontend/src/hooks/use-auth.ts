@@ -9,8 +9,8 @@ type LoginData = Parameters<typeof api.auth.login.post>[0];
 type AuthUser = Treaty.Data<typeof api.auth.me.get>['data'];
 
 type AuthUtils = {
-  login: (_: LoginData) => void;
-  logout: () => void;
+  login: (_: LoginData) => Promise<void>;
+  logout: () => Promise<void>;
   ensureData: () => Promise<AuthUser | null>;
 };
 
@@ -36,15 +36,15 @@ function useAuth(): AuthData {
   }, [query.data]);
 
   const utils: AuthUtils = {
-    login: (body) => {
-      errorHandler(api.auth.login.post(body), {
+    login: async (body) => {
+      await errorHandler(api.auth.login.post(body), {
         callback: () => {
           client.invalidateQueries({ queryKey: ['me'] });
         },
       });
     },
-    logout: () => {
-      errorHandler(api.auth.logout.post(), {
+    logout: async () => {
+      await errorHandler(api.auth.logout.post(), {
         callback: ({ data }) => {
           client.invalidateQueries({ queryKey: ['me'] });
 

@@ -64,14 +64,3 @@ export type LabType = (typeof labTypeEnum)[number];
 
 export const nodeHealthEnum = ["healthy", "unhealthy", "starting"] as const;
 export type NodeHealth = (typeof nodeHealthEnum)[number];
-
-export const nodeStatusEnum = [
-	"created",
-	"restarting",
-	"running",
-	"removing",
-	"paused",
-	"exited",
-	"dead"
-] as const;
-export type NodeStatus = (typeof nodeStatusEnum)[number];
