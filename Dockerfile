@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.7-labs
 
 ############################
 # Base build image
@@ -16,11 +16,7 @@ RUN apt-get update && \
 ############################
 FROM build-base AS deps
 
-COPY bun.lock* package.json ./
-COPY apps/frontend/package.json ./apps/frontend/
-COPY apps/backend/package.json ./apps/backend/
-COPY packages/evaluator/package.json ./packages/evaluator/
-COPY packages/shared/package.json ./packages/shared/
+COPY --parents **/package.json **/bun.lock* ./
 
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
@@ -30,14 +26,8 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 ############################
 FROM build-base AS frontend-builder
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
-COPY --from=deps /app/apps/frontend/node_modules ./apps/frontend/node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
-COPY package.json bun.lock* ./
-copy apps/backend ./apps/backend
-COPY apps/frontend ./apps/frontend
-COPY packages/shared ./packages/shared
+COPY --from=deps /app ./
+COPY . .
 
 RUN bun frontend build
 
@@ -46,12 +36,8 @@ RUN bun frontend build
 ############################
 FROM build-base AS backend-builder
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
-COPY package.json bun.lock* ./
-COPY apps/backend ./apps/backend
-COPY packages/shared ./packages/shared
+COPY --from=deps /app ./
+COPY --parents apps/backend packages/shared packages/monitor ./
 
 RUN bun backend build
 
