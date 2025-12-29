@@ -1,4 +1,4 @@
-import type { Duplex } from "stream";
+import { PassThrough, type Duplex } from "stream";
 import type { NetworkMonitor } from "../types";
 import type { LabNodeInterfaceData } from "@vlab/shared/schemas";
 
@@ -10,7 +10,7 @@ const nodeInterfaceMap = new Map<
 
 export default {
 	async start(ctx, container, node) {
-		const { logger, eventEmitter } = ctx;
+		const { docker, logger, eventEmitter } = ctx;
 		const { id, labSessionId } = node;
 
 		if (monitors.has(id)) return;
@@ -19,14 +19,16 @@ export default {
 			logger.debug("Starting interface monitor for node %s", id);
 
 			const exec = await container.exec({
-				Cmd: ["ip", "monitor", "address", "link"],
+				Cmd: ["ip", "-o", "monitor", "address", "link"],
 				AttachStdout: true,
 				AttachStderr: false,
 				Tty: false
 			});
 
-			const stream = await exec.start({ Detach: false, Tty: false });
-			monitors.set(id, stream);
+			const stream = new PassThrough();
+			const rawStream = await exec.start({ Detach: false, Tty: false });
+			docker.modem.demuxStream(rawStream, stream, process.stderr);
+			monitors.set(id, rawStream);
 
 			stream.on("data", (chunk: Buffer) => {
 				const text = chunk.toString();
@@ -35,17 +37,35 @@ export default {
 					return this.stop(ctx, node);
 				}
 
-				logger.debug("Interface update for node %s: %s", id, text.trim());
+				logger.debug("Interface update for node %s: %s", id, text);
+				const [info, data] = text.split(": ", 2);
+				const [iface, type, ip] = data!.split(/\s+/, 4);
+
 				const interfaces = nodeInterfaceMap.get(id) || {};
+				if (!interfaces || type !== "inet" || !(iface! in interfaces)) return;
+
+				if (info?.startsWith("Deleted")) {
+					const index = interfaces[iface!]!.ipAddress.indexOf(ip!);
+					if (index === -1 || !interfaces[iface!]!.ipAddress.length) return;
+
+					interfaces[iface!]!.ipAddress[index] =
+						interfaces[iface!]!.ipAddress.at(-1)!;
+					interfaces[iface!]!.ipAddress.pop();
+				} else {
+					interfaces[iface!]!.ipAddress.push(ip!);
+				}
 
 				eventEmitter.emit("interface-update", { id, labSessionId, interfaces });
 			});
 
-			stream.on("end", () => {
+			rawStream.on("end", () => {
 				logger.debug("Interface monitor for node %s ended", id);
 				return monitors.delete(id);
 			});
-			stream.on("error", () => this.stop(ctx, node));
+			rawStream.on("error", (e) => {
+				logger.error({ err: e, id }, "Interface monitor error for node %s", id);
+				this.stop(ctx, node);
+			});
 		} catch (err: any) {
 			if (err.statusCode !== 409) {
 				logger.error({ err, id }, "Failed to start interface monitor");
@@ -69,27 +89,27 @@ export default {
 				Cmd: ["ip", "-j", "addr", "show"],
 				AttachStdout: true,
 				AttachStderr: false,
-				Tty: true
+				Tty: false
 			});
 
+			let output = "";
+			const stream = new PassThrough();
 			const abortSignal = AbortSignal.timeout(3000);
-			const stream = await exec.start({
+			const rawStream = await exec.start({
 				Detach: false,
-				Tty: true,
+				Tty: false,
 				abortSignal
 			});
 
-			const output = await new Promise<string>((resolve, reject) => {
-				docker.modem.followProgress(stream, (err, results) => {
-					if (err) {
-						reject(err);
-						return;
-					}
+			docker.modem.demuxStream(rawStream, stream, process.stderr);
 
-					resolve(
-						results.reduce((acc, curr) => acc + curr, "").replace(/^[^{[]+/, "")
-					);
+			await new Promise<void>((resolve, reject) => {
+				stream.on("data", (chunk) => (output += chunk.toString()));
+				rawStream.on("end", () => {
+					output = output.replace(/^[^{[]+/, "");
+					resolve();
 				});
+				rawStream.on("error", reject);
 			});
 
 			try {
@@ -97,20 +117,16 @@ export default {
 				for (const iface of data) {
 					if (iface.ifname === "lo") continue;
 
-					const ipv4 = iface.addr_info?.find((a: any) => a.family === "inet");
+					const ipv4 = iface.addr_info?.filter((a: any) => a.family === "inet");
 
 					interfaces[iface.ifname] = {
 						state: iface.operstate === "UP" ? "UP" : "DOWN",
 						macAddress: iface.address,
-						ipAddress: ipv4?.local
+						ipAddress: ipv4?.map((a: any) => `${a.local}/${a.prefixlen}`) || []
 					};
 				}
-				return interfaces;
 			} catch (e) {
-				logger.debug(
-					{ err: e },
-					"JSON parsing failed, falling back to filesystem"
-				);
+				logger.debug({ err: e, data: output }, "JSON parsing failed");
 			}
 		} catch (err: any) {
 			if (![409, 404].includes(err.statusCode)) {

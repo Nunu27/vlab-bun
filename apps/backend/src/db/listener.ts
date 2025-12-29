@@ -270,7 +270,7 @@ export const addDBListener = <
 	listener: Bulk extends false
 		? ListenerCallback<TTable, TOps[number], TKeys>
 		: BulkListenerCallback<TTable, TOps[number], TKeys>,
-	opts?: { ops?: TOps; bulk?: Bulk }
+	opts?: { ops?: TOps; paused?: boolean; bulk?: Bulk }
 ) => {
 	const table = db._.fullSchema[entity];
 	const channel = getChannelForTable(table);
@@ -280,6 +280,7 @@ export const addDBListener = <
 	listeners.push({
 		columns: new Set(normalizedCols),
 		events: new Set(opts?.ops ?? ["INSERT", "UPDATE", "DELETE"]),
+		paused: opts?.paused ?? false,
 		bulk: opts?.bulk ?? false,
 		listener: listener as any
 	});
@@ -496,7 +497,11 @@ function buildTriggerSQL(
 }
 
 export const syncDBChannels = async () => {
-	const desiredChannels = new Set(registry.keys());
+	const desiredChannels = new Set(
+		Array.from(registry.entries())
+			.filter(([, listeners]) => listeners.some((l) => !l.paused))
+			.map(([channel]) => channel)
+	);
 	const { currentChannels } = await _getDBState();
 	const listenSQL = _getListenSQL(currentChannels, desiredChannels);
 

@@ -70,7 +70,7 @@ export const UpdateLabRequest = t.Partial(CreateLabRequest);
 
 export const LabNodeInterfaceDataSchema = t.Object({
 	state: t.UnionEnum(["UP", "DOWN"]),
-	ipAddress: t.Optional(t.String()),
+	ipAddress: t.Array(t.String()),
 	macAddress: t.String()
 });
 

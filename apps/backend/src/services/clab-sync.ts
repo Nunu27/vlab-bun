@@ -45,8 +45,8 @@ export function startSync() {
 				.onConflictDoUpdate({
 					target: labNodes.id,
 					set: {
-						health: sql`exclduded.${labNodes.health}`,
-						interfaces: sql`exclduded.${labNodes.interfaces}`
+						health: sql`excluded.health`,
+						interfaces: sql`excluded.interfaces`
 					}
 				});
 		}

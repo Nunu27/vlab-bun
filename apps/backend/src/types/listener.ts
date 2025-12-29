@@ -34,6 +34,7 @@ export type BulkListenerCallback<
 export type ListenerEntry = {
 	columns: Set<string>;
 	events: Set<Operations>;
+	paused: boolean;
 	bulk: boolean;
 	listener:
 		| ListenerCallback<any, any, any>
