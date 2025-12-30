@@ -4,6 +4,7 @@ import clab, { clabWrapper } from "@backend/services/clab";
 import docker from "@backend/services/docker";
 import { createGuacamoleToken } from "@backend/utils/crypto";
 import { toKebabCase } from "@backend/utils/string";
+import { getMonitorPorts } from "@vlab/monitor";
 import { LABELS } from "@vlab/monitor/constants";
 import {
 	deviceWSSchemas,
@@ -25,7 +26,7 @@ const portEmitter = createDBEventEmitter(
 	["id", "ports"],
 	(node) => node.id,
 	(node) => node.ports,
-	{ ops: ["INSERT", "UPDATE"] }
+	{ ops: ["INSERT"] }
 );
 
 const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
@@ -37,12 +38,11 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		},
 		reply
 	}) => {
-		reply("message", "Provisioning device...");
-
 		const deviceName = toKebabCase(data.name);
 		const labName = id.replace(/-/g, "");
 		const nodeId = Bun.randomUUIDv7();
 
+		// Image pull
 		reply("message", `Pulling image ${data.image}...`);
 		await new Promise<void>((resolve, reject) => {
 			docker.pull(data.image, {}, (err, stream) => {
@@ -57,6 +57,9 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		});
 		reply("message", "Image pulled successfully.");
 
+		// Lab provisioning
+		reply("message", "Provisioning device...");
+
 		const healthPromise = healthEmitter.wait(
 			nodeId,
 			(health) => {
@@ -68,10 +71,15 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		);
 		const portPromise = portEmitter.wait(
 			nodeId,
-			(ports) => ports[data.connection.data.port] || null,
+			(ports) => ports || null,
 			120000,
 			null
 		);
+
+		const originPorts = [
+			data.connection.data.port,
+			...getMonitorPorts(data.kind)
+		];
 
 		const response = await clabWrapper(() =>
 			clab.POST("/api/v1/labs", {
@@ -93,18 +101,7 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 									env: data.env,
 									cpu: data.resources.cpu,
 									memory: data.resources.memory,
-									ports: [`0:${data.connection.data.port}`],
-									stages: {
-										exit: {
-											exec: [
-												{
-													command: `rm -rf /home/admin/.clab/${labName}`,
-													phase: "on-exit",
-													target: "host"
-												}
-											]
-										}
-									},
+									ports: originPorts.map((port) => `0:${port}`),
 									labels: {
 										[LABELS.NODE_ID]: nodeId
 									}
@@ -117,13 +114,12 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		);
 
 		if (!response.response.ok) {
-			throw new Error(
-				`Error during device provisioning: ${response.response.statusText}`
-			);
+			throw new Error("Error during device provisioning");
 		}
 
 		reply("message", "Device provisioned.");
 
+		// Health check
 		reply("message", "Waiting for device to become healthy...");
 
 		const isHealthy = await healthPromise;
@@ -131,15 +127,18 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 			reply("message", "Device is healthy.");
 		} else if (isHealthy === null) {
 			reply("warn", "Device does not have health check configured.");
-			await sleep(5000);
+			await sleep(2500);
 		} else {
-			reply(
-				"warn",
-				"Device did not become healthy in time. Health status: " + isHealthy
-			);
+			reply("warn", "Device did not become healthy in time.");
 		}
 
-		reply("message", "Checking evaluation service access...");
+		const ports = await portPromise;
+		if (!ports) {
+			throw new Error("Failed to retrieve device port mapping.");
+		}
+
+		// TODO: Access check (monitor and evaluator)
+		reply("message", "Checking accessibility...");
 		const evaluationCanAccess = false;
 
 		if (evaluationCanAccess) {
@@ -148,19 +147,15 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 			reply("warn", "Evaluation service cannot access the device.");
 		}
 
+		// Access token generation
 		reply("message", "Generating access token...");
-
-		const port = await portPromise;
-		if (port === null) {
-			throw new Error("Failed to retrieve device port mapping.");
-		}
 
 		const token = createGuacamoleToken({
 			connection: {
 				type: data.connection.type,
 				settings: {
 					hostname: env.CLAB_HOST,
-					port: port.toString(),
+					port: ports[data.connection.data.port].toString(),
 					username: data.connection.data.username,
 					password: data.connection.data.password
 				}

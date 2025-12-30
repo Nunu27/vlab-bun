@@ -1,5 +1,7 @@
 import type { ContainerInspectInfo } from "dockerode";
 
+export const healthyStatus = new Set([null, "healthy"]);
+
 export function isKey<T extends object>(
 	key: PropertyKey,
 	obj: T
@@ -24,4 +26,16 @@ export function extractPortMappings(inspect: ContainerInspectInfo) {
 	}
 
 	return portMappings;
+}
+
+export function removeItemFromArray<T>(arr: T[], item: T) {
+	const index = arr.indexOf(item);
+	removeItemFromArrayByIndex(arr, index);
+}
+
+export function removeItemFromArrayByIndex<T>(arr: T[], index: number) {
+	if (index < 0 || index >= arr.length) return;
+
+	arr[index] = arr.at(-1)!;
+	arr.pop();
 }

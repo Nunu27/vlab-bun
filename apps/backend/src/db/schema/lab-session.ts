@@ -2,7 +2,6 @@ import {
 	labTypeEnum as labTypeValues,
 	nodeHealthEnum as nodeHealthEnumValues
 } from "@vlab/shared/enums";
-import type { LabNodeInterfaceData } from "@vlab/shared/schemas";
 import { index, jsonb, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
 import { users } from "./auth";
@@ -44,7 +43,7 @@ export const labNodes = pgTable("lab_node", {
 		.references(() => labSessions.id, { onDelete: "cascade" })
 		.notNull(),
 	ports: jsonb().$type<Record<number, number>>().notNull(),
-	interfaces: jsonb().$type<Record<string, LabNodeInterfaceData>>().notNull()
+	interfaces: jsonb().$type<Record<string, string[]>>().notNull()
 });
 
 export const labNodesRelations = relations(labNodes, ({ one }) => ({

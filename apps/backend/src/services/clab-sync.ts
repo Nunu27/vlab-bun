@@ -1,13 +1,15 @@
 import db from "@backend/db";
 import { labNodes, labSessions } from "@backend/db/schema";
 import env from "@backend/env";
+import { deleteCache } from "@backend/middlewares/caching";
+import deviceRouter from "@backend/routes/device";
+import labRouter from "@backend/routes/lab";
 import Debouncer from "@backend/utils/debouncer";
 import Throttler from "@backend/utils/throttler";
 import { createMonitor } from "@vlab/monitor";
 import { eq, notInArray, sql } from "drizzle-orm";
 import docker from "./docker";
 import { childLogger } from "./logger";
-import { deleteCache } from "@backend/middlewares/caching";
 
 let initialized = false;
 const logger = childLogger("clab-sync");
@@ -26,13 +28,21 @@ export function startSync() {
 	});
 
 	clabMonitor.on("snapshot", async ({ sessions, nodes }) => {
+		const sessionIds: string[] = [];
+		let haveTestSession = false;
+		let haveUserSession = false;
+
+		for (const session of sessions) {
+			sessionIds.push(session.id);
+
+			if (session.type === "device-test") haveTestSession = true;
+			if (session.type === "user") haveUserSession = true;
+		}
+
 		if (sessions.length) {
-			await db.delete(labSessions).where(
-				notInArray(
-					labSessions.id,
-					sessions.map((s) => s.id)
-				)
-			);
+			await db
+				.delete(labSessions)
+				.where(notInArray(labSessions.id, sessionIds));
 			await db.insert(labSessions).values(sessions).onConflictDoNothing();
 		} else {
 			await db.delete(labSessions);
@@ -49,6 +59,13 @@ export function startSync() {
 						interfaces: sql`excluded.interfaces`
 					}
 				});
+		}
+
+		if (!haveUserSession) {
+			labRouter.store.cron["lab-session-cleanup"].pause();
+		}
+		if (!haveTestSession) {
+			deviceRouter.store.cron["device-test-session-cleanup"].resume();
 		}
 
 		logger.info(

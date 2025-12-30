@@ -35,3 +35,30 @@ export default class Debouncer {
 		});
 	}
 }
+
+export function debounce<T extends (...args: any[]) => MaybePromise<void>>(
+	func: T,
+	delay: number
+) {
+	let timeout: NodeJS.Timeout | null = null;
+	let oldResolve: VoidFunction | null = null;
+
+	return (...args: Parameters<T>) =>
+		new Promise<void>((resolve, reject) => {
+			if (timeout && oldResolve) {
+				clearTimeout(timeout);
+				(oldResolve as VoidFunction)();
+			}
+
+			oldResolve = resolve;
+			timeout = setTimeout(async () => {
+				try {
+					await func(...args);
+				} catch (error) {
+					reject(error);
+				}
+				timeout = null;
+				oldResolve = null;
+			}, delay);
+		});
+}

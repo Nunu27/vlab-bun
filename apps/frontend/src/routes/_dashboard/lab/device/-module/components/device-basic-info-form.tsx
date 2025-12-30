@@ -135,8 +135,6 @@ export const DeviceBasicInfoForm = withForm({
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
 
-                console.log(field.state.value);
-
                 return (
                   <Field>
                     <FieldLabel htmlFor={field.name} required>

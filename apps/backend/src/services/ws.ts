@@ -75,7 +75,7 @@ io.on("connection", (socket) => {
 
 		socket.join(event);
 
-		socket.on(event, async (data: any) => {
+		socket.on(event as any, async (data: any) => {
 			if (!schema.data.Check(data)) {
 				return socket.emit("error", `Invalid data for event ${event}`);
 			}

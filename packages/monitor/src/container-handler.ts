@@ -41,19 +41,21 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 
 	const container = docker.getContainer(ID);
 	const info = await container.inspect();
-	const nodeInfo = { id, deviceKind } as NodeInfo;
+	const health = info.State.Health?.Status || null;
+	const ports = extractPortMappings(info);
+	const nodeInfo = { id, health, labSessionId, deviceKind, ports } as NodeInfo;
 
 	eventEmitter.emit("node-create", {
 		id,
 		name,
 		deviceId,
-		health: info.State.Health?.Status,
-		labSessionId: labSessionId!,
-		ports: extractPortMappings(info),
+		health,
+		labSessionId,
+		ports,
 		interfaces: await networkMonitor.extractInterfaces(ctx, container, nodeInfo)
 	} as NodeData);
 
-	await networkMonitor.start(ctx, container, nodeInfo);
+	networkMonitor.start(ctx, container, nodeInfo);
 }
 
 async function onContainerRemove(ctx: Context, event: ContainerEvent) {
@@ -61,18 +63,18 @@ async function onContainerRemove(ctx: Context, event: ContainerEvent) {
 	logger.debug("Container removed: %s", event.Actor.ID);
 
 	const {
-		[LABELS.SESSION_ID]: sessionId,
+		[LABELS.SESSION_ID]: labSessionId,
 		[LABELS.NODE_ID]: id,
 		[LABELS.CLAB_NODE_KIND]: deviceKind
 	} = event.Actor.Attributes;
-	networkMonitor.stop(ctx, { id, deviceKind } as NodeInfo);
+	networkMonitor.stop(ctx, { id, labSessionId, deviceKind } as NodeInfo);
 
 	eventEmitter.emit("node-remove", id!);
 
-	if (!sessionIds.has(sessionId!)) return;
+	if (!sessionIds.has(labSessionId!)) return;
 
-	eventEmitter.emit("session-remove", sessionId!);
-	sessionIds.delete(sessionId!);
+	eventEmitter.emit("session-remove", labSessionId!);
+	sessionIds.delete(labSessionId!);
 }
 
 async function onContainerHealthStatus(

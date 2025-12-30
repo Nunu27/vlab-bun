@@ -137,7 +137,7 @@ vLab is a cutting-edge virtual lab platform designed for networking education, f
 - **Node.js**: 18+ (or Bun runtime)
 - **PostgreSQL**: 14+
 - **Redis**: 7+
-- **Docker**: 20.10+ (for production deployment)
+- **Docker**: 20.10+
 - **Docker Compose**: 2.0+
 
 ### Local Development
@@ -381,7 +381,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/Nunu27/vlab-bun/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/Nunu27/vlab-bun/discussions)
-- **Email**: [Your contact email]
+- **Email**: [wisnu.agung.001@gmail.com](mailto:wisnu.agung.001@gmail.com)
 
 ---
 
@@ -396,17 +396,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Phase 2: Lab Integration (Q4 2025)
 
-- 🔄 Containerlab integration
-- 🔄 Guacamole setup
-- 🔄 MikroTik container templates
-- 🔄 Lab session lifecycle
+- ✅ Containerlab integration
+- ✅ Guacamole setup
+- ✅ MikroTik container templates
+- ✅ Lab session lifecycle
 
 ### Phase 3: Scoring System (Q1 2026)
 
-- Real-time configuration validation
-- Automated scoring engine
-- Progress tracking
-- Performance analytics
+- 🔄 Real-time configuration validation
+- 🔄 Automated scoring engine
+- 🔄 Progress tracking
+- 🔄 Performance analytics
 
 ---
 

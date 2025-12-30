@@ -1,5 +1,4 @@
 import type { DeviceKind, LabType, NodeHealth } from "@vlab/shared/enums";
-import type { LabNodeInterfaceData } from "@vlab/shared/schemas";
 import type { MaybePromise } from "bun";
 import type { Container } from "dockerode";
 import type Dockerode from "dockerode";
@@ -10,6 +9,8 @@ export interface NodeInfo {
 	id: string;
 	labSessionId: string;
 	deviceKind: DeviceKind;
+	health: NodeHealth | null;
+	ports?: Record<number, number>;
 }
 
 export interface SessionData {
@@ -22,11 +23,11 @@ export interface SessionData {
 export interface NodeData {
 	id: string;
 	name: string;
-	health?: NodeHealth;
+	health: NodeHealth | null;
 	labSessionId: string;
 	deviceId?: string;
 	ports: Record<number, number>;
-	interfaces: Record<string, LabNodeInterfaceData>;
+	interfaces: Record<string, string[]>;
 }
 
 export interface Events {
@@ -51,7 +52,7 @@ export interface Events {
 		{
 			id: string;
 			labSessionId: string;
-			interfaces: Record<string, LabNodeInterfaceData>;
+			interfaces: Record<string, string[]>;
 		}
 	];
 }
@@ -62,9 +63,17 @@ export interface Context {
 	logger: Logger;
 	sessionIds: Set<string>;
 	eventEmitter: EventEmitter<Events>;
+	waitForHealth: (
+		id: string,
+		callback: () => MaybePromise<void>,
+		timeoutMs?: number
+	) => () => void;
 }
 
-export type Options = Omit<Context, "sessionIds" | "eventEmitter">;
+export type Options = Omit<
+	Context,
+	"sessionIds" | "eventEmitter" | "waitForHealth"
+>;
 
 // Docker Event Types
 
@@ -217,15 +226,17 @@ export type DockerEvent = BaseDockerEvent &
 // Network
 
 export interface NetworkMonitor {
-	extractInterfaces: (
-		ctx: Context,
-		container: Container,
-		node: NodeInfo
-	) => MaybePromise<Record<string, LabNodeInterfaceData>>;
+	ports?: number[];
+	checkAccess?: (ctx: Context, node: NodeInfo) => MaybePromise<boolean>;
 	start: (
 		ctx: Context,
 		container: Container,
 		node: NodeInfo
 	) => MaybePromise<void>;
 	stop: (ctx: Context, node: NodeInfo) => MaybePromise<void>;
+	extractInterfaces: (
+		ctx: Context,
+		container: Container,
+		node: NodeInfo
+	) => MaybePromise<Record<string, string[]>>;
 }

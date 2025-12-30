@@ -4,6 +4,7 @@ import { devices, labSessions, labs } from "@backend/db/schema";
 import clab, { clabWrapper } from "@backend/services/clab";
 import type { Link, Node } from "@backend/types/containerlab";
 import { toKebabCase } from "@backend/utils/string";
+import { getMonitorPorts } from "@vlab/monitor";
 import { LABELS } from "@vlab/monitor/constants";
 import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas";
 import { and, eq, inArray } from "drizzle-orm";
@@ -58,7 +59,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 		if (!deviceIds.size) throw new Error("No devices in lab topology");
 
 		const deviceTemplates = await db.query.devices.findMany({
-			where: inArray(devices.id, [...deviceIds])
+			where: inArray(devices.id, Array.from(deviceIds))
 		});
 		const deviceTemplateMap = new Map(deviceTemplates.map((d) => [d.id, d]));
 		const nodes: Record<string, Node> = {};
@@ -74,33 +75,23 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 
 			nodeMap.set(node.id, nodeName);
 
+			const ports = [
+				template.connection.data.port,
+				...getMonitorPorts(template.kind)
+			];
+
 			nodes[nodeName] = {
 				kind: template.kind,
 				image: template.image,
 				env: template.env,
 				cpu: node.resources?.cpu || template.resources.cpu,
 				memory: node.resources?.memory || template.resources.memory,
-				ports: [`0:${template.connection.data.port}`],
-				dns: { servers: ["1.1.1.1", "1.0.0.1"] },
+				ports: ports.map((port) => `0:${port}`),
 				labels: {
 					[LABELS.NODE_ID]: Bun.randomUUIDv7(),
 					[LABELS.DEVICE_ID]: node.deviceId
 				}
 			};
-
-			if (nodeMap.size === 1) {
-				nodes[nodeName].stages = {
-					exit: {
-						exec: [
-							{
-								command: `rm -rf /home/admin/.clab/${labName}`,
-								phase: "on-exit",
-								target: "host"
-							}
-						]
-					}
-				};
-			}
 		}
 
 		// Map Edges (Links)
@@ -143,9 +134,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 		);
 
 		if (!response.response.ok) {
-			throw new Error(
-				`Error during lab provisioning: ${response.response.statusText}`
-			);
+			throw new Error(`Error during lab provisioning`);
 		}
 
 		reply("message", "Lab deployed successfully.");

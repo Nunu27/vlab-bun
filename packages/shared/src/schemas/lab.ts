@@ -68,12 +68,6 @@ export const CreateLabRequest = t.Object({
 
 export const UpdateLabRequest = t.Partial(CreateLabRequest);
 
-export const LabNodeInterfaceDataSchema = t.Object({
-	state: t.UnionEnum(["UP", "DOWN"]),
-	ipAddress: t.Array(t.String()),
-	macAddress: t.String()
-});
-
 export type LabDeviceNode = (typeof LabDeviceNodeSchema)["static"];
 export type LabGroupNode = (typeof LabGroupNodeSchema)["static"];
 export type LabNoteNode = (typeof LabNoteNodeSchema)["static"];
@@ -81,8 +75,6 @@ export type LabNode = (typeof LabNodeSchema)["static"];
 export type LabEdge = (typeof LabEdgeSchema)["static"];
 export type LabTopology = (typeof LabTopologySchema)["static"];
 export type LabNodeResources = (typeof LabNodeResourcesSchema)["static"];
-export type LabNodeInterfaceData =
-	(typeof LabNodeInterfaceDataSchema)["static"];
 
 export const StartLabSessionRequest = t.Object({
 	labId: t.String({ format: "uuid" })

@@ -3,7 +3,7 @@ import clab, { clabWrapper } from "@backend/services/clab";
 import logger from "@backend/services/logger";
 import cron, { Patterns } from "@elysiajs/cron";
 import { chunk } from "@vlab/shared/utils";
-import cluster from "node:cluster";
+import cluster from "cluster";
 
 async function destroySession(id: string): Promise<void> {
 	await clabWrapper(() =>
