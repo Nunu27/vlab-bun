@@ -459,16 +459,6 @@ CLAB_REPO_PATH="$DEPLOY_PATH/clab-api-server"
 if docker ps --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"; then
     ACTUAL_CONTAINER_NAME=$(docker ps --filter "name=clab-api" --format "{{.Names}}" | head -1)
     
-    # Check if docker socket is properly mounted
-    DOCKER_SOCK_MOUNTED=false
-    if docker inspect "$ACTUAL_CONTAINER_NAME" --format '{{json .Mounts}}' | grep -q "\"Destination\":\"/var/run/docker.sock\""; then
-        # Check if it's mounted to the correct host path
-        MOUNT_SOURCE=$(docker inspect "$ACTUAL_CONTAINER_NAME" --format '{{range .Mounts}}{{if eq .Destination "/var/run/docker.sock"}}{{.Source}}{{end}}{{end}}')
-        if [ "$MOUNT_SOURCE" = "$DEPLOY_PATH/docker.sock" ]; then
-            DOCKER_SOCK_MOUNTED=true
-        fi
-    fi
-    
     # Check if connected to vlab network
     NETWORK_CONNECTED=true
     if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$ACTUAL_CONTAINER_NAME\""; then
@@ -476,14 +466,10 @@ if docker ps --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"
     fi
     
     # If configuration is correct, skip recreation
-    if [ "$DOCKER_SOCK_MOUNTED" = true ] && [ "$NETWORK_CONNECTED" = true ]; then
+    if [ "$NETWORK_CONNECTED" = true ]; then
         print_success "Containerlab API server already running with correct configuration"
     else
         print_warning "Containerlab API server running but configuration needs updating"
-        
-        if [ "$DOCKER_SOCK_MOUNTED" = false ]; then
-            print_info "Docker socket not properly mounted to $DEPLOY_PATH/docker.sock"
-        fi
         
         if [ "$NETWORK_CONNECTED" = false ]; then
             print_info "Not connected to vlab network"
@@ -505,7 +491,7 @@ if docker ps --filter "name=clab-api" --format "{{.Names}}" | grep -q "clab-api"
     fi
     
     # Only skip setup if configuration is correct
-    if [ "$DOCKER_SOCK_MOUNTED" = true ] && [ "$NETWORK_CONNECTED" = true ]; then
+    if [ "$NETWORK_CONNECTED" = true ]; then
         # Ensure connected to vlab network (in case it got disconnected)
         if ! docker network inspect "$VLAB_NETWORK" | grep -q "\"$ACTUAL_CONTAINER_NAME\""; then
             print_step "Connecting API server to vlab network..."
@@ -579,7 +565,7 @@ if [ "${SKIP_CLAB_SETUP:-false}" = "false" ]; then
     sed -i 's|cp -r templates/redoc.html /templates/|cp -r internal/templates/redoc.html /templates/|g' docker/dind/Dockerfile
     
     # Fix entrypoint to clean up stale PID file and enable TCP socket
-    print_step "Patching entrypoint script to clean stale PID files and enable TCP socket..."
+    print_step "Patching entrypoint script to clean stale PID files..."
     if ! grep -q "rm -f /var/run/docker.pid" docker/dind/entrypoint.sh; then
         # Add cleanup right after sourcing common functions
         sed -i '/# Source common functions/a\
