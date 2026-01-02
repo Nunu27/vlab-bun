@@ -1,3 +1,4 @@
+import GuacamoleConnection from '@frontend/components/guacamole-connection';
 import { LogIssuesButton, LogViewer } from '@frontend/components/log-viewer';
 import { Button } from '@frontend/components/ui/button';
 import {
@@ -7,79 +8,31 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
+import { useWSStore } from '@frontend/stores/ws';
 import { Compile } from '@sinclair/typemap';
-import { useRouteContext } from '@tanstack/react-router';
 import { DeviceTestRequest } from '@vlab/shared/schemas';
 import { Monitor } from 'lucide-react';
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { create } from 'zustand';
 import { withForm, type DeviceFormData } from '../../hooks/use-device-form';
-
-const GuacamoleConnection = lazy(
-  () => import('@frontend/components/guacamole-connection'),
-);
-
-interface TestDeviceState {
-  open: boolean;
-  token?: string;
-  dispose?: () => void;
-  logs: { type: 'info' | 'warn' | 'error'; message: string }[];
-  issue: { type: 'warn' | 'error'; message: string }[];
-  log: (type: 'info' | 'warn' | 'error', message: string) => void;
-  setOpen: (open: boolean) => void;
-  setToken: (token: string) => void;
-  setDispose: (dispose?: () => void) => void;
-  reset: () => void;
-}
-
-const initialState = {
-  open: false,
-  token: undefined,
-  dispose: undefined,
-  logs: [],
-  issue: [],
-};
-
-const useTestDeviceStore = create<TestDeviceState>()((set) => ({
-  ...initialState,
-  log: (type, message) =>
-    set((state) => ({
-      logs: [...state.logs, { type, message }],
-    })),
-  setOpen: (open) => set({ ...(open ? {} : initialState), open }),
-  setToken: (token) => set({ token }),
-  setDispose: (dispose) => set({ dispose }),
-  reset: () =>
-    set(({ dispose }) => {
-      dispose?.();
-
-      return initialState;
-    }),
-}));
+import { useTestDeviceStore } from '../../stores/test-device';
 
 const validator = Compile(DeviceTestRequest);
 
 const TestConnectionButton = withForm({
   defaultValues: {} as DeviceFormData,
   render: function Render({ form }) {
-    const send = useRouteContext({
-      from: '__root__',
-      select: (ctx) => ctx.ws.send,
-    });
+    const { send } = useWSStore.use.actions();
 
-    const { open, token, logs, log, setOpen, setToken, dispose, setDispose } =
-      useTestDeviceStore();
+    const open = useTestDeviceStore.use.open();
+    const token = useTestDeviceStore.use.token();
+    const logs = useTestDeviceStore.use.logs();
+    const { log, setOpen, setToken, setDispose } =
+      useTestDeviceStore.use.actions();
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
     type FieldKeys = keyof typeof form.state.fieldMeta;
-
-    useEffect(() => {
-      return () => {
-        dispose?.();
-      };
-    }, [dispose]);
 
     useEffect(() => {
       if (scrollRef.current) {
@@ -129,15 +82,7 @@ const TestConnectionButton = withForm({
           Test Connection
         </Button>
 
-        <Dialog
-          open={open}
-          onOpenChange={(newOpen) => {
-            if (!newOpen && dispose) {
-              setDispose(undefined);
-            }
-            setOpen(newOpen);
-          }}
-        >
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 transition-all duration-300 sm:max-w-200">
             <DialogHeader className="p-6 pb-4">
               <DialogTitle className="flex items-center gap-2">
@@ -153,21 +98,13 @@ const TestConnectionButton = withForm({
               />
             ) : (
               <div className="relative flex aspect-video w-full flex-col overflow-hidden bg-slate-950">
-                <Suspense
-                  fallback={
-                    <div className="flex h-full w-full items-center justify-center text-slate-400">
-                      Loading viewer...
-                    </div>
+                <GuacamoleConnection
+                  token={token}
+                  onError={(msg) => log('error', msg)}
+                  onConnect={() =>
+                    log('info', 'Desktop connection established')
                   }
-                >
-                  <GuacamoleConnection
-                    token={token}
-                    onError={(msg) => log('error', msg)}
-                    onConnect={() =>
-                      log('info', 'Desktop connection established')
-                    }
-                  />
-                </Suspense>
+                />
               </div>
             )}
 

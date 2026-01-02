@@ -8,18 +8,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useAuthStore } from '@frontend/stores/auth';
 
 interface LogoutConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
 }
 
 export function LogoutConfirmDialog({
   open,
   onOpenChange,
-  onConfirm,
 }: LogoutConfirmDialogProps) {
+  const { logout } = useAuthStore.use.actions();
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -31,7 +32,7 @@ export function LogoutConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Log out</AlertDialogAction>
+          <AlertDialogAction onClick={logout}>Log out</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

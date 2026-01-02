@@ -1,5 +1,5 @@
 import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/lib/api-types';
+import type { ExtractPaginationData } from '@frontend/types/api';
 import { type ColumnDef } from '@tanstack/react-table';
 import { DeviceCategoryActionsCell } from './components/device-category-actions-cell';
 

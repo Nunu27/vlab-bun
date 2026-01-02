@@ -1,7 +1,5 @@
 'use client';
 
-import { ChevronsUpDown } from 'lucide-react';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,20 +15,18 @@ import {
   SidebarMenuItem,
 } from '@frontend/components/ui/sidebar';
 import { useIsMobile } from '@frontend/hooks/use-mobile';
-import { useRouteContext } from '@tanstack/react-router';
+import { ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { AuthChangePasswordModal } from './modals/auth-change-password-modal';
 import { LogoutConfirmDialog } from './modals/logout-confirm-dialog';
+import { useAuthStore } from '@frontend/stores/auth';
 
 export function NavUser() {
   const isMobile = useIsMobile();
-  const auth = useRouteContext({
-    from: '__root__',
-    select: (context) => context.auth,
-  });
-  const user = auth.user!;
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const user = useAuthStore.use.user()!;
 
   return (
     <SidebarMenu>
@@ -55,7 +51,7 @@ export function NavUser() {
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="grid flex-1 text-left text-sm leading-tight px-1 py-1.5">
+              <div className="grid flex-1 px-1 py-1.5 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
@@ -82,7 +78,6 @@ export function NavUser() {
       <LogoutConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
-        onConfirm={auth.logout}
       />
     </SidebarMenu>
   );

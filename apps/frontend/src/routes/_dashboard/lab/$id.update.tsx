@@ -1,4 +1,3 @@
-import { UpdateLabRequest } from '@vlab/shared/schemas';
 import { PageHeading } from '@frontend/components/page-heading';
 import { Button } from '@frontend/components/ui/button';
 import {
@@ -8,33 +7,26 @@ import {
   CardHeader,
   CardTitle,
 } from '@frontend/components/ui/card';
-import { Input } from '@frontend/components/ui/input';
 import { Field, FieldError, FieldLabel } from '@frontend/components/ui/field';
+import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import {
-  getErrorMessageFromApi,
-  getTitleFromBreadcrumbs,
-} from '@frontend/lib/utils';
+import { privateRoute } from '@frontend/lib/middlewares';
+import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { UpdateLabRequest } from '@vlab/shared/schemas';
+import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
 import { useTopologyStore } from './-module/topology/hooks';
-import { privateRoute } from '@frontend/lib/middlewares';
-import { Loader2 } from 'lucide-react';
 import { TopologyProvider } from './-module/topology/provider';
 
 const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Edit Lab' }];
 
 export const Route = createFileRoute('/_dashboard/lab/$id/update')({
-  head: () => ({
-    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
-  }),
-  beforeLoad: ({ context }) => {
-    privateRoute(['lecturer'])({ context });
-    context.breadcrumbs = breadcrumbs;
-  },
+  staticData: { breadcrumbs },
+  beforeLoad: privateRoute(['lecturer']),
   component: UpdateLabPage,
 });
 
@@ -167,7 +159,7 @@ function UpdateLabForm() {
         </Card>
 
         {/* Topology Editor */}
-        <Card className="flex h-[800px] flex-col overflow-hidden pb-0">
+        <Card className="flex h-200 flex-col overflow-hidden pb-0">
           <CardHeader className="border-b">
             <CardTitle>Network Topology</CardTitle>
             <CardDescription>

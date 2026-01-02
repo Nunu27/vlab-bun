@@ -3,13 +3,12 @@ import { PageHeading } from '@frontend/components/page-heading';
 import { Button } from '@frontend/components/ui/button';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
+import { privateRoute } from '@frontend/lib/middlewares';
 import type {
   ExtractFields,
   ExtractFilters,
   ExtractPaginationData,
-} from '@frontend/lib/api-types';
-import { privateRoute } from '@frontend/lib/middlewares';
-import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
+} from '@frontend/types/api';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { deviceColumns } from './-module/columns';
@@ -22,14 +21,8 @@ type Fields = ExtractFields<typeof pagination>;
 type Filters = ExtractFilters<typeof pagination>;
 
 export const Route = createFileRoute('/_dashboard/lab/device/')({
-  head: () => ({
-    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
-  }),
-  beforeLoad: ({ context }) => {
-    privateRoute(['admin'])({ context });
-
-    context.breadcrumbs = breadcrumbs;
-  },
+  staticData: { breadcrumbs },
+  beforeLoad: privateRoute(['admin']),
   component: RouteComponent,
 });
 

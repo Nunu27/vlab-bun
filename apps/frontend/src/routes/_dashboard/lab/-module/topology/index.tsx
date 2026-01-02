@@ -13,7 +13,7 @@ import InterfaceModal from './components/interface-modal';
 import PalettePanel from './components/palette';
 import PropertiesPanel from './components/properties-panel';
 import Toolbar from './components/toolbar';
-import type { TreatyData } from '@frontend/lib/api-types';
+import type { TreatyData } from '@frontend/types/api';
 import api from '@frontend/lib/api';
 import { ControlsComponent } from './components/canvas/controls';
 import { BackgroundComponent } from './components/canvas/background';

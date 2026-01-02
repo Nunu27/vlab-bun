@@ -1,29 +1,27 @@
+import { useAuthStore } from '@frontend/stores/auth';
 import { redirect } from '@tanstack/react-router';
 import type { Role } from '@vlab/shared/enums';
-import type { RouterContext } from './router';
 
-export const guestRoute =
-  () =>
-  ({ context }: { context: RouterContext }) => {
-    if (context.auth.user) {
-      throw redirect({ to: '/' });
-    }
-  };
+export const guestRoute = () => () => {
+  const user = useAuthStore.getState().user;
 
-export const protectedRoute =
-  () =>
-  ({ context }: { context: RouterContext }) => {
-    if (!context.auth.user) {
-      throw redirect({ to: '/login' });
-    }
-  };
+  if (user) {
+    throw redirect({ to: '/' });
+  }
+};
 
-export const privateRoute =
-  (roles: Role[]) =>
-  ({ context }: { context: RouterContext }) => {
-    const user = context.auth.user;
+export const protectedRoute = () => () => {
+  const user = useAuthStore.getState().user;
 
-    if (!user || !roles.includes(user.role)) {
-      throw redirect({ to: '/' });
-    }
-  };
+  if (!user) {
+    throw redirect({ to: '/login' });
+  }
+};
+
+export const privateRoute = (roles: Role[]) => () => {
+  const user = useAuthStore.getState().user;
+
+  if (!user || !roles.includes(user.role)) {
+    throw redirect({ to: '/' });
+  }
+};

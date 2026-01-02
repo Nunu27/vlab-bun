@@ -1,12 +1,11 @@
 'use client';
 
-import { FlaskConicalIcon } from 'lucide-react';
-
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@frontend/components/ui/sidebar';
+import { FlaskConicalIcon } from 'lucide-react';
 
 export function AppLogo() {
   return (

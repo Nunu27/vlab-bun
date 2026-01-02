@@ -1,8 +1,9 @@
-import { clsx, type ClassValue } from 'clsx';
 import type { Treaty } from '@elysiajs/eden';
-import { twMerge } from 'tailwind-merge';
-import { toast } from 'sonner';
 import { redirect } from '@tanstack/react-router';
+import { clsx, type ClassValue } from 'clsx';
+import { toast } from 'sonner';
+import { twMerge } from 'tailwind-merge';
+import type { StoreApi, UseBoundStore } from 'zustand';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -56,8 +57,10 @@ export async function errorHandler<
       ) {
         await cookieStore.delete('session');
         toast.error('Session expired');
-        return redirect({ to: '/login' });
+        redirect({ to: '/login' });
+        return;
       }
+
       throw new Error(getErrorMessageFromApi(value));
     }
 
@@ -119,3 +122,29 @@ export function formatTimeAgo(date: Date | string): string {
 export function getTitleFromBreadcrumbs(breadcrumbs: { title: string }[]) {
   return breadcrumbs.reduce((acc, curr) => curr.title + ' - ' + acc, 'vLab');
 }
+
+type WithSelectors<S> = S extends { getState: () => infer T }
+  ? S & {
+      use: { [K in keyof T]: <U = T[K]>(selector?: (value: T[K]) => U) => U };
+    }
+  : never;
+
+export const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(
+  _store: S,
+) => {
+  type StoreWithSelectors = WithSelectors<typeof _store>;
+  const store = _store as StoreWithSelectors;
+  store.use = {};
+  for (const k of Object.keys(store.getState())) {
+    store.use[k as keyof typeof store.use] = (<U>(
+      selector?: (value: unknown) => U,
+    ) => {
+      if (selector) {
+        return store((s) => selector(s[k as keyof typeof s]));
+      }
+      return store((s) => s[k as keyof typeof s]);
+    }) as never;
+  }
+
+  return store;
+};

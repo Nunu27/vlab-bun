@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
 import { Spinner } from '@frontend/components/ui/spinner';
-import type { TreatyResponse } from '@frontend/lib/api-types';
+import type { TreatyResponse } from '@frontend/types/api';
 import { cn, getErrorMessageFromApi } from '@frontend/lib/utils';
 import type { PaginatedResponse } from '@frontend/types/pagination';
 import { useInfiniteQuery } from '@tanstack/react-query';

@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@frontend/components/ui/dropdown-menu';
 import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/lib/api-types';
+import type { ExtractPaginationData } from '@frontend/types/api';
 import { Link } from '@tanstack/react-router';
 import { MoreVerticalIcon } from 'lucide-react';
 import { useState } from 'react';

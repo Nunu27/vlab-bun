@@ -29,7 +29,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { UpdateStudentRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 
-import type { ExtractPaginationData } from '@frontend/lib/api-types';
+import type { ExtractPaginationData } from '@frontend/types/api';
 import { degreeLevelEnum, type DegreeLevel } from '@vlab/shared/enums';
 
 type Item = ExtractPaginationData<typeof api.user.student.pagination>;

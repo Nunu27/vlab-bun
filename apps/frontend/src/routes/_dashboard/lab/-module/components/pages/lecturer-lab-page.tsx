@@ -10,7 +10,7 @@ import type {
   ExtractFields,
   ExtractFilters,
   ExtractPaginationData,
-} from '@frontend/lib/api-types';
+} from '@frontend/types/api';
 
 const pagination = api.lab.pagination;
 type Item = ExtractPaginationData<typeof pagination>;

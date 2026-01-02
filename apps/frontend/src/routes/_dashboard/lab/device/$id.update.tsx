@@ -9,10 +9,7 @@ import {
 } from '@frontend/components/ui/card';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import {
-  getErrorMessageFromApi,
-  getTitleFromBreadcrumbs,
-} from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import { Compile } from '@sinclair/typemap';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -33,14 +30,8 @@ const breadcrumbs = [
 ];
 
 export const Route = createFileRoute('/_dashboard/lab/device/$id/update')({
-  head: () => ({
-    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
-  }),
-  beforeLoad: ({ context }) => {
-    privateRoute(['admin'])({ context });
-
-    context.breadcrumbs = breadcrumbs;
-  },
+  staticData: { breadcrumbs },
+  beforeLoad: privateRoute(['admin']),
   component: RouteComponent,
 });
 

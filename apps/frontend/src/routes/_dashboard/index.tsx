@@ -1,8 +1,8 @@
-import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
-import { createFileRoute, redirect } from '@tanstack/react-router';
-import { lazy, Suspense } from 'react';
 import LoadingPage from '@frontend/components/pages/loading';
 import { menuByRole } from '@frontend/constants/menu';
+import { useAuthStore } from '@frontend/stores/auth';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import { lazy, Suspense } from 'react';
 
 const AdminDashboard = lazy(
   () => import('./-module/components/pages/admin-dashboard'),
@@ -17,11 +17,9 @@ const StudentDashboard = lazy(
 const breadcrumbs = [{ title: 'Dashboard' }];
 
 export const Route = createFileRoute('/_dashboard/')({
-  head: () => ({
-    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
-  }),
-  beforeLoad: ({ context }) => {
-    const role = context.auth.user!.role;
+  staticData: { breadcrumbs },
+  beforeLoad: () => {
+    const role = useAuthStore.getState().user!.role;
     const menu = menuByRole[role];
 
     for (const item of menu) {
@@ -31,14 +29,12 @@ export const Route = createFileRoute('/_dashboard/')({
         }
       }
     }
-
-    context.breadcrumbs = breadcrumbs;
   },
   component: RouteComponent,
 });
 
 function Dashboard() {
-  const role = Route.useRouteContext({ select: (ctx) => ctx.auth.user!.role });
+  const role = useAuthStore.use.user((user) => user!.role);
 
   switch (role) {
     case 'admin':

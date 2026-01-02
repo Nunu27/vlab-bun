@@ -15,10 +15,10 @@ import {
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { useAuthStore } from '@frontend/stores/auth';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
-import { useRouteContext } from '@tanstack/react-router';
 import { AuthChangePasswordRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 
@@ -31,10 +31,7 @@ export function AuthChangePasswordModal({
   open,
   onOpenChange,
 }: AuthChangePasswordModalProps) {
-  const casOnly = useRouteContext({
-    from: '__root__',
-    select: (context) => context.auth.user?.casOnly,
-  });
+  const { casOnly } = useAuthStore.use.user()!;
   const changePassword = useMutation({
     mutationFn: async (data: typeof AuthChangePasswordRequest.static) => {
       const request = api.auth['change-password'];

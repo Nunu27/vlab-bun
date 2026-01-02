@@ -5,18 +5,16 @@ import {
 import { PageHeading } from '@frontend/components/page-heading';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
+import { privateRoute } from '@frontend/lib/middlewares';
 import type {
   ExtractFields,
   ExtractFilters,
   ExtractPaginationData,
-} from '@frontend/lib/api-types';
-import { privateRoute } from '@frontend/lib/middlewares';
-import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
+} from '@frontend/types/api';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { studentColumns } from './-module/columns';
 import { CreateStudentModal } from './-module/components/modals/create-student-modal';
-
 const breadcrumbs = [{ title: 'User' }, { title: 'Student' }];
 const pagination = api.user.student.pagination;
 
@@ -25,14 +23,8 @@ type Fields = ExtractFields<typeof pagination>;
 type Filters = ExtractFilters<typeof pagination>;
 
 export const Route = createFileRoute('/_dashboard/user/student/')({
-  head: () => ({
-    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
-  }),
-  beforeLoad: ({ context }) => {
-    privateRoute(['admin'])({ context });
-
-    context.breadcrumbs = breadcrumbs;
-  },
+  staticData: { breadcrumbs },
+  beforeLoad: privateRoute(['admin']),
   component: RouteComponent,
 });
 

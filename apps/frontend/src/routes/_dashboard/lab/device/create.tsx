@@ -1,4 +1,3 @@
-import { CreateDeviceRequest } from '@vlab/shared/schemas';
 import { PageHeading } from '@frontend/components/page-heading';
 import { Button } from '@frontend/components/ui/button';
 import {
@@ -10,13 +9,11 @@ import {
 } from '@frontend/components/ui/card';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import {
-  getErrorMessageFromApi,
-  getTitleFromBreadcrumbs,
-} from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import { Compile } from '@sinclair/typemap';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { CreateDeviceRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 import TestConnectionButton from './-module/components/buttons/test-connection-button';
 import { DeviceBasicInfoForm } from './-module/components/device-basic-info-form';
@@ -36,14 +33,8 @@ const breadcrumbs = [
 ];
 
 export const Route = createFileRoute('/_dashboard/lab/device/create')({
-  head: () => ({
-    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
-  }),
-  beforeLoad: ({ context }) => {
-    privateRoute(['admin'])({ context });
-
-    context.breadcrumbs = breadcrumbs;
-  },
+  staticData: { breadcrumbs },
+  beforeLoad: privateRoute(['admin']),
   component: RouteComponent,
 });
 

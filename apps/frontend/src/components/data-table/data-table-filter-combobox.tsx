@@ -1,5 +1,5 @@
 import { PaginatedComboBox } from '@frontend/components/ui/combobox';
-import type { TreatyResponse } from '@frontend/lib/api-types';
+import type { TreatyResponse } from '@frontend/types/api';
 import type { PaginatedResponse } from '@frontend/types/pagination';
 
 export type FilterComboboxProps<TItem> = {

@@ -14,9 +14,9 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import { cn } from '@frontend/lib/utils';
+import { useAuthStore } from '@frontend/stores/auth';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useRouteContext } from '@tanstack/react-router';
 import { LoginRequest } from '@vlab/shared/schemas';
 import { FlaskConicalIcon } from 'lucide-react';
 
@@ -24,10 +24,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const login = useRouteContext({
-    from: '__root__',
-    select: (context) => context.auth.login,
-  });
+  const { login } = useAuthStore.use.actions();
   const form = useForm({
     defaultValues: {
       email: '',

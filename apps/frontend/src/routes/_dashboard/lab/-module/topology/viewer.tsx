@@ -7,7 +7,7 @@ import { ControlsComponent } from './components/canvas/controls';
 import { useQuery } from '@tanstack/react-query';
 import api from '@frontend/lib/api';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
-import type { TreatyData } from '@frontend/lib/api-types';
+import type { TreatyData } from '@frontend/types/api';
 import LoadingPage from '@frontend/components/pages/loading';
 
 import { TopologyProvider } from './provider';

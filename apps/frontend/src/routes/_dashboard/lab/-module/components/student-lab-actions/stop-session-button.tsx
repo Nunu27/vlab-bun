@@ -7,17 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
+import { useWSStore } from '@frontend/stores/ws';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouteContext } from '@tanstack/react-router';
 import { Monitor, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { LabItem } from '../../student-columns';
 
 export function StopSessionButton({ lab }: { lab: LabItem }) {
-  const send = useRouteContext({
-    from: '__root__',
-    select: (ctx) => ctx.ws.send,
-  });
+  const { send } = useWSStore.use.actions();
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
@@ -83,7 +80,7 @@ export function StopSessionButton({ lab }: { lab: LabItem }) {
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 transition-all duration-300 sm:max-w-[800px]">
+        <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 transition-all duration-300 sm:max-w-200">
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="flex items-center gap-2">
               <Monitor className="h-5 w-5 text-blue-500" />

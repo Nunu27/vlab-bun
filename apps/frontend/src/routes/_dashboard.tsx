@@ -22,6 +22,7 @@ import {
 } from '@tanstack/react-router';
 import { Fragment } from 'react';
 import { AppSidebar } from './_dashboard/-module/components/app-sidebar';
+import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
 
 export const Route = createFileRoute('/_dashboard')({
   beforeLoad: protectedRoute(),
@@ -30,8 +31,15 @@ export const Route = createFileRoute('/_dashboard')({
 
 function RouteComponent() {
   const breadcrumbs = useRouterState({
-    select: (state) =>
-      state.matches[state.matches.length - 1]?.context.breadcrumbs || [],
+    select: (state) => {
+      const breadcrumbs = state.matches.at(-1)?.staticData?.breadcrumbs ?? [];
+
+      if (breadcrumbs.length) {
+        document.title = getTitleFromBreadcrumbs(breadcrumbs);
+      }
+
+      return breadcrumbs;
+    },
   });
 
   return (

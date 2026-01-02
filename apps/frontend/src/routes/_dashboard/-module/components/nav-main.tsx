@@ -1,7 +1,5 @@
 'use client';
 
-import { ChevronRight } from 'lucide-react';
-
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,6 +17,7 @@ import {
 } from '@frontend/components/ui/sidebar';
 import type { MenuSection } from '@frontend/constants/menu';
 import { Link, useRouterState } from '@tanstack/react-router';
+import { ChevronRight } from 'lucide-react';
 
 export function NavMain({ sections }: { sections: MenuSection[] }) {
   const pathname = useRouterState({

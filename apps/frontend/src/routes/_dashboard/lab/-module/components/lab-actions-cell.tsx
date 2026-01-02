@@ -1,15 +1,3 @@
-import { Button } from '@frontend/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@frontend/components/ui/dropdown-menu';
-import { useAuth } from '@frontend/hooks/use-auth';
-import { MoreVerticalIcon, PlayIcon, RotateCwIcon } from 'lucide-react';
-import type { LabItem } from '../lecturer-columns';
-import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,16 +8,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@frontend/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@frontend/components/ui/dropdown-menu';
 import api from '@frontend/lib/api';
-import { toast } from 'sonner';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { useAuthStore } from '@frontend/stores/auth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { MoreVerticalIcon, PlayIcon, RotateCwIcon } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import type { LabItem } from '../lecturer-columns';
 
 export function LabActionsCell({ lab }: { lab: LabItem }) {
-  const { user } = useAuth();
-  const canManage = user?.role === 'admin' || user?.id === lab.authorId;
-  const isStudent = user?.role === 'student';
+  const user = useAuthStore.use.user()!;
+  const canManage = user.role === 'admin' || user.id === lab.authorId;
+  const isStudent = user.role === 'student';
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();

@@ -113,7 +113,7 @@ export function LogIssuesButton({ logs }: LogIssuesButtonProps) {
               </span>
             )}
           </div>
-          <div className="h-[150px] overflow-y-auto">
+          <div className="h-37.5 overflow-y-auto">
             {issues.map((issue, i) => (
               <div
                 key={i}

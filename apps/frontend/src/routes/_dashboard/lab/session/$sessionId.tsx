@@ -1,25 +1,16 @@
 import LoadingPage from '@frontend/components/pages/loading';
 import api from '@frontend/lib/api';
-import {
-  getErrorMessageFromApi,
-  getTitleFromBreadcrumbs,
-} from '@frontend/lib/utils';
+import { privateRoute } from '@frontend/lib/middlewares';
+import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import TopologyViewer from '../-module/topology/viewer';
-import { privateRoute } from '@frontend/lib/middlewares';
 
 const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Session' }];
 
 export const Route = createFileRoute('/_dashboard/lab/session/$sessionId')({
-  head: () => ({
-    meta: [{ title: getTitleFromBreadcrumbs(breadcrumbs) }],
-  }),
-  beforeLoad: ({ context }) => {
-    privateRoute(['student'])({ context });
-
-    context.breadcrumbs = breadcrumbs;
-  },
+  staticData: { breadcrumbs },
+  beforeLoad: privateRoute(['student']),
   component: SessionPage,
 });
 

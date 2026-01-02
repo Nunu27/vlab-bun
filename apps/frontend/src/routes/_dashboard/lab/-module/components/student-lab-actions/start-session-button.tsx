@@ -7,17 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
-import { useNavigate, useRouteContext } from '@tanstack/react-router';
+import { useWSStore } from '@frontend/stores/ws';
+import { useNavigate } from '@tanstack/react-router';
 import { Monitor, Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { LabItem } from '../../student-columns';
 
 export function StartSessionButton({ lab }: { lab: LabItem }) {
   const navigate = useNavigate();
-  const send = useRouteContext({
-    from: '__root__',
-    select: (ctx) => ctx.ws.send,
-  });
+  const { send } = useWSStore.use.actions();
 
   const [open, setOpen] = useState(false);
   const [logs, setLogs] = useState<
@@ -82,7 +80,7 @@ export function StartSessionButton({ lab }: { lab: LabItem }) {
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 transition-all duration-300 sm:max-w-[800px]">
+        <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 transition-all duration-300 sm:max-w-200">
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="flex items-center gap-2">
               <Monitor className="h-5 w-5 text-blue-500" />

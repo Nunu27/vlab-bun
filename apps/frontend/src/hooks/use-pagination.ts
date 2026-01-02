@@ -1,4 +1,4 @@
-import type { TreatyResponse } from '@frontend/lib/api-types';
+import type { TreatyResponse } from '@frontend/types/api';
 import { getErrorMessage, getErrorMessageFromApi } from '@frontend/lib/utils';
 import type {
   PaginatedResponse,

@@ -1,7 +1,7 @@
 import { type ColumnDef } from '@tanstack/react-table';
 import { formatTimeAgo } from '@frontend/lib/utils';
 import api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/lib/api-types';
+import type { ExtractPaginationData } from '@frontend/types/api';
 import { StudentLabActions } from './components/student-lab-actions';
 
 export type LabItem = ExtractPaginationData<typeof api.lab.pagination>;

@@ -3,13 +3,46 @@
     "cols": [
         {
             "title": "Bugs",
-            "tasks": [],
+            "tasks": [
+                {
+                    "text": "[Device Form] can't submit after clicking test device with invalid input",
+                    "id": "ev92mpgs7ddlxouzskrblwxm"
+                },
+                {
+                    "text": "[WS] Duplicated logs after reconnection",
+                    "id": "f4q58kap4t3dgefltjpar7bt"
+                }
+            ],
             "id": "o4x0r403uqgjddc49w08q8az",
             "color": "#eb144c"
         },
         {
             "title": "To-Do",
             "tasks": [
+                {
+                    "text": "Materi IP Config",
+                    "id": "t9agkfq3rw1bcywzf0nliwo4"
+                },
+                {
+                    "text": "Materi Dynamic Routing (OSPF)",
+                    "id": "kkhpc6333h8buofipj5aysx1"
+                },
+                {
+                    "text": "Materi Static Routing",
+                    "id": "twwdhbhhysege2ryfa11sb2t"
+                },
+                {
+                    "text": "Monitoring",
+                    "id": "h6veflm6nojyxf4441ndxgga"
+                },
+                {
+                    "text": "Course Management",
+                    "id": "jrot9x0vgdrrornb9p1whvxo"
+                },
+                {
+                    "text": "[Checker] Linux",
+                    "id": "yq13qyrod5ubzpv16yxunkxo"
+                },
                 {
                     "text": "[Checker] RouterOS",
                     "id": "k7piar066jbqss2a8q8gpkp1"
@@ -20,7 +53,12 @@
         },
         {
             "title": "Doing",
-            "tasks": [],
+            "tasks": [
+                {
+                    "text": "[Checker] Network",
+                    "id": "uz0cwkutvjrzrmbw1bb4k5hw"
+                }
+            ],
             "id": "ppj2h8a0u0o1d4cyw3jf9ifh",
             "color": "#0693e3"
         },
@@ -34,6 +72,10 @@
                 {
                     "text": "Pagination",
                     "id": "vk65rg60loqsgif01zukiw84"
+                },
+                {
+                    "text": "Containerlab sync",
+                    "id": "qp5t5l6m1u8xap92xzc4t7c3"
                 },
                 {
                     "text": "DB Listener",
@@ -86,5 +128,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1766666726747
+    "timestamp": 1767059944673
 }
