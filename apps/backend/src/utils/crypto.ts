@@ -1,4 +1,4 @@
-import { createCipheriv, createHash, randomBytes } from "crypto";
+import { createCipheriv, randomBytes } from "crypto";
 import env from "@backend/env";
 import type {
 	GuacamoleProtocol,
@@ -11,7 +11,7 @@ import type {
 } from "@backend/types/guacamole";
 
 export const md5 = (s: string) =>
-	createHash("md5").update(s).digest("hex").slice(0, 24);
+	new Bun.CryptoHasher("md5").update(s).digest("hex").slice(0, 24);
 
 const CIPHER = "aes-256-cbc";
 
@@ -39,9 +39,7 @@ type GuacamoleTokenObject<TType extends GuacamoleProtocol = GuacamoleProtocol> =
 	| { connection: GuacamoleConnectionConfig<TType> }
 	| { connection: JoinConnectionSettings };
 
-export function createGuacamoleToken(
-	tokenObject: GuacamoleTokenObject
-): string {
+export function createGuacamoleToken(tokenObject: GuacamoleTokenObject) {
 	const iv = randomBytes(16);
 	const cipher = createCipheriv(CIPHER, Buffer.from(env.GUACD_SECRET), iv);
 

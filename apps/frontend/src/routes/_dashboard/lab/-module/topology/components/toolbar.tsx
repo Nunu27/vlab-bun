@@ -1,6 +1,6 @@
 import React from 'react';
 import { Unplug, Group, Ungroup, StickyNote, Trash2 } from 'lucide-react';
-import { useTopologyStore } from '../hooks';
+import { useTopologyStore } from '../hook';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -55,18 +55,20 @@ export default function Toolbar({
     { interfaces: { displayCode: string; internalCode: string }[] }
   >;
 }) {
+  const store = useTopologyStore();
+
+  const nodes = store.use.nodes();
+  const edges = store.use.edges();
+  const connectMode = store.use.connectMode();
+  const connectSource = store.use.connectSource();
   const {
-    connectMode,
-    connectSource,
     setConnectMode,
     setConnectSource,
     groupSelected,
     ungroupSelected,
     addNote,
     deleteSelected,
-    nodes,
-    edges,
-  } = useTopologyStore();
+  } = store.use.actions();
 
   const selectedNodes = nodes.filter((n) => n.selected);
   const selectedEdges = edges.filter((e) => e.selected);

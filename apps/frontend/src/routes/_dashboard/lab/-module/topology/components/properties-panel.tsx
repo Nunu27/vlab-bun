@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { X, AlertCircle, Cpu, Database, Palette } from 'lucide-react';
-import { useTopologyStore } from '../hooks';
+import { useTopologyStore } from '../hook';
 import { GROUP_COLORS } from '../constants';
 import api from '@frontend/lib/api';
 import { useQuery } from '@tanstack/react-query';
@@ -9,8 +9,10 @@ import { Input } from '@frontend/components/ui/input';
 import { FieldLabel, FieldError } from '@frontend/components/ui/field';
 
 export default function PropertiesPanel() {
-  const { nodes, setNodes } = useTopologyStore();
+  const store = useTopologyStore();
+  const nodes = store.use.nodes();
   const selectedNodes = nodes.filter((n) => n.selected);
+  const { setNodes } = store.use.actions();
   const primarySelection = selectedNodes.length === 1 ? selectedNodes[0] : null;
 
   const { data: categories } = useQuery({
@@ -125,7 +127,7 @@ export default function PropertiesPanel() {
                     ),
                   )
                 }
-                className="dark:border-input dark:text-foreground dark:focus:ring-ring min-h-[100px] w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm transition-all focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="dark:border-input dark:text-foreground dark:focus:ring-ring min-h-25 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm transition-all focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             ) : (
               <Input

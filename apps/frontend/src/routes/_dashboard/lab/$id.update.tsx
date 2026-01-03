@@ -19,7 +19,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
-import { useTopologyStore } from './-module/topology/hooks';
+import { useTopologyStore } from './-module/topology/hook';
 import { TopologyProvider } from './-module/topology/provider';
 
 const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Edit Lab' }];
@@ -46,10 +46,11 @@ function UpdateLabForm() {
   const [nameError, setNameError] = useState<string | null>(null);
   const initialized = useRef(false);
 
-  const nodes = useTopologyStore((state) => state.nodes);
-  const edges = useTopologyStore((state) => state.edges);
-  const setNodes = useTopologyStore((state) => state.setNodes);
-  const setEdges = useTopologyStore((state) => state.setEdges);
+  const store = useTopologyStore();
+
+  const nodes = store.use.nodes();
+  const edges = store.use.edges();
+  const { setNodes, setEdges } = store.use.actions();
 
   const { data: lab, isLoading } = useQuery({
     queryKey: ['lab', id],

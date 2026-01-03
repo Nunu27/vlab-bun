@@ -1,5 +1,4 @@
 import api from '@frontend/lib/api';
-import { router } from '@frontend/lib/router';
 import { createSelectors, errorHandler } from '@frontend/lib/utils';
 import type { TreatyData } from '@frontend/types/api';
 import type { Store } from '@frontend/types/store';
@@ -28,17 +27,12 @@ const store = create<AuthStore>()((set, get) => ({
       if (!token) return set({ user: null });
 
       await errorHandler(api.auth.me.get(), {
-        callback: ({ data }) => {
-          set({ user: data });
-        },
+        callback: ({ data }) => set({ user: data }),
       });
     },
     login: async (credentials) => {
       await errorHandler(api.auth.login.post(credentials), {
-        callback: async () => {
-          await get().actions.refresh();
-          router.navigate({ to: '/' });
-        },
+        callback: get().actions.refresh,
       });
     },
     logout: async () => {
@@ -46,7 +40,6 @@ const store = create<AuthStore>()((set, get) => ({
         callback: async () => {
           await cookieStore.delete('session');
           set({ user: null });
-          router.navigate({ to: '/login' });
         },
       });
     },

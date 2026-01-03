@@ -1,6 +1,17 @@
+import LoadingPage from '@frontend/components/pages/loading';
+import api from '@frontend/lib/api';
+import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import type { TreatyData } from '@frontend/types/api';
+import { useQuery } from '@tanstack/react-query';
 import { Unplug } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useTopologyStore, useTopologyStoreApi } from './hooks';
+import { BackgroundComponent } from './components/canvas/background';
+import { ControlsComponent } from './components/canvas/controls';
+import { LayersComponent } from './components/canvas/layers';
+import InterfaceModal from './components/interface-modal';
+import PalettePanel from './components/palette';
+import PropertiesPanel from './components/properties-panel';
+import Toolbar from './components/toolbar';
 import type {
   DeviceNodeData,
   EdgeData,
@@ -8,19 +19,7 @@ import type {
   NoteNodeData,
 } from './types';
 import { snapToGrid } from './utils';
-
-import InterfaceModal from './components/interface-modal';
-import PalettePanel from './components/palette';
-import PropertiesPanel from './components/properties-panel';
-import Toolbar from './components/toolbar';
-import type { TreatyData } from '@frontend/types/api';
-import api from '@frontend/lib/api';
-import { ControlsComponent } from './components/canvas/controls';
-import { BackgroundComponent } from './components/canvas/background';
-import { LayersComponent } from './components/canvas/layers';
-import { useQuery } from '@tanstack/react-query';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
-import LoadingPage from '@frontend/components/pages/loading';
+import { useTopologyStore } from './hook';
 
 type Item = TreatyData<typeof api.device.list.get>['data'][number];
 type DeviceType = Item['devices'][number];
@@ -29,7 +28,8 @@ type NodeType = DeviceType & {
 };
 
 export default function TopologyEditor() {
-  const store = useTopologyStoreApi();
+  const store = useTopologyStore();
+
   const { data: categories, isLoading } = useQuery({
     queryKey: ['device', 'list'],
     queryFn: async () => {
@@ -66,22 +66,22 @@ export default function TopologyEditor() {
     return map;
   }, [categories]);
 
-  const {
-    nodes,
-    edges,
-    view,
-    selectionBox,
-    connectMode,
-    connectSource,
-    cursorPos,
-    isDraggingNode,
-    isPanning,
-    resizeState,
-    lastMousePos,
-    dragOffset,
-    modalOpen,
-    modalNodeId,
+  const nodes = store.use.nodes();
+  const edges = store.use.edges();
+  const view = store.use.view();
+  const selectionBox = store.use.selectionBox();
+  const connectMode = store.use.connectMode();
+  const connectSource = store.use.connectSource();
+  const cursorPos = store.use.cursorPos();
+  const isDraggingNode = store.use.isDraggingNode();
+  const isPanning = store.use.isPanning();
+  const resizeState = store.use.resizeState();
+  const lastMousePos = store.use.lastMousePos();
+  const dragOffset = store.use.dragOffset();
+  const modalOpen = store.use.modalOpen();
+  const modalNodeId = store.use.modalNodeId();
 
+  const {
     setNodes,
     setEdges,
     setView,
@@ -96,11 +96,10 @@ export default function TopologyEditor() {
     setConnectSource,
     setModalOpen,
     setModalNodeId,
-
     recalculateGroupBounds,
     moveNodeTree,
     getDepth,
-  } = useTopologyStore();
+  } = store.use.actions();
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -215,7 +214,10 @@ export default function TopologyEditor() {
       e.preventDefault();
       e.stopPropagation();
 
-      const { view, setView, zoomTo } = store.getState();
+      const {
+        view,
+        actions: { setView, zoomTo },
+      } = store.getState();
 
       if (e.ctrlKey || e.metaKey) {
         const rect = canvas.getBoundingClientRect();
@@ -566,36 +568,36 @@ export default function TopologyEditor() {
         return;
       }
 
-      const state = store.getState();
+      const { nodes, connectMode, actions } = store.getState();
 
       switch (e.key.toLowerCase()) {
         case 'delete':
         case 'backspace':
           e.preventDefault();
-          state.deleteSelected(deviceMap);
+          actions.deleteSelected(deviceMap);
           break;
         case 'c':
           e.preventDefault();
-          state.setConnectMode(!state.connectMode);
-          state.setConnectSource(null);
+          actions.setConnectMode(!connectMode);
+          actions.setConnectSource(null);
           break;
         case 'g':
           e.preventDefault();
-          if (state.nodes.filter((n) => n.selected).length >= 2) {
-            state.groupSelected();
+          if (nodes.filter((n) => n.selected).length >= 2) {
+            actions.groupSelected();
           }
           break;
         case 'u':
           e.preventDefault();
-          if (state.nodes.some((n) => n.selected && n.type === 'group')) {
-            state.ungroupSelected();
+          if (nodes.some((n) => n.selected && n.type === 'group')) {
+            actions.ungroupSelected();
           }
           break;
         case 'n':
           e.preventDefault();
           if (canvasRef.current) {
             const rect = canvasRef.current.getBoundingClientRect();
-            state.addNote({ x: rect.width / 2, y: rect.height / 2 });
+            actions.addNote({ x: rect.width / 2, y: rect.height / 2 });
           }
           break;
       }

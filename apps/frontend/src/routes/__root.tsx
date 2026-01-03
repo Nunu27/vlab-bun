@@ -1,4 +1,5 @@
 import NotFoundPage from '@frontend/components/pages/not-found';
+import { router } from '@frontend/lib/router';
 import { useAuthStore } from '@frontend/stores/auth';
 import {
   HeadContent,
@@ -8,6 +9,7 @@ import {
 } from '@tanstack/react-router';
 import type { ToastItem } from '@vlab/shared/types';
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 export const Route = createRootRoute({
@@ -37,6 +39,12 @@ function RouteComponent() {
   const inLoginPage = useRouterState({
     select: (state) => state.matches.at(-1)?.pathname === '/login',
   });
+
+  useEffect(() => {
+    if (loggedIn !== inLoginPage) return;
+
+    router.navigate({ to: loggedIn ? '/' : '/login' });
+  }, [loggedIn, inLoginPage]);
 
   if (inLoginPage === loggedIn) {
     return null;

@@ -1,16 +1,15 @@
-import { memo } from 'react';
 import { Maximize, ZoomIn, ZoomOut } from 'lucide-react';
-import { useTopologyStore } from '../../hooks';
+import { memo } from 'react';
+import { useTopologyStore } from '../../hook';
 
 interface ControlsProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export const ControlsComponent = memo(({ canvasRef }: ControlsProps) => {
-  const view = useTopologyStore((state) => state.view);
-  const recenter = useTopologyStore((state) => state.recenter);
-  const zoomIn = useTopologyStore((state) => state.zoomIn);
-  const zoomOut = useTopologyStore((state) => state.zoomOut);
+  const store = useTopologyStore();
+  const view = store.use.view();
+  const { recenter, zoomIn, zoomOut } = store.use.actions();
 
   return (
     <div

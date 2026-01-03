@@ -18,8 +18,8 @@ import { CreateLabRequest } from '@vlab/shared/schemas';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
-import { useTopologyStore } from './-module/topology/hooks';
 import { TopologyProvider } from './-module/topology/provider';
+import { useTopologyStore } from './-module/topology/hook';
 
 const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Create Lab' }];
 
@@ -43,9 +43,11 @@ function CreateLabForm() {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
 
-  const nodes = useTopologyStore((state) => state.nodes);
-  const edges = useTopologyStore((state) => state.edges);
-  const reset = useTopologyStore((state) => state.reset);
+  const store = useTopologyStore();
+
+  const nodes = store.use.nodes();
+  const edges = store.use.edges();
+  const { reset } = store.use.actions();
 
   useEffect(() => {
     reset();

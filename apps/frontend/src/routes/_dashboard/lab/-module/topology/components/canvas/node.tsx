@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useTopologyStore } from '../../hooks';
+import { useTopologyStore } from '../../hook';
 import type { NodeData } from '../../types';
 import { getIcon } from '../../utils';
 
@@ -23,7 +23,8 @@ export const NodeComponent = memo(
     onDoubleClick,
     deviceMap,
   }: NodeProps) => {
-    const setNodes = useTopologyStore((state) => state.setNodes);
+    const store = useTopologyStore();
+    const { setNodes } = store.use.actions();
 
     const { deviceIcon, deviceColor } = (() => {
       if (node.type !== 'device')

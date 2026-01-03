@@ -1,4 +1,4 @@
 import { createContext } from 'react';
-import type { TopologyStore } from './store';
+import { type TopologyStoreApi } from './stores';
 
-export const TopologyContext = createContext<TopologyStore | null>(null);
+export const TopologyContext = createContext<TopologyStoreApi | null>(null);

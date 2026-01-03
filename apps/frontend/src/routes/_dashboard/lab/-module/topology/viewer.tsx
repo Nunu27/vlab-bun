@@ -1,16 +1,15 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useTopologyStore, useTopologyStoreApi } from './hooks';
-import type { GroupNodeData, NodeData, EdgeData } from './types';
-import { BackgroundComponent } from './components/canvas/background';
-import { LayersComponent } from './components/canvas/layers';
-import { ControlsComponent } from './components/canvas/controls';
-import { useQuery } from '@tanstack/react-query';
+import LoadingPage from '@frontend/components/pages/loading';
 import api from '@frontend/lib/api';
 import { getErrorMessageFromApi } from '@frontend/lib/utils';
 import type { TreatyData } from '@frontend/types/api';
-import LoadingPage from '@frontend/components/pages/loading';
-
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef } from 'react';
+import { BackgroundComponent } from './components/canvas/background';
+import { ControlsComponent } from './components/canvas/controls';
+import { LayersComponent } from './components/canvas/layers';
+import { useTopologyStore } from './hook';
 import { TopologyProvider } from './provider';
+import type { EdgeData, GroupNodeData, NodeData } from './types';
 
 type Item = TreatyData<typeof api.device.list.get>['data'][number];
 type DeviceType = Item['devices'][number];
@@ -28,20 +27,15 @@ function TopologyViewerContent({
   onNodeDoubleClick,
 }: TopologyViewerProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const store = useTopologyStoreApi();
+  const store = useTopologyStore();
 
-  const nodes = useTopologyStore((state) => state.nodes);
-  const edges = useTopologyStore((state) => state.edges);
-  const view = useTopologyStore((state) => state.view);
-  const setNodes = useTopologyStore((state) => state.setNodes);
-  const setEdges = useTopologyStore((state) => state.setEdges);
-  const reset = useTopologyStore((state) => state.reset);
-
-  const isPanning = useTopologyStore((state) => state.isPanning);
-  const lastMousePos = useTopologyStore((state) => state.lastMousePos);
-  const setView = useTopologyStore((state) => state.setView);
-  const setIsPanning = useTopologyStore((state) => state.setIsPanning);
-  const setLastMousePos = useTopologyStore((state) => state.setLastMousePos);
+  const nodes = store.use.nodes();
+  const edges = store.use.edges();
+  const view = store.use.view();
+  const isPanning = store.use.isPanning();
+  const lastMousePos = store.use.lastMousePos();
+  const { setNodes, setEdges, reset, setView, setIsPanning, setLastMousePos } =
+    store.use.actions();
 
   // Initialize topology
   useEffect(() => {
@@ -62,7 +56,10 @@ function TopologyViewerContent({
       e.preventDefault();
       e.stopPropagation();
 
-      const { view, setView, zoomTo } = store.getState();
+      const {
+        view,
+        actions: { setView, zoomTo },
+      } = store.getState();
 
       if (e.ctrlKey || e.metaKey) {
         const rect = canvas.getBoundingClientRect();
