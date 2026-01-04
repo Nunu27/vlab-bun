@@ -22,10 +22,9 @@ import {
   SelectValue,
 } from '@frontend/components/ui/select';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { UpdateStudentRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 
@@ -49,23 +48,11 @@ export function EditStudentModal({
 }: EditStudentModalProps) {
   const queryClient = useQueryClient();
 
-  const updateStudent = useMutation({
-    mutationFn: async (data: typeof UpdateStudentRequest.static) => {
-      const result = await api.user.student({ id: student.id }).put(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const updateStudent = api.user.student({ id: student.id }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
       onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

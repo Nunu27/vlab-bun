@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface DeleteStudyProgramModalProps {
@@ -28,27 +27,15 @@ export function DeleteStudyProgramModal({
 }: DeleteStudyProgramModalProps) {
   const queryClient = useQueryClient();
 
-  const deleteStudyProgram = useMutation({
-    mutationFn: async () => {
-      const result = await api['study-program']({
-        id: studyProgramId,
-      }).delete();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const deleteStudyProgram = api['study-program']({
+    id: studyProgramId,
+  }).delete.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
       });
       onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

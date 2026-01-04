@@ -1,4 +1,3 @@
-import { UpdateDeviceCategoryRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import { ColorInput } from '@frontend/components/ui/color-input';
 import {
@@ -16,10 +15,10 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { UpdateDeviceCategoryRequest } from '@vlab/shared/schemas';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -42,27 +41,15 @@ export function EditDeviceCategoryModal({
 }: EditDeviceCategoryModalProps) {
   const queryClient = useQueryClient();
 
-  const updateDeviceCategory = useMutation({
-    mutationFn: async (data: typeof UpdateDeviceCategoryRequest.static) => {
-      const result = await api['device-category']({ id: deviceCategoryId }).put(
-        data,
-      );
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const updateDeviceCategory = api['device-category']({
+    id: deviceCategoryId,
+  }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
       });
       onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

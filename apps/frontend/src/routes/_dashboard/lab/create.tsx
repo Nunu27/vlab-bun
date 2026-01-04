@@ -11,15 +11,13 @@ import { Field, FieldError, FieldLabel } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { CreateLabRequest } from '@vlab/shared/schemas';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
-import { TopologyProvider } from './-module/topology/provider';
 import { useTopologyStore } from './-module/topology/hook';
+import { TopologyProvider } from './-module/topology/provider';
 
 const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Create Lab' }];
 
@@ -53,23 +51,11 @@ function CreateLabForm() {
     reset();
   }, [reset]);
 
-  const createLab = useMutation({
-    mutationFn: async (data: typeof CreateLabRequest.static) => {
-      const result = await api.lab.post(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const createLab = api.lab.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
       navigate({ to: '/lab' });
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

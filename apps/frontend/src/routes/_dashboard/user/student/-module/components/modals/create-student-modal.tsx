@@ -22,11 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@frontend/components/ui/select';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { degreeLevelEnum, type DegreeLevel } from '@vlab/shared/enums';
 import { CreateStudentRequest } from '@vlab/shared/schemas';
 import { PlusIcon } from 'lucide-react';
@@ -39,24 +38,12 @@ export function CreateStudentModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const createStudent = useMutation({
-    mutationFn: async (data: typeof CreateStudentRequest.static) => {
-      const result = await api.user.student.post(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const createStudent = api.user.student.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
       setOpen(false);
       form.reset();
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

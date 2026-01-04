@@ -61,12 +61,10 @@ export const LabTopologySchema = t.Object({
 	edges: t.Array(LabEdgeSchema)
 });
 
-export const CreateLabRequest = t.Object({
+export const LabRequest = t.Object({
 	name: t.String({ minLength: 1 }),
 	topology: LabTopologySchema
 });
-
-export const UpdateLabRequest = t.Partial(CreateLabRequest);
 
 export type LabDeviceNode = (typeof LabDeviceNodeSchema)["static"];
 export type LabGroupNode = (typeof LabGroupNodeSchema)["static"];

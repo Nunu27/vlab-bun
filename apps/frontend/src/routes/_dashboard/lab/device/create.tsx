@@ -7,11 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@frontend/components/ui/card';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { Compile } from '@sinclair/typemap';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { CreateDeviceRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
@@ -44,25 +43,13 @@ function RouteComponent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const createDevice = useMutation({
-    mutationFn: async (data: typeof CreateDeviceRequest.static) => {
-      const result = await api.device.post(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const createDevice = api.device.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device'],
       });
       navigate({ to: '/lab/device' });
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 
@@ -79,8 +66,7 @@ function RouteComponent() {
       interfaces: [],
     } as unknown as DeviceFormData,
     validators: { onSubmit: validator },
-    onSubmit: ({ value }) =>
-      createDevice.mutateAsync(value as typeof CreateDeviceRequest.static),
+    onSubmit: ({ value }) => createDevice.mutateAsync(value),
     onSubmitInvalid: () => {
       toast.error('Validation failed', {
         description: 'Please check all required fields',

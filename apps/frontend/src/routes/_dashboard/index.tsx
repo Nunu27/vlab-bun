@@ -1,4 +1,4 @@
-import LoadingPage from '@frontend/components/pages/loading';
+import LoadingPage from '@frontend/components/pages/loading-page';
 import { menuByRole } from '@frontend/constants/menu';
 import { useAuthStore } from '@frontend/stores/auth';
 import { createFileRoute, redirect } from '@tanstack/react-router';

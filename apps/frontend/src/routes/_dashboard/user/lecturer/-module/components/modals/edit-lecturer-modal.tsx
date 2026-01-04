@@ -1,4 +1,3 @@
-import { UpdateLecturerRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
@@ -15,10 +14,10 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { UpdateLecturerRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 
 interface EditLecturerModalProps {
@@ -42,23 +41,11 @@ export function EditLecturerModal({
 }: EditLecturerModalProps) {
   const queryClient = useQueryClient();
 
-  const updateLecturer = useMutation({
-    mutationFn: async (data: typeof UpdateLecturerRequest.static) => {
-      const result = await api.user.lecturer({ id: lecturerId }).put(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const updateLecturer = api.user.lecturer({ id: lecturerId }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
       onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

@@ -1,3 +1,5 @@
+import AppLoadingPage from '@frontend/components/pages/app-loading-page';
+import ErrorPage from '@frontend/components/pages/error-page';
 import ThemeToggle from '@frontend/components/theme-toggle';
 import {
   Breadcrumb,
@@ -13,6 +15,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@frontend/components/ui/sidebar';
+import { getTitleFromBreadcrumbs } from '@frontend/helper/string';
 import { protectedRoute } from '@frontend/lib/middlewares';
 import {
   createFileRoute,
@@ -20,13 +23,13 @@ import {
   Outlet,
   useRouterState,
 } from '@tanstack/react-router';
-import { Fragment, Suspense } from 'react';
+import { Fragment } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { AppSidebar } from './_dashboard/-module/components/app-sidebar';
-import { getTitleFromBreadcrumbs } from '@frontend/helper/string';
-import LoadingPage from '@frontend/components/pages/loading';
 
 export const Route = createFileRoute('/_dashboard')({
   beforeLoad: protectedRoute(),
+  pendingComponent: AppLoadingPage,
   component: RouteComponent,
 });
 
@@ -84,9 +87,9 @@ function RouteComponent() {
           <ThemeToggle />
         </header>
         <div className="flex-1 px-4">
-          <Suspense fallback={<LoadingPage />}>
+          <ErrorBoundary FallbackComponent={ErrorPage}>
             <Outlet />
-          </Suspense>
+          </ErrorBoundary>
         </div>
       </SidebarInset>
     </SidebarProvider>

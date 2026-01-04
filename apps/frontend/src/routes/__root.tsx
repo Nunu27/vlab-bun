@@ -1,5 +1,6 @@
-import LoadingPage from '@frontend/components/pages/loading';
-import NotFoundPage from '@frontend/components/pages/not-found';
+import AppLoadingPage from '@frontend/components/pages/app-loading-page';
+import ErrorPage from '@frontend/components/pages/error-page';
+import NotFoundPage from '@frontend/components/pages/not-found-page';
 import { router } from '@frontend/lib/router';
 import { useAuthStore } from '@frontend/stores/auth';
 import {
@@ -10,7 +11,8 @@ import {
 } from '@tanstack/react-router';
 import type { ToastItem } from '@vlab/shared/types';
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
-import { Suspense, useEffect } from 'react';
+import { useEffect } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { toast } from 'sonner';
 
 export const Route = createRootRoute({
@@ -31,6 +33,7 @@ export const Route = createRootRoute({
 
     await cookieStore.delete('toast');
   },
+  pendingComponent: AppLoadingPage,
   notFoundComponent: NotFoundPage,
   component: RouteComponent,
 });
@@ -55,9 +58,9 @@ function RouteComponent() {
     <>
       <HeadContent />
       <NuqsAdapter>
-        <Suspense fallback={<LoadingPage />}>
+        <ErrorBoundary FallbackComponent={ErrorPage}>
           <Outlet />
-        </Suspense>
+        </ErrorBoundary>
       </NuqsAdapter>
     </>
   );

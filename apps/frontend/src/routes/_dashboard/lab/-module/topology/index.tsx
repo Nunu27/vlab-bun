@@ -1,8 +1,5 @@
-import LoadingPage from '@frontend/components/pages/loading';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import type { TreatyData } from '@frontend/types/api';
-import { useQuery } from '@tanstack/react-query';
 import { Unplug } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { BackgroundComponent } from './components/canvas/background';
@@ -12,6 +9,7 @@ import InterfaceModal from './components/interface-modal';
 import PalettePanel from './components/palette';
 import PropertiesPanel from './components/properties-panel';
 import Toolbar from './components/toolbar';
+import { useTopologyStore } from './hook';
 import type {
   DeviceNodeData,
   EdgeData,
@@ -19,7 +17,6 @@ import type {
   NoteNodeData,
 } from './types';
 import { snapToGrid } from './utils';
-import { useTopologyStore } from './hook';
 
 type Item = TreatyData<typeof api.device.list.get>['data'][number];
 type DeviceType = Item['devices'][number];
@@ -30,15 +27,7 @@ type NodeType = DeviceType & {
 export default function TopologyEditor() {
   const store = useTopologyStore();
 
-  const { data: categories, isLoading } = useQuery({
-    queryKey: ['device', 'list'],
-    queryFn: async () => {
-      const result = await api.device.list.get();
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-      return result.data.data!;
-    },
+  const { data: categories } = api.device.list.get.useSuspenseQuery({
     staleTime: Infinity,
   });
 
@@ -242,7 +231,7 @@ export default function TopologyEditor() {
     return () => {
       canvas.removeEventListener('wheel', onWheel);
     };
-  }, [store, isLoading]);
+  }, [store]);
 
   const startPan = (e: React.MouseEvent) => {
     if (e.button === 1 || e.button === 2) {
@@ -606,10 +595,6 @@ export default function TopologyEditor() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [store, deviceMap]);
-
-  if (isLoading) {
-    return <LoadingPage />;
-  }
 
   return (
     <div className="bg-background text-foreground relative flex h-full w-full flex-col overflow-hidden font-sans select-none">

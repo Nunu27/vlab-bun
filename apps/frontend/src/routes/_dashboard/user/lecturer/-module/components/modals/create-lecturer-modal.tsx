@@ -1,4 +1,3 @@
-import { CreateLecturerRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
@@ -17,12 +16,12 @@ import {
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
+import { CreateLecturerRequest } from '@vlab/shared/schemas';
 import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 const validator = Compile(CreateLecturerRequest);
 
@@ -30,24 +29,12 @@ export function CreateLecturerModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const createLecturer = useMutation({
-    mutationFn: async (data: typeof CreateLecturerRequest.static) => {
-      const result = await api.user.lecturer.post(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const createLecturer = api.user.lecturer.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
       setOpen(false);
       form.reset();
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

@@ -66,7 +66,6 @@ export async function errorHandler<
 
     await callback?.(data as TData);
   } catch (error) {
-    console.error(error);
     if (showToast.onError ?? true) {
       toast.error(getErrorMessage(error));
     }

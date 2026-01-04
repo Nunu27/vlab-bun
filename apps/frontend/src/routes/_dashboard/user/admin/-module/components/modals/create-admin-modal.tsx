@@ -1,4 +1,3 @@
-import { CreateAdminRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
@@ -16,10 +15,10 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { CreateAdminRequest } from '@vlab/shared/schemas';
 import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -30,16 +29,7 @@ export function CreateAdminModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const createAdmin = useMutation({
-    mutationFn: async (data: typeof CreateAdminRequest.static) => {
-      const result = await api.user.admin.post(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const createAdmin = api.user.admin.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
@@ -47,9 +37,6 @@ export function CreateAdminModal() {
       });
       setOpen(false);
       form.reset();
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

@@ -1,4 +1,3 @@
-import { UpdateAdminRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
@@ -16,10 +15,10 @@ import {
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
+import { UpdateAdminRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 interface EditAdminModalProps {
   open: boolean;
@@ -40,23 +39,11 @@ export function EditAdminModal({
 }: EditAdminModalProps) {
   const queryClient = useQueryClient();
 
-  const updateAdmin = useMutation({
-    mutationFn: async (data: typeof UpdateAdminRequest.static) => {
-      const result = await api.user.admin({ id: adminId }).put(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const updateAdmin = api.user.admin({ id: adminId }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
       onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

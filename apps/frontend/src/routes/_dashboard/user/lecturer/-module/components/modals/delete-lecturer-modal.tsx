@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface DeleteLecturerModalProps {
@@ -30,29 +29,18 @@ export function DeleteLecturerModal({
 }: DeleteLecturerModalProps) {
   const queryClient = useQueryClient();
 
-  const deleteLecturer = useMutation({
-    mutationFn: async (id: string) => {
-      const result = await api.user.lecturer({ id }).delete();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const handleDelete = () => {
-    deleteLecturer.mutate(lecturerId);
-  };
+  const deleteLecturer = api.user
+    .lecturer({ id: lecturerId })
+    .delete.useMutation({
+      onSuccess: ({ message }) => {
+        toast.success(message);
+        queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
+        onOpenChange(false);
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    });
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -72,7 +60,7 @@ export function DeleteLecturerModal({
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              handleDelete();
+              deleteLecturer.mutate();
             }}
             disabled={deleteLecturer.isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

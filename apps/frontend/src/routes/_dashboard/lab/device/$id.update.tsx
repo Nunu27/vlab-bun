@@ -7,11 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@frontend/components/ui/card';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
+import { queryClient } from '@frontend/lib/query';
 import { Compile } from '@sinclair/typemap';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { UpdateDeviceRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
@@ -34,53 +34,28 @@ const validator = Compile(UpdateDeviceRequest);
 export const Route = createFileRoute('/_dashboard/lab/device/$id/update')({
   staticData: { breadcrumbs },
   beforeLoad: privateRoute(['admin']),
+  loader: async ({ params: { id } }) => {
+    await api.device({ id }).get.ensureQueryData(queryClient);
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { id } = Route.useParams();
-
-  const { data: deviceData, isLoading: isLoadingDevice } = useQuery({
-    queryKey: ['device', id],
-    queryFn: async () => {
-      const result = await api.device({ id }).get();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data.data;
-    },
-  });
-
-  if (isLoadingDevice) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <div className="text-muted-foreground">Loading device data...</div>
-      </div>
-    );
-  }
-
-  if (!deviceData) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <div className="text-destructive">Device not found</div>
-      </div>
-    );
-  }
+  const { data: device } = api.device({ id }).get.useSuspenseQuery();
 
   return (
     <div className="space-y-6 pb-8">
       <PageHeading title="Update Device" subtitle="Edit device configuration" />
-      <DeviceUpdateForm deviceData={deviceData} />
+      <DeviceUpdateForm device={device} />
     </div>
   );
 }
 
 function DeviceUpdateForm({
-  deviceData,
+  device,
 }: {
-  deviceData: typeof UpdateDeviceRequest.static & {
+  device: typeof UpdateDeviceRequest.static & {
     category?: { id: string; name: string };
   };
 }) {
@@ -88,16 +63,7 @@ function DeviceUpdateForm({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const updateDevice = useMutation({
-    mutationFn: async (data: typeof UpdateDeviceRequest.static) => {
-      const result = await api.device({ id }).put(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const updateDevice = api.device({ id }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
@@ -105,22 +71,19 @@ function DeviceUpdateForm({
       });
       navigate({ to: '/lab/device' });
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
 
   const form = useAppForm({
     defaultValues: {
-      name: deviceData.name,
-      kind: deviceData.kind,
-      image: deviceData.image,
-      icon: deviceData.icon,
-      categoryId: deviceData.categoryId,
-      env: deviceData.env ?? {},
-      resources: deviceData.resources ?? {},
-      connection: deviceData.connection ?? {},
-      interfaces: deviceData.interfaces ?? [],
+      name: device.name,
+      kind: device.kind,
+      image: device.image,
+      icon: device.icon,
+      categoryId: device.categoryId,
+      env: device.env ?? {},
+      resources: device.resources ?? {},
+      connection: device.connection ?? {},
+      interfaces: device.interfaces ?? [],
     } as typeof UpdateDeviceRequest.static,
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateDevice.mutateAsync(value),
@@ -151,7 +114,7 @@ function DeviceUpdateForm({
           <CardContent className="space-y-4 pt-4">
             <DeviceBasicInfoForm
               form={form}
-              defaultCategory={deviceData.category}
+              defaultCategory={device.category}
             />
           </CardContent>
         </Card>

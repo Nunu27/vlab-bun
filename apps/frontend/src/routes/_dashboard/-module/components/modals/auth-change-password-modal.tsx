@@ -14,11 +14,9 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { useAuthStore } from '@frontend/stores/auth';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation } from '@tanstack/react-query';
 import { AuthChangePasswordRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 
@@ -34,24 +32,13 @@ export function AuthChangePasswordModal({
   onOpenChange,
 }: AuthChangePasswordModalProps) {
   const { casOnly } = useAuthStore.use.user()!;
-  const changePassword = useMutation({
-    mutationFn: async (data: typeof AuthChangePasswordRequest.static) => {
-      const request = api.auth['change-password'];
-      const result = await request.post(data);
 
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const request = api.auth['change-password'];
+  const changePassword = request.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       onOpenChange(false);
       form.reset();
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

@@ -1,5 +1,5 @@
-import { UpdateStudyProgramRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
+import { PaginatedComboBox } from '@frontend/components/ui/combobox';
 import {
   Dialog,
   DialogContent,
@@ -14,12 +14,11 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
-import { PaginatedComboBox } from '@frontend/components/ui/combobox';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { UpdateStudyProgramRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 
 interface EditStudyProgramModalProps {
@@ -41,27 +40,15 @@ export function EditStudyProgramModal({
 }: EditStudyProgramModalProps) {
   const queryClient = useQueryClient();
 
-  const updateStudyProgram = useMutation({
-    mutationFn: async (data: typeof UpdateStudyProgramRequest.static) => {
-      const result = await api['study-program']({ id: studyProgramId }).put(
-        data,
-      );
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const updateStudyProgram = api['study-program']({
+    id: studyProgramId,
+  }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
       });
       onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

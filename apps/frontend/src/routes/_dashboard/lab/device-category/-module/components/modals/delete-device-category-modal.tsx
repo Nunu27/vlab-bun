@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface DeleteDeviceCategoryModalProps {
@@ -28,16 +27,9 @@ export function DeleteDeviceCategoryModal({
 }: DeleteDeviceCategoryModalProps) {
   const queryClient = useQueryClient();
 
-  const deleteDeviceCategory = useMutation({
-    mutationFn: async (id: string) => {
-      const result = await api['device-category']({ id }).delete();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const deleteDeviceCategory = api['device-category']({
+    id: deviceCategoryId,
+  }).delete.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
@@ -45,13 +37,10 @@ export function DeleteDeviceCategoryModal({
       });
       onOpenChange(false);
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
 
   const handleDelete = () => {
-    deleteDeviceCategory.mutate(deviceCategoryId);
+    deleteDeviceCategory.mutate();
   };
 
   return (

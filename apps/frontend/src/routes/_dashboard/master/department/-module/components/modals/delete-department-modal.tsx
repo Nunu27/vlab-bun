@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface DeleteDepartmentModalProps {
@@ -28,29 +27,20 @@ export function DeleteDepartmentModal({
 }: DeleteDepartmentModalProps) {
   const queryClient = useQueryClient();
 
-  const deleteDepartment = useMutation({
-    mutationFn: async (id: string) => {
-      const result = await api.department({ id }).delete();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['department', 'pagination'] });
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const handleDelete = () => {
-    deleteDepartment.mutate(departmentId);
-  };
+  const deleteDepartment = api
+    .department({ id: departmentId })
+    .delete.useMutation({
+      onSuccess: ({ message }) => {
+        toast.success(message);
+        queryClient.invalidateQueries({
+          queryKey: ['department', 'pagination'],
+        });
+        onOpenChange(false);
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    });
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -70,7 +60,7 @@ export function DeleteDepartmentModal({
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              handleDelete();
+              deleteDepartment.mutate();
             }}
             disabled={deleteDepartment.isPending}
           >

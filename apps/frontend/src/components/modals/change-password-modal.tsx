@@ -1,4 +1,3 @@
-import { ChangePasswordRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
@@ -16,10 +15,9 @@ import {
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import { useMutation } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
+import { ChangePasswordRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 interface ChangePasswordModalProps {
   open: boolean;
@@ -36,17 +34,8 @@ export function ChangePasswordModal({
   userId,
   userName,
 }: ChangePasswordModalProps) {
-  const changePassword = useMutation({
-    mutationFn: async (data: typeof ChangePasswordRequest.static) => {
-      const request = api.user({ id: userId })['change-password'];
-      const result = await request.post(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const request = api.user({ id: userId })['change-password'];
+  const changePassword = request.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       onOpenChange(false);

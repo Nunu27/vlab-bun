@@ -2,7 +2,7 @@ import { labs } from "@backend/db/schema/lab";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { RequestWithId, UpdateLabRequest } from "@vlab/shared/schemas";
+import { LabRequest, RequestWithId } from "@vlab/shared/schemas";
 import { and, eq } from "drizzle-orm";
 
 export default createRouter().put(
@@ -31,7 +31,7 @@ export default createRouter().put(
 	{
 		private: ["lecturer"],
 		params: RequestWithId,
-		body: UpdateLabRequest,
+		body: LabRequest,
 		detail: {
 			description: "Update a lab"
 		}

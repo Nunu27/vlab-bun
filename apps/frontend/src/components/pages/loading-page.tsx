@@ -6,8 +6,8 @@ interface LoadingPageProps {
 
 function LoadingPage({ message = 'Loading...' }: LoadingPageProps) {
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center p-6 gap-6">
-      <Spinner className="size-10 text-primary" />
+    <div className="flex h-full w-full flex-col items-center justify-center gap-6 p-6">
+      <Spinner className="text-primary size-10" />
       <p className="text-foreground font-medium">{message}</p>
     </div>
   );

@@ -11,11 +11,9 @@ import { Field, FieldError, FieldLabel } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryClient } from '@frontend/lib/query';
+import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { UpdateLabRequest } from '@vlab/shared/schemas';
-import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
@@ -27,6 +25,9 @@ const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Edit Lab' }];
 export const Route = createFileRoute('/_dashboard/lab/$id/update')({
   staticData: { breadcrumbs },
   beforeLoad: privateRoute(['lecturer']),
+  loader: async ({ params: { id } }) => {
+    await api.lab({ id }).get.ensureQueryData(queryClient);
+  },
   component: UpdateLabPage,
 });
 
@@ -52,16 +53,7 @@ function UpdateLabForm() {
   const edges = store.use.edges();
   const { setNodes, setEdges } = store.use.actions();
 
-  const { data: lab, isLoading } = useQuery({
-    queryKey: ['lab', id],
-    queryFn: async () => {
-      const result = await api.lab({ id }).get();
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-      return result.data.data;
-    },
-  });
+  const { data: lab } = api.lab({ id }).get.useSuspenseQuery();
 
   useEffect(() => {
     if (lab && !initialized.current) {
@@ -75,24 +67,12 @@ function UpdateLabForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lab]);
 
-  const updateLab = useMutation({
-    mutationFn: async (data: typeof UpdateLabRequest.static) => {
-      const result = await api.lab({ id }).put(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const updateLab = api.lab({ id }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
       queryClient.invalidateQueries({ queryKey: ['lab', id] });
       navigate({ to: '/lab' });
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 
@@ -118,14 +98,6 @@ function UpdateLabForm() {
 
     updateLab.mutate({ name, topology });
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 pb-8">

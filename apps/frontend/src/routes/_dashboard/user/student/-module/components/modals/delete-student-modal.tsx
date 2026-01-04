@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface DeleteStudentModalProps {
@@ -30,29 +29,13 @@ export function DeleteStudentModal({
 }: DeleteStudentModalProps) {
   const queryClient = useQueryClient();
 
-  const deleteStudent = useMutation({
-    mutationFn: async (id: string) => {
-      const result = await api.user.student({ id }).delete();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const deleteStudent = api.user.student({ id: studentId }).delete.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
       onOpenChange(false);
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
-
-  const handleDelete = () => {
-    deleteStudent.mutate(studentId);
-  };
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -72,7 +55,7 @@ export function DeleteStudentModal({
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              handleDelete();
+              deleteStudent.mutate();
             }}
             disabled={deleteStudent.isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

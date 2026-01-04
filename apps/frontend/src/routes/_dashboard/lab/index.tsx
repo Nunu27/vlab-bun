@@ -1,5 +1,5 @@
-import LoadingPage from '@frontend/components/pages/loading';
-import NotFoundPage from '@frontend/components/pages/not-found';
+import LoadingPage from '@frontend/components/pages/loading-page';
+import NotFoundPage from '@frontend/components/pages/not-found-page';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { useAuthStore } from '@frontend/stores/auth';
 import { createFileRoute } from '@tanstack/react-router';

@@ -1,4 +1,3 @@
-import { CreateDeviceCategoryRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
 import { ColorInput } from '@frontend/components/ui/color-input';
 import {
@@ -17,10 +16,10 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { CreateDeviceCategoryRequest } from '@vlab/shared/schemas';
 import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -31,16 +30,7 @@ export function CreateDeviceCategoryModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const createDeviceCategory = useMutation({
-    mutationFn: async (data: typeof CreateDeviceCategoryRequest.static) => {
-      const result = await api['device-category'].post(data);
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const createDeviceCategory = api['device-category'].post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
@@ -49,16 +39,13 @@ export function CreateDeviceCategoryModal() {
       setOpen(false);
       form.reset();
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
 
   const form = useForm({
     defaultValues: {
       name: '',
       color: '#000000',
-    } as unknown as typeof CreateDeviceCategoryRequest.static,
+    } as typeof CreateDeviceCategoryRequest.static,
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => createDeviceCategory.mutateAsync(value),
   });

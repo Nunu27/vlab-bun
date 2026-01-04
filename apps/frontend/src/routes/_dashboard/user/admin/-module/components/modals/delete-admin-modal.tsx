@@ -9,8 +9,7 @@ import {
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface DeleteAdminModalProps {
@@ -30,29 +29,13 @@ export function DeleteAdminModal({
 }: DeleteAdminModalProps) {
   const queryClient = useQueryClient();
 
-  const deleteAdmin = useMutation({
-    mutationFn: async (id: string) => {
-      const result = await api.user.admin({ id }).delete();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data;
-    },
+  const deleteAdmin = api.user.admin({ id: adminId }).delete.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
       onOpenChange(false);
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
-
-  const handleDelete = () => {
-    deleteAdmin.mutate(adminId);
-  };
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -72,7 +55,7 @@ export function DeleteAdminModal({
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              handleDelete();
+              deleteAdmin.mutate();
             }}
             disabled={deleteAdmin.isPending}
           >

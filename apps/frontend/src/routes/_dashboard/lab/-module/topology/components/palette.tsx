@@ -1,21 +1,8 @@
 import api from '@frontend/lib/api';
-import { useQuery } from '@tanstack/react-query';
 import { getIcon } from '../utils';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 export default function Palette() {
-  const { data: categories } = useQuery({
-    queryKey: ['device', 'list'],
-    queryFn: async () => {
-      const result = await api.device.list.get();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data.data!;
-    },
-  });
+  const { data: categories } = api.device.list.get.useSuspenseQuery();
 
   return (
     <div className="dark:bg-background dark:border-border z-10 flex w-64 flex-col border-r border-gray-200 bg-gray-50 shadow-lg">

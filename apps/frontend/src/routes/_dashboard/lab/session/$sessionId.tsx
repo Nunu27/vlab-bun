@@ -1,8 +1,6 @@
-import LoadingPage from '@frontend/components/pages/loading';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@frontend/lib/query';
 import { createFileRoute } from '@tanstack/react-router';
 import TopologyViewer from '../-module/topology/viewer';
 
@@ -11,31 +9,18 @@ const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Session' }];
 export const Route = createFileRoute('/_dashboard/lab/session/$sessionId')({
   staticData: { breadcrumbs },
   beforeLoad: privateRoute(['student']),
+  loader: async ({ params: { sessionId } }) => {
+    await api.lab.session({ id: sessionId }).get.ensureQueryData(queryClient);
+  },
   component: SessionPage,
 });
 
 function SessionPage() {
   const { sessionId } = Route.useParams();
 
-  const {
-    data: session,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['lab', 'session', sessionId],
-    queryFn: async () => {
-      const result = await api.lab.session({ id: sessionId }).get();
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-      return result.data.data;
-    },
-  });
-
-  if (isLoading) return <LoadingPage />;
-  if (error)
-    return <div className="p-4 text-red-500">Error: {error.message}</div>;
-  if (!session) return <div className="p-4">Session not found</div>;
+  const { data: session } = api.lab
+    .session({ id: sessionId })
+    .get.useSuspenseQuery();
 
   const handleNodeDoubleClick = (nodeId: string) => {
     const node = session.lab.topology.nodes.find((n) => n.id === nodeId);

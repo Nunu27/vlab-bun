@@ -2,7 +2,7 @@ import { labs } from "@backend/db/schema/lab";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { CreateLabRequest } from "@vlab/shared/schemas";
+import { LabRequest } from "@vlab/shared/schemas";
 
 export default createRouter().post(
 	"/",
@@ -23,7 +23,7 @@ export default createRouter().post(
 	},
 	{
 		private: ["lecturer"],
-		body: CreateLabRequest,
+		body: LabRequest,
 		detail: {
 			description: "Create a new lab"
 		}

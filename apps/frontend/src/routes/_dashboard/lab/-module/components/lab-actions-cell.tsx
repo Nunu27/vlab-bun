@@ -17,9 +17,8 @@ import {
   DropdownMenuTrigger,
 } from '@frontend/components/ui/dropdown-menu';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { useAuthStore } from '@frontend/stores/auth';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { MoreVerticalIcon, PlayIcon, RotateCwIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -34,21 +33,11 @@ export function LabActionsCell({ lab }: { lab: LabItem }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const deleteLab = useMutation({
-    mutationFn: async () => {
-      const result = await api.lab({ id: lab.id }).delete();
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-      return result.data;
-    },
+  const deleteLab = api.lab({ id: lab.id }).delete.useMutation({
     onSuccess: () => {
       toast.success('Lab deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
       setShowDeleteDialog(false);
-    },
-    onError: (error) => {
-      toast.error(error.message);
     },
   });
 

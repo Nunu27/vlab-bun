@@ -1,12 +1,10 @@
-import { useMemo } from 'react';
-import { X, AlertCircle, Cpu, Database, Palette } from 'lucide-react';
-import { useTopologyStore } from '../hook';
-import { GROUP_COLORS } from '../constants';
-import api from '@frontend/lib/api';
-import { useQuery } from '@tanstack/react-query';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
+import { FieldError, FieldLabel } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
-import { FieldLabel, FieldError } from '@frontend/components/ui/field';
+import api from '@frontend/lib/api';
+import { AlertCircle, Cpu, Database, Palette, X } from 'lucide-react';
+import { useMemo } from 'react';
+import { GROUP_COLORS } from '../constants';
+import { useTopologyStore } from '../hook';
 
 export default function PropertiesPanel() {
   const store = useTopologyStore();
@@ -15,18 +13,7 @@ export default function PropertiesPanel() {
   const { setNodes } = store.use.actions();
   const primarySelection = selectedNodes.length === 1 ? selectedNodes[0] : null;
 
-  const { data: categories } = useQuery({
-    queryKey: ['device', 'list'],
-    queryFn: async () => {
-      const result = await api.device.list.get();
-
-      if (result.error) {
-        throw new Error(getErrorMessageFromApi(result.error.value));
-      }
-
-      return result.data.data!;
-    },
-  });
+  const { data: categories } = api.device.list.get.useSuspenseQuery();
 
   const deviceDefinition = useMemo(() => {
     if (!primarySelection || primarySelection.type !== 'device' || !categories)
