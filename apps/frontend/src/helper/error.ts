@@ -50,7 +50,8 @@ export async function errorHandler<
       ) {
         await cookieStore.delete('session');
         toast.error('Session expired');
-        throw redirect({ to: '/login' });
+        redirect({ to: '/login' });
+        return;
       }
 
       throw new Error(getErrorMessageFromApi(value));
