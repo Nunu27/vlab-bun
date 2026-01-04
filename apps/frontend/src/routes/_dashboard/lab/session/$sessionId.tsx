@@ -1,7 +1,7 @@
 import LoadingPage from '@frontend/components/pages/loading';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import TopologyViewer from '../-module/topology/viewer';

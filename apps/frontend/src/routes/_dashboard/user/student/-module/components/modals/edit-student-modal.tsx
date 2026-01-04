@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@frontend/components/ui/select';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

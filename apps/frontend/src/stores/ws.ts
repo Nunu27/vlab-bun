@@ -1,4 +1,4 @@
-import { createSelectors } from '@frontend/lib/utils';
+import { createSelectors } from '@frontend/helper/store';
 import type {
   WSClient2ServerEvents,
   WSServer2ClientEvents,

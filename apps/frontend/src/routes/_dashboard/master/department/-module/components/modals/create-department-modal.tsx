@@ -22,7 +22,7 @@ import { useForm } from '@tanstack/react-form';
 import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 export function CreateDepartmentModal() {
   const [open, setOpen] = useState(false);

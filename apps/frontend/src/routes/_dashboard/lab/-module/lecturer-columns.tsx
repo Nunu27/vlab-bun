@@ -2,7 +2,7 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { LabActionsCell } from './components/lab-actions-cell';
 import api from '@frontend/lib/api';
 import type { ExtractPaginationData } from '@frontend/types/api';
-import { formatTimeAgo } from '@frontend/lib/utils';
+import { formatTimeAgo } from '@frontend/helper/string';
 
 export type LabItem = ExtractPaginationData<typeof api.lab.pagination>;
 

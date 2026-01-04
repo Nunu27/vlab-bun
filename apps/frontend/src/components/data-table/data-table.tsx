@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@frontend/components/ui/table';
-import { calculateTableSizing } from '@frontend/lib/table';
+import { calculateTableSizing } from '@frontend/helper/table';
 import type { PageInfo, SortOrder } from '@frontend/types/pagination';
 import { CircleQuestionMarkIcon } from 'lucide-react';
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -145,7 +145,7 @@ export function DataTable<TData, TFields extends string>({
       <div className="relative flex flex-col gap-4">
         <div
           ref={tableContainerRef}
-          className="rounded-lg border overflow-hidden"
+          className="overflow-hidden rounded-lg border"
           style={{
             direction: table.options.columnResizeDirection,
           }}
@@ -178,7 +178,7 @@ export function DataTable<TData, TFields extends string>({
               {isLoading && (
                 <tr className="pointer-events-none absolute inset-0 z-20">
                   <td className="h-full w-full">
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                    <div className="bg-background/80 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
                       <div className="bg-card text-card-foreground flex items-center gap-2 rounded-lg border px-4 py-2 shadow-sm">
                         <Spinner className="h-4 w-4" />
                         <span className="text-sm font-medium">Loading</span>

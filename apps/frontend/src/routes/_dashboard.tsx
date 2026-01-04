@@ -20,9 +20,10 @@ import {
   Outlet,
   useRouterState,
 } from '@tanstack/react-router';
-import { Fragment } from 'react';
+import { Fragment, Suspense } from 'react';
 import { AppSidebar } from './_dashboard/-module/components/app-sidebar';
-import { getTitleFromBreadcrumbs } from '@frontend/lib/utils';
+import { getTitleFromBreadcrumbs } from '@frontend/helper/string';
+import LoadingPage from '@frontend/components/pages/loading';
 
 export const Route = createFileRoute('/_dashboard')({
   beforeLoad: protectedRoute(),
@@ -83,7 +84,9 @@ function RouteComponent() {
           <ThemeToggle />
         </header>
         <div className="flex-1 px-4">
-          <Outlet />
+          <Suspense fallback={<LoadingPage />}>
+            <Outlet />
+          </Suspense>
         </div>
       </SidebarInset>
     </SidebarProvider>

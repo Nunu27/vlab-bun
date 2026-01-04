@@ -19,7 +19,7 @@ import { Compile } from '@sinclair/typemap';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
 import { toast } from 'sonner';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 interface ChangePasswordModalProps {
   open: boolean;

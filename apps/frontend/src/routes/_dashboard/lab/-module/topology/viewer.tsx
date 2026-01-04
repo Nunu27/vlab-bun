@@ -1,6 +1,6 @@
 import LoadingPage from '@frontend/components/pages/loading';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import type { TreatyData } from '@frontend/types/api';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';

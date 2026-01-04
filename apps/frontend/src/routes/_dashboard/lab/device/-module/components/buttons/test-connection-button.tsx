@@ -1,4 +1,3 @@
-import GuacamoleConnection from '@frontend/components/guacamole-connection';
 import { LogIssuesButton, LogViewer } from '@frontend/components/log-viewer';
 import { Button } from '@frontend/components/ui/button';
 import {
@@ -8,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
+import GuacamoleConnection from '@frontend/shared/guacamole/components/guacamole-connection';
 import { useWSStore } from '@frontend/stores/ws';
 import { Compile } from '@sinclair/typemap';
 import { DeviceTestRequest } from '@vlab/shared/schemas';
@@ -16,6 +16,7 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { withForm, type DeviceFormData } from '../../hooks/use-device-form';
 import { useTestDeviceStore } from '../../stores/test-device';
+import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection';
 
 const validator = Compile(DeviceTestRequest);
 
@@ -98,13 +99,15 @@ const TestConnectionButton = withForm({
               />
             ) : (
               <div className="relative flex aspect-video w-full flex-col overflow-hidden bg-slate-950">
-                <GuacamoleConnection
-                  token={token}
-                  onError={(msg) => log('error', msg)}
-                  onConnect={() =>
-                    log('info', 'Desktop connection established')
-                  }
-                />
+                <GuacamoleConnectionProvider>
+                  <GuacamoleConnection
+                    token={token}
+                    onError={(msg) => log('error', msg)}
+                    onConnect={() =>
+                      log('info', 'Desktop connection established')
+                    }
+                  />
+                </GuacamoleConnectionProvider>
               </div>
             )}
 

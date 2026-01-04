@@ -1,6 +1,6 @@
 import type api from '@frontend/lib/api';
 import type { ExtractPaginationData } from '@frontend/types/api';
-import { formatTimeAgo } from '@frontend/lib/utils';
+import { formatTimeAgo } from '@frontend/helper/string';
 import { type ColumnDef } from '@tanstack/react-table';
 import { LecturerActionsCell } from './components/lecturer-actions-cell';
 

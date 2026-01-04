@@ -1,5 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { formatTimeAgo } from '@frontend/lib/utils';
+import { formatTimeAgo } from '@frontend/helper/string';
 import api from '@frontend/lib/api';
 import type { ExtractPaginationData } from '@frontend/types/api';
 import { StudentLabActions } from './components/student-lab-actions';

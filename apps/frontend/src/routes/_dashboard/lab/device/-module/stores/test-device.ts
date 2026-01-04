@@ -1,4 +1,4 @@
-import { createSelectors } from '@frontend/lib/utils';
+import { createSelectors } from '@frontend/helper/store';
 import type { Store } from '@frontend/types/store';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';

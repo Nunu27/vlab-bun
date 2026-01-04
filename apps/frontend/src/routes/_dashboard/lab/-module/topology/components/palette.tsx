@@ -1,7 +1,7 @@
 import api from '@frontend/lib/api';
 import { useQuery } from '@tanstack/react-query';
 import { getIcon } from '../utils';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 export default function Palette() {
   const { data: categories } = useQuery({

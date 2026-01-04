@@ -55,7 +55,7 @@ export async function uploadFile(file: File, from: string) {
 			})
 			.onConflictDoNothing();
 
-		// Upload new file only
+		// Id the same means we just inserted it, so upload the file
 		if (insertedFile.id === newId) {
 			const res = await storage.putObject(name, fileBuffer, file.type);
 			if (!res.ok) throw new Error(`Failed to upload file`);
@@ -99,22 +99,17 @@ export async function storageCleanup() {
 		});
 
 		const names = fileToDelete.map((file) => file.name);
-		if (!names.length) {
-			return;
-		}
+		if (!names.length) return;
 
 		logger.info("Found %d unused files, deleting...", names.length);
-
-		await tx.delete(files).where(inArray(files.name, names));
 		const statuses = await storage.deleteObjects(names);
-		const failed = names.filter((_, index) => !statuses[index]);
+		const deleted = names.filter((_, index) => statuses[index]);
 
-		if (failed.length) {
-			await tx
-				.insert(files)
-				.values(failed.map((name) => ({ name, unused: true })));
+		if (deleted.length) {
+			await tx.delete(files).where(inArray(files.name, deleted));
+			logger.info("Deleted %d files from storage and database", deleted.length);
+		} else {
+			logger.info("No files were deleted from storage");
 		}
-
-		logger.info("Deleted %d unused files", names.length - failed.length);
 	});
 }

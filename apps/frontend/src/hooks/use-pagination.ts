@@ -1,5 +1,8 @@
+import {
+  getErrorMessage,
+  getErrorMessageFromApi,
+} from '@frontend/helper/error';
 import type { TreatyResponse } from '@frontend/types/api';
-import { getErrorMessage, getErrorMessageFromApi } from '@frontend/lib/utils';
 import type {
   PaginatedResponse,
   PaginationHandlers,

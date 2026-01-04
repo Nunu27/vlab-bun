@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@frontend/components/ui/dropdown-menu';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { useAuthStore } from '@frontend/stores/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';

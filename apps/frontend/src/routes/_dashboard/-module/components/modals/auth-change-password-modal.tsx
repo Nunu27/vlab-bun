@@ -14,7 +14,7 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
-import { getErrorMessageFromApi } from '@frontend/lib/utils';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { useAuthStore } from '@frontend/stores/auth';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';

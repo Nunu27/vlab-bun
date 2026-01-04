@@ -17,13 +17,14 @@ import {
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
 import { Spinner } from '@frontend/components/ui/spinner';
+import { cn } from '@frontend/lib/utils';
 import type { TreatyResponse } from '@frontend/types/api';
-import { cn, getErrorMessageFromApi } from '@frontend/lib/utils';
 import type { PaginatedResponse } from '@frontend/types/pagination';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounceValue } from 'usehooks-ts';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 type Option = {
   value: string;

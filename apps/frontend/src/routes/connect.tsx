@@ -1,5 +1,6 @@
-import GuacamoleConnection from '@frontend/components/guacamole-connection';
 import { protectedRoute } from '@frontend/lib/middlewares';
+import GuacamoleConnection from '@frontend/shared/guacamole/components/guacamole-connection';
+import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
@@ -40,13 +41,15 @@ function ConnectPage() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-black">
-      <GuacamoleConnection
-        token={token}
-        onDisconnect={() => {
-          window.close();
-        }}
-      />
-    </div>
+    <GuacamoleConnectionProvider>
+      <div className="h-screen w-screen overflow-hidden bg-black">
+        <GuacamoleConnection
+          token={token}
+          onDisconnect={() => {
+            window.close();
+          }}
+        />
+      </div>
+    </GuacamoleConnectionProvider>
   );
 }
