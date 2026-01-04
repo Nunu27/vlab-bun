@@ -1,9 +1,9 @@
 import { users } from "@backend/db/schema/auth";
-import logger from "@backend/services/logger";
 import type { Transaction } from "@backend/types";
+import type { Logger } from "pino";
 
 export default {
-	seed: async (tx: Transaction) => {
+	seed: async (tx: Transaction, logger: Logger) => {
 		logger.info("Seeding admin user...");
 
 		const { rowCount } = await tx

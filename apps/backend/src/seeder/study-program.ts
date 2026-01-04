@@ -1,18 +1,21 @@
 import { studyPrograms } from "@backend/db/schema/auth";
-import logger from "@backend/services/logger";
 import type { Transaction } from "@backend/types";
+import type { Logger } from "pino";
 
 export default {
-	seed: async (tx: Transaction) => {
+	seed: async (tx: Transaction, logger: Logger) => {
 		logger.info("Seeding study program...");
 
 		const departmentList = await tx.query.departments.findMany({
 			columns: { id: true, name: true }
 		});
-		const departmentMap = departmentList.reduce((acc, dept) => {
-			acc[dept.name] = dept.id;
-			return acc;
-		}, {} as Record<string, string>);
+		const departmentMap = departmentList.reduce(
+			(acc, dept) => {
+				acc[dept.name] = dept.id;
+				return acc;
+			},
+			{} as Record<string, string>
+		);
 
 		const { rowCount } = await tx
 			.insert(studyPrograms)
