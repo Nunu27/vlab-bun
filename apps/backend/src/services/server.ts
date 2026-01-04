@@ -35,9 +35,7 @@ const app = new Elysia({
 	.all(
 		"/favicon.ico",
 		({ status }) => status(200, file("public/favicon.ico")),
-		{
-			detail: { hide: true }
-		}
+		{ detail: { hide: true } }
 	)
 	.all(
 		"/ws",

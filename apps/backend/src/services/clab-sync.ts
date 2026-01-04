@@ -77,23 +77,35 @@ export function startSync() {
 	clabMonitor.on("session-create", (session) => {
 		sessionThrottle.run(session.id, async () => {
 			await db.insert(labSessions).values(session).onConflictDoNothing();
-			await deleteCache("lab:pagination:*");
+			await deleteCache(`lab:pagination:*:${session.ownerId}`);
+
 			logger.debug({ id: session.id }, "Session created");
 		});
 	});
 
 	clabMonitor.on("session-remove", (id) => {
 		sessionThrottle.run(id, async () => {
-			await db.delete(labSessions).where(eq(labSessions.id, id));
-			await deleteCache("lab:pagination:*", `lab:session:${id}`);
+			const [session] = await db
+				.delete(labSessions)
+				.where(eq(labSessions.id, id))
+				.returning({
+					ownerId: labSessions.ownerId
+				});
+			if (!session) return;
+
+			await deleteCache(
+				`lab:pagination:*:$${session.ownerId}`,
+				`lab:session:${id}`
+			);
+
 			logger.debug({ id }, "Session removed");
 		});
 	});
 
 	clabMonitor.on("node-create", async (node) => {
 		await sessionThrottle.wait(node.labSessionId);
+		await db.insert(labNodes).values(node);
 
-		await db.insert(labNodes).values(node).onConflictDoNothing();
 		logger.debug({ id: node.id }, "Node created");
 	});
 

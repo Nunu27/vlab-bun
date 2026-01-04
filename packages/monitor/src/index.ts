@@ -24,6 +24,9 @@ async function handleDockerEvent(ctx: Context, event: ContainerEvent) {
 		: event.Action;
 	if (!isKey(key, containerHandler)) return;
 
+	const shouldHandle = event.Actor.Attributes[LABELS.NODE_ID];
+	if (!shouldHandle) return;
+
 	try {
 		logger.debug("Handling docker event: %s", event.Action);
 		await containerHandler[key](ctx, event);
@@ -71,7 +74,6 @@ async function emitInitialState(ctx: Context) {
 			id,
 			name,
 			health,
-			status: container.State,
 			labSessionId,
 			deviceId,
 			ports,
