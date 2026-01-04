@@ -20,6 +20,8 @@ import { useForm } from '@tanstack/react-form';
 import { LoginRequest } from '@vlab/shared/schemas';
 import { FlaskConicalIcon } from 'lucide-react';
 
+const validator = Compile(LoginRequest);
+
 export function LoginForm({
   className,
   ...props
@@ -30,9 +32,7 @@ export function LoginForm({
       email: '',
       password: '',
     },
-    validators: {
-      onSubmit: Compile(LoginRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => login(value),
   });
 

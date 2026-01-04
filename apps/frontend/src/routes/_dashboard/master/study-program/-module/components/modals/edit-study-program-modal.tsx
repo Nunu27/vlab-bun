@@ -30,6 +30,8 @@ interface EditStudyProgramModalProps {
   studyProgramDepartmentId: string;
 }
 
+const validator = Compile(UpdateStudyProgramRequest);
+
 export function EditStudyProgramModal({
   open,
   onOpenChange,
@@ -68,9 +70,7 @@ export function EditStudyProgramModal({
       name: studyProgramName,
       departmentId: studyProgramDepartmentId,
     },
-    validators: {
-      onSubmit: Compile(UpdateStudyProgramRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateStudyProgram.mutateAsync(value),
   });
 

@@ -7,9 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@frontend/components/ui/card';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -25,12 +25,14 @@ import {
   type DeviceFormData,
   useAppForm,
 } from './-module/hooks/use-device-form';
+import { TestDeviceStoreProvider } from './-module/stores/test-device';
 
 const breadcrumbs = [
   { title: 'Lab Data' },
   { title: 'Device', url: '/lab/device' },
   { title: 'Create Device' },
 ];
+const validator = Compile(CreateDeviceRequest);
 
 export const Route = createFileRoute('/_dashboard/lab/device/create')({
   staticData: { breadcrumbs },
@@ -76,7 +78,7 @@ function RouteComponent() {
       connection: {},
       interfaces: [],
     } as unknown as DeviceFormData,
-    validators: { onSubmit: Compile(CreateDeviceRequest) },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) =>
       createDevice.mutateAsync(value as typeof CreateDeviceRequest.static),
     onSubmitInvalid: () => {
@@ -142,7 +144,9 @@ function RouteComponent() {
                 <CardTitle>Connection</CardTitle>
                 <CardDescription>Remote access configuration</CardDescription>
               </div>
-              <TestConnectionButton form={form} />
+              <TestDeviceStoreProvider>
+                <TestConnectionButton form={form} />
+              </TestDeviceStoreProvider>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               <DeviceConnectionForm form={form} />

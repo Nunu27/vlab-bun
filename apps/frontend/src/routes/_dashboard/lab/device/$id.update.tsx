@@ -7,9 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@frontend/components/ui/card';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { Compile } from '@sinclair/typemap';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -22,12 +22,14 @@ import { DeviceEnvForm } from './-module/components/device-env-form';
 import { DeviceNetworkInterfacesForm } from './-module/components/device-network-interfaces-form';
 import { DeviceResourcesForm } from './-module/components/device-resources-form';
 import { useAppForm } from './-module/hooks/use-device-form';
+import { TestDeviceStoreProvider } from './-module/stores/test-device';
 
 const breadcrumbs = [
   { title: 'Lab Data' },
   { title: 'Device', url: '/lab/device' },
   { title: 'Update Device' },
 ];
+const validator = Compile(UpdateDeviceRequest);
 
 export const Route = createFileRoute('/_dashboard/lab/device/$id/update')({
   staticData: { breadcrumbs },
@@ -120,7 +122,7 @@ function DeviceUpdateForm({
       connection: deviceData.connection ?? {},
       interfaces: deviceData.interfaces ?? [],
     } as typeof UpdateDeviceRequest.static,
-    validators: { onSubmit: Compile(UpdateDeviceRequest) },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateDevice.mutateAsync(value),
     onSubmitInvalid: () => {
       toast.error('Validation failed', {
@@ -182,7 +184,9 @@ function DeviceUpdateForm({
               <CardTitle>Connection</CardTitle>
               <CardDescription>Remote access configuration</CardDescription>
             </div>
-            <TestConnectionButton form={form} />
+            <TestDeviceStoreProvider>
+              <TestConnectionButton form={form} />
+            </TestDeviceStoreProvider>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <DeviceConnectionForm form={form} />

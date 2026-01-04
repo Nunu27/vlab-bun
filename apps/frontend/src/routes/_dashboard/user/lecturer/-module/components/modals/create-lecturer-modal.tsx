@@ -24,6 +24,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { getErrorMessageFromApi } from '@frontend/helper/error';
 
+const validator = Compile(CreateLecturerRequest);
+
 export function CreateLecturerModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -56,9 +58,7 @@ export function CreateLecturerModal() {
       nip: '',
       password: '',
     },
-    validators: {
-      onSubmit: Compile(CreateLecturerRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => createLecturer.mutateAsync(value),
   });
 

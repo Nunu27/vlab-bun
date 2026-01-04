@@ -1,4 +1,4 @@
-import { createSelectors } from '@frontend/helper/store';
+import { createScopedStore } from '@frontend/helper/store';
 import type { Store } from '@frontend/types/store';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -29,27 +29,29 @@ const initialState: TestDeviceState = {
   issue: [],
 };
 
-const store = create<TestDeviceStore>()(
-  immer((set, get) => ({
-    ...initialState,
-    actions: {
-      log: (type, message) =>
-        set((state) => {
-          state.logs.push({ type, message });
-        }),
-      setOpen: (open) => {
-        if (open) return set({ open });
-        else return get().actions.reset();
+const { Provider, useContext } = createScopedStore(() =>
+  create<TestDeviceStore>()(
+    immer((set, get) => ({
+      ...initialState,
+      actions: {
+        log: (type, message) =>
+          set((state) => {
+            state.logs.push({ type, message });
+          }),
+        setOpen: (open) => {
+          if (open) return set({ open });
+          else return get().actions.reset();
+        },
+        setToken: (token) => set({ token }),
+        setDispose: (dispose) => set({ dispose }),
+        reset: () => {
+          get().dispose?.();
+          set({ ...initialState });
+        },
       },
-      setToken: (token) => set({ token }),
-      setDispose: (dispose) => set({ dispose }),
-      reset: () =>
-        set((state) => {
-          state.dispose?.();
-          return initialState;
-        }),
-    },
-  })),
+    })),
+  ),
 );
 
-export const useTestDeviceStore = createSelectors(store);
+export const TestDeviceStoreProvider = Provider;
+export const useTestDeviceStore = useContext;

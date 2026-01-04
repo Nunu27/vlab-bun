@@ -7,8 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
+import { useWSAction } from '@frontend/hooks/use-ws-action';
 import GuacamoleConnection from '@frontend/shared/guacamole/components/guacamole-connection';
-import { useWSStore } from '@frontend/stores/ws';
+import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection';
 import { Compile } from '@sinclair/typemap';
 import { DeviceTestRequest } from '@vlab/shared/schemas';
 import { Monitor } from 'lucide-react';
@@ -16,24 +17,28 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { withForm, type DeviceFormData } from '../../hooks/use-device-form';
 import { useTestDeviceStore } from '../../stores/test-device';
-import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection';
 
 const validator = Compile(DeviceTestRequest);
 
 const TestConnectionButton = withForm({
   defaultValues: {} as DeviceFormData,
   render: function Render({ form }) {
-    const { send } = useWSStore.use.actions();
+    const { send, dispose } = useWSAction('device/test');
 
-    const open = useTestDeviceStore.use.open();
-    const token = useTestDeviceStore.use.token();
-    const logs = useTestDeviceStore.use.logs();
-    const { log, setOpen, setToken, setDispose } =
-      useTestDeviceStore.use.actions();
+    const store = useTestDeviceStore();
+
+    const open = store.use.open();
+    const token = store.use.token();
+    const logs = store.use.logs();
+    const { log, setOpen, setToken, setDispose } = store.use.actions();
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
     type FieldKeys = keyof typeof form.state.fieldMeta;
+
+    useEffect(() => {
+      setDispose(dispose);
+    }, [dispose, setDispose]);
 
     useEffect(() => {
       if (scrollRef.current) {
@@ -66,15 +71,13 @@ const TestConnectionButton = withForm({
 
       setOpen(true);
 
-      const unsub = send('device/test', validator.Parse(value), {
+      send(validator.Parse(value), {
         message: (message) => log('info', message),
         warn: (message) => log('warn', message),
         token: (token) => setToken(token),
         error: (message) => log('error', message),
         done: () => console.log('Done'),
       });
-
-      setDispose(unsub);
     };
 
     return (

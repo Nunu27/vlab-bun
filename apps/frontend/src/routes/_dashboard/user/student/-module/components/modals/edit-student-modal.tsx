@@ -40,6 +40,8 @@ interface EditStudentModalProps {
   student: Item;
 }
 
+const validator = Compile(UpdateStudentRequest);
+
 export function EditStudentModal({
   open,
   onOpenChange,
@@ -76,9 +78,7 @@ export function EditStudentModal({
       degreeLevel: student.degreeLevel,
       studyProgramId: student.studyProgram.id,
     },
-    validators: {
-      onSubmit: Compile(UpdateStudentRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateStudent.mutateAsync(value),
   });
 

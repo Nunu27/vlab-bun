@@ -30,6 +30,8 @@ interface EditLecturerModalProps {
   lecturerNip: string;
 }
 
+const validator = Compile(UpdateLecturerRequest);
+
 export function EditLecturerModal({
   open,
   onOpenChange,
@@ -66,9 +68,7 @@ export function EditLecturerModal({
       email: lecturerEmail,
       nip: lecturerNip,
     },
-    validators: {
-      onSubmit: Compile(UpdateLecturerRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateLecturer.mutateAsync(value),
   });
 

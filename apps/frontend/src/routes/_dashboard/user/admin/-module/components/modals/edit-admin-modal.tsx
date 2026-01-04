@@ -29,6 +29,8 @@ interface EditAdminModalProps {
   adminEmail: string;
 }
 
+const validator = Compile(UpdateAdminRequest);
+
 export function EditAdminModal({
   open,
   onOpenChange,
@@ -63,9 +65,7 @@ export function EditAdminModal({
       name: adminName,
       email: adminEmail,
     },
-    validators: {
-      onSubmit: Compile(UpdateAdminRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateAdmin.mutateAsync(value),
   });
 

@@ -28,6 +28,8 @@ interface ChangePasswordModalProps {
   userName: string;
 }
 
+const validator = Compile(ChangePasswordRequest);
+
 export function ChangePasswordModal({
   open,
   onOpenChange,
@@ -60,9 +62,7 @@ export function ChangePasswordModal({
       newPassword: '',
       confirmPassword: '',
     },
-    validators: {
-      onSubmit: Compile(ChangePasswordRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => changePassword.mutateAsync(value),
   });
 

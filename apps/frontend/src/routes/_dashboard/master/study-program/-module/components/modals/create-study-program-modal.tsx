@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import { getErrorMessageFromApi } from '@frontend/helper/error';
 import { PlusIcon } from 'lucide-react';
 
+const validator = Compile(CreateStudyProgramRequest);
+
 export function CreateStudyProgramModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -57,9 +59,7 @@ export function CreateStudyProgramModal() {
       name: '',
       departmentId: '',
     },
-    validators: {
-      onSubmit: Compile(CreateStudyProgramRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => createStudyProgram.mutateAsync(value),
   });
 

@@ -1,5 +1,5 @@
-import { CreateStudentRequest } from '@vlab/shared/schemas';
 import { Button } from '@frontend/components/ui/button';
+import { PaginatedComboBox } from '@frontend/components/ui/combobox';
 import {
   Dialog,
   DialogContent,
@@ -22,16 +22,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@frontend/components/ui/select';
-import { PaginatedComboBox } from '@frontend/components/ui/combobox';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { degreeLevelEnum, type DegreeLevel } from '@vlab/shared/enums';
+import { CreateStudentRequest } from '@vlab/shared/schemas';
 import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
-import { degreeLevelEnum, type DegreeLevel } from '@vlab/shared/enums';
+
+const validator = Compile(CreateStudentRequest);
 
 export function CreateStudentModal() {
   const [open, setOpen] = useState(false);
@@ -68,9 +70,7 @@ export function CreateStudentModal() {
       studyProgramId: '',
       password: '',
     },
-    validators: {
-      onSubmit: Compile(CreateStudentRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => createStudent.mutateAsync(value),
   });
 

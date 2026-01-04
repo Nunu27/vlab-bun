@@ -31,6 +31,8 @@ interface EditDeviceCategoryModalProps {
   deviceCategoryColor: string;
 }
 
+const validator = Compile(UpdateDeviceCategoryRequest);
+
 export function EditDeviceCategoryModal({
   open,
   onOpenChange,
@@ -69,7 +71,7 @@ export function EditDeviceCategoryModal({
       name: deviceCategoryName,
       color: deviceCategoryColor,
     } as typeof UpdateDeviceCategoryRequest.static,
-    validators: { onSubmit: Compile(UpdateDeviceCategoryRequest) },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateDeviceCategory.mutateAsync(value),
   });
 

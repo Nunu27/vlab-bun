@@ -28,6 +28,8 @@ interface EditDepartmentModalProps {
   departmentName: string;
 }
 
+const validator = Compile(UpdateDepartmentRequest);
+
 export function EditDepartmentModal({
   open,
   onOpenChange,
@@ -57,12 +59,8 @@ export function EditDepartmentModal({
   });
 
   const form = useForm({
-    defaultValues: {
-      name: departmentName,
-    },
-    validators: {
-      onSubmit: Compile(UpdateDepartmentRequest),
-    },
+    defaultValues: { name: departmentName },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateDepartment.mutateAsync(value),
   });
 

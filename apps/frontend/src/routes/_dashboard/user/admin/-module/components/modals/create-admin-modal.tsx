@@ -24,6 +24,8 @@ import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+const validator = Compile(CreateAdminRequest);
+
 export function CreateAdminModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -57,9 +59,7 @@ export function CreateAdminModal() {
       email: '',
       password: '',
     },
-    validators: {
-      onSubmit: Compile(CreateAdminRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => createAdmin.mutateAsync(value),
   });
 

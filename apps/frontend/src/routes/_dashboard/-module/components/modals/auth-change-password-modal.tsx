@@ -27,6 +27,8 @@ interface AuthChangePasswordModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const validator = Compile(AuthChangePasswordRequest);
+
 export function AuthChangePasswordModal({
   open,
   onOpenChange,
@@ -59,9 +61,7 @@ export function AuthChangePasswordModal({
       newPassword: '',
       confirmPassword: '',
     } as typeof AuthChangePasswordRequest.static,
-    validators: {
-      onSubmit: Compile(AuthChangePasswordRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => changePassword.mutateAsync(value),
   });
 

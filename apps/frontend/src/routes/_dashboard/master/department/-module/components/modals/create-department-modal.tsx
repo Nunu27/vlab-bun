@@ -24,6 +24,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { getErrorMessageFromApi } from '@frontend/helper/error';
 
+const validator = Compile(CreateDepartmentRequest);
+
 export function CreateDepartmentModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -53,9 +55,7 @@ export function CreateDepartmentModal() {
     defaultValues: {
       name: '',
     },
-    validators: {
-      onSubmit: Compile(CreateDepartmentRequest),
-    },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => createDepartment.mutateAsync(value),
   });
 

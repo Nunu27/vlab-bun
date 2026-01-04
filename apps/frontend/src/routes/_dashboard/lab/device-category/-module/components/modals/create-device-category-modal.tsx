@@ -25,6 +25,8 @@ import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+const validator = Compile(CreateDeviceCategoryRequest);
+
 export function CreateDeviceCategoryModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -57,7 +59,7 @@ export function CreateDeviceCategoryModal() {
       name: '',
       color: '#000000',
     } as unknown as typeof CreateDeviceCategoryRequest.static,
-    validators: { onSubmit: Compile(CreateDeviceCategoryRequest) },
+    validators: { onSubmit: validator },
     onSubmit: ({ value }) => createDeviceCategory.mutateAsync(value),
   });
 
