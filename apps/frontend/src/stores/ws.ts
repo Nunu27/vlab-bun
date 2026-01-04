@@ -144,6 +144,7 @@ const store = create<WSStore>()((set) => {
             if (type === 'done') ws.off(replyEvent, handler);
           };
 
+          ws.off(replyEvent);
           ws.on(replyEvent, handler);
         }
 
