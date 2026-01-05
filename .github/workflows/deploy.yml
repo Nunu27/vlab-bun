@@ -148,6 +148,9 @@ jobs:
 
             # Clean up old images
             echo -e "${BLUE}→ Cleaning up old images...${NC}"
-            docker image prune -af --filter "until=24h"
+            docker image prune -f
+            # Remove old images for this repository only
+            docker images "ghcr.io/${{ github.repository }}" --format "{{.ID}} {{.CreatedAt}}" | \
+              tail -n +2 | awk '{print $1}' | xargs -r docker rmi 2>/dev/null || true
 
             echo -e "${GREEN}🎉 Done!${NC}"
