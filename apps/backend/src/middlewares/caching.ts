@@ -1,11 +1,7 @@
 import env from "@backend/env";
 import { childLogger } from "@backend/services/logger";
 import redis from "@backend/services/redis";
-import type {
-	CacheHeaders,
-	CacheMetadata,
-	CacheOptions
-} from "@backend/types/caching";
+import type { CacheMetadata, CacheOptions } from "@backend/types/caching";
 import { md5 } from "@backend/utils/crypto";
 import { encode } from "@msgpack/msgpack";
 import type { Session } from "@vlab/shared/types";
@@ -91,7 +87,12 @@ export default new Elysia()
 			} = options;
 
 			return {
-				async beforeHandle({ cacheKey: rawKey, session, headers, set }) {
+				async beforeHandle({
+					cacheKey: rawKey,
+					session,
+					set,
+					request: { headers }
+				}) {
 					const cacheKey = buildCacheKey(key, personalized, {
 						key: rawKey,
 						session
@@ -103,10 +104,8 @@ export default new Elysia()
 					);
 					if (!metadata) return;
 
-					const {
-						"if-none-match": clientETag,
-						"if-modified-since": clientModifiedSince
-					} = headers as CacheHeaders;
+					const clientETag = headers.get("if-none-match");
+					const clientModifiedSince = headers.get("if-modified-since");
 
 					set.headers["cache-control"] = `no-cache`;
 					set.headers["etag"] = etag ? metadata.etag : undefined;

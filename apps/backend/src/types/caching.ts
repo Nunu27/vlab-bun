@@ -10,8 +10,3 @@ export type CacheMetadata = {
 	etag: string;
 	lastModified: Date;
 };
-
-export type CacheHeaders = {
-	"if-none-match"?: string;
-	"if-modified-since"?: string;
-};
