@@ -66,9 +66,11 @@ export type UsePaginationConfig<
   >,
 > = {
   queryKey: (params: TParams) => readonly unknown[];
-  queryFn: (
-    params: TParams,
-  ) => Promise<TreatyResponse<{ data: PaginatedResponse<TData> }>>;
+  queryFn: {
+    get: (options: {
+      query: TParams;
+    }) => Promise<TreatyResponse<{ data: PaginatedResponse<TData> }>>;
+  };
   defaultSortBy?: TFields;
   defaultSortOrder?: SortOrder;
   defaultPerPage?: number;
@@ -151,7 +153,7 @@ export function usePagination<
   const query = useQuery({
     queryKey: queryKey(apiParams),
     queryFn: async () => {
-      const response = await queryFn(apiParams);
+      const response = await queryFn.get({ query: apiParams });
 
       if (response.error) {
         throw new Error(getErrorMessageFromApi(response.error.value));

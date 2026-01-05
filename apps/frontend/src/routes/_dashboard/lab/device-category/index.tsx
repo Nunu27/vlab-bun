@@ -32,7 +32,7 @@ function RouteComponent() {
     Filters
   >({
     queryKey: (params) => ['device-category', 'pagination', params],
-    queryFn: pagination.post,
+    queryFn: pagination,
   });
 
   return (

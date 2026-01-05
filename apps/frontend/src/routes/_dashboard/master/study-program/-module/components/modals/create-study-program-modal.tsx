@@ -117,10 +117,12 @@ export function CreateStudyProgramModal() {
                       allowClear
                       queryKey={['department', 'pagination']}
                       fetcher={({ page, search }) =>
-                        api.department.pagination.post({
-                          page,
-                          perPage: 20,
-                          search: search || undefined,
+                        api.department.pagination.get({
+                          query: {
+                            page,
+                            perPage: 20,
+                            search: search || undefined,
+                          },
                         })
                       }
                       renderOption={(item) => ({

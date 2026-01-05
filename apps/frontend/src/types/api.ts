@@ -3,7 +3,7 @@ import type { Treaty } from '@elysiajs/eden';
 import type { PaginatedResponse } from '@frontend/types/pagination';
 
 export type ExtractPaginationData<T> = T extends {
-  post: (...args: any[]) => Promise<{ data?: infer R; error?: any }>;
+  get: (...args: any[]) => Promise<{ data?: infer R; error?: any }>;
 }
   ? R extends { data: { items: (infer Item)[]; pageInfo: any } }
     ? Item
@@ -11,7 +11,7 @@ export type ExtractPaginationData<T> = T extends {
   : never;
 
 export type ExtractPaginationResponse<T> = T extends {
-  post: (...args: any[]) => Promise<{ data?: infer R; error?: any }>;
+  get: (...args: any[]) => Promise<{ data?: infer R; error?: any }>;
 }
   ? R extends { data: infer Data }
     ? Data extends PaginatedResponse<any>
@@ -21,7 +21,7 @@ export type ExtractPaginationResponse<T> = T extends {
   : never;
 
 export type ExtractFields<T> = T extends {
-  post: (params: infer P) => any;
+  get: (options: { query: infer P }) => any;
 }
   ? P extends { sortBy?: infer S }
     ? S extends string
@@ -31,7 +31,7 @@ export type ExtractFields<T> = T extends {
   : string;
 
 export type ExtractFilters<T> = T extends {
-  post: (params: infer P) => any;
+  get: (options: { query: infer P }) => any;
 }
   ? P extends { filters?: infer F }
     ? F

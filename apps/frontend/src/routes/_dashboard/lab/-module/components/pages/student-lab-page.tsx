@@ -21,7 +21,7 @@ export default function StudentLabPage() {
     Filters
   >({
     queryKey: (params) => ['lab', 'pagination', params],
-    queryFn: pagination.post,
+    queryFn: pagination,
   });
 
   return (

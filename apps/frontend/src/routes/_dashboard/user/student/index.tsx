@@ -35,7 +35,7 @@ function RouteComponent() {
     Filters
   >({
     queryKey: (params) => ['student', 'pagination', params],
-    queryFn: pagination.post,
+    queryFn: pagination,
   });
 
   const studyProgramFilter = useMemo(() => {
@@ -81,12 +81,14 @@ function RouteComponent() {
             width="w-[250px]"
             queryKey={(params) => ['study-program', 'pagination', params]}
             queryFn={async (params) =>
-              await api['study-program'].pagination.post({
-                page: params.page,
-                perPage: 10,
-                sortBy: 'name',
-                sortOrder: 'asc',
-                search: params.search,
+              await api['study-program'].pagination.get({
+                query: {
+                  page: params.page,
+                  perPage: 10,
+                  sortBy: 'name',
+                  sortOrder: 'asc',
+                  search: params.search,
+                },
               })
             }
             getItemValue={(item) => item.id}

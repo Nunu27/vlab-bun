@@ -32,7 +32,7 @@ function RouteComponent() {
     Filters
   >({
     queryKey: (params) => ['admin', 'pagination', params],
-    queryFn: pagination.post,
+    queryFn: pagination,
   });
 
   return (

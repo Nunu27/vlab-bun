@@ -1,4 +1,3 @@
-import { createCipheriv, randomBytes } from "crypto";
 import env from "@backend/env";
 import type {
 	GuacamoleProtocol,
@@ -9,9 +8,11 @@ import type {
 	TelnetParameters,
 	VNCParameters
 } from "@backend/types/guacamole";
+import type { BlobOrStringOrBuffer } from "bun";
+import { createCipheriv, randomBytes } from "crypto";
 
-export const md5 = (s: string) =>
-	new Bun.CryptoHasher("md5").update(s).digest("hex").slice(0, 24);
+export const md5 = (input: BlobOrStringOrBuffer) =>
+	new Bun.CryptoHasher("md5").update(input).digest("hex").slice(0, 24);
 
 const CIPHER = "aes-256-cbc";
 

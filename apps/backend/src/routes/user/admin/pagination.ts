@@ -13,18 +13,18 @@ export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
-		body: paginator.schema,
+		query: paginator.schema,
 		detail: {
 			description: "Get paginated admins data"
 		}
 	},
 	(app) =>
 		app
-			.resolve(({ body }) => ({
-				cacheKey: `admin:pagination:${md5(JSON.stringify(body))}`
+			.resolve(({ query }) => ({
+				cacheKey: `admin:pagination:${md5(JSON.stringify(query))}`
 			}))
-			.post("/pagination", async ({ body }) => {
-				const data = await paginator.paginate(body, {
+			.get("/pagination", async ({ query }) => {
+				const data = await paginator.paginate(query, {
 					where: (users, { eq }) => eq(users.role, "admin"),
 					columns: {
 						passwordHash: false,

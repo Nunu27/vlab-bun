@@ -143,10 +143,12 @@ export const DeviceBasicInfoForm = withForm({
                     <PaginatedComboBox
                       queryKey={['device-category', 'pagination']}
                       fetcher={({ page, search }) =>
-                        api['device-category'].pagination.post({
-                          page,
-                          perPage: 20,
-                          search: search || undefined,
+                        api['device-category'].pagination.get({
+                          query: {
+                            page,
+                            perPage: 20,
+                            search: search || undefined,
+                          },
                         })
                       }
                       renderOption={(item) => ({

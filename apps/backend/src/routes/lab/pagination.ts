@@ -11,7 +11,7 @@ const paginator = createPaginator(db, "labs", {
 export default createRouter().guard(
 	{
 		private: ["student", "lecturer"],
-		body: paginator.schema,
+		query: paginator.schema,
 		cached: { personalized: true },
 		detail: {
 			description: "Get paginated labs data"
@@ -19,11 +19,11 @@ export default createRouter().guard(
 	},
 	(app) =>
 		app
-			.resolve(({ body }) => ({
-				cacheKey: `lab:pagination:${md5(JSON.stringify(body))}`
+			.resolve(({ query }) => ({
+				cacheKey: `lab:pagination:${md5(JSON.stringify(query))}`
 			}))
-			.post("/pagination", async ({ body, session }) => {
-				const data = await paginator.paginate(body, {
+			.get("/pagination", async ({ query, session }) => {
+				const data = await paginator.paginate(query, {
 					columns: {
 						topology: false
 					},

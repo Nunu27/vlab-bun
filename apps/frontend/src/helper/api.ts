@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/rules-of-hooks */
 import type { Treaty } from '@elysiajs/eden';
-import type Elysia from 'elysia';
+import { getErrorMessageFromApi } from '@frontend/helper/error';
 import {
-  useQuery,
-  useSuspenseQuery,
   useInfiniteQuery,
   useMutation,
-  type UseQueryOptions,
-  type UseSuspenseQueryOptions,
-  type UseInfiniteQueryOptions,
-  type UseMutationOptions,
-  type QueryKey,
+  useQuery,
+  useSuspenseQuery,
   type QueryClient,
-  type UseQueryResult,
-  type UseSuspenseQueryResult,
+  type QueryKey,
+  type UseInfiniteQueryOptions,
   type UseInfiniteQueryResult,
+  type UseMutationOptions,
   type UseMutationResult,
+  type UseQueryOptions,
+  type UseQueryResult,
+  type UseSuspenseQueryOptions,
+  type UseSuspenseQueryResult,
 } from '@tanstack/react-query';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
+import type Elysia from 'elysia';
 
 // --- Configuration ---
 
@@ -56,19 +56,14 @@ type ExtractResponseData<T> =
     : never;
 
 type ExtractErrorData<T> =
-  T extends Promise<infer R>
-    ? R extends { error: infer E }
-      ? E extends null
-        ? Error
-        : E
-      : Error
-    : Error;
+  T extends Promise<{ error: infer E }> ? (E extends null ? Error : E) : Error;
 
-type ExtractMutationVariables<Args extends any[]> = Args extends []
-  ? void
-  : Args extends [infer Body, ...any[]]
-    ? Body
-    : void;
+type ExtractMutationVariables<Args extends any[]> = Args extends [
+  infer Body,
+  ...any[],
+]
+  ? Body
+  : void;
 
 type QueryMethods<Args extends any[], Return> = {
   useQuery: (
@@ -146,6 +141,8 @@ type QueryMethods<Args extends any[], Return> = {
   ensureQueryData: (
     queryClient: QueryClient,
   ) => Promise<ExtractResponseData<Return>>;
+
+  invalidateQuery: (queryClient: QueryClient) => Promise<void>;
 };
 
 type TreatyWithQuery<T> = T extends (...args: infer Args) => infer Return
@@ -157,34 +154,41 @@ type TreatyWithQuery<T> = T extends (...args: infer Args) => infer Return
       }
   : { [K in keyof T]: TreatyWithQuery<T[K]> };
 
-// --- Proxy Implementation ---
-
-const proxyCache = new WeakMap<object, any>();
+// --- Helpers ---
 
 async function executeEdenCall(fn: (...args: any[]) => any, args: any[]) {
   const result = await fn(...args);
   if (result.error) {
-    throw new Error(getErrorMessageFromApi(result.error.value));
+    const error = new Error(getErrorMessageFromApi(result.error.value));
+    // Preserve original error for debugging
+    (error as any).originalError = result.error.value;
+    throw error;
   }
   return result.data.data;
 }
 
-const hookSelectors: Record<string, (obj: any, path: any[]) => any> = {
-  useQuery: (obj, path) => (options: any) =>
-    useQuery({
-      ...globalQueryConfig.useQuery,
-      ...options,
-      queryKey: path,
-      queryFn: () => executeEdenCall(obj, []),
-    }),
+// --- Hook Selectors ---
 
-  useSuspenseQuery: (obj, path) => (options: any) =>
-    useSuspenseQuery({
-      ...globalQueryConfig.useSuspenseQuery,
-      ...options,
-      queryKey: path,
-      queryFn: () => executeEdenCall(obj, []),
-    }),
+const hookSelectors: Record<string, (obj: any, path: any[]) => any> = {
+  useQuery:
+    (obj, path) =>
+    (options = {}) =>
+      useQuery({
+        ...globalQueryConfig.useQuery,
+        ...options,
+        queryKey: path,
+        queryFn: () => executeEdenCall(obj, []),
+      }),
+
+  useSuspenseQuery:
+    (obj, path) =>
+    (options = {}) =>
+      useSuspenseQuery({
+        ...globalQueryConfig.useSuspenseQuery,
+        ...options,
+        queryKey: path,
+        queryFn: () => executeEdenCall(obj, []),
+      }),
 
   useInfiniteQuery: (obj, path) => (options: any) => {
     const { initialPageParam, getNextPageParam, ...restOptions } = options;
@@ -201,47 +205,47 @@ const hookSelectors: Record<string, (obj: any, path: any[]) => any> = {
     });
   },
 
-  useMutation: (obj) => (options: any) =>
-    useMutation({
-      ...globalQueryConfig.useMutation,
-      ...options,
-      mutationFn: (variables?: any) => {
-        const args =
-          variables === undefined || variables === null ? [] : [variables];
-        return executeEdenCall(obj, args);
-      },
-    }),
+  useMutation:
+    (obj) =>
+    (options = {}) =>
+      useMutation({
+        ...globalQueryConfig.useMutation,
+        ...options,
+        mutationFn: (variables?: any) => {
+          const args =
+            variables === undefined || variables === null ? [] : [variables];
+          return executeEdenCall(obj, args);
+        },
+      }),
 
   ensureQueryData: (obj, path) => (queryClient: QueryClient) =>
     queryClient.ensureQueryData({
       queryKey: path,
       queryFn: () => executeEdenCall(obj, []),
     }),
+
+  invalidateQuery: (_obj, path) => (queryClient: QueryClient) =>
+    queryClient.invalidateQueries({ queryKey: path }),
 };
+
+// --- Proxy Implementation ---
 
 function createProxy(target: any, path: any[] = []): any {
   if (typeof target !== 'object' && typeof target !== 'function') {
     return target;
   }
 
-  const cached = proxyCache.get(target);
-  if (cached) return cached;
-
-  const proxy = new Proxy(target, {
-    get(obj, prop, receiver) {
-      if (typeof prop === 'string') {
-        const hookFactory = hookSelectors[prop];
-        if (hookFactory) {
-          return hookFactory(obj, path);
-        }
+  return new Proxy(target, {
+    get(obj, prop) {
+      // Handle hook methods
+      if (typeof prop === 'string' && hookSelectors[prop]) {
+        return hookSelectors[prop](obj, path);
       }
 
-      const value = Reflect.get(obj, prop, receiver);
+      const value = Reflect.get(obj, prop);
 
-      if (
-        typeof value === 'function' ||
-        (typeof value === 'object' && value !== null)
-      ) {
+      // Proxy functions and objects for chaining
+      if (value && (typeof value === 'function' || typeof value === 'object')) {
         return createProxy(value, [...path, prop]);
       }
 
@@ -251,21 +255,15 @@ function createProxy(target: any, path: any[] = []): any {
     apply(fn, thisArg, args) {
       const result = Reflect.apply(fn, thisArg, args);
 
-      if (
-        result &&
-        (result instanceof Promise ||
-          (typeof result === 'object' &&
-            typeof (result as any).then === 'function'))
-      ) {
+      // Return promises directly without proxying
+      if (result instanceof Promise) {
         return result;
       }
 
-      return createProxy(result, [...path, ...args]);
+      // Proxy the result for further chaining
+      return createProxy(result, path);
     },
   });
-
-  proxyCache.set(target, proxy);
-  return proxy;
 }
 
 export function edenQuery<

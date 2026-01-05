@@ -24,7 +24,7 @@ export default function LecturerLabPage() {
     Filters
   >({
     queryKey: (params) => ['lab', 'pagination', params],
-    queryFn: pagination.post,
+    queryFn: pagination,
   });
 
   return (

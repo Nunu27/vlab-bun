@@ -12,18 +12,18 @@ export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
-		body: paginator.schema,
+		query: paginator.schema,
 		detail: {
 			description: "Get paginated device categories data"
 		}
 	},
 	(app) =>
 		app
-			.resolve(({ body }) => ({
-				cacheKey: `device-category:pagination:${md5(JSON.stringify(body))}`
+			.resolve(({ query }) => ({
+				cacheKey: `device-category:pagination:${md5(JSON.stringify(query))}`
 			}))
-			.post("/pagination", async ({ body }) => {
-				const data = await paginator.paginate(body, {
+			.get("/pagination", async ({ query }) => {
+				const data = await paginator.paginate(query, {
 					columns: {
 						createdAt: false,
 						updatedAt: false

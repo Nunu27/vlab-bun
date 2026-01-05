@@ -12,18 +12,18 @@ export default createRouter().guard(
 	{
 		cached: true,
 		private: ["admin"],
-		body: paginator.schema,
+		query: paginator.schema,
 		detail: {
 			description: "Get paginated study programs data"
 		}
 	},
 	(app) =>
 		app
-			.resolve(({ body }) => ({
-				cacheKey: `study-program:pagination:${md5(JSON.stringify(body))}`
+			.resolve(({ query }) => ({
+				cacheKey: `study-program:pagination:${md5(JSON.stringify(query))}`
 			}))
-			.post("/pagination", async ({ body }) => {
-				const data = await paginator.paginate(body, {
+			.get("/pagination", async ({ query }) => {
+				const data = await paginator.paginate(query, {
 					columns: {
 						departmentId: false,
 						createdAt: false,

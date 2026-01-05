@@ -251,10 +251,12 @@ export function CreateStudentModal() {
                       allowClear
                       queryKey={['study-program', 'pagination']}
                       fetcher={({ page, search }) =>
-                        api['study-program'].pagination.post({
-                          page,
-                          perPage: 20,
-                          search: search || undefined,
+                        api['study-program'].pagination.get({
+                          query: {
+                            page,
+                            perPage: 20,
+                            search: search || undefined,
+                          },
                         })
                       }
                       renderOption={(item) => ({

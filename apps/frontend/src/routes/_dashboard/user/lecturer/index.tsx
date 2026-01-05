@@ -31,7 +31,7 @@ function RouteComponent() {
     Filters
   >({
     queryKey: (params) => ['lecturer', 'pagination', params],
-    queryFn: pagination.post,
+    queryFn: pagination,
   });
 
   return (
