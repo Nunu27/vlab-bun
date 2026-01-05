@@ -230,38 +230,32 @@ const hookSelectors: Record<string, (obj: any, path: any[]) => any> = {
 
 // --- Proxy Implementation ---
 
-function createProxy(target: any, path: any[] = []): any {
-  if (typeof target !== 'object' && typeof target !== 'function') {
-    return target;
-  }
-
+function createProxy(
+  target: any,
+  path: any[] = [],
+  accumulatedArgs: any[] = [],
+): any {
   return new Proxy(target, {
     get(obj, prop) {
       // Handle hook methods
       if (typeof prop === 'string' && hookSelectors[prop]) {
-        return hookSelectors[prop](obj, path);
+        const fullPath = [...path, ...accumulatedArgs];
+        return hookSelectors[prop](obj, fullPath);
       }
 
       const value = Reflect.get(obj, prop);
 
       // Proxy functions and objects for chaining
       if (value && (typeof value === 'function' || typeof value === 'object')) {
-        return createProxy(value, [...path, prop]);
+        return createProxy(value, [...path, prop], accumulatedArgs);
       }
-
       return value;
     },
 
     apply(fn, thisArg, args) {
       const result = Reflect.apply(fn, thisArg, args);
-
-      // Return promises directly without proxying
-      if (result instanceof Promise) {
-        return result;
-      }
-
-      // Proxy the result for further chaining
-      return createProxy(result, path);
+      if (result instanceof Promise) return result;
+      return createProxy(result, path, [...accumulatedArgs, ...args]);
     },
   });
 }
