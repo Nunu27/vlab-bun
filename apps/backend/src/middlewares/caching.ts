@@ -55,6 +55,8 @@ const parseHTTPDate = (dateString: string) => {
 };
 
 export const deleteCache = async (...keys: string[]) => {
+	logger.debug(`Deleting cache for keys: ${keys.join(", ")}`);
+
 	const allKeys = keys.flatMap((key) => [DATA_PREFIX + key, META_PREFIX + key]);
 	await redis.del(...allKeys);
 };
@@ -62,7 +64,7 @@ export const deleteCache = async (...keys: string[]) => {
 export const clearCache = async () => {
 	const deletedCount = await redis.delByPattern(PREFIX + "*");
 	if (deletedCount) {
-		logger.info(`Cleared ${deletedCount} cache entries.`);
+		logger.debug(`Cleared ${deletedCount} cache entries.`);
 	}
 };
 
@@ -73,8 +75,6 @@ export default new Elysia()
 			({}) as {
 				cacheKey?: string;
 				session: { data: Session | null };
-				cacheMetadata?: CacheMetadata;
-				fromCache?: boolean;
 			}
 	)
 	.macro({
@@ -91,8 +91,7 @@ export default new Elysia()
 			} = options;
 
 			return {
-				async beforeHandle(ctx) {
-					const { cacheKey: rawKey, session, headers } = ctx;
+				async beforeHandle({ cacheKey: rawKey, session, headers, set }) {
 					const cacheKey = buildCacheKey(key, personalized, {
 						key: rawKey,
 						session
@@ -109,7 +108,11 @@ export default new Elysia()
 						"if-modified-since": clientModifiedSince
 					} = headers as CacheHeaders;
 
-					ctx.cacheMetadata = metadata;
+					set.headers["cache-control"] = `no-cache`;
+					set.headers["etag"] = etag ? metadata.etag : undefined;
+					set.headers["last-modified"] = lastModified
+						? metadata.lastModified.toISOString()
+						: undefined;
 
 					// Check ETag match
 					if (etag && clientETag === metadata.etag) {
@@ -135,38 +138,25 @@ export default new Elysia()
 						return cachedData;
 					} else {
 						logger.debug(`Cache miss for key: ${cacheKey}`);
-						ctx.cacheMetadata = undefined;
+						set.headers["cache-control"] = undefined;
 					}
 				},
-				afterHandle(ctx) {
-					const { set, responseValue } = ctx;
-
-					if (!ctx.cacheMetadata) {
-						set.headers["x-cache"] = "MISS";
-						ctx.cacheMetadata = {
-							etag: generateETag(responseValue),
-							lastModified: new Date()
-						};
-					} else {
+				afterHandle({ set, responseValue }) {
+					if (set.headers["cache-control"]) {
 						set.headers["x-cache"] = "HIT";
-						ctx.fromCache = true;
+					} else {
+						set.headers["x-cache"] = "MISS";
+						set.headers["cache-control"] = `no-cache`;
+						set.headers["etag"] = etag
+							? generateETag(responseValue)
+							: undefined;
+						set.headers["last-modified"] = lastModified
+							? new Date().toISOString()
+							: undefined;
 					}
-
-					set.headers["cache-control"] = `no-cache`;
-					set.headers["etag"] = etag ? ctx.cacheMetadata.etag : undefined;
-					set.headers["last-modified"] = lastModified
-						? ctx.cacheMetadata.lastModified.toISOString()
-						: undefined;
 				},
-				async afterResponse({
-					set,
-					cacheKey: rawKey,
-					session,
-					responseValue,
-					fromCache,
-					cacheMetadata
-				}) {
-					if (fromCache || !cacheMetadata || set.status !== 200) return;
+				async afterResponse({ set, cacheKey: rawKey, session, responseValue }) {
+					if (set.headers["x-cache"] === "HIT" || set.status !== 200) return;
 
 					const cacheKey = buildCacheKey(key, personalized, {
 						key: rawKey,
@@ -181,7 +171,16 @@ export default new Elysia()
 					// Store both data and metadata
 					await Promise.all([
 						redis.set(DATA_PREFIX + cacheKey, responseValue, ttl),
-						redis.set(META_PREFIX + cacheKey, cacheMetadata, ttl)
+						redis.set(
+							META_PREFIX + cacheKey,
+							{
+								etag: set.headers["etag"],
+								lastModified:
+									parseHTTPDate(set.headers["last-modified"] ?? "") ??
+									new Date()
+							},
+							ttl
+						)
 					]);
 				}
 			};
