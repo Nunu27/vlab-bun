@@ -1,16 +1,9 @@
-import { Button } from '@frontend/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@frontend/components/ui/dropdown-menu';
+import { ActionButton } from '@frontend/components/action-button';
+import { ChangePasswordModal } from '@frontend/components/modals/change-password-modal';
 import type api from '@frontend/lib/api';
 import type { ExtractPaginationData } from '@frontend/types/api';
-import { MoreVerticalIcon } from 'lucide-react';
+import { KeyRoundIcon, PencilIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
-import { ChangePasswordModal } from '@frontend/components/modals/change-password-modal';
 import { DeleteAdminModal } from './modals/delete-admin-modal';
 import { EditAdminModal } from './modals/edit-admin-modal';
 
@@ -24,36 +17,23 @@ export function AdminActionsCell({ admin }: { admin: Item }) {
 
   return (
     <>
-      <div className="flex justify-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <MoreVerticalIcon />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => setChangePasswordDialogOpen(true)}
-            >
-              Change Password
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => setDeleteDialogOpen(true)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex items-center justify-center gap-1">
+        <ActionButton
+          icon={PencilIcon}
+          tooltip="Edit"
+          onClick={() => setEditDialogOpen(true)}
+        />
+        <ActionButton
+          icon={KeyRoundIcon}
+          tooltip="Change Password"
+          onClick={() => setChangePasswordDialogOpen(true)}
+        />
+        <ActionButton
+          icon={Trash2Icon}
+          tooltip="Delete"
+          variant="destructive"
+          onClick={() => setDeleteDialogOpen(true)}
+        />
       </div>
       <EditAdminModal
         open={editDialogOpen}

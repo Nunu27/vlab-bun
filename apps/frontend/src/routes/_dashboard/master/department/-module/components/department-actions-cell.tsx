@@ -1,14 +1,7 @@
-import { Button } from '@frontend/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@frontend/components/ui/dropdown-menu';
+import { ActionButton } from '@frontend/components/action-button';
 import type api from '@frontend/lib/api';
 import type { ExtractPaginationData } from '@frontend/types/api';
-import { MoreVerticalIcon } from 'lucide-react';
+import { PencilIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { DeleteDepartmentModal } from './modals/delete-department-modal';
 import { EditDepartmentModal } from './modals/edit-department-modal';
@@ -21,31 +14,18 @@ export function DepartmentActionsCell({ department }: { department: Item }) {
 
   return (
     <>
-      <div className="flex justify-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <MoreVerticalIcon />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem onSelect={() => setEditDialogOpen(true)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => setDeleteDialogOpen(true)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex items-center justify-center gap-1">
+        <ActionButton
+          icon={PencilIcon}
+          tooltip="Edit"
+          onClick={() => setEditDialogOpen(true)}
+        />
+        <ActionButton
+          icon={Trash2Icon}
+          tooltip="Delete"
+          variant="destructive"
+          onClick={() => setDeleteDialogOpen(true)}
+        />
       </div>
       <EditDepartmentModal
         open={editDialogOpen}

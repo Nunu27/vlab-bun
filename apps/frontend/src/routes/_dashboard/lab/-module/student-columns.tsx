@@ -53,7 +53,6 @@ export const studentLabColumns: ColumnDef<LabItem>[] = [
     enableHiding: false,
     meta: {
       center: true,
-      label: 'Action',
     },
     cell: ({ row }) => <StudentLabActions lab={row.original} />,
   },

@@ -1,3 +1,4 @@
+import { ActionButton } from '@frontend/components/action-button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,18 +10,11 @@ import {
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
 import { Button } from '@frontend/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@frontend/components/ui/dropdown-menu';
 import api from '@frontend/lib/api';
 import { useAuthStore } from '@frontend/stores/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { MoreVerticalIcon, PlayIcon, RotateCwIcon } from 'lucide-react';
+import { PencilIcon, PlayIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import type { LabItem } from '../lecturer-columns';
@@ -62,35 +56,20 @@ export function LabActionsCell({ lab }: { lab: LabItem }) {
 
   return (
     <>
-      <div className="flex justify-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-              size="icon"
-            >
-              <MoreVerticalIcon />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem
-              onClick={() =>
-                navigate({ to: '/lab/$id/update', params: { id: lab.id } })
-              }
-            >
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex items-center justify-center gap-1">
+        <ActionButton
+          icon={PencilIcon}
+          tooltip="Edit"
+          onClick={() =>
+            navigate({ to: '/lab/$id/update', params: { id: lab.id } })
+          }
+        />
+        <ActionButton
+          icon={Trash2Icon}
+          tooltip="Delete"
+          variant="destructive"
+          onClick={() => setShowDeleteDialog(true)}
+        />
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

@@ -119,10 +119,7 @@ const TestConnectionButton = withForm({
                 <LogIssuesButton logs={logs} />
               </div>
 
-              <Button
-                variant={token ? 'secondary' : 'outline'}
-                onClick={() => setOpen(false)}
-              >
+              <Button variant="secondary" onClick={() => setOpen(false)}>
                 {token ? 'Close Session' : 'Cancel'}
               </Button>
             </DialogFooter>

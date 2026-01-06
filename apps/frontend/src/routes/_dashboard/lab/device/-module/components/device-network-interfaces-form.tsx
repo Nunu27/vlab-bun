@@ -1,3 +1,25 @@
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  restrictToParentElement,
+  restrictToVerticalAxis,
+} from '@dnd-kit/modifiers';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ActionButton } from '@frontend/components/action-button';
 import { Button } from '@frontend/components/ui/button';
 import { Checkbox } from '@frontend/components/ui/checkbox';
 import { Input } from '@frontend/components/ui/input';
@@ -10,27 +32,6 @@ import {
   TableRow,
 } from '@frontend/components/ui/table';
 import { cn } from '@frontend/lib/utils';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import {
-  restrictToVerticalAxis,
-  restrictToParentElement,
-} from '@dnd-kit/modifiers';
 import { GripVerticalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { withForm, type DeviceFormData } from '../hooks/use-device-form';
 
@@ -101,14 +102,13 @@ function SortableInterfaceRow({
         />
       </TableCell>
       <TableCell className="w-16 text-center">
-        <Button
+        <ActionButton
+          icon={Trash2Icon}
+          tooltip="Delete"
           type="button"
           variant="destructive"
-          size="icon"
           onClick={onDelete}
-        >
-          <Trash2Icon className="size-4" />
-        </Button>
+        />
       </TableCell>
     </TableRow>
   );
