@@ -12,7 +12,7 @@ import type { BlobOrStringOrBuffer } from "bun";
 import { createCipheriv, randomBytes } from "crypto";
 
 export const md5 = (input: BlobOrStringOrBuffer) =>
-	new Bun.CryptoHasher("md5").update(input).digest("hex").slice(0, 24);
+	new Bun.CryptoHasher("md5").update(input).digest("hex");
 
 const CIPHER = "aes-256-cbc";
 

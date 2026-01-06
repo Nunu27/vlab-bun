@@ -1,5 +1,5 @@
 import db from "@backend/db";
-import { createDBEventEmitter } from "@backend/db/listener";
+import dbListener from "@backend/db/listener";
 import { devices, labSessions, labs } from "@backend/db/schema";
 import clab, { clabWrapper } from "@backend/services/clab";
 import type { Link, Node } from "@backend/types/containerlab";
@@ -9,11 +9,15 @@ import { LABELS } from "@vlab/monitor/constants";
 import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas";
 import { and, eq, inArray } from "drizzle-orm";
 
-const sessionDeleteEmitter = createDBEventEmitter(
+const sessionDeleteEmitter = dbListener.createEventEmitter(
 	"labSessions",
 	["id"],
-	(session) => session.id,
-	() => null
+	(session) => {
+		console.log("bjir");
+		return session.id;
+	},
+	() => null,
+	{ ops: ["DELETE"] }
 );
 
 const labWSHandler: WSHandler<typeof labWSSchemas> = {
@@ -151,7 +155,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 
 		const sessionPromise = sessionDeleteEmitter.wait(
 			sessionId,
-			(session) => session,
+			() => null,
 			120000,
 			null
 		);

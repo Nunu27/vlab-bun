@@ -1,4 +1,4 @@
-import { createDBEventEmitter } from "@backend/db/listener";
+import dbListener from "@backend/db/listener";
 import env from "@backend/env";
 import clab, { clabWrapper } from "@backend/services/clab";
 import docker from "@backend/services/docker";
@@ -13,7 +13,7 @@ import {
 } from "@vlab/shared/schemas";
 import { sleep } from "@vlab/shared/utils";
 
-const healthEmitter = createDBEventEmitter(
+const healthEmitter = dbListener.createEventEmitter(
 	"labNodes",
 	["id", "health"],
 	(node) => node.id,
@@ -21,7 +21,7 @@ const healthEmitter = createDBEventEmitter(
 	{ ops: ["INSERT", "UPDATE"] }
 );
 
-const portEmitter = createDBEventEmitter(
+const portEmitter = dbListener.createEventEmitter(
 	"labNodes",
 	["id", "ports"],
 	(node) => node.id,

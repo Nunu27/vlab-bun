@@ -94,7 +94,7 @@ export function startSync() {
 			if (!session) return;
 
 			await deleteCache(
-				`lab:pagination:*:$${session.ownerId}`,
+				`lab:pagination:*:${session.ownerId}`,
 				`lab:session:${id}`
 			);
 

@@ -1,5 +1,5 @@
 import db from "@backend/db";
-import { addDBListener } from "@backend/db/listener";
+import dbListener from "@backend/db/listener";
 import { labSessions } from "@backend/db/schema/lab-session";
 import logger from "@backend/services/logger";
 import type { Operations } from "@backend/types";
@@ -34,7 +34,7 @@ const updateCronJob = debounce(
 	5 * 60 * 1000
 );
 
-addDBListener(
+dbListener.addListener(
 	"labSessions",
 	["type"],
 	async ({ op, data }) => {

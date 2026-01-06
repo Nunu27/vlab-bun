@@ -1,9 +1,5 @@
 import { checkAndRunMigration } from "@backend/db";
-import {
-	cleanupDBListeners,
-	syncDBChannels,
-	syncDBListeners
-} from "@backend/db/listener";
+import dbListener from "@backend/db/listener";
 import env, { inProduction } from "@backend/env";
 import { clearCache } from "@backend/middlewares/caching";
 import services from "@backend/plugins/services";
@@ -48,7 +44,7 @@ const app = new Elysia({
 const shutdown = async (signal: string) => {
 	logger.info(`${signal} received, shutting down...`);
 	await shutdownGuacamole();
-	await cleanupDBListeners();
+	await dbListener.cleanup();
 	await io.close();
 	await redisClient.quit();
 	logger.info("Cleanup complete, exiting");
@@ -61,7 +57,7 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 export async function startServer() {
 	if (cluster.isPrimary) {
 		await checkAndRunMigration();
-		await syncDBListeners();
+		await dbListener.syncListeners();
 		await clearCache();
 
 		startSync();
@@ -69,7 +65,7 @@ export async function startServer() {
 		initGuacamole();
 	}
 
-	await syncDBChannels();
+	await dbListener.syncChannels();
 
 	app.listen({ port: env.PORT, ...engine.handler() }, (app) => {
 		logger.info(`Server running on ${app.url.origin}`);
