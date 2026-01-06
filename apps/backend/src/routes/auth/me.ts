@@ -37,7 +37,8 @@ export default createRouter().get(
 		protected: true,
 		cached: {
 			key: "me",
-			personalized: true
+			personalized: true,
+			lastModified: false
 		},
 		detail: { description: "Get current logged in user" }
 	}

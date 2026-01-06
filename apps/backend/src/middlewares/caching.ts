@@ -86,6 +86,8 @@ export default new Elysia()
 				lastModified = true
 			} = options;
 
+			const useLastModified = lastModified || personalized;
+
 			return {
 				async beforeHandle({
 					cacheKey: rawKey,
@@ -109,23 +111,27 @@ export default new Elysia()
 
 					set.headers["cache-control"] = `no-cache`;
 					set.headers["etag"] = etag ? metadata.etag : undefined;
-					set.headers["last-modified"] = lastModified
+					set.headers["last-modified"] = useLastModified
 						? metadata.lastModified.toISOString()
 						: undefined;
 
 					// Check ETag match
 					if (etag && clientETag === metadata.etag) {
-						logger.debug(`ETag match for key: ${cacheKey}, returning 304`);
+						logger.debug(
+							{ key: cacheKey },
+							"Cache hit by ETag header, returning 304"
+						);
 						return new Response(null, { status: 304 });
 					}
 
 					// Check If-Modified-Since
-					if (lastModified && clientModifiedSince) {
+					if (useLastModified && clientModifiedSince) {
 						const clientDate = parseHTTPDate(clientModifiedSince);
 
 						if (clientDate && clientDate >= metadata.lastModified) {
 							logger.debug(
-								`Not modified since ${clientModifiedSince} for key: ${cacheKey}, returning 304`
+								{ key: cacheKey },
+								"Cache hit by Last-Modified header, returning 304"
 							);
 							return new Response(null, { status: 304 });
 						}
@@ -133,10 +139,10 @@ export default new Elysia()
 
 					const cachedData = await redis.get(DATA_PREFIX + cacheKey);
 					if (cachedData) {
-						logger.debug(`Cache hit for key: ${cacheKey}`);
+						logger.debug({ key: cacheKey }, "Cache hit");
 						return cachedData;
 					} else {
-						logger.debug(`Cache miss for key: ${cacheKey}`);
+						logger.debug({ key: cacheKey }, "Cache miss");
 						set.headers["cache-control"] = undefined;
 					}
 				},
@@ -149,7 +155,7 @@ export default new Elysia()
 						set.headers["etag"] = etag
 							? generateETag(responseValue)
 							: undefined;
-						set.headers["last-modified"] = lastModified
+						set.headers["last-modified"] = useLastModified
 							? new Date().toISOString()
 							: undefined;
 					}
