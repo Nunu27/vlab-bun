@@ -8,7 +8,7 @@ import {
   SidebarRail,
 } from '@frontend/components/ui/sidebar';
 import { menuByRole } from '@frontend/constants/menu';
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import { AppLogo } from './app-logo';
 import { NavMain } from './nav-main';
 import { NavUser } from './nav-user';

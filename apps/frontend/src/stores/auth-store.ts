@@ -15,20 +15,22 @@ interface AuthActions {
 }
 
 interface AuthState {
-  user: AuthUser | null | undefined;
+  user?: AuthUser | null;
+  redirectUrl?: string;
 }
 
 type AuthStore = Store<AuthState, AuthActions>;
 
 const store = create<AuthStore>()((set, get) => ({
   user: undefined,
+  redirectUrl: undefined,
   actions: {
     refresh: async () => {
       const token = await cookieStore.get('session');
-      if (!token) return set({ user: null });
+      if (!token) return set({ user: null, redirectUrl: undefined });
 
       await errorHandler(api.auth.me.get(), {
-        callback: ({ data }) => set({ user: data }),
+        callback: ({ data }) => set({ user: data, redirectUrl: undefined }),
       });
     },
     login: async (credentials) => {
@@ -38,9 +40,9 @@ const store = create<AuthStore>()((set, get) => ({
     },
     logout: async () => {
       await errorHandler(api.auth.logout.post(), {
-        callback: async () => {
+        callback: async ({ data }) => {
           await cookieStore.delete('session');
-          set({ user: null });
+          set({ user: null, redirectUrl: data });
         },
       });
     },

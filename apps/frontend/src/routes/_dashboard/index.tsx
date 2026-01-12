@@ -1,6 +1,6 @@
 import LoadingPage from '@frontend/components/pages/loading-page';
 import { menuByRole } from '@frontend/constants/menu';
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
 
@@ -14,10 +14,8 @@ const StudentDashboard = lazy(
   () => import('./-module/components/pages/student-dashboard'),
 );
 
-const breadcrumbs = [{ title: 'Dashboard' }];
-
 export const Route = createFileRoute('/_dashboard/')({
-  staticData: { breadcrumbs },
+  staticData: { breadcrumbs: [{ title: 'Dashboard' }] },
   beforeLoad: () => {
     const role = useAuthStore.getState().user!.role;
     const menu = menuByRole[role];

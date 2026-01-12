@@ -1,3 +1,6 @@
+export const connectionTypeEnum = ["rdp", "vnc", "ssh", "telnet"] as const;
+export type ConnectionType = (typeof connectionTypeEnum)[number];
+
 export const deviceKindEnum = [
 	"nokia_srlinux",
 	"nokia_sros",

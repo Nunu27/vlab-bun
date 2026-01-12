@@ -4,7 +4,7 @@ import { useGuacamoleClipboard } from '../hooks/use-guacamole-clipboard';
 import { useGuacamoleKeyboard } from '../hooks/use-guacamole-keyboard';
 import { useGuacamoleMouse } from '../hooks/use-guacamole-mouse';
 import { useGuacamoleResize } from '../hooks/use-guacamole-resize';
-import { useGuacamoleConnectionStore } from '../stores/guacamole-connection';
+import { useGuacamoleConnectionStore } from '../stores/guacamole-connection-store';
 import { GuacamoleConnectionStates } from './guacamole-connection-states';
 
 interface GuacamoleConnectionProps {

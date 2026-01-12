@@ -8,34 +8,27 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useDeviceCategoryActionStore } from '../../stores/device-category-action-store';
 
-interface DeleteDeviceCategoryModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  deviceCategoryId: string;
-  deviceCategoryName: string;
-}
+export function DeleteDeviceCategoryModal() {
+  const store = useDeviceCategoryActionStore();
+  const { open, data } = useActionState(store.use.delete());
+  const { setDelete } = store.use.actions();
 
-export function DeleteDeviceCategoryModal({
-  open,
-  onOpenChange,
-  deviceCategoryId,
-  deviceCategoryName,
-}: DeleteDeviceCategoryModalProps) {
   const queryClient = useQueryClient();
-
   const deleteDeviceCategory = api['device-category']({
-    id: deviceCategoryId,
+    id: data?.id ?? '',
   }).delete.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
       });
-      onOpenChange(false);
+      setDelete(null);
     },
   });
 
@@ -44,14 +37,13 @@ export function DeleteDeviceCategoryModal({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={() => setDelete(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Device Category</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete{' '}
-            <strong>{deviceCategoryName}</strong>? This action cannot be undone
-            and may affect related devices.
+            Are you sure you want to delete <strong>{data?.name}</strong>? This
+            action cannot be undone and may affect related devices.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

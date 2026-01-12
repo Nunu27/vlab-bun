@@ -1,6 +1,6 @@
 import { protectedRoute } from '@frontend/lib/middlewares';
 import GuacamoleConnection from '@frontend/shared/guacamole/components/guacamole-connection';
-import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection';
+import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection-store';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 

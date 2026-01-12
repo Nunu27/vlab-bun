@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
-import { useWSStore } from '@frontend/stores/ws';
+import { useWSStore } from '@frontend/stores/ws-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { Monitor, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';

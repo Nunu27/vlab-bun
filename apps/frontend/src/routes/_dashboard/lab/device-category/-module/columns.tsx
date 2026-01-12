@@ -1,13 +1,8 @@
-import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/types/api';
 import { type ColumnDef } from '@tanstack/react-table';
 import { DeviceCategoryActionsCell } from './components/device-category-actions-cell';
+import type { DeviceCategoryItem } from './types';
 
-type Item = ExtractPaginationData<
-  (typeof api)['device-category']['pagination']
->;
-
-export const deviceCategoryColumns: ColumnDef<Item>[] = [
+export const deviceCategoryColumns: ColumnDef<DeviceCategoryItem>[] = [
   {
     accessorKey: 'index',
     size: 60,

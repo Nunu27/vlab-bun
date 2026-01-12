@@ -8,7 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
+import { useMutation } from '@tanstack/react-query';
 
 interface LogoutConfirmDialogProps {
   open: boolean;
@@ -19,7 +20,8 @@ export function LogoutConfirmDialog({
   open,
   onOpenChange,
 }: LogoutConfirmDialogProps) {
-  const { logout } = useAuthStore.use.actions();
+  const actions = useAuthStore.use.actions();
+  const logout = useMutation({ mutationFn: actions.logout });
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -32,7 +34,15 @@ export function LogoutConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={logout}>Log out</AlertDialogAction>
+          <AlertDialogAction
+            disabled={logout.isPending}
+            onClick={(e) => {
+              e.preventDefault();
+              logout.mutate();
+            }}
+          >
+            {logout.isPending ? 'Logging out...' : 'Log out'}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

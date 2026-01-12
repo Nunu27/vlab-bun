@@ -13,39 +13,33 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { UpdateDepartmentRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
-
-interface EditDepartmentModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  departmentId: string;
-  departmentName: string;
-}
+import { useDepartmentActionStore } from '../../stores/department-action-store';
 
 const validator = Compile(UpdateDepartmentRequest);
 
-export function EditDepartmentModal({
-  open,
-  onOpenChange,
-  departmentId,
-  departmentName,
-}: EditDepartmentModalProps) {
+export function EditDepartmentModal() {
   const queryClient = useQueryClient();
+  const { setUpdate } = useDepartmentActionStore().use.actions();
+  const { open, data } = useActionState(
+    useDepartmentActionStore().use.update(),
+  );
 
   const updateDepartment = api
-    .department({ id: departmentId })
+    .department({ id: data?.id ?? '' })
     .put.useMutation({
       onSuccess: ({ message }) => {
         toast.success(message);
         queryClient.invalidateQueries({
           queryKey: ['department', 'pagination'],
         });
-        onOpenChange(false);
+        setUpdate(null);
       },
       onError: (error) => {
         toast.error(error.message);
@@ -53,13 +47,13 @@ export function EditDepartmentModal({
     });
 
   const form = useForm({
-    defaultValues: { name: departmentName },
+    defaultValues: { name: data?.name ?? '' },
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateDepartment.mutateAsync(value),
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setUpdate(null)}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit Department</DialogTitle>

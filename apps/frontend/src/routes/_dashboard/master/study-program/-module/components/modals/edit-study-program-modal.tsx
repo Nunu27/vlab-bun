@@ -14,55 +14,46 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { UpdateStudyProgramRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
-
-interface EditStudyProgramModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  studyProgramId: string;
-  studyProgramName: string;
-  studyProgramDepartmentId: string;
-}
+import { useStudyProgramActionStore } from '../../stores/study-program-action-store';
 
 const validator = Compile(UpdateStudyProgramRequest);
 
-export function EditStudyProgramModal({
-  open,
-  onOpenChange,
-  studyProgramId,
-  studyProgramName,
-  studyProgramDepartmentId,
-}: EditStudyProgramModalProps) {
-  const queryClient = useQueryClient();
+export function EditStudyProgramModal() {
+  const store = useStudyProgramActionStore();
+  const { open, data } = useActionState(store.use.update());
+  const { setUpdate } = store.use.actions();
 
+  const queryClient = useQueryClient();
   const updateStudyProgram = api['study-program']({
-    id: studyProgramId,
+    id: data?.id ?? '',
   }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
       });
-      onOpenChange(false);
+      setUpdate(null);
     },
   });
 
   const form = useForm({
     defaultValues: {
-      name: studyProgramName,
-      departmentId: studyProgramDepartmentId,
+      name: data?.name ?? '',
+      departmentId: data?.department.id ?? '',
     },
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateStudyProgram.mutateAsync(value),
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setUpdate(null)}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit Study Program</DialogTitle>

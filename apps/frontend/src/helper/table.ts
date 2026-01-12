@@ -7,7 +7,7 @@ function getSize(size = 100, max = Number.MAX_SAFE_INTEGER, min = 40) {
 export const calculateTableSizing = <DataType>(
   columns: Header<DataType, unknown>[],
   totalWidth: number,
-): Record<string, number> => {
+) => {
   let totalAvailableWidth = totalWidth;
   let totalIsGrow = 0;
 

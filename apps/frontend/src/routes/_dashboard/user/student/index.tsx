@@ -6,36 +6,35 @@ import { PageHeading } from '@frontend/components/page-heading';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import type {
-  ExtractFields,
-  ExtractFilters,
-  ExtractPaginationData,
-} from '@frontend/types/api';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo } from 'react';
+import { ChangeUserPasswordModal } from '../../-module/components/modals/change-user-password-modal';
 import { studentColumns } from './-module/columns';
+import CreateStudentButton from './-module/components/buttons/create-student-button';
 import { CreateStudentModal } from './-module/components/modals/create-student-modal';
-const breadcrumbs = [{ title: 'User' }, { title: 'Student' }];
-const pagination = api.user.student.pagination;
-
-type Item = ExtractPaginationData<typeof pagination>;
-type Fields = ExtractFields<typeof pagination>;
-type Filters = ExtractFilters<typeof pagination>;
+import { DeleteStudentModal } from './-module/components/modals/delete-student-modal';
+import { EditStudentModal } from './-module/components/modals/edit-student-modal';
+import { StudentActionProvider } from './-module/stores/student-action-store';
+import type {
+  StudentFields,
+  StudentFilters,
+  StudentItem,
+} from './-module/types';
 
 export const Route = createFileRoute('/_dashboard/user/student/')({
-  staticData: { breadcrumbs },
+  staticData: { breadcrumbs: [{ title: 'User' }, { title: 'Student' }] },
   beforeLoad: privateRoute(['admin']),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { data, isFetching, params, handlers } = usePagination<
-    Item,
-    Fields,
-    Filters
+    StudentItem,
+    StudentFields,
+    StudentFilters
   >({
     queryKey: (params) => ['student', 'pagination', params],
-    queryFn: pagination,
+    queryFn: api.user.student.pagination,
   });
 
   const studyProgramFilter = useMemo(() => {
@@ -46,7 +45,7 @@ function RouteComponent() {
     const currentFilters = params.filters ?? [];
     const newFilters = currentFilters.filter(
       (f) => f.field !== 'studyProgramId',
-    ) as Filters;
+    ) as StudentFilters;
 
     if (studyProgramId) {
       newFilters.push({
@@ -60,48 +59,55 @@ function RouteComponent() {
   };
 
   return (
-    <div className="space-y-4">
-      <PageHeading
-        title="Students"
-        subtitle="Manage student accounts and information."
-        actions={<CreateStudentModal />}
-      />
-      <DataTable
-        columns={studentColumns}
-        data={data?.items ?? []}
-        pageInfo={data?.pageInfo}
-        isLoading={isFetching}
-        sortBy={params.sortBy}
-        sortOrder={params.sortOrder}
-        search={params.search}
-        searchPlaceholder="Search by NRP..."
-        filters={
-          <DataTableFilterCombobox
-            label="Study Program"
-            width="w-[250px]"
-            queryKey={(params) => ['study-program', 'pagination', params]}
-            queryFn={async (params) =>
-              await api['study-program'].pagination.get({
-                query: {
-                  page: params.page,
-                  perPage: 10,
-                  sortBy: 'name',
-                  sortOrder: 'asc',
-                  search: params.search,
-                },
-              })
-            }
-            getItemValue={(item) => item.id}
-            getItemLabel={(item) => item.name}
-            value={studyProgramFilter?.value}
-            onChange={handleStudyProgramChange}
-            placeholder="All Study Programs"
-            searchPlaceholder="Search study programs..."
-            emptyMessage="No study programs found."
-          />
-        }
-        {...handlers}
-      />
-    </div>
+    <StudentActionProvider>
+      <div className="space-y-4">
+        <PageHeading
+          title="Students"
+          subtitle="Manage student accounts and information."
+          actions={<CreateStudentButton />}
+        />
+        <DataTable
+          columns={studentColumns}
+          data={data?.items ?? []}
+          pageInfo={data?.pageInfo}
+          isLoading={isFetching}
+          sortBy={params.sortBy}
+          sortOrder={params.sortOrder}
+          search={params.search}
+          searchPlaceholder="Search by NRP..."
+          filters={
+            <DataTableFilterCombobox
+              label="Study Program"
+              width="w-[250px]"
+              queryKey={(params) => ['study-program', 'pagination', params]}
+              queryFn={async (params) =>
+                await api['study-program'].pagination.get({
+                  query: {
+                    page: params.page,
+                    perPage: 10,
+                    sortBy: 'name',
+                    sortOrder: 'asc',
+                    search: params.search,
+                  },
+                })
+              }
+              getItemValue={(item) => item.id}
+              getItemLabel={(item) => item.name}
+              value={studyProgramFilter?.value}
+              onChange={handleStudyProgramChange}
+              placeholder="All Study Programs"
+              searchPlaceholder="Search study programs..."
+              emptyMessage="No study programs found."
+            />
+          }
+          {...handlers}
+        />
+
+        <CreateStudentModal />
+        <EditStudentModal />
+        <ChangeUserPasswordModal />
+        <DeleteStudentModal />
+      </div>
+    </StudentActionProvider>
   );
 }

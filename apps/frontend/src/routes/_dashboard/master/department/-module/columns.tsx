@@ -1,11 +1,8 @@
-import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/types/api';
 import { type ColumnDef } from '@tanstack/react-table';
 import { DepartmentActionsCell } from './components/department-actions-cell';
+import type { DepartmentItem } from './types';
 
-type Item = ExtractPaginationData<typeof api.department.pagination>;
-
-export const departmentColumns: ColumnDef<Item>[] = [
+export const departmentColumns: ColumnDef<DepartmentItem>[] = [
   {
     accessorKey: 'index',
     size: 60,

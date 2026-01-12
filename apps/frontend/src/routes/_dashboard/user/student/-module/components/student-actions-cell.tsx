@@ -1,58 +1,31 @@
 import { ActionButton } from '@frontend/components/action-button';
-import { ChangePasswordModal } from '@frontend/components/modals/change-password-modal';
-import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/types/api';
+import { useDashboardActionStore } from '@frontend/routes/_dashboard/-module/stores/dashboard-action-store';
 import { KeyRoundIcon, PencilIcon, Trash2Icon } from 'lucide-react';
-import { useState } from 'react';
-import { DeleteStudentModal } from './modals/delete-student-modal';
-import { EditStudentModal } from './modals/edit-student-modal';
+import { useStudentActionStore } from '../stores/student-action-store';
+import type { StudentItem } from '../types';
 
-type Item = ExtractPaginationData<typeof api.user.student.pagination>;
-
-export function StudentActionsCell({ student }: { student: Item }) {
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [changePasswordDialogOpen, setChangePasswordDialogOpen] =
-    useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+export function StudentActionsCell({ student }: { student: StudentItem }) {
+  const { setUpdate, setDelete } = useStudentActionStore().use.actions();
+  const { setChangeUserPassword } = useDashboardActionStore().use.actions();
 
   return (
-    <>
-      <div className="flex items-center justify-center gap-1">
-        <ActionButton
-          icon={PencilIcon}
-          tooltip="Edit"
-          onClick={() => setEditDialogOpen(true)}
-        />
-        <ActionButton
-          icon={KeyRoundIcon}
-          tooltip="Change Password"
-          onClick={() => setChangePasswordDialogOpen(true)}
-        />
-        <ActionButton
-          icon={Trash2Icon}
-          tooltip="Delete"
-          variant="destructive"
-          onClick={() => setDeleteDialogOpen(true)}
-        />
-      </div>
-      <EditStudentModal
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        student={student}
+    <div className="flex items-center justify-center gap-1">
+      <ActionButton
+        icon={PencilIcon}
+        tooltip="Edit"
+        onClick={() => setUpdate(student)}
       />
-      <ChangePasswordModal
-        open={changePasswordDialogOpen}
-        onOpenChange={setChangePasswordDialogOpen}
-        userId={student.id}
-        userName={student.name}
+      <ActionButton
+        icon={KeyRoundIcon}
+        tooltip="Change Password"
+        onClick={() => setChangeUserPassword(student)}
       />
-      <DeleteStudentModal
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        studentId={student.id}
-        studentName={student.name}
-        studentNrp={student.nrp}
+      <ActionButton
+        icon={Trash2Icon}
+        tooltip="Delete"
+        variant="destructive"
+        onClick={() => setDelete(student)}
       />
-    </>
+    </div>
   );
 }

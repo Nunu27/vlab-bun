@@ -7,9 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@frontend/components/ui/select';
+import { connectionTypeEnum } from '@vlab/shared/enums';
 import { withForm, type DeviceFormData } from '../hooks/use-device-form';
-
-const connectionTypes = ['rdp', 'vnc', 'ssh', 'telnet'] as const;
 
 export const DeviceConnectionForm = withForm({
   defaultValues: {} as DeviceFormData,
@@ -36,7 +35,7 @@ export const DeviceConnectionForm = withForm({
                     <SelectValue placeholder="Select connection type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {connectionTypes.map((type) => (
+                    {connectionTypeEnum.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type.toUpperCase()}
                       </SelectItem>

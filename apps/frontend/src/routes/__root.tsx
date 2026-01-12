@@ -1,8 +1,10 @@
 import AppLoadingPage from '@frontend/components/pages/app-loading-page';
 import ErrorPage from '@frontend/components/pages/error-page';
 import NotFoundPage from '@frontend/components/pages/not-found-page';
+import api from '@frontend/lib/api';
+import { queryClient } from '@frontend/lib/query';
 import { router } from '@frontend/lib/router';
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import {
   HeadContent,
   Outlet,
@@ -47,7 +49,16 @@ function RouteComponent() {
   useEffect(() => {
     if (loggedIn !== inLoginPage) return;
 
-    router.navigate({ to: loggedIn ? '/' : '/login' });
+    const redirectUrl = useAuthStore.getState().redirectUrl;
+    if (!loggedIn) {
+      api.auth.me.get.invalidateQuery(queryClient);
+    }
+
+    if (redirectUrl) {
+      router.navigate({ href: redirectUrl, replace: true });
+    } else {
+      router.navigate({ to: loggedIn ? '/' : '/login', replace: true });
+    }
   }, [loggedIn, inLoginPage]);
 
   if (inLoginPage === loggedIn) {

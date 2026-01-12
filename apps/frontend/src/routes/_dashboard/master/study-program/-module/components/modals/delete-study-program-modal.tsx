@@ -8,46 +8,39 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useStudyProgramActionStore } from '../../stores/study-program-action-store';
 
-interface DeleteStudyProgramModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  studyProgramId: string;
-  studyProgramName: string;
-}
+export function DeleteStudyProgramModal() {
+  const store = useStudyProgramActionStore();
+  const { open, data } = useActionState(store.use.delete());
+  const { setDelete } = store.use.actions();
 
-export function DeleteStudyProgramModal({
-  open,
-  onOpenChange,
-  studyProgramId,
-  studyProgramName,
-}: DeleteStudyProgramModalProps) {
   const queryClient = useQueryClient();
-
   const deleteStudyProgram = api['study-program']({
-    id: studyProgramId,
+    id: data?.id ?? '',
   }).delete.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
       });
-      onOpenChange(false);
+      setDelete(null);
     },
   });
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={() => setDelete(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This will permanently delete the study program{' '}
-            <strong>{studyProgramName}</strong>. This action cannot be undone
-            and may affect students associated with this study program.
+            <strong>{data?.name}</strong>. This action cannot be undone and may
+            affect students associated with this study program.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -58,7 +51,7 @@ export function DeleteStudyProgramModal({
               e.preventDefault();
               deleteStudyProgram.mutate();
             }}
-            disabled={deleteStudyProgram.isPending}
+            disabled={deleteStudyProgram.isPending || !data}
           >
             {deleteStudyProgram.isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>

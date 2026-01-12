@@ -8,60 +8,49 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useDeviceActionStore } from '../../stores/device-action-store';
 
-interface DeleteDeviceModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  deviceId: string;
-  deviceName: string;
-}
+export function DeleteDeviceModal() {
+  const store = useDeviceActionStore();
+  const { open, data } = useActionState(store.use.delete());
+  const { setDelete } = store.use.actions();
 
-export function DeleteDeviceModal({
-  open,
-  onOpenChange,
-  deviceId,
-  deviceName,
-}: DeleteDeviceModalProps) {
   const queryClient = useQueryClient();
-
-  const deleteDevice = api.device({ id: deviceId }).delete.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['device', 'pagination'] });
-      onOpenChange(false);
-    },
-  });
-
-  const handleDelete = () => {
-    deleteDevice.mutate();
-  };
+  const { mutate, isPending } = api
+    .device({ id: data?.id ?? '' })
+    .delete.useMutation({
+      onSuccess: ({ message }) => {
+        toast.success(message);
+        queryClient.invalidateQueries({ queryKey: ['device', 'pagination'] });
+        setDelete(null);
+      },
+    });
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={() => setDelete(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Device</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{deviceName}</strong>? This
+            Are you sure you want to delete <strong>{data?.name}</strong>? This
             action cannot be undone and may affect related labs.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteDevice.isPending}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              handleDelete();
+              mutate();
             }}
-            disabled={deleteDevice.isPending}
+            disabled={isPending}
           >
-            {deleteDevice.isPending ? 'Deleting...' : 'Delete'}
+            {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

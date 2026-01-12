@@ -1,5 +1,5 @@
 import { t } from "elysia/type-system";
-import { deviceKindEnum } from "../enums";
+import { connectionTypeEnum, deviceKindEnum } from "../enums";
 import { createWSSchema } from "../types/ws";
 
 export const CreateDeviceRequest = t.Object({
@@ -14,7 +14,7 @@ export const CreateDeviceRequest = t.Object({
 		memory: t.Optional(t.String())
 	}),
 	connection: t.Object({
-		type: t.UnionEnum(["rdp", "vnc", "ssh", "telnet"]),
+		type: t.UnionEnum(connectionTypeEnum),
 		data: t.Object({
 			port: t.Number(),
 			username: t.Optional(t.String({ minLength: 1 })),
@@ -42,7 +42,7 @@ export const UpdateDeviceRequest = t.Object({
 		memory: t.Optional(t.String())
 	}),
 	connection: t.Object({
-		type: t.UnionEnum(["rdp", "vnc", "ssh", "telnet"]),
+		type: t.UnionEnum(connectionTypeEnum),
 		data: t.Object({
 			port: t.Number(),
 			username: t.Optional(t.String({ minLength: 1 })),
@@ -68,7 +68,7 @@ export const DeviceTestRequest = t.Object({
 		memory: t.Optional(t.String())
 	}),
 	connection: t.Object({
-		type: t.UnionEnum(["rdp", "vnc", "ssh", "telnet"]),
+		type: t.UnionEnum(connectionTypeEnum),
 		data: t.Object({
 			port: t.Number(),
 			username: t.Optional(t.String({ minLength: 1 })),

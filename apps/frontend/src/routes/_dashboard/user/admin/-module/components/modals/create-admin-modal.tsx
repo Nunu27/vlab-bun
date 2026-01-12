@@ -5,7 +5,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@frontend/components/ui/dialog';
 import {
   Field,
@@ -19,23 +18,24 @@ import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { CreateAdminRequest } from '@vlab/shared/schemas';
-import { PlusIcon } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { useAdminActionStore } from '../../stores/admin-action-store';
 
 const validator = Compile(CreateAdminRequest);
 
 export function CreateAdminModal() {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const store = useAdminActionStore();
+  const open = store.use.create();
+  const { setCreate } = store.use.actions();
 
+  const queryClient = useQueryClient();
   const createAdmin = api.user.admin.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['admin', 'pagination'],
       });
-      setOpen(false);
+      setCreate(false);
       form.reset();
     },
   });
@@ -51,12 +51,7 @@ export function CreateAdminModal() {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg">
-          <PlusIcon /> Create Admin
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={() => setCreate()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Admin</DialogTitle>

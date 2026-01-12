@@ -26,15 +26,16 @@ import {
 } from './-module/hooks/use-device-form';
 import { TestDeviceStoreProvider } from './-module/stores/test-device';
 
-const breadcrumbs = [
-  { title: 'Lab Data' },
-  { title: 'Device', url: '/lab/device' },
-  { title: 'Create Device' },
-];
 const validator = Compile(CreateDeviceRequest);
 
 export const Route = createFileRoute('/_dashboard/lab/device/create')({
-  staticData: { breadcrumbs },
+  staticData: {
+    breadcrumbs: [
+      { title: 'Lab Data' },
+      { title: 'Device', url: '/lab/device' },
+      { title: 'Create Device' },
+    ],
+  },
   beforeLoad: privateRoute(['admin']),
   component: RouteComponent,
 });

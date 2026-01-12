@@ -1,8 +1,8 @@
 import Guacamole from 'guacamole-common-js';
 import { useEffect, useRef, type RefObject } from 'react';
-import { useGuacamoleConnectionStore } from '../stores/guacamole-connection';
+import { useGuacamoleConnectionStore } from '../stores/guacamole-connection-store';
 import { getGuacamoleErrorMessage } from '../utils';
-import { useWSStore } from '@frontend/stores/ws';
+import { useWSStore } from '@frontend/stores/ws-store';
 
 interface UseGuacamoleClientProps {
   token: string;

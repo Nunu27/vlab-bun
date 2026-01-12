@@ -20,23 +20,24 @@ import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { CreateStudyProgramRequest } from '@vlab/shared/schemas';
-import { PlusIcon } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { useStudyProgramActionStore } from '../../stores/study-program-action-store';
 
 const validator = Compile(CreateStudyProgramRequest);
 
 export function CreateStudyProgramModal() {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const store = useStudyProgramActionStore();
+  const open = store.use.create();
+  const { setCreate } = store.use.actions();
 
+  const queryClient = useQueryClient();
   const createStudyProgram = api['study-program'].post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['study-program', 'pagination'],
       });
-      setOpen(false);
+      setCreate(false);
       form.reset();
     },
   });
@@ -51,12 +52,8 @@ export function CreateStudyProgramModal() {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg">
-          <PlusIcon /> Create Study Program
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setCreate}>
+      <DialogTrigger asChild></DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Study Program</DialogTitle>

@@ -86,7 +86,7 @@ export default new Elysia()
 				lastModified = true
 			} = options;
 
-			const useLastModified = lastModified || personalized;
+			const useLastModified = lastModified && !personalized;
 
 			return {
 				async beforeHandle({

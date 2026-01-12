@@ -24,15 +24,16 @@ import { DeviceResourcesForm } from './-module/components/device-resources-form'
 import { useAppForm } from './-module/hooks/use-device-form';
 import { TestDeviceStoreProvider } from './-module/stores/test-device';
 
-const breadcrumbs = [
-  { title: 'Lab Data' },
-  { title: 'Device', url: '/lab/device' },
-  { title: 'Update Device' },
-];
 const validator = Compile(UpdateDeviceRequest);
 
 export const Route = createFileRoute('/_dashboard/lab/device/$id/update')({
-  staticData: { breadcrumbs },
+  staticData: {
+    breadcrumbs: [
+      { title: 'Lab Data' },
+      { title: 'Device', url: '/lab/device' },
+      { title: 'Update Device' },
+    ],
+  },
   beforeLoad: privateRoute(['admin']),
   loader: async ({ params: { id } }) => {
     await api.device({ id }).get.ensureQueryData(queryClient);

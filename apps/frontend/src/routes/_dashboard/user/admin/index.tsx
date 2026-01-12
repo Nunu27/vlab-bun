@@ -3,56 +3,58 @@ import { PageHeading } from '@frontend/components/page-heading';
 import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
-import type {
-  ExtractFields,
-  ExtractFilters,
-  ExtractPaginationData,
-} from '@frontend/types/api';
 import { createFileRoute } from '@tanstack/react-router';
+import { ChangeUserPasswordModal } from '../../-module/components/modals/change-user-password-modal';
 import { adminColumns } from './-module/columns';
+import CreateAdminButton from './-module/components/buttons/create-admin-button';
 import { CreateAdminModal } from './-module/components/modals/create-admin-modal';
-
-const breadcrumbs = [{ title: 'User' }, { title: 'Admin' }];
-const pagination = api.user.admin.pagination;
-
-type Item = ExtractPaginationData<typeof pagination>;
-type Fields = ExtractFields<typeof pagination>;
-type Filters = ExtractFilters<typeof pagination>;
+import { DeleteAdminModal } from './-module/components/modals/delete-admin-modal';
+import { EditAdminModal } from './-module/components/modals/edit-admin-modal';
+import { AdminActionProvider } from './-module/stores/admin-action-store';
+import type { AdminFields, AdminFilters, AdminItem } from './-module/types';
 
 export const Route = createFileRoute('/_dashboard/user/admin/')({
-  staticData: { breadcrumbs },
+  staticData: { breadcrumbs: [{ title: 'User' }, { title: 'Admin' }] },
   beforeLoad: privateRoute(['admin']),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { data, isFetching, params, handlers } = usePagination<
-    Item,
-    Fields,
-    Filters
+    AdminItem,
+    AdminFields,
+    AdminFilters
   >({
     queryKey: (params) => ['admin', 'pagination', params],
-    queryFn: pagination,
+    queryFn: api.user.admin.pagination,
   });
 
   return (
-    <div className="space-y-4">
-      <PageHeading
-        title="Admins"
-        subtitle="Manage administrative users with elevated privileges."
-        actions={<CreateAdminModal />}
-      />
-      <DataTable
-        columns={adminColumns}
-        data={data?.items ?? []}
-        pageInfo={data?.pageInfo}
-        isLoading={isFetching}
-        sortBy={params.sortBy}
-        sortOrder={params.sortOrder}
-        search={params.search}
-        searchPlaceholder="Search by name or email..."
-        {...handlers}
-      />
-    </div>
+    <AdminActionProvider>
+      <div className="space-y-4">
+        <PageHeading
+          title="Admins"
+          subtitle="Manage administrative users with elevated privileges."
+          actions={<CreateAdminButton />}
+        />
+
+        <DataTable
+          columns={adminColumns}
+          data={data?.items ?? []}
+          pageInfo={data?.pageInfo}
+          isLoading={isFetching}
+          sortBy={params.sortBy}
+          sortOrder={params.sortOrder}
+          search={params.search}
+          searchPlaceholder="Search by name or email..."
+          {...handlers}
+        />
+
+        <CreateAdminModal />
+        <EditAdminModal />
+        <DeleteAdminModal />
+        <ChangeUserPasswordModal />
+      </div>
+    </AdminActionProvider>
   );
 }

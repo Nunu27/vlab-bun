@@ -1,7 +1,8 @@
 import type { WSClient2ServerEvents } from '@frontend/lib/ws';
-import { useWSStore } from '@frontend/stores/ws';
+import { useWSStore } from '@frontend/stores/ws-store';
 import type { WSSchemas } from '@vlab/shared/schemas';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useUnmount } from 'usehooks-ts';
 
 export function useWSAction<
   TEvent extends keyof WSClient2ServerEvents,
@@ -16,9 +17,7 @@ export function useWSAction<
     unsubRef.current = null;
   };
 
-  useEffect(() => {
-    return dispose;
-  }, []);
+  useUnmount(dispose);
 
   return {
     send: (data: TData, callback?: TReply) => {

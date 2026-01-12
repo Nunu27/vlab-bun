@@ -14,7 +14,7 @@ import {
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
 import { cn } from '@frontend/lib/utils';
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { LoginRequest } from '@vlab/shared/schemas';

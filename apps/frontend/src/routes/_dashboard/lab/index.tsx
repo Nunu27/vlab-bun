@@ -1,7 +1,7 @@
 import LoadingPage from '@frontend/components/pages/loading-page';
 import NotFoundPage from '@frontend/components/pages/not-found-page';
 import { privateRoute } from '@frontend/lib/middlewares';
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
 
@@ -12,10 +12,10 @@ const StudentLabPage = lazy(
   () => import('./-module/components/pages/student-lab-page'),
 );
 
-const breadcrumbs = [{ title: 'Labs' }];
-
 export const Route = createFileRoute('/_dashboard/lab/')({
-  staticData: { breadcrumbs },
+  staticData: {
+    breadcrumbs: [{ title: 'Labs' }],
+  },
   beforeLoad: privateRoute(['student', 'lecturer', 'admin']),
   component: RouteComponent,
 });

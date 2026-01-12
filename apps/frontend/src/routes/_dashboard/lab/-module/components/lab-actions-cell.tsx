@@ -11,7 +11,7 @@ import {
 } from '@frontend/components/ui/alert-dialog';
 import { Button } from '@frontend/components/ui/button';
 import api from '@frontend/lib/api';
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { PencilIcon, PlayIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';

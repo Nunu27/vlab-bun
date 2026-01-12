@@ -4,10 +4,10 @@ import { queryClient } from '@frontend/lib/query';
 import { createFileRoute } from '@tanstack/react-router';
 import TopologyViewer from '../-module/topology/viewer';
 
-const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Session' }];
-
 export const Route = createFileRoute('/_dashboard/lab/session/$sessionId')({
-  staticData: { breadcrumbs },
+  staticData: {
+    breadcrumbs: [{ title: 'Labs', url: '/lab' }, { title: 'Session' }],
+  },
   beforeLoad: privateRoute(['student']),
   loader: async ({ params: { sessionId } }) => {
     await api.lab.session({ id: sessionId }).get.ensureQueryData(queryClient);

@@ -8,43 +8,37 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useStudentActionStore } from '../../stores/student-action-store';
 
-interface DeleteStudentModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  studentId: string;
-  studentName: string;
-  studentNrp: string;
-}
+export function DeleteStudentModal() {
+  const store = useStudentActionStore();
+  const { open, data } = useActionState(store.use.delete());
+  const { setDelete } = store.use.actions();
 
-export function DeleteStudentModal({
-  open,
-  onOpenChange,
-  studentId,
-  studentName,
-  studentNrp,
-}: DeleteStudentModalProps) {
   const queryClient = useQueryClient();
 
-  const deleteStudent = api.user.student({ id: studentId }).delete.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
-      onOpenChange(false);
-    },
-  });
+  const deleteStudent = api.user
+    .student({ id: data?.id ?? '' })
+    .delete.useMutation({
+      onSuccess: ({ message }) => {
+        toast.success(message);
+        queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
+        setDelete(null);
+      },
+    });
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={() => setDelete(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Student</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{studentName}</strong> (NRP:{' '}
-            {studentNrp})? This action cannot be undone.
+            Are you sure you want to delete <strong>{data?.name}</strong> (NRP:{' '}
+            {data?.nrp})? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

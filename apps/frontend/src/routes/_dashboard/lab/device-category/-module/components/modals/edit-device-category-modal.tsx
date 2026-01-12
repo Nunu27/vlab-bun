@@ -14,6 +14,7 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
@@ -21,53 +22,43 @@ import { useQueryClient } from '@tanstack/react-query';
 import { UpdateDeviceCategoryRequest } from '@vlab/shared/schemas';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-
-interface EditDeviceCategoryModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  deviceCategoryId: string;
-  deviceCategoryName: string;
-  deviceCategoryColor: string;
-}
+import { useDeviceCategoryActionStore } from '../../stores/device-category-action-store';
 
 const validator = Compile(UpdateDeviceCategoryRequest);
 
-export function EditDeviceCategoryModal({
-  open,
-  onOpenChange,
-  deviceCategoryId,
-  deviceCategoryName,
-  deviceCategoryColor,
-}: EditDeviceCategoryModalProps) {
-  const queryClient = useQueryClient();
+export function EditDeviceCategoryModal() {
+  const store = useDeviceCategoryActionStore();
+  const { open, data } = useActionState(store.use.update());
+  const { setUpdate } = store.use.actions();
 
+  const queryClient = useQueryClient();
   const updateDeviceCategory = api['device-category']({
-    id: deviceCategoryId,
+    id: data?.id ?? '',
   }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
       });
-      onOpenChange(false);
+      setUpdate(null);
     },
   });
 
   const form = useForm({
     defaultValues: {
-      name: deviceCategoryName,
-      color: deviceCategoryColor,
+      name: data?.name ?? '',
+      color: data?.color ?? '',
     } as typeof UpdateDeviceCategoryRequest.static,
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateDeviceCategory.mutateAsync(value),
   });
 
   useEffect(() => {
-    form.reset({ name: deviceCategoryName, color: deviceCategoryColor });
-  }, [deviceCategoryName, deviceCategoryColor, form]);
+    form.reset({ name: data?.name ?? '', color: data?.color ?? '' });
+  }, [data?.name, data?.color, form]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setUpdate(null)}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit Device Category</DialogTitle>

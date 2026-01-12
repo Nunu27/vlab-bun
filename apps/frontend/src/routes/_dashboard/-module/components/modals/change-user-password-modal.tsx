@@ -13,51 +13,47 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
-import { useAuthStore } from '@frontend/stores/auth';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
-import { AuthChangePasswordRequest } from '@vlab/shared/schemas';
+import { ChangePasswordRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
+import { useDashboardActionStore } from '../../stores/dashboard-action-store';
 
-interface AuthChangePasswordModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+const validator = Compile(ChangePasswordRequest);
 
-const validator = Compile(AuthChangePasswordRequest);
+export function ChangeUserPasswordModal() {
+  const store = useDashboardActionStore();
+  const { open, data } = useActionState(store.use.changeUserPassword());
+  const { setChangeUserPassword } = store.use.actions();
 
-export function AuthChangePasswordModal({
-  open,
-  onOpenChange,
-}: AuthChangePasswordModalProps) {
-  const { casOnly } = useAuthStore.use.user()!;
-
-  const request = api.auth['change-password'];
+  const request = api.user({ id: data?.id ?? '' })['change-password'];
   const changePassword = request.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
-      onOpenChange(false);
+      setChangeUserPassword(null);
       form.reset();
     },
   });
 
   const form = useForm({
     defaultValues: {
-      oldPassword: casOnly ? null : '',
       newPassword: '',
       confirmPassword: '',
-    } as typeof AuthChangePasswordRequest.static,
+    },
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => changePassword.mutateAsync(value),
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setChangeUserPassword(null)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Change Password</DialogTitle>
-          <DialogDescription>Change your account password.</DialogDescription>
+          <DialogDescription>
+            Change password for <strong>{data?.name}</strong>.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -66,36 +62,6 @@ export function AuthChangePasswordModal({
           }}
         >
           <FieldGroup>
-            {!casOnly && (
-              <form.Field name="oldPassword">
-                {(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-
-                  return (
-                    <Field>
-                      <FieldLabel htmlFor={field.name} required>
-                        Old Password
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        type="password"
-                        placeholder="Enter current password"
-                        autoComplete="current-password"
-                        value={field.state.value!}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                      />
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              </form.Field>
-            )}
             <form.Field name="newPassword">
               {(field) => {
                 const isInvalid =

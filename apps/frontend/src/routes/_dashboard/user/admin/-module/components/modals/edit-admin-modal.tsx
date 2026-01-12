@@ -13,51 +13,42 @@ import {
   FieldLabel,
 } from '@frontend/components/ui/field';
 import { Input } from '@frontend/components/ui/input';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { UpdateAdminRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
-
-interface EditAdminModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  adminId: string;
-  adminName: string;
-  adminEmail: string;
-}
+import { useAdminActionStore } from '../../stores/admin-action-store';
 
 const validator = Compile(UpdateAdminRequest);
 
-export function EditAdminModal({
-  open,
-  onOpenChange,
-  adminId,
-  adminName,
-  adminEmail,
-}: EditAdminModalProps) {
-  const queryClient = useQueryClient();
+export function EditAdminModal() {
+  const store = useAdminActionStore();
+  const { open, data } = useActionState(store.use.update());
+  const { setUpdate } = store.use.actions();
 
-  const updateAdmin = api.user.admin({ id: adminId }).put.useMutation({
+  const queryClient = useQueryClient();
+  const updateAdmin = api.user.admin({ id: data?.id ?? '' }).put.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
-      onOpenChange(false);
+      setUpdate(null);
     },
   });
 
   const form = useForm({
     defaultValues: {
-      name: adminName,
-      email: adminEmail,
+      name: data?.name ?? '',
+      email: data?.email ?? '',
     },
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateAdmin.mutateAsync(value),
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setUpdate(null)}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit Admin</DialogTitle>

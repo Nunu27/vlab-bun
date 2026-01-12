@@ -1,6 +1,6 @@
 import { AlertCircle, Loader2 } from 'lucide-react';
 import React from 'react';
-import type { ConnectionState } from '../stores/guacamole-connection';
+import type { ConnectionState } from '../stores/guacamole-connection-store';
 
 interface ConnectionStatesProps {
   state: ConnectionState;

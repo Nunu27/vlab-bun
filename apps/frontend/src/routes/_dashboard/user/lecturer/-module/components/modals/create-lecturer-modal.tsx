@@ -5,7 +5,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@frontend/components/ui/dialog';
 import {
   Field,
@@ -19,21 +18,22 @@ import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { CreateLecturerRequest } from '@vlab/shared/schemas';
-import { PlusIcon } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { useLecturerActionStore } from '../../stores/lecturer-action-store';
 
 const validator = Compile(CreateLecturerRequest);
 
 export function CreateLecturerModal() {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const store = useLecturerActionStore();
+  const open = store.use.create();
+  const { setCreate } = store.use.actions();
 
+  const queryClient = useQueryClient();
   const createLecturer = api.user.lecturer.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
-      setOpen(false);
+      setCreate(false);
       form.reset();
     },
   });
@@ -50,12 +50,7 @@ export function CreateLecturerModal() {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg">
-          <PlusIcon /> Create Lecturer
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={() => setCreate(false)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Lecturer</DialogTitle>

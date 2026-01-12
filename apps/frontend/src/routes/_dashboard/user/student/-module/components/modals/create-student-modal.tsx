@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@frontend/components/ui/dialog';
 import {
   Field,
@@ -28,21 +27,23 @@ import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { degreeLevelEnum, type DegreeLevel } from '@vlab/shared/enums';
 import { CreateStudentRequest } from '@vlab/shared/schemas';
-import { PlusIcon } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { useStudentActionStore } from '../../stores/student-action-store';
 
 const validator = Compile(CreateStudentRequest);
 
 export function CreateStudentModal() {
-  const [open, setOpen] = useState(false);
+  const store = useStudentActionStore();
+  const open = store.use.create();
+  const { setCreate } = store.use.actions();
+
   const queryClient = useQueryClient();
 
   const createStudent = api.user.student.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
-      setOpen(false);
+      setCreate(false);
       form.reset();
     },
   });
@@ -62,12 +63,7 @@ export function CreateStudentModal() {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg">
-          <PlusIcon /> Create Student
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={() => setCreate(false)}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Student</DialogTitle>

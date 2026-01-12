@@ -15,15 +15,15 @@ import {
   SidebarMenuItem,
 } from '@frontend/components/ui/sidebar';
 import { useIsMobile } from '@frontend/hooks/use-mobile';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import { ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
-import { AuthChangePasswordModal } from './modals/auth-change-password-modal';
+import { useDashboardActionStore } from '../stores/dashboard-action-store';
 import { LogoutConfirmDialog } from './modals/logout-confirm-dialog';
-import { useAuthStore } from '@frontend/stores/auth';
 
 export function NavUser() {
   const isMobile = useIsMobile();
-  const [showChangePassword, setShowChangePassword] = useState(false);
+  const { setChangePassword } = useDashboardActionStore().use.actions();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const user = useAuthStore.use.user()!;
@@ -58,7 +58,7 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setShowChangePassword(true)}>
+              <DropdownMenuItem onClick={() => setChangePassword(user)}>
                 Change Password
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -69,11 +69,6 @@ export function NavUser() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
-
-      <AuthChangePasswordModal
-        open={showChangePassword}
-        onOpenChange={setShowChangePassword}
-      />
 
       <LogoutConfirmDialog
         open={showLogoutConfirm}

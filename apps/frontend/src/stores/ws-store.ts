@@ -9,7 +9,7 @@ import type { WSSchemas } from '@vlab/shared/schemas';
 import type { ReplyData } from '@vlab/shared/types';
 import type { MaybePromise, TSchema } from 'elysia';
 import { create } from 'zustand';
-import { useAuthStore } from './auth';
+import { useAuthStore } from './auth-store';
 
 type Server2ClientEvents = keyof WSServer2ClientEvents;
 type Client2ServerEvents = keyof WSClient2ServerEvents;

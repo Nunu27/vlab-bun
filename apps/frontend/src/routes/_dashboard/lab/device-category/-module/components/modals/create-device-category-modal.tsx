@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@frontend/components/ui/dialog';
 import {
   Field,
@@ -20,23 +19,24 @@ import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { CreateDeviceCategoryRequest } from '@vlab/shared/schemas';
-import { PlusIcon } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { useDeviceCategoryActionStore } from '../../stores/device-category-action-store';
 
 const validator = Compile(CreateDeviceCategoryRequest);
 
 export function CreateDeviceCategoryModal() {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const store = useDeviceCategoryActionStore();
+  const open = store.use.create();
+  const { setCreate } = store.use.actions();
 
+  const queryClient = useQueryClient();
   const createDeviceCategory = api['device-category'].post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
       });
-      setOpen(false);
+      setCreate(false);
       form.reset();
     },
   });
@@ -51,12 +51,7 @@ export function CreateDeviceCategoryModal() {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg">
-          <PlusIcon /> Add Device Category
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={() => setCreate(false)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Device Category</DialogTitle>

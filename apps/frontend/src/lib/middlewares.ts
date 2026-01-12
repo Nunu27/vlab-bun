@@ -1,4 +1,4 @@
-import { useAuthStore } from '@frontend/stores/auth';
+import { useAuthStore } from '@frontend/stores/auth-store';
 import { redirect } from '@tanstack/react-router';
 import type { Role } from '@vlab/shared/enums';
 

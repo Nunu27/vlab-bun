@@ -21,56 +21,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@frontend/components/ui/select';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
+import { degreeLevelEnum, type DegreeLevel } from '@vlab/shared/enums';
 import { UpdateStudentRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
-
-import type { ExtractPaginationData } from '@frontend/types/api';
-import { degreeLevelEnum, type DegreeLevel } from '@vlab/shared/enums';
-
-type Item = ExtractPaginationData<typeof api.user.student.pagination>;
-
-interface EditStudentModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  student: Item;
-}
+import { useStudentActionStore } from '../../stores/student-action-store';
 
 const validator = Compile(UpdateStudentRequest);
 
-export function EditStudentModal({
-  open,
-  onOpenChange,
-  student,
-}: EditStudentModalProps) {
-  const queryClient = useQueryClient();
+export function EditStudentModal() {
+  const store = useStudentActionStore();
+  const { open, data } = useActionState(store.use.update());
+  const { setUpdate } = store.use.actions();
 
-  const updateStudent = api.user.student({ id: student.id }).put.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
-      onOpenChange(false);
-    },
-  });
+  const queryClient = useQueryClient();
+  const updateStudent = api.user
+    .student({ id: data?.id ?? '' })
+    .put.useMutation({
+      onSuccess: ({ message }) => {
+        toast.success(message);
+        queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
+        setUpdate(null);
+      },
+    });
 
   const form = useForm({
     defaultValues: {
-      name: student.name,
-      email: student.email,
-      nrp: student.nrp,
-      year: student.year,
-      degreeLevel: student.degreeLevel,
-      studyProgramId: student.studyProgram.id,
-    },
+      name: data?.name,
+      email: data?.email,
+      nrp: data?.nrp,
+      year: data?.year,
+      degreeLevel: data?.degreeLevel,
+      studyProgramId: data?.studyProgram.id,
+    } as typeof UpdateStudentRequest.static,
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateStudent.mutateAsync(value),
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setUpdate(null)}>
       <DialogContent
         className="max-h-[90vh] overflow-y-auto"
         onOpenAutoFocus={(e) => e.preventDefault()}

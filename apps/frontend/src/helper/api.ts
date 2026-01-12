@@ -160,8 +160,6 @@ async function executeEdenCall(fn: (...args: any[]) => any, args: any[]) {
   const result = await fn(...args);
   if (result.error) {
     const error = new Error(getErrorMessageFromApi(result.error.value));
-    // Preserve original error for debugging
-    (error as any).originalError = result.error.value;
     throw error;
   }
   return result.data.data;
@@ -199,7 +197,7 @@ const hookSelectors: Record<string, (obj: any, path: any[]) => any> = {
       initialPageParam,
       getNextPageParam,
       queryFn: async ({ pageParam }) => {
-        const args: any[] = [{ query: { pageParam } }];
+        const args = [{ query: { pageParam } }];
         return executeEdenCall(obj, args);
       },
     });

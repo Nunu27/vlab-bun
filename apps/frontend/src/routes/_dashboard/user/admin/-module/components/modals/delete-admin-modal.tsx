@@ -8,43 +8,36 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useAdminActionStore } from '../../stores/admin-action-store';
 
-interface DeleteAdminModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  adminId: string;
-  adminName: string;
-  adminEmail: string;
-}
+export function DeleteAdminModal() {
+  const store = useAdminActionStore();
+  const { open, data } = useActionState(store.use.delete());
+  const { setDelete } = store.use.actions();
 
-export function DeleteAdminModal({
-  open,
-  onOpenChange,
-  adminId,
-  adminName,
-  adminEmail,
-}: DeleteAdminModalProps) {
   const queryClient = useQueryClient();
-
-  const deleteAdmin = api.user.admin({ id: adminId }).delete.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
-      onOpenChange(false);
-    },
-  });
+  const deleteAdmin = api.user
+    .admin({ id: data?.id ?? '' })
+    .delete.useMutation({
+      onSuccess: ({ message }) => {
+        toast.success(message);
+        queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
+        setDelete(null);
+      },
+    });
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={() => setDelete(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Admin</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{adminName}</strong> (
-            {adminEmail})? This action cannot be undone.
+            Are you sure you want to delete <strong>{data?.name}</strong> (
+            {data?.email})? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

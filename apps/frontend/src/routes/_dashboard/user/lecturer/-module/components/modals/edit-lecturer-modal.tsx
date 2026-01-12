@@ -19,48 +19,39 @@ import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { UpdateLecturerRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
-
-interface EditLecturerModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  lecturerId: string;
-  lecturerName: string;
-  lecturerEmail: string;
-  lecturerNip: string;
-}
+import { useLecturerActionStore } from '../../stores/lecturer-action-store';
+import { useActionState } from '@frontend/hooks/use-action-state';
 
 const validator = Compile(UpdateLecturerRequest);
 
-export function EditLecturerModal({
-  open,
-  onOpenChange,
-  lecturerId,
-  lecturerName,
-  lecturerEmail,
-  lecturerNip,
-}: EditLecturerModalProps) {
-  const queryClient = useQueryClient();
+export function EditLecturerModal() {
+  const store = useLecturerActionStore();
+  const { open, data } = useActionState(store.use.update());
+  const { setUpdate } = store.use.actions();
 
-  const updateLecturer = api.user.lecturer({ id: lecturerId }).put.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
-      onOpenChange(false);
-    },
-  });
+  const queryClient = useQueryClient();
+  const updateLecturer = api.user
+    .lecturer({ id: data?.id ?? '' })
+    .put.useMutation({
+      onSuccess: ({ message }) => {
+        toast.success(message);
+        queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
+        setUpdate(null);
+      },
+    });
 
   const form = useForm({
     defaultValues: {
-      name: lecturerName,
-      email: lecturerEmail,
-      nip: lecturerNip,
+      name: data?.name ?? '',
+      email: data?.email ?? '',
+      nip: data?.nip ?? '',
     },
     validators: { onSubmit: validator },
     onSubmit: ({ value }) => updateLecturer.mutateAsync(value),
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={() => setUpdate(null)}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit Lecturer</DialogTitle>

@@ -9,7 +9,7 @@ import {
 } from '@frontend/components/ui/dialog';
 import { useWSAction } from '@frontend/hooks/use-ws-action';
 import GuacamoleConnection from '@frontend/shared/guacamole/components/guacamole-connection';
-import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection';
+import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection-store';
 import { Compile } from '@sinclair/typemap';
 import { DeviceTestRequest } from '@vlab/shared/schemas';
 import { Monitor } from 'lucide-react';

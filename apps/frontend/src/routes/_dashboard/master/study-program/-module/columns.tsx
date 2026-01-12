@@ -1,11 +1,8 @@
-import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/types/api';
 import { type ColumnDef } from '@tanstack/react-table';
+import type { StudyProgramItem } from './types';
 import { StudyProgramActionsCell } from './components/study-program-actions-cell';
 
-type Item = ExtractPaginationData<(typeof api)['study-program']['pagination']>;
-
-export const studyProgramColumns: ColumnDef<Item>[] = [
+export const studyProgramColumns: ColumnDef<StudyProgramItem>[] = [
   {
     accessorKey: 'index',
     size: 60,

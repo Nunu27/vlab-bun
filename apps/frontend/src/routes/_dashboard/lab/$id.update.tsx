@@ -20,10 +20,10 @@ import TopologyEditor from './-module/topology';
 import { useTopologyStore } from './-module/topology/hook';
 import { TopologyProvider } from './-module/topology/provider';
 
-const breadcrumbs = [{ title: 'Labs', url: '/lab' }, { title: 'Edit Lab' }];
-
 export const Route = createFileRoute('/_dashboard/lab/$id/update')({
-  staticData: { breadcrumbs },
+  staticData: {
+    breadcrumbs: [{ title: 'Labs', url: '/lab' }, { title: 'Edit Lab' }],
+  },
   beforeLoad: privateRoute(['lecturer']),
   loader: async ({ params: { id } }) => {
     await api.lab({ id }).get.ensureQueryData(queryClient);

@@ -8,48 +8,36 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useLecturerActionStore } from '../../stores/lecturer-action-store';
 
-interface DeleteLecturerModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  lecturerId: string;
-  lecturerName: string;
-  lecturerNip: string;
-}
+export function DeleteLecturerModal() {
+  const store = useLecturerActionStore();
+  const { open, data } = useActionState(store.use.delete());
+  const { setDelete } = store.use.actions();
 
-export function DeleteLecturerModal({
-  open,
-  onOpenChange,
-  lecturerId,
-  lecturerName,
-  lecturerNip,
-}: DeleteLecturerModalProps) {
   const queryClient = useQueryClient();
-
   const deleteLecturer = api.user
-    .lecturer({ id: lecturerId })
+    .lecturer({ id: data?.id ?? '' })
     .delete.useMutation({
       onSuccess: ({ message }) => {
         toast.success(message);
         queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
-        onOpenChange(false);
-      },
-      onError: (error) => {
-        toast.error(error.message);
+        setDelete(null);
       },
     });
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={() => setDelete(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Lecturer</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{lecturerName}</strong>{' '}
-            (NIP: {lecturerNip})? This action cannot be undone.
+            Are you sure you want to delete <strong>{data?.name}</strong> (NIP:{' '}
+            {data?.nip})? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -5,7 +5,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@frontend/components/ui/dialog';
 import {
   Field,
@@ -19,21 +18,21 @@ import { Compile } from '@sinclair/typemap';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { CreateDepartmentRequest } from '@vlab/shared/schemas';
-import { PlusIcon } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { useDepartmentActionStore } from '../../stores/department-action-store';
 
 const validator = Compile(CreateDepartmentRequest);
 
 export function CreateDepartmentModal() {
-  const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const isOpen = useDepartmentActionStore().use.create();
+  const { setCreate } = useDepartmentActionStore().use.actions();
 
   const createDepartment = api.department.post.useMutation({
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ['department', 'pagination'] });
-      setOpen(false);
+      setCreate(false);
       form.reset();
     },
   });
@@ -47,12 +46,7 @@ export function CreateDepartmentModal() {
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg">
-          <PlusIcon /> Add Department
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setCreate}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Department</DialogTitle>

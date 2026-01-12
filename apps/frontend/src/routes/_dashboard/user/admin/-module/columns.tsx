@@ -1,12 +1,9 @@
-import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/types/api';
 import { formatTimeAgo } from '@frontend/helper/string';
 import { type ColumnDef } from '@tanstack/react-table';
 import { AdminActionsCell } from './components/admin-actions-cell';
+import type { AdminItem } from './types';
 
-type Item = ExtractPaginationData<typeof api.user.admin.pagination>;
-
-export const adminColumns: ColumnDef<Item>[] = [
+export const adminColumns: ColumnDef<AdminItem>[] = [
   {
     accessorKey: 'index',
     enableSorting: false,
@@ -27,7 +24,7 @@ export const adminColumns: ColumnDef<Item>[] = [
       label: 'Email',
     },
     cell: ({ row }) => (
-      <div className="max-w-[200px] truncate">{row.original.email}</div>
+      <div className="max-w-50 truncate">{row.original.email}</div>
     ),
   },
   {

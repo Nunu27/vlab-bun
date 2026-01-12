@@ -1,12 +1,9 @@
 import { formatTimeAgo } from '@frontend/helper/string';
-import type api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/types/api';
 import { type ColumnDef } from '@tanstack/react-table';
 import { StudentActionsCell } from './components/student-actions-cell';
+import type { StudentItem } from './types';
 
-type Item = ExtractPaginationData<typeof api.user.student.pagination>;
-
-export const studentColumns: ColumnDef<Item>[] = [
+export const studentColumns: ColumnDef<StudentItem>[] = [
   {
     accessorKey: 'index',
     size: 60,
