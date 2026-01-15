@@ -1,28 +1,11 @@
 import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { usePagination } from '@frontend/hooks/use-pagination';
-import { studentLabColumns } from '../../student-columns';
 import api from '@frontend/lib/api';
-import type {
-  ExtractFields,
-  ExtractFilters,
-  ExtractPaginationData,
-} from '@frontend/types/api';
-
-const pagination = api.lab.pagination;
-type Item = ExtractPaginationData<typeof pagination>;
-type Fields = ExtractFields<typeof pagination>;
-type Filters = ExtractFilters<typeof pagination>;
+import { studentLabColumns } from '../../student-columns';
 
 export default function StudentLabPage() {
-  const { data, isFetching, params, handlers } = usePagination<
-    Item,
-    Fields,
-    Filters
-  >({
-    queryKey: (params) => ['lab', 'pagination', params],
-    queryFn: pagination,
-  });
+  const { data, isFetching, params, handlers } =
+    api.lab.pagination.get.usePagination();
 
   return (
     <div className="space-y-4">

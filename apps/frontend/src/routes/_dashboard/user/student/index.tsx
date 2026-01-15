@@ -3,7 +3,6 @@ import {
   DataTableFilterCombobox,
 } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute } from '@tanstack/react-router';
@@ -15,11 +14,6 @@ import { CreateStudentModal } from './-module/components/modals/create-student-m
 import { DeleteStudentModal } from './-module/components/modals/delete-student-modal';
 import { EditStudentModal } from './-module/components/modals/edit-student-modal';
 import { StudentActionProvider } from './-module/stores/student-action-store';
-import type {
-  StudentFields,
-  StudentFilters,
-  StudentItem,
-} from './-module/types';
 
 export const Route = createFileRoute('/_dashboard/user/student/')({
   staticData: { breadcrumbs: [{ title: 'User' }, { title: 'Student' }] },
@@ -28,35 +22,12 @@ export const Route = createFileRoute('/_dashboard/user/student/')({
 });
 
 function RouteComponent() {
-  const { data, isFetching, params, handlers } = usePagination<
-    StudentItem,
-    StudentFields,
-    StudentFilters
-  >({
-    queryKey: (params) => ['student', 'pagination', params],
-    queryFn: api.user.student.pagination,
-  });
+  const { data, isFetching, params, filterHelpers, handlers } =
+    api.user.student.pagination.get.usePagination();
 
   const studyProgramFilter = useMemo(() => {
-    return params.filters?.find((f) => f.field === 'studyProgramId');
-  }, [params.filters]);
-
-  const handleStudyProgramChange = (studyProgramId: string | undefined) => {
-    const currentFilters = params.filters ?? [];
-    const newFilters = currentFilters.filter(
-      (f) => f.field !== 'studyProgramId',
-    ) as StudentFilters;
-
-    if (studyProgramId) {
-      newFilters.push({
-        field: 'studyProgramId',
-        op: 'eq',
-        value: studyProgramId,
-      });
-    }
-
-    handlers.onFilterChange(newFilters);
-  };
+    return filterHelpers.getFilter('studyProgramId');
+  }, [filterHelpers]);
 
   return (
     <StudentActionProvider>
@@ -79,22 +50,20 @@ function RouteComponent() {
             <DataTableFilterCombobox
               label="Study Program"
               width="w-[250px]"
-              queryKey={(params) => ['study-program', 'pagination', params]}
-              queryFn={async (params) =>
-                await api['study-program'].pagination.get({
-                  query: {
-                    page: params.page,
-                    perPage: 10,
-                    sortBy: 'name',
-                    sortOrder: 'asc',
-                    search: params.search,
-                  },
-                })
-              }
+              endpoint={api['study-program'].pagination.get}
+              params={{
+                perPage: 10,
+                sortBy: 'name',
+                sortOrder: 'asc',
+              }}
               getItemValue={(item) => item.id}
               getItemLabel={(item) => item.name}
               value={studyProgramFilter?.value}
-              onChange={handleStudyProgramChange}
+              onChange={filterHelpers.setFilter.bind(
+                null,
+                'studyProgramId',
+                'eq',
+              )}
               placeholder="All Study Programs"
               searchPlaceholder="Search study programs..."
               emptyMessage="No study programs found."

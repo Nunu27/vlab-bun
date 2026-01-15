@@ -1,31 +1,14 @@
 import { DataTable } from '@frontend/components/data-table';
-import { Link } from '@tanstack/react-router';
 import { PageHeading } from '@frontend/components/page-heading';
 import { Button } from '@frontend/components/ui/button';
-import { usePagination } from '@frontend/hooks/use-pagination';
+import api from '@frontend/lib/api';
+import { Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { studentLabColumns } from '../../lecturer-columns';
-import api from '@frontend/lib/api';
-import type {
-  ExtractFields,
-  ExtractFilters,
-  ExtractPaginationData,
-} from '@frontend/types/api';
-
-const pagination = api.lab.pagination;
-type Item = ExtractPaginationData<typeof pagination>;
-type Fields = ExtractFields<typeof pagination>;
-type Filters = ExtractFilters<typeof pagination>;
 
 export default function LecturerLabPage() {
-  const { data, isFetching, params, handlers } = usePagination<
-    Item,
-    Fields,
-    Filters
-  >({
-    queryKey: (params) => ['lab', 'pagination', params],
-    queryFn: pagination,
-  });
+  const { data, isFetching, params, handlers } =
+    api.lab.pagination.get.usePagination();
 
   return (
     <div className="space-y-4">

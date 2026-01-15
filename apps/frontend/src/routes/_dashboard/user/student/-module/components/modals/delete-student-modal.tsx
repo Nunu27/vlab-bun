@@ -11,7 +11,6 @@ import {
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useStudentActionStore } from '../../stores/student-action-store';
 
 export function DeleteStudentModal() {
@@ -20,13 +19,16 @@ export function DeleteStudentModal() {
   const { setDelete } = store.use.actions();
 
   const queryClient = useQueryClient();
-
-  const deleteStudent = api.user
+  const { mutate, isPending } = api.user
     .student({ id: data?.id ?? '' })
     .delete.useMutation({
-      onSuccess: ({ message }) => {
-        toast.success(message);
-        queryClient.invalidateQueries({ queryKey: ['student', 'pagination'] });
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['user', 'student', 'pagination'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['user', 'student', { id: data?.id ?? '' }],
+        });
         setDelete(null);
       },
     });
@@ -42,19 +44,16 @@ export function DeleteStudentModal() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteStudent.isPending}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              deleteStudent.mutate();
+              mutate();
             }}
-            disabled={deleteStudent.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={isPending}
           >
-            {deleteStudent.isPending ? 'Deleting...' : 'Delete'}
+            {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -14,7 +14,6 @@ import { privateRoute } from '@frontend/lib/middlewares';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
 import { useTopologyStore } from './-module/topology/hook';
 import { TopologyProvider } from './-module/topology/provider';
@@ -51,9 +50,8 @@ function CreateLabForm() {
     reset();
   }, [reset]);
 
-  const createLab = api.lab.post.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
+  const { mutate, isPending } = api.lab.post.useMutation({
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
       navigate({ to: '/lab' });
     },
@@ -79,7 +77,7 @@ function CreateLabForm() {
       }),
     };
 
-    createLab.mutate({ name, topology });
+    mutate({ name, topology });
   };
 
   return (
@@ -135,8 +133,8 @@ function CreateLabForm() {
           >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={createLab.isPending}>
-            {createLab.isPending ? 'Creating...' : 'Create Lab'}
+          <Button onClick={handleSave} disabled={isPending}>
+            {isPending ? 'Creating...' : 'Create Lab'}
           </Button>
         </div>
       </div>

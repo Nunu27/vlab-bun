@@ -11,7 +11,6 @@ import {
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useAdminActionStore } from '../../stores/admin-action-store';
 
 export function DeleteAdminModal() {
@@ -20,11 +19,10 @@ export function DeleteAdminModal() {
   const { setDelete } = store.use.actions();
 
   const queryClient = useQueryClient();
-  const deleteAdmin = api.user
+  const { mutate, isPending } = api.user
     .admin({ id: data?.id ?? '' })
     .delete.useMutation({
-      onSuccess: ({ message }) => {
-        toast.success(message);
+      onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
         setDelete(null);
       },
@@ -41,18 +39,16 @@ export function DeleteAdminModal() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteAdmin.isPending}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              deleteAdmin.mutate();
+              mutate();
             }}
-            disabled={deleteAdmin.isPending}
+            disabled={isPending}
           >
-            {deleteAdmin.isPending ? 'Deleting...' : 'Delete'}
+            {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -11,7 +11,6 @@ import {
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useDeviceActionStore } from '../../stores/device-action-store';
 
 export function DeleteDeviceModal() {
@@ -23,8 +22,7 @@ export function DeleteDeviceModal() {
   const { mutate, isPending } = api
     .device({ id: data?.id ?? '' })
     .delete.useMutation({
-      onSuccess: ({ message }) => {
-        toast.success(message);
+      onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['device', 'pagination'] });
         setDelete(null);
       },

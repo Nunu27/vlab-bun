@@ -16,20 +16,18 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { PencilIcon, PlayIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import type { LabItem } from '../lecturer-columns';
 
 export function LabActionsCell({ lab }: { lab: LabItem }) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const navigate = useNavigate();
   const user = useAuthStore.use.user()!;
   const canManage = user.role === 'admin' || user.id === lab.authorId;
   const isStudent = user.role === 'student';
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
-  const deleteLab = api.lab({ id: lab.id }).delete.useMutation({
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = api.lab({ id: lab.id }).delete.useMutation({
     onSuccess: () => {
-      toast.success('Lab deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
       setShowDeleteDialog(false);
     },
@@ -84,13 +82,14 @@ export function LabActionsCell({ lab }: { lab: LabItem }) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              variant="destructive"
               onClick={(e) => {
                 e.preventDefault();
-                deleteLab.mutate();
+                mutate();
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isPending}
             >
-              {deleteLab.isPending ? 'Deleting...' : 'Delete'}
+              {isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

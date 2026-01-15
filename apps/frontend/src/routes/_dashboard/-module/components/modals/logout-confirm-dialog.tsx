@@ -20,8 +20,8 @@ export function LogoutConfirmDialog({
   open,
   onOpenChange,
 }: LogoutConfirmDialogProps) {
-  const actions = useAuthStore.use.actions();
-  const logout = useMutation({ mutationFn: actions.logout });
+  const { logout } = useAuthStore.use.actions();
+  const { mutate, isPending } = useMutation({ mutationFn: logout });
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -35,13 +35,13 @@ export function LogoutConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            disabled={logout.isPending}
+            disabled={isPending}
             onClick={(e) => {
               e.preventDefault();
-              logout.mutate();
+              mutate();
             }}
           >
-            {logout.isPending ? 'Logging out...' : 'Log out'}
+            {isPending ? 'Logging out...' : 'Log out'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,3 +1,5 @@
+import type { ErrorResponse, SuccessResponse } from "@vlab/shared/types";
+
 export const success = <
 	TData extends unknown = undefined,
 	TMessage extends string | undefined = undefined
@@ -12,13 +14,7 @@ export const success = <
 		success: true as const,
 		...(data !== undefined && { data }),
 		...(message !== undefined && { message })
-	} as TData extends undefined
-		? TMessage extends undefined
-			? { success: true }
-			: { success: true; message: TMessage }
-		: TMessage extends undefined
-			? { success: true; data: TData }
-			: { success: true; data: TData; message: TMessage };
+	} as SuccessResponse<TData>;
 };
 
 export const failure = <
@@ -35,7 +31,5 @@ export const failure = <
 		success: false as const,
 		message,
 		...(errors !== undefined && { errors })
-	} as TErrors extends undefined
-		? { success: false; message: TMessage }
-		: { success: false; message: TMessage; errors: TErrors[] };
+	} as ErrorResponse;
 };

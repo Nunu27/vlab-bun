@@ -26,7 +26,7 @@ export function ActionButton({
   ...props
 }: ActionButtonProps) {
   return (
-    <Tooltip>
+    <Tooltip delayDuration={250}>
       <TooltipTrigger asChild>
         <Button
           variant={variant}

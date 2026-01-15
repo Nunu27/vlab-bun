@@ -1,16 +1,18 @@
 import { PaginatedComboBox } from '@frontend/components/ui/combobox';
-import type { TreatyResponse } from '@frontend/types/api';
-import type { PaginatedResponse } from '@frontend/types/pagination';
+import type {
+  ExtractPaginationDataFromEndpoint,
+  ExtractQueryParams,
+} from '@frontend/types/api';
 
-export type FilterComboboxProps<TItem> = {
+export type FilterComboboxProps<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TEndpoint extends { useInfiniteQuery: (...args: any) => any },
+> = {
   label: string;
-  queryKey: (params: { page: number; search?: string }) => readonly unknown[];
-  queryFn: (params: {
-    page: number;
-    search?: string;
-  }) => Promise<TreatyResponse<{ data: PaginatedResponse<TItem> }>>;
-  getItemValue: (item: TItem) => string;
-  getItemLabel: (item: TItem) => string;
+  endpoint: TEndpoint;
+  params?: Omit<ExtractQueryParams<TEndpoint>, 'page' | 'search'>;
+  getItemValue: (item: ExtractPaginationDataFromEndpoint<TEndpoint>) => string;
+  getItemLabel: (item: ExtractPaginationDataFromEndpoint<TEndpoint>) => string;
   value?: string;
   onChange: (value: string | undefined) => void;
   placeholder?: string;
@@ -20,10 +22,13 @@ export type FilterComboboxProps<TItem> = {
   width?: string;
 };
 
-export function DataTableFilterCombobox<TItem>({
+export function DataTableFilterCombobox<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TEndpoint extends { useInfiniteQuery: (...args: any) => any },
+>({
   label,
-  queryKey,
-  queryFn,
+  endpoint,
+  params,
   getItemValue,
   getItemLabel,
   value,
@@ -33,11 +38,14 @@ export function DataTableFilterCombobox<TItem>({
   emptyMessage = 'No results found.',
   disabled = false,
   width = 'w-[200px]',
-}: FilterComboboxProps<TItem>) {
+}: FilterComboboxProps<TEndpoint>) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm font-medium">{label}:</span>
-      <PaginatedComboBox
+      <PaginatedComboBox<
+        ExtractPaginationDataFromEndpoint<TEndpoint>,
+        ExtractQueryParams<TEndpoint>
+      >
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -46,11 +54,11 @@ export function DataTableFilterCombobox<TItem>({
         disabled={disabled}
         width={width}
         allowClear={true}
-        queryKey={[...queryKey({ page: 1 })]}
-        fetcher={queryFn}
+        endpoint={endpoint}
+        params={params}
         renderOption={(item) => ({
-          value: getItemValue(item as TItem),
-          label: getItemLabel(item as TItem),
+          value: getItemValue(item),
+          label: getItemLabel(item),
         })}
       />
     </div>

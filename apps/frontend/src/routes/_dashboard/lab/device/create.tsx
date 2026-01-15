@@ -15,15 +15,11 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { CreateDeviceRequest } from '@vlab/shared/schemas';
 import { toast } from 'sonner';
 import TestConnectionButton from './-module/components/buttons/test-connection-button';
-import { DeviceBasicInfoForm } from './-module/components/device-basic-info-form';
-import { DeviceConnectionForm } from './-module/components/device-connection-form';
-import { DeviceEnvForm } from './-module/components/device-env-form';
-import { DeviceNetworkInterfacesForm } from './-module/components/device-network-interfaces-form';
-import { DeviceResourcesForm } from './-module/components/device-resources-form';
-import {
-  type DeviceFormData,
-  useAppForm,
-} from './-module/hooks/use-device-form';
+import { DeviceBasicInfoForm } from './-module/components/forms/device-basic-info-form';
+import { DeviceConnectionForm } from './-module/components/forms/device-connection-form';
+import { DeviceEnvForm } from './-module/components/forms/device-env-form';
+import { DeviceNetworkInterfacesForm } from './-module/components/forms/device-network-interfaces-form';
+import { DeviceResourcesForm } from './-module/components/forms/device-resources-form';
 import { TestDeviceStoreProvider } from './-module/stores/test-device';
 
 const validator = Compile(CreateDeviceRequest);
@@ -44,34 +40,35 @@ function RouteComponent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const createDevice = api.device.post.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({
-        queryKey: ['device'],
-      });
-      navigate({ to: '/lab/device' });
-    },
-  });
-
-  const form = useAppForm({
+  const form = api.device.post.useForm({
     defaultValues: {
       name: '',
-      kind: null,
+      kind: 'linux',
       image: '',
-      icon: null,
-      categoryId: null,
+      icon: '',
+      categoryId: '',
       env: {},
       resources: {},
-      connection: {},
+      connection: {
+        type: 'ssh',
+        data: {
+          port: 22,
+        },
+      },
       interfaces: [],
-    } as unknown as DeviceFormData,
+    },
     validators: { onSubmit: validator },
-    onSubmit: ({ value }) => createDevice.mutateAsync(value),
     onSubmitInvalid: () => {
       toast.error('Validation failed', {
         description: 'Please check all required fields',
       });
+    },
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['device', 'pagination'] });
+        queryClient.invalidateQueries({ queryKey: ['device', 'list'] });
+        navigate({ to: '/lab/device' });
+      },
     },
   });
 
@@ -99,7 +96,17 @@ function RouteComponent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <DeviceBasicInfoForm form={form} defaultCategory={undefined} />
+              <DeviceBasicInfoForm
+                form={form}
+                defaultCategory={undefined}
+                fields={{
+                  name: 'name',
+                  kind: 'kind',
+                  image: 'image',
+                  icon: 'icon',
+                  categoryId: 'categoryId',
+                }}
+              />
             </CardContent>
           </Card>
 
@@ -109,7 +116,7 @@ function RouteComponent() {
               <CardDescription>CPU and memory allocation</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <DeviceResourcesForm form={form} />
+              <DeviceResourcesForm form={form} fields="resources" />
             </CardContent>
           </Card>
 
@@ -121,7 +128,7 @@ function RouteComponent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <DeviceEnvForm form={form} />
+              <DeviceEnvForm form={form} fields="env" />
             </CardContent>
           </Card>
 
@@ -132,11 +139,22 @@ function RouteComponent() {
                 <CardDescription>Remote access configuration</CardDescription>
               </div>
               <TestDeviceStoreProvider>
-                <TestConnectionButton form={form} />
+                <TestConnectionButton
+                  form={form}
+                  fields={{
+                    name: 'name',
+                    kind: 'kind',
+                    image: 'image',
+                    env: 'env',
+                    resources: 'resources',
+                    connection: 'connection',
+                    interfaces: 'interfaces',
+                  }}
+                />
               </TestDeviceStoreProvider>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <DeviceConnectionForm form={form} />
+              <DeviceConnectionForm form={form} fields="connection" />
             </CardContent>
           </Card>
 
@@ -148,7 +166,7 @@ function RouteComponent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <DeviceNetworkInterfacesForm form={form} />
+              <DeviceNetworkInterfacesForm form={form} fields="interfaces" />
             </CardContent>
           </Card>
 
@@ -160,15 +178,7 @@ function RouteComponent() {
             >
               Cancel
             </Button>
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting]}
-            >
-              {([canSubmit, isSubmitting]) => (
-                <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                  {isSubmitting ? 'Creating...' : 'Create Device'}
-                </Button>
-              )}
-            </form.Subscribe>
+            <form.SubmitButton label="Create Device" />
           </div>
         </form.AppForm>
       </form>

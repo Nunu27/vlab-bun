@@ -11,7 +11,6 @@ import {
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useDeviceCategoryActionStore } from '../../stores/device-category-action-store';
 
 export function DeleteDeviceCategoryModal() {
@@ -20,21 +19,16 @@ export function DeleteDeviceCategoryModal() {
   const { setDelete } = store.use.actions();
 
   const queryClient = useQueryClient();
-  const deleteDeviceCategory = api['device-category']({
+  const { mutate, isPending } = api['device-category']({
     id: data?.id ?? '',
   }).delete.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['device-category', 'pagination'],
       });
       setDelete(null);
     },
   });
-
-  const handleDelete = () => {
-    deleteDeviceCategory.mutate();
-  };
 
   return (
     <AlertDialog open={open} onOpenChange={() => setDelete(null)}>
@@ -47,18 +41,16 @@ export function DeleteDeviceCategoryModal() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteDeviceCategory.isPending}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              handleDelete();
+              mutate();
             }}
-            disabled={deleteDeviceCategory.isPending}
+            disabled={isPending}
           >
-            {deleteDeviceCategory.isPending ? 'Deleting...' : 'Delete'}
+            {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

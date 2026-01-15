@@ -1,6 +1,5 @@
 import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute } from '@tanstack/react-router';
@@ -11,7 +10,6 @@ import { CreateAdminModal } from './-module/components/modals/create-admin-modal
 import { DeleteAdminModal } from './-module/components/modals/delete-admin-modal';
 import { EditAdminModal } from './-module/components/modals/edit-admin-modal';
 import { AdminActionProvider } from './-module/stores/admin-action-store';
-import type { AdminFields, AdminFilters, AdminItem } from './-module/types';
 
 export const Route = createFileRoute('/_dashboard/user/admin/')({
   staticData: { breadcrumbs: [{ title: 'User' }, { title: 'Admin' }] },
@@ -20,14 +18,8 @@ export const Route = createFileRoute('/_dashboard/user/admin/')({
 });
 
 function RouteComponent() {
-  const { data, isFetching, params, handlers } = usePagination<
-    AdminItem,
-    AdminFields,
-    AdminFilters
-  >({
-    queryKey: (params) => ['admin', 'pagination', params],
-    queryFn: api.user.admin.pagination,
-  });
+  const { data, isFetching, params, handlers } =
+    api.user.admin.pagination.get.usePagination();
 
   return (
     <AdminActionProvider>

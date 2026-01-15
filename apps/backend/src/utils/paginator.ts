@@ -29,6 +29,7 @@ import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query
 import { createSelectSchema } from "drizzle-typebox";
 import { t, type TSchema } from "elysia";
 import { FilterOp, SortOrder } from "../types/paginator";
+import type { PaginatedData } from "@vlab/shared/types";
 
 // =================================================================
 // SECTION: Constants and Core Types
@@ -110,13 +111,13 @@ type FilterType<
 		? (typeof COLUMN_FILTER_OPS)[GetColumnDataType<
 				TTable,
 				K
-		  >] extends readonly (infer Op extends FilterOp)[]
+			>] extends readonly (infer Op extends FilterOp)[]
 			? Op extends RangeOp
 				? {
 						field: K;
 						op: Op;
 						value: [ColumnData<TTable, K>, ColumnData<TTable, K>];
-				  }
+					}
 				: { field: K; op: Op; value: ColumnData<TTable, K> }
 			: never
 		: never;
@@ -209,8 +210,8 @@ const buildPaginationSchema = <TTable extends PgTable>(
 		filterItems.length === 0
 			? t.Array(t.Never())
 			: filterItems.length === 1
-			? t.Array(filterItems[0])
-			: t.Array(t.Union(filterItems));
+				? t.Array(filterItems[0])
+				: t.Array(t.Union(filterItems));
 
 	const baseSchema = {
 		page: t.Integer({ default: 1, minimum: 1 }),
@@ -293,7 +294,8 @@ export const createPaginator = <
 	TFullSchema extends Record<string, unknown>,
 	TRelationalSchema extends ExtractTablesWithRelations<TFullSchema>,
 	TEntity extends keyof ExtractTablesWithRelations<TFullSchema>,
-	TUsableColumns extends keyof TRelationalSchema[TEntity]["columns"] = keyof TRelationalSchema[TEntity]["columns"]
+	TUsableColumns extends keyof TRelationalSchema[TEntity]["columns"] =
+		keyof TRelationalSchema[TEntity]["columns"]
 >(
 	db: NodePgDatabase<TFullSchema>,
 	entity: TEntity,
@@ -332,7 +334,11 @@ export const createPaginator = <
 	>(
 		request: typeof schema.static,
 		options?: TOptions
-	) => {
+	): Promise<
+		PaginatedData<
+			BuildQueryResult<TRelationalSchema, TFields, TOptions> & { index: number }
+		>
+	> => {
 		const { page, perPage, sortBy, sortOrder, filters } = request;
 		const search = "search" in request ? request.search : undefined;
 		const offset = (page - 1) * perPage;

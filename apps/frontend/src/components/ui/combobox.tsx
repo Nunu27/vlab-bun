@@ -18,13 +18,10 @@ import {
 } from '@frontend/components/ui/popover';
 import { Spinner } from '@frontend/components/ui/spinner';
 import { cn } from '@frontend/lib/utils';
-import type { TreatyResponse } from '@frontend/types/api';
 import type { PaginatedResponse } from '@frontend/types/pagination';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounceValue } from 'usehooks-ts';
-import { getErrorMessageFromApi } from '@frontend/helper/error';
 
 type Option = {
   value: string;
@@ -128,17 +125,32 @@ export function ComboBox({
   );
 }
 
-type PaginatedComboBoxProps<TData> = BaseComboBoxProps & {
-  queryKey: unknown[];
-  fetcher: (params: {
-    page: number;
-    search?: string;
-  }) => Promise<TreatyResponse<{ data: PaginatedResponse<TData> }>>;
+type PaginatedComboBoxProps<
+  TData,
+  TQueryParams = Record<string, unknown>,
+> = BaseComboBoxProps & {
+  endpoint: {
+    useInfiniteQuery: (options?: {
+      args?: { query?: Record<string, unknown> };
+      enabled?: boolean;
+      staleTime?: number;
+    }) => {
+      data?: { pages: Array<PaginatedResponse<TData>> };
+      fetchNextPage: () => void;
+      hasNextPage?: boolean;
+      isFetching: boolean;
+      error: Error | null;
+    };
+  };
+  params?: Omit<TQueryParams, 'page' | 'search'>;
   renderOption: (item: TData) => Option;
   defaultOptions?: Option[];
 };
 
-export function PaginatedComboBox<TData>({
+export function PaginatedComboBox<
+  TData,
+  TQueryParams = Record<string, unknown>,
+>({
   value,
   onChange,
   placeholder = 'Select an option...',
@@ -147,33 +159,21 @@ export function PaginatedComboBox<TData>({
   disabled = false,
   width = 'w-[150px]',
   allowClear = false,
-  queryKey,
-  fetcher,
+  endpoint,
+  params,
   renderOption,
   defaultOptions = [],
-}: PaginatedComboBoxProps<TData>) {
+}: PaginatedComboBoxProps<TData, TQueryParams>) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = useDebounceValue('', 300);
 
   const { data, fetchNextPage, hasNextPage, isFetching, error } =
-    useInfiniteQuery({
-      queryKey: [...queryKey, search],
-      queryFn: async ({ pageParam = 1 }) => {
-        const response = await fetcher({
-          page: pageParam,
+    endpoint.useInfiniteQuery({
+      args: {
+        query: {
+          ...params,
           search: search || undefined,
-        });
-        if (response.error) {
-          throw new Error(getErrorMessageFromApi(response.error.value));
-        }
-        return response.data!.data;
-      },
-      initialPageParam: 1,
-      getNextPageParam: (lastPage) => {
-        if (lastPage.pageInfo.page < lastPage.pageInfo.totalPages) {
-          return lastPage.pageInfo.page + 1;
-        }
-        return undefined;
+        },
       },
       enabled: open,
       staleTime: 1000 * 60 * 5,

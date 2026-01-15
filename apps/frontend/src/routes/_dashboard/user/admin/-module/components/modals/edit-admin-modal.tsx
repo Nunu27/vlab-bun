@@ -1,4 +1,3 @@
-import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -6,20 +5,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '@frontend/components/ui/field';
-import { Input } from '@frontend/components/ui/input';
+import { FieldGroup } from '@frontend/components/ui/field';
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { UpdateAdminRequest } from '@vlab/shared/schemas';
-import { toast } from 'sonner';
+import { useEffect } from 'react';
 import { useAdminActionStore } from '../../stores/admin-action-store';
 
 const validator = Compile(UpdateAdminRequest);
@@ -30,22 +22,23 @@ export function EditAdminModal() {
   const { setUpdate } = store.use.actions();
 
   const queryClient = useQueryClient();
-  const updateAdmin = api.user.admin({ id: data?.id ?? '' }).put.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
-      setUpdate(null);
-    },
-  });
-
-  const form = useForm({
+  const form = api.user.admin({ id: data?.id ?? '' }).put.useForm({
     defaultValues: {
       name: data?.name ?? '',
       email: data?.email ?? '',
     },
     validators: { onSubmit: validator },
-    onSubmit: ({ value }) => updateAdmin.mutateAsync(value),
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'pagination'] });
+        setUpdate(null);
+      },
+    },
   });
+
+  useEffect(() => {
+    if (!data) form.reset();
+  }, [data, form]);
 
   return (
     <Dialog open={open} onOpenChange={() => setUpdate(null)}>
@@ -61,70 +54,23 @@ export function EditAdminModal() {
           }}
         >
           <FieldGroup>
-            <form.Field name="name">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name} required>
-                      Name
-                    </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      placeholder="John Doe"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name="email">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name} required>
-                      Email
-                    </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="email"
-                      placeholder="m@example.com"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <Field>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-              >
-                {([canSubmit, isSubmitting]) => (
-                  <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                    {isSubmitting ? 'Updating...' : 'Update Admin'}
-                  </Button>
-                )}
-              </form.Subscribe>
-            </Field>
+            <form.AppField name="name">
+              {(field) => (
+                <field.TextField label="Name" placeholder="John Doe" required />
+              )}
+            </form.AppField>
+            <form.AppField name="email">
+              {(field) => (
+                <field.TextField
+                  label="Email"
+                  placeholder="m@example.com"
+                  required
+                />
+              )}
+            </form.AppField>
+            <form.AppForm>
+              <form.SubmitButton label="Update Admin" />
+            </form.AppForm>
           </FieldGroup>
         </form>
       </DialogContent>

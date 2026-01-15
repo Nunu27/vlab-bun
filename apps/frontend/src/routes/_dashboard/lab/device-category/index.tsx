@@ -1,6 +1,5 @@
 import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute } from '@tanstack/react-router';
@@ -9,11 +8,6 @@ import CreateDeviceCategoryButton from './-module/components/buttons/create-devi
 import { CreateDeviceCategoryModal } from './-module/components/modals/create-device-category-modal';
 import { DeleteDeviceCategoryModal } from './-module/components/modals/delete-device-category-modal';
 import { EditDeviceCategoryModal } from './-module/components/modals/edit-device-category-modal';
-import type {
-  DeviceCategoryFields,
-  DeviceCategoryFilters,
-  DeviceCategoryItem,
-} from './-module/types';
 import { DeviceCategoryActionProvider } from './-module/stores/device-category-action-store';
 
 export const Route = createFileRoute('/_dashboard/lab/device-category/')({
@@ -25,14 +19,8 @@ export const Route = createFileRoute('/_dashboard/lab/device-category/')({
 });
 
 function RouteComponent() {
-  const { data, isFetching, params, handlers } = usePagination<
-    DeviceCategoryItem,
-    DeviceCategoryFields,
-    DeviceCategoryFilters
-  >({
-    queryKey: (params) => ['device-category', 'pagination', params],
-    queryFn: api['device-category'].pagination,
-  });
+  const { data, isFetching, params, handlers } =
+    api['device-category'].pagination.get.usePagination();
 
   return (
     <DeviceCategoryActionProvider>

@@ -11,7 +11,6 @@ import {
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useLecturerActionStore } from '../../stores/lecturer-action-store';
 
 export function DeleteLecturerModal() {
@@ -20,11 +19,10 @@ export function DeleteLecturerModal() {
   const { setDelete } = store.use.actions();
 
   const queryClient = useQueryClient();
-  const deleteLecturer = api.user
+  const { mutate, isPending } = api.user
     .lecturer({ id: data?.id ?? '' })
     .delete.useMutation({
-      onSuccess: ({ message }) => {
-        toast.success(message);
+      onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['lecturer', 'pagination'] });
         setDelete(null);
       },
@@ -41,19 +39,16 @@ export function DeleteLecturerModal() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteLecturer.isPending}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              deleteLecturer.mutate();
+              mutate();
             }}
-            disabled={deleteLecturer.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={isPending}
           >
-            {deleteLecturer.isPending ? 'Deleting...' : 'Delete'}
+            {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

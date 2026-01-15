@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
+import { withFieldGroup } from '@frontend/hooks/use-app-form';
 import { useWSAction } from '@frontend/hooks/use-ws-action';
 import GuacamoleConnection from '@frontend/shared/guacamole/components/guacamole-connection';
 import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection-store';
@@ -15,14 +16,13 @@ import { DeviceTestRequest } from '@vlab/shared/schemas';
 import { Monitor } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { withForm, type DeviceFormData } from '../../hooks/use-device-form';
 import { useTestDeviceStore } from '../../stores/test-device';
 
 const validator = Compile(DeviceTestRequest);
 
-const TestConnectionButton = withForm({
-  defaultValues: {} as DeviceFormData,
-  render: function Render({ form }) {
+const TestConnectionButton = withFieldGroup({
+  defaultValues: {} as typeof DeviceTestRequest.static,
+  render: function Render({ group }) {
     const { send, dispose } = useWSAction('device/test');
 
     const store = useTestDeviceStore();
@@ -33,8 +33,6 @@ const TestConnectionButton = withForm({
     const { log, setOpen, setToken, setDispose } = store.use.actions();
 
     const scrollRef = useRef<HTMLDivElement>(null);
-
-    type FieldKeys = keyof typeof form.state.fieldMeta;
 
     useEffect(() => {
       setDispose(dispose);
@@ -47,25 +45,12 @@ const TestConnectionButton = withForm({
     }, [logs]);
 
     const handleTestDevice = async () => {
-      const value = form.state.values;
+      const value = group.state.values;
 
       if (!validator.Check(value)) {
         toast.error('Validation failed', {
           description: 'Please check all required fields',
         });
-
-        const errors = validator.Errors(value);
-
-        for (const error of errors) {
-          const key = error.path.substring(1).replace(/\//g, '.') as FieldKeys;
-
-          form.setFieldMeta(key, (meta) => ({
-            ...meta,
-            isTouched: true,
-            errorMap: { onSubmit: true },
-          }));
-        }
-
         return;
       }
 

@@ -4,16 +4,6 @@ import { router } from '@frontend/lib/router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
-import { setEdenQueryConfig } from './helper/api';
-import { toast } from 'sonner';
-
-setEdenQueryConfig({
-  useMutation: {
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  },
-});
 
 function App() {
   return (

@@ -1,6 +1,5 @@
 import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute } from '@tanstack/react-router';
@@ -10,11 +9,6 @@ import CreateLecturerButton from './-module/components/buttons/create-lecturer-b
 import { CreateLecturerModal } from './-module/components/modals/create-lecturer-modal';
 import { DeleteLecturerModal } from './-module/components/modals/delete-lecturer-modal';
 import { EditLecturerModal } from './-module/components/modals/edit-lecturer-modal';
-import type {
-  LecturerFields,
-  LecturerFilters,
-  LecturerItem,
-} from './-module/types';
 import { LecturerActionProvider } from './-module/stores/lecturer-action-store';
 
 export const Route = createFileRoute('/_dashboard/user/lecturer/')({
@@ -24,14 +18,8 @@ export const Route = createFileRoute('/_dashboard/user/lecturer/')({
 });
 
 function RouteComponent() {
-  const { data, isFetching, params, handlers } = usePagination<
-    LecturerItem,
-    LecturerFields,
-    LecturerFilters
-  >({
-    queryKey: (params) => ['lecturer', 'pagination', params],
-    queryFn: api.user.lecturer.pagination,
-  });
+  const { data, isFetching, params, handlers } =
+    api.user.lecturer.pagination.get.usePagination();
 
   return (
     <LecturerActionProvider>

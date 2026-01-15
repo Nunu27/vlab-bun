@@ -15,7 +15,6 @@ import { queryClient } from '@frontend/lib/query';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import TopologyEditor from './-module/topology';
 import { useTopologyStore } from './-module/topology/hook';
 import { TopologyProvider } from './-module/topology/provider';
@@ -67,11 +66,10 @@ function UpdateLabForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lab]);
 
-  const updateLab = api.lab({ id }).put.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
+  const { mutate, isPending } = api.lab({ id }).put.useMutation({
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
-      queryClient.invalidateQueries({ queryKey: ['lab', id] });
+      queryClient.invalidateQueries({ queryKey: ['lab', { id }] });
       navigate({ to: '/lab' });
     },
   });
@@ -96,7 +94,7 @@ function UpdateLabForm() {
       }),
     };
 
-    updateLab.mutate({ name, topology });
+    mutate({ name, topology });
   };
 
   return (
@@ -152,8 +150,8 @@ function UpdateLabForm() {
           >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={updateLab.isPending}>
-            {updateLab.isPending ? 'Saving...' : 'Save Changes'}
+          <Button onClick={handleSave} disabled={isPending}>
+            {isPending ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>

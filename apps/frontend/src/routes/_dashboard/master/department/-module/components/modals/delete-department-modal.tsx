@@ -8,11 +8,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@frontend/components/ui/alert-dialog';
+import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { useDepartmentActionStore } from '../../stores/department-action-store';
-import { useActionState } from '@frontend/hooks/use-action-state';
 
 export function DeleteDepartmentModal() {
   const store = useDepartmentActionStore();
@@ -20,11 +19,10 @@ export function DeleteDepartmentModal() {
   const { setDelete } = store.use.actions();
 
   const queryClient = useQueryClient();
-  const deleteDepartment = api
+  const { mutate, isPending } = api
     .department({ id: data?.id ?? '' })
     .delete.useMutation({
-      onSuccess: ({ message }) => {
-        toast.success(message);
+      onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ['department', 'pagination'],
         });
@@ -43,18 +41,16 @@ export function DeleteDepartmentModal() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteDepartment.isPending}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={(e) => {
               e.preventDefault();
-              deleteDepartment.mutate();
+              mutate();
             }}
-            disabled={deleteDepartment.isPending || !data}
+            disabled={isPending}
           >
-            {deleteDepartment.isPending ? 'Deleting...' : 'Delete'}
+            {isPending ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

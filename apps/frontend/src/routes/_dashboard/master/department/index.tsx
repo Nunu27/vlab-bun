@@ -1,6 +1,5 @@
 import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute } from '@tanstack/react-router';
@@ -10,11 +9,6 @@ import { CreateDepartmentModal } from './-module/components/modals/create-depart
 import { DeleteDepartmentModal } from './-module/components/modals/delete-department-modal';
 import { EditDepartmentModal } from './-module/components/modals/edit-department-modal';
 import { DepartmentActionProvider } from './-module/stores/department-action-store';
-import type {
-  DepartmentFields,
-  DepartmentFilters,
-  DepartmentItem,
-} from './-module/types';
 
 export const Route = createFileRoute('/_dashboard/master/department/')({
   staticData: {
@@ -25,14 +19,8 @@ export const Route = createFileRoute('/_dashboard/master/department/')({
 });
 
 function RouteComponent() {
-  const { data, isFetching, params, handlers } = usePagination<
-    DepartmentItem,
-    DepartmentFields,
-    DepartmentFilters
-  >({
-    queryKey: (params) => ['department', 'pagination', params],
-    queryFn: api.department.pagination,
-  });
+  const { data, isFetching, params, handlers } =
+    api.department.pagination.get.usePagination();
 
   return (
     <DepartmentActionProvider>

@@ -3,7 +3,6 @@ import {
   DataTableFilterCombobox,
 } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
-import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute } from '@tanstack/react-router';
@@ -14,11 +13,6 @@ import { CreateStudyProgramModal } from './-module/components/modals/create-stud
 import { DeleteStudyProgramModal } from './-module/components/modals/delete-study-program-modal';
 import { EditStudyProgramModal } from './-module/components/modals/edit-study-program-modal';
 import { StudyProgramActionProvider } from './-module/stores/study-program-action-store';
-import type {
-  StudyProgramFields,
-  StudyProgramFilters,
-  StudyProgramItem,
-} from './-module/types';
 
 export const Route = createFileRoute('/_dashboard/master/study-program/')({
   staticData: {
@@ -29,35 +23,12 @@ export const Route = createFileRoute('/_dashboard/master/study-program/')({
 });
 
 function RouteComponent() {
-  const { data, isFetching, params, handlers } = usePagination<
-    StudyProgramItem,
-    StudyProgramFields,
-    StudyProgramFilters
-  >({
-    queryKey: (params) => ['study-program', 'pagination', params],
-    queryFn: api['study-program'].pagination,
-  });
+  const { data, isFetching, params, filterHelpers, handlers } =
+    api['study-program'].pagination.get.usePagination();
 
   const departmentFilter = useMemo(() => {
-    return params.filters?.find((f) => f.field === 'departmentId');
-  }, [params.filters]);
-
-  const handleDepartmentChange = (departmentId: string | undefined) => {
-    const currentFilters = params.filters ?? [];
-    const newFilters = currentFilters.filter(
-      (f) => f.field !== 'departmentId',
-    ) as StudyProgramFilters;
-
-    if (departmentId) {
-      newFilters.push({
-        field: 'departmentId',
-        op: 'eq',
-        value: departmentId,
-      });
-    }
-
-    handlers.onFilterChange(newFilters);
-  };
+    return filterHelpers.getFilter('departmentId');
+  }, [filterHelpers]);
 
   return (
     <StudyProgramActionProvider>
@@ -80,22 +51,20 @@ function RouteComponent() {
             <DataTableFilterCombobox
               label="Department"
               width="w-[250px]"
-              queryKey={(params) => ['department', 'pagination', params]}
-              queryFn={async (params) =>
-                await api.department.pagination.get({
-                  query: {
-                    page: params.page,
-                    perPage: 10,
-                    sortBy: 'name',
-                    sortOrder: 'asc',
-                    search: params.search,
-                  },
-                })
-              }
+              endpoint={api.department.pagination.get}
+              params={{
+                perPage: 10,
+                sortBy: 'name',
+                sortOrder: 'asc',
+              }}
               getItemValue={(item) => item.id}
               getItemLabel={(item) => item.name}
               value={departmentFilter?.value}
-              onChange={handleDepartmentChange}
+              onChange={filterHelpers.setFilter.bind(
+                null,
+                'departmentId',
+                'eq',
+              )}
               placeholder="All Departments"
               searchPlaceholder="Search departments..."
               emptyMessage="No departments found."

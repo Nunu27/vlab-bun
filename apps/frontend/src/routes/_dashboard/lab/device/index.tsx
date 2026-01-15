@@ -1,14 +1,13 @@
 import { DataTable } from '@frontend/components/data-table';
 import { PageHeading } from '@frontend/components/page-heading';
 import { Button } from '@frontend/components/ui/button';
-import { usePagination } from '@frontend/hooks/use-pagination';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { deviceColumns } from './-module/columns';
+import { DeleteDeviceModal } from './-module/components/modals/delete-device-modal';
 import { DeviceActionProvider } from './-module/stores/device-action-store';
-import type { DeviceFields, DeviceFilters, DeviceItem } from './-module/types';
 
 export const Route = createFileRoute('/_dashboard/lab/device/')({
   staticData: { breadcrumbs: [{ title: 'Lab Data' }, { title: 'Device' }] },
@@ -17,14 +16,8 @@ export const Route = createFileRoute('/_dashboard/lab/device/')({
 });
 
 function RouteComponent() {
-  const { data, isFetching, params, handlers } = usePagination<
-    DeviceItem,
-    DeviceFields,
-    DeviceFilters
-  >({
-    queryKey: (params) => ['device', 'pagination', params],
-    queryFn: api.device.pagination,
-  });
+  const { data, isFetching, params, handlers } =
+    api.device.pagination.get.usePagination();
 
   return (
     <DeviceActionProvider>
@@ -51,6 +44,8 @@ function RouteComponent() {
           searchPlaceholder="Search by device name..."
           {...handlers}
         />
+
+        <DeleteDeviceModal />
       </div>
     </DeviceActionProvider>
   );

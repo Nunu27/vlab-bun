@@ -1,4 +1,3 @@
-import { Button } from '@frontend/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -6,19 +5,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@frontend/components/ui/dialog';
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '@frontend/components/ui/field';
-import { Input } from '@frontend/components/ui/input';
+import { FieldGroup } from '@frontend/components/ui/field';
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import { useForm } from '@tanstack/react-form';
 import { ChangePasswordRequest } from '@vlab/shared/schemas';
-import { toast } from 'sonner';
+import { useEffect } from 'react';
 import { useDashboardActionStore } from '../../stores/dashboard-action-store';
 
 const validator = Compile(ChangePasswordRequest);
@@ -29,22 +21,22 @@ export function ChangeUserPasswordModal() {
   const { setChangeUserPassword } = store.use.actions();
 
   const request = api.user({ id: data?.id ?? '' })['change-password'];
-  const changePassword = request.post.useMutation({
-    onSuccess: ({ message }) => {
-      toast.success(message);
-      setChangeUserPassword(null);
-      form.reset();
-    },
-  });
-
-  const form = useForm({
+  const form = request.post.useForm({
     defaultValues: {
       newPassword: '',
       confirmPassword: '',
     },
     validators: { onSubmit: validator },
-    onSubmit: ({ value }) => changePassword.mutateAsync(value),
+    mutation: {
+      onSuccess: () => {
+        setChangeUserPassword(null);
+      },
+    },
   });
+
+  useEffect(() => {
+    if (!data) form.reset();
+  }, [data, form]);
 
   return (
     <Dialog open={open} onOpenChange={() => setChangeUserPassword(null)}>
@@ -62,72 +54,30 @@ export function ChangeUserPasswordModal() {
           }}
         >
           <FieldGroup>
-            <form.Field name="newPassword">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name} required>
-                      New Password
-                    </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="password"
-                      placeholder="Minimum 8 characters"
-                      autoComplete="new-password"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <form.Field name="confirmPassword">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name} required>
-                      Confirm Password
-                    </FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="password"
-                      placeholder="Re-enter password"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            </form.Field>
-            <Field>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-              >
-                {([canSubmit, isSubmitting]) => (
-                  <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                    {isSubmitting ? 'Changing...' : 'Change Password'}
-                  </Button>
-                )}
-              </form.Subscribe>
-            </Field>
+            <form.AppField name="newPassword">
+              {(field) => (
+                <field.TextField
+                  label="New Password"
+                  type="password"
+                  placeholder="Minimum 8 characters"
+                  autoComplete="new-password"
+                  required
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="confirmPassword">
+              {(field) => (
+                <field.TextField
+                  label="Confirm Password"
+                  type="password"
+                  placeholder="Re-enter password"
+                  required
+                />
+              )}
+            </form.AppField>
+            <form.AppForm>
+              <form.SubmitButton label="Change Password" />
+            </form.AppForm>
           </FieldGroup>
         </form>
       </DialogContent>
