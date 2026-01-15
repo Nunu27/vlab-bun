@@ -74,7 +74,9 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
         }}
       />
 
-      <GuacamoleConnectionStates state={state} errorMessage={errorMessage} />
+      {state && (
+        <GuacamoleConnectionStates state={state} errorMessage={errorMessage} />
+      )}
     </div>
   );
 };

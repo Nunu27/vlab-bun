@@ -9,7 +9,7 @@ export type ConnectionState =
   | 'disconnected';
 
 interface GuacamoleConnectionState {
-  state: ConnectionState;
+  state: ConnectionState | undefined;
   errorMessage: string | null;
   isConnected: boolean;
   hasError: boolean;
@@ -29,7 +29,7 @@ type GuacamoleConnectionStore = Store<
 >;
 
 const initialState: GuacamoleConnectionState = {
-  state: 'connecting',
+  state: undefined,
   errorMessage: null,
   isConnected: false,
   hasError: false,
@@ -43,19 +43,22 @@ const connectionMapByState: Record<ConnectionState, boolean> = {
 };
 
 const { Provider, useContext } = createScopedStore(() =>
-  create<GuacamoleConnectionStore>((set) => ({
+  create<GuacamoleConnectionStore>((set, get) => ({
     ...initialState,
 
     actions: {
       setState: (state) =>
         set({ state, isConnected: connectionMapByState[state] }),
-      setError: (errorMessage) =>
-        set({
+      setError: (errorMessage) => {
+        if (!get().state) return;
+
+        return set({
           errorMessage,
           state: 'error',
           isConnected: false,
           hasError: true,
-        }),
+        });
+      },
       setConnected: (isConnected) => set({ isConnected }),
       setHasError: (hasError) => set({ hasError }),
       reset: () => set({ ...initialState }),

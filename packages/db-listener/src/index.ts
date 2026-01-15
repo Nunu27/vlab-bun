@@ -21,12 +21,6 @@ import {
 } from "./types";
 import { areSetsEqual, getChannelForTable, normalizeColumns } from "./utils";
 
-/**
- * Create a DB Listener factory
- * @param db - Drizzle database instance
- * @param config - Configuration options
- * @returns Object with all listener methods
- */
 export function createDBListener<
 	TSchema extends Record<string, any> = Record<string, any>
 >(
@@ -40,7 +34,6 @@ export function createDBListener<
 		logger
 	} = config;
 
-	// Initialize client connection
 	let client: PoolClient | null = null;
 	let isInitialized = false;
 
@@ -54,7 +47,6 @@ export function createDBListener<
 
 	let syncManager: SyncManager | null = null;
 
-	// Lazy initialization
 	const ensureInitialized = async () => {
 		if (isInitialized && client) return;
 
@@ -62,33 +54,29 @@ export function createDBListener<
 		syncManager = new SyncManager(client, registry, logger);
 		isInitialized = true;
 
-		// Handle PostgreSQL notifications
-		client.on("notification", async ({ channel, payload }) => {
+		client.on("notification", ({ channel, payload }) => {
 			if (!payload || !registry.has(channel)) return;
 
-			let parsedPayload: NotificationPayload;
+			let parsed: NotificationPayload;
 			try {
-				parsedPayload = JSON.parse(payload);
+				parsed = JSON.parse(payload);
 			} catch (error) {
 				logger?.error({ error }, `Invalid JSON payload on ${channel}`);
 				return;
 			}
 
-			if (Array.isArray(parsedPayload.data) && parsedPayload.data.length > 0) {
+			if (Array.isArray(parsed.data) && parsed.data.length > 0) {
 				batchProcessor.addToBatch(
 					channel,
-					parsedPayload.op,
-					parsedPayload.table,
-					parsedPayload.data
+					parsed.op,
+					parsed.table,
+					parsed.data
 				);
 			}
 		});
 	};
 
 	return {
-		/**
-		 * Add a database listener for table changes
-		 */
 		addListener<
 			TEntity extends keyof TSchema,
 			TTable extends TSchema[TEntity],
@@ -106,22 +94,20 @@ export function createDBListener<
 			const table = (db as any)._.fullSchema[entity];
 			const channel = getChannelForTable(table);
 			const normalizedCols = normalizeColumns(table, columns);
-			const listeners = registry.get(channel) ?? [];
 
-			listeners.push({
+			const entry: ListenerEntry = {
 				columns: new Set(normalizedCols),
 				events: new Set(opts?.ops ?? ["INSERT", "UPDATE", "DELETE"]),
 				paused: opts?.paused ?? false,
 				bulk: opts?.bulk ?? false,
 				listener: listener as any
-			});
+			};
 
+			const listeners = registry.get(channel) ?? [];
+			listeners.push(entry);
 			registry.set(channel, listeners);
 		},
 
-		/**
-		 * Remove a database listener
-		 */
 		removeListener<
 			TTable extends PgTable,
 			TKeys extends keyof InferSelectModel<TTable>,
@@ -143,7 +129,7 @@ export function createDBListener<
 			const colsSet = new Set(normalizedCols);
 			const bulk = opts?.bulk ?? false;
 
-			const listenerIndex = listeners.findIndex(
+			const index = listeners.findIndex(
 				(entry) =>
 					entry.listener === listener &&
 					areSetsEqual(entry.events, opsSet) &&
@@ -151,8 +137,8 @@ export function createDBListener<
 					entry.bulk === bulk
 			);
 
-			if (listenerIndex !== -1) {
-				listeners.splice(listenerIndex, 1);
+			if (index !== -1) {
+				listeners.splice(index, 1);
 			}
 
 			if (listeners.length === 0) {
@@ -160,32 +146,20 @@ export function createDBListener<
 			}
 		},
 
-		/**
-		 * Sync database channels (LISTEN/UNLISTEN)
-		 */
 		async syncChannels() {
 			await ensureInitialized();
 			await syncManager!.syncChannels();
 		},
 
-		/**
-		 * Sync database listeners (triggers and functions)
-		 */
 		async syncListeners() {
 			await ensureInitialized();
 			await syncManager!.syncListeners();
 		},
 
-		/**
-		 * Flush all pending batches immediately
-		 */
 		async flush() {
 			await batchProcessor.flushAll();
 		},
 
-		/**
-		 * Cleanup all listeners and pending batches
-		 */
 		async cleanup() {
 			await batchProcessor.flushAll();
 			batchProcessor.cleanup();
@@ -194,9 +168,6 @@ export function createDBListener<
 			}
 		},
 
-		/**
-		 * Create a DBWatcher for event-based listening
-		 */
 		createEventEmitter<
 			TData,
 			TEntity extends keyof TSchema,
@@ -217,10 +188,8 @@ export function createDBListener<
 				columns,
 				async ({ data }) => {
 					const item = (data.current ?? data.previous)!;
-
 					const eventKey = keyBuilder(item);
 					const eventValue = valueBuilder(item);
-
 					emitter.emit(eventKey, eventValue);
 				},
 				{ ops: opts?.ops, bulk: false }
@@ -231,7 +200,6 @@ export function createDBListener<
 	};
 }
 
-// Re-export types
 export { DBWatcher } from "./types";
 export type {
 	BulkListenerCallback,

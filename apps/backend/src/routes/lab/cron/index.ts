@@ -41,7 +41,7 @@ dbListener.addListener(
 
 		if (!hasDeviceTest) return;
 
-		await updateCronJob(op);
+		updateCronJob(op);
 	},
 	{ ops: ["INSERT", "DELETE"], paused: cluster.isWorker, bulk: true }
 );

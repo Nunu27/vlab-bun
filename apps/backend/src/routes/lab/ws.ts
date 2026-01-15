@@ -12,10 +12,7 @@ import { and, eq, inArray } from "drizzle-orm";
 const sessionDeleteEmitter = dbListener.createEventEmitter(
 	"labSessions",
 	["id"],
-	(session) => {
-		console.log("bjir");
-		return session.id;
-	},
+	(session) => session.id,
 	() => null,
 	{ ops: ["DELETE"] }
 );

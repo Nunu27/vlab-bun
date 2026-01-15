@@ -11,6 +11,8 @@ export const GuacamoleConnectionStates: React.FC<ConnectionStatesProps> = ({
   state,
   errorMessage,
 }) => {
+  console.log(state);
+
   if (state === 'connecting') {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-gray-900 text-white">

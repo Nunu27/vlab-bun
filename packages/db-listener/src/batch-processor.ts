@@ -10,6 +10,7 @@ import { filterRowByColumns } from "./utils";
 
 export class BatchProcessor {
 	private batchQueue = new Map<string, BatchQueue>();
+	private processing = new Set<string>(); // Track channels being processed
 	private registry: Map<string, ListenerEntry[]>;
 	private batchSize: number;
 	private debounceMs: number;
@@ -46,14 +47,14 @@ export class BatchProcessor {
 
 		const batch = this.batchQueue.get(channel)!;
 
-		rowData.forEach((data) => {
+		for (const data of rowData) {
 			batch.items.push({
 				op,
 				table,
 				previous: data.previous || null,
 				current: data.current || null
 			});
-		});
+		}
 
 		this.scheduleBatchProcessing(channel);
 	}
@@ -62,77 +63,90 @@ export class BatchProcessor {
 		const batch = this.batchQueue.get(channel);
 		if (!batch) return;
 
-		const now = Date.now();
-		const timeSinceFirst = now - batch.firstReceivedAt;
-
+		// Clear existing timer
 		if (batch.timer) {
 			clearTimeout(batch.timer);
 		}
 
+		const timeSinceFirst = Date.now() - batch.firstReceivedAt;
+
+		// Process immediately if max wait exceeded
 		if (timeSinceFirst >= this.maxBatchWaitMs) {
 			this.processBatch(channel);
 			return;
 		}
 
-		const remainingWait = Math.min(
+		// Schedule processing
+		const delay = Math.min(
 			this.debounceMs,
 			this.maxBatchWaitMs - timeSinceFirst
 		);
-
-		batch.timer = setTimeout(() => {
-			this.processBatch(channel);
-		}, remainingWait);
+		batch.timer = setTimeout(() => this.processBatch(channel), delay);
 	}
 
 	async processBatch(channel: string): Promise<void> {
-		const batch = this.batchQueue.get(channel);
-		if (!batch || batch.items.length === 0) return;
+		// Prevent concurrent processing of same channel
+		if (this.processing.has(channel)) {
+			return;
+		}
 
-		const items = batch.items.slice();
+		const batch = this.batchQueue.get(channel);
+		if (!batch || batch.items.length === 0) {
+			return;
+		}
+
+		// Mark as processing and extract items
+		this.processing.add(channel);
+		const items = [...batch.items];
 		this.batchQueue.delete(channel);
 
-		const listeners = this.registry.get(channel);
-		if (!listeners) return;
+		try {
+			await this.processItems(channel, items);
+		} finally {
+			this.processing.delete(channel);
+		}
+	}
 
-		// Filter out paused listeners
-		const activeListeners = listeners.filter((l) => !l.paused);
-		if (activeListeners.length === 0) return;
+	private async processItems(
+		channel: string,
+		items: Array<{ op: Operations; table: string; previous: any; current: any }>
+	): Promise<void> {
+		const allListeners = this.registry.get(channel);
+		const listeners = allListeners?.filter((l) => !l.paused);
 
-		const groupedByOp = items.reduce(
-			(acc, item) => {
-				if (!acc[item.op]) acc[item.op] = [];
-				acc[item.op].push(item);
-				return acc;
-			},
-			{} as Record<Operations, typeof items>
-		);
+		if (!listeners || listeners.length === 0) return;
 
-		for (const [op, opItems] of Object.entries(groupedByOp)) {
-			const listenersToCall = activeListeners.filter(({ events }) =>
-				events.has(op as Operations)
-			);
+		// Group items by operation
+		const byOp = new Map<Operations, typeof items>();
+		for (const item of items) {
+			if (!byOp.has(item.op)) {
+				byOp.set(item.op, []);
+			}
+			byOp.get(item.op)!.push(item);
+		}
 
-			if (listenersToCall.length === 0) continue;
+		// Process each operation
+		for (const [op, opItems] of byOp) {
+			const matchingListeners = listeners.filter((l) => l.events.has(op));
 
-			const bulkListeners = listenersToCall.filter(({ bulk }) => bulk);
-			const nonBulkListeners = listenersToCall.filter(({ bulk }) => !bulk);
+			if (matchingListeners.length === 0) continue;
 
-			if (bulkListeners.length > 0) {
-				await this.processBulkListeners(
-					bulkListeners,
-					op as Operations,
-					opItems,
-					channel
-				);
+			const bulk = matchingListeners.filter((l) => l.bulk);
+			const nonBulk = matchingListeners.filter((l) => !l.bulk);
+
+			// Process bulk listeners
+			if (bulk.length > 0) {
+				await this.callBulkListeners(bulk, op, opItems, channel);
 			}
 
-			if (nonBulkListeners.length > 0) {
-				await this.processNonBulkListeners(nonBulkListeners, opItems, channel);
+			// Process non-bulk listeners
+			if (nonBulk.length > 0) {
+				await this.callNonBulkListeners(nonBulk, opItems, channel);
 			}
 		}
 	}
 
-	private async processBulkListeners(
+	private async callBulkListeners(
 		listeners: ListenerEntry[],
 		op: Operations,
 		items: Array<{
@@ -145,33 +159,34 @@ export class BatchProcessor {
 	): Promise<void> {
 		for (let i = 0; i < listeners.length; i += this.batchSize) {
 			const chunk = listeners.slice(i, i + this.batchSize);
-			const results = await Promise.allSettled(
-				chunk.map(({ listener, columns }) => {
-					const bulkData = items.map((item) => ({
-						previous: filterRowByColumns(item.previous, columns),
-						current: filterRowByColumns(item.current, columns)
-					}));
 
-					return (listener as BulkListenerCallback<any, any, any>)({
-						op,
-						table: items[0]!.table,
-						data: bulkData
-					});
-				})
-			);
+			const promises = chunk.map(({ listener, columns }) => {
+				const data = items.map((item) => ({
+					previous: filterRowByColumns(item.previous, columns),
+					current: filterRowByColumns(item.current, columns)
+				}));
 
-			results.forEach((result) => {
+				return (listener as BulkListenerCallback<any, any, any>)({
+					op,
+					table: items[0]!.table,
+					data
+				});
+			});
+
+			const results = await Promise.allSettled(promises);
+
+			for (const result of results) {
 				if (result.status === "rejected") {
 					this.logger?.error(
 						{ error: result.reason },
-						`Bulk batch failure on channel ${channel}`
+						`Bulk listener error on ${channel}`
 					);
 				}
-			});
+			}
 		}
 	}
 
-	private async processNonBulkListeners(
+	private async callNonBulkListeners(
 		listeners: ListenerEntry[],
 		items: Array<{
 			op: Operations;
@@ -183,31 +198,32 @@ export class BatchProcessor {
 	): Promise<void> {
 		for (let i = 0; i < listeners.length; i += this.batchSize) {
 			const chunk = listeners.slice(i, i + this.batchSize);
-			const results = await Promise.allSettled(
-				chunk.map(({ listener, columns }) =>
-					Promise.all(
-						items.map((item) => {
-							return (listener as ListenerCallback<any, any, any>)({
-								op: item.op,
-								table: item.table,
-								data: {
-									previous: filterRowByColumns(item.previous, columns),
-									current: filterRowByColumns(item.current, columns)
-								}
-							});
+
+			const promises = chunk.map(({ listener, columns }) =>
+				Promise.all(
+					items.map((item) =>
+						(listener as ListenerCallback<any, any, any>)({
+							op: item.op,
+							table: item.table,
+							data: {
+								previous: filterRowByColumns(item.previous, columns),
+								current: filterRowByColumns(item.current, columns)
+							}
 						})
 					)
 				)
 			);
 
-			results.forEach((result) => {
+			const results = await Promise.allSettled(promises);
+
+			for (const result of results) {
 				if (result.status === "rejected") {
 					this.logger?.error(
 						{ error: result.reason },
-						`Non-bulk batch failure on channel ${channel}`
+						`Non-bulk listener error on ${channel}`
 					);
 				}
-			});
+			}
 		}
 	}
 
@@ -223,5 +239,6 @@ export class BatchProcessor {
 			}
 		}
 		this.batchQueue.clear();
+		this.processing.clear();
 	}
 }
