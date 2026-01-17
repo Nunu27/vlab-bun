@@ -76,7 +76,7 @@ export function IconPicker({
           )}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
+      <PopoverContent className="w-75 p-0" align="start">
         <div className="flex items-center border-b px-3">
           <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <input
@@ -86,7 +86,7 @@ export function IconPicker({
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="max-h-[300px] overflow-y-auto p-2">
+        <div className="max-h-75 overflow-y-auto p-2">
           <div className="grid grid-cols-4 gap-2">
             {filteredIcons.map((name) => (
               <Button

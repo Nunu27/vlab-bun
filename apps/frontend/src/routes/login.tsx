@@ -21,8 +21,8 @@ const validator = Compile(LoginRequest);
 export const Route = createFileRoute('/login')({
   head: () => ({ meta: [{ title: 'Login - vLab' }] }),
   beforeLoad: guestRoute(),
-  component: RouteComponent,
   pendingComponent: AppLoadingPage,
+  component: RouteComponent,
 });
 
 function RouteComponent() {

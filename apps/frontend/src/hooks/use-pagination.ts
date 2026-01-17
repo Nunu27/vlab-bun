@@ -51,12 +51,24 @@ export type UsePaginationConfig<
   endpoint: {
     useQuery: (options: {
       args: { query: TParams };
+      staleTime?: number;
+      gcTime?: number;
+      retry?: boolean;
+      refetchOnWindowFocus?: boolean;
+      refetchOnReconnect?: boolean;
     }) => UseQueryResult<PaginatedResponse<TData>>;
   };
   defaultSortBy?: TFields;
   defaultSortOrder?: SortOrder;
   defaultPerPage?: number;
   transformParams?: (params: PaginationParams<TFields, TFilters>) => TParams;
+  queryOptions?: {
+    staleTime?: number;
+    gcTime?: number;
+    retry?: boolean;
+    refetchOnWindowFocus?: boolean;
+    refetchOnReconnect?: boolean;
+  };
 };
 
 type ExtractFilterField<T> = T extends { field: infer F } ? F : never;
@@ -126,7 +138,17 @@ export function usePagination<
     defaultSortOrder = 'desc',
     defaultPerPage = 10,
     transformParams,
+    queryOptions,
   } = config;
+
+  const defaultQueryOptions = {
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    ...queryOptions,
+  };
 
   const [{ page, perPage }, setPagination] = useQueryStates({
     page: parseAsInteger.withDefault(1),
@@ -168,7 +190,10 @@ export function usePagination<
       : (baseParams as TParams);
   }, [page, perPage, search, sortBy, sortOrder, filters, transformParams]);
 
-  const query = endpoint.useQuery({ args: { query: apiParams } });
+  const query = endpoint.useQuery({
+    args: { query: apiParams },
+    ...defaultQueryOptions,
+  });
 
   const handlers: PaginationHandlers<TFields> = useMemo(
     () => ({

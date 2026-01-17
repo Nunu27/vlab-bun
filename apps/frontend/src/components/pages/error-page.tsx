@@ -1,20 +1,16 @@
 import { Button } from '@frontend/components/ui/button';
-import { useRouter } from '@tanstack/react-router';
+import { router } from '@frontend/lib/router';
+import {
+  Link,
+  useCanGoBack,
+  type ErrorComponentProps,
+} from '@tanstack/react-router';
 import { HomeIcon, ArrowLeftIcon, AlertTriangleIcon } from 'lucide-react';
-import type { FallbackProps } from 'react-error-boundary';
 
-function ErrorPage(props?: FallbackProps) {
-  const router = useRouter();
+function ErrorPage(props: ErrorComponentProps) {
+  const canGoBack = useCanGoBack();
 
-  const handleGoBack = () => {
-    router.history.back();
-  };
-
-  const handleGoHome = () => {
-    router.navigate({ to: '/' });
-  };
-
-  const error = props?.error?.message || 'An unexpected error occurred';
+  const error = props.error?.message || 'An unexpected error occurred';
 
   return (
     <div className="flex h-full flex-col items-center justify-center overflow-hidden bg-linear-to-br p-6">
@@ -44,18 +40,22 @@ function ErrorPage(props?: FallbackProps) {
 
         {/* Action Buttons */}
         <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
-          <Button
-            onClick={handleGoBack}
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            <ArrowLeftIcon />
-            Go Back
-          </Button>
-          <Button onClick={handleGoHome} size="lg" className="w-full sm:w-auto">
-            <HomeIcon />
-            Go to Home
+          {canGoBack && (
+            <Button
+              onClick={() => router.history.back()}
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              <ArrowLeftIcon />
+              Go Back
+            </Button>
+          )}
+          <Button size="lg" className="w-full sm:w-auto" asChild>
+            <Link to="/">
+              <HomeIcon />
+              Go to Home
+            </Link>
           </Button>
         </div>
 

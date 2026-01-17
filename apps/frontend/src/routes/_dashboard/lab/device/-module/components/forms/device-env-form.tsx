@@ -29,8 +29,6 @@ export const DeviceEnvForm = withFieldGroup({
       group.deleteField(key);
     };
 
-    console.log(envEntries);
-
     return (
       <div className="space-y-4">
         {envEntries.length > 0 ? (

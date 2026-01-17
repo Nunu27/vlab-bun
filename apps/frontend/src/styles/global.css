@@ -192,3 +192,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+body[data-router-pending='true'] [data-state='open'] {
+  display: none !important;
+  pointer-events: none;
+}

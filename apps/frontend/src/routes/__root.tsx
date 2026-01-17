@@ -1,20 +1,17 @@
 import AppLoadingPage from '@frontend/components/pages/app-loading-page';
-import ErrorPage from '@frontend/components/pages/error-page';
-import NotFoundPage from '@frontend/components/pages/not-found-page';
+import { useRouterPendingAttribute } from '@frontend/hooks/use-router-pending-attribute';
 import api from '@frontend/lib/api';
 import { queryClient } from '@frontend/lib/query';
-import { router } from '@frontend/lib/router';
 import { useAuthStore } from '@frontend/stores/auth-store';
 import {
   HeadContent,
+  Navigate,
   Outlet,
   createRootRoute,
   useRouterState,
 } from '@tanstack/react-router';
 import type { ToastItem } from '@vlab/shared/types';
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
-import { useEffect } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
 import { toast } from 'sonner';
 
 export const Route = createRootRoute({
@@ -36,42 +33,36 @@ export const Route = createRootRoute({
     await cookieStore.delete('toast');
   },
   pendingComponent: AppLoadingPage,
-  notFoundComponent: NotFoundPage,
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const loggedIn = useAuthStore((state) => !!state.user);
   const inLoginPage = useRouterState({
     select: (state) => state.matches.at(-1)?.pathname === '/login',
   });
+  const redirectUrl = useAuthStore((state) => {
+    const loggedIn = !!state.user;
+    if (loggedIn !== inLoginPage) return null;
 
-  useEffect(() => {
-    if (loggedIn !== inLoginPage) return;
-
-    const redirectUrl = useAuthStore.getState().redirectUrl;
+    const redirectUrl = state.redirectUrl;
     if (!loggedIn) {
       api.auth.me.get.invalidateQuery(queryClient);
     }
 
-    if (redirectUrl) {
-      router.navigate({ href: redirectUrl, replace: true });
-    } else {
-      router.navigate({ to: loggedIn ? '/' : '/login', replace: true });
-    }
-  }, [loggedIn, inLoginPage]);
+    return redirectUrl ?? (loggedIn ? '/' : '/login');
+  });
 
-  if (inLoginPage === loggedIn) {
-    return null;
+  useRouterPendingAttribute();
+
+  if (redirectUrl) {
+    return <Navigate to="/" href={redirectUrl} replace />;
   }
 
   return (
     <>
       <HeadContent />
       <NuqsAdapter>
-        <ErrorBoundary FallbackComponent={ErrorPage}>
-          <Outlet />
-        </ErrorBoundary>
+        <Outlet />
       </NuqsAdapter>
     </>
   );
