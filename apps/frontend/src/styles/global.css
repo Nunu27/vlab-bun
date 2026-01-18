@@ -193,7 +193,8 @@
   }
 }
 
-body[data-router-pending='true'] [data-state='open'] {
+body[data-router-pending='true'] [data-state='open'],
+body[data-router-pending='true'] canvas[popover] {
   display: none !important;
   pointer-events: none;
 }

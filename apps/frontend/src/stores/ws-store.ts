@@ -85,7 +85,7 @@ const store = create<WSStore>()((set) => {
     connected: false,
     actions: {
       subscribe: (event, callback) => {
-        const id = Bun.randomUUIDv7();
+        const id = crypto.randomUUID();
 
         listeners.set(id, callback);
         if (!listenersMap.has(event)) {

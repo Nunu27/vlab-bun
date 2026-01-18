@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { type Static, Type as t } from "typebox";
+import { Type as t } from "typebox";
 import { Compile } from "typebox/compile";
 
 const EnvSchema = t.Object({
@@ -62,5 +62,4 @@ if (errors.length > 0) {
 const env = validator.Parse(process.env);
 
 export default env;
-export type Env = Static<typeof EnvSchema>;
 export const inProduction = env.NODE_ENV === "production";

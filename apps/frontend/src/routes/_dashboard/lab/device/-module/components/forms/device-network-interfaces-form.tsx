@@ -12,7 +12,6 @@ import {
   restrictToVerticalAxis,
 } from '@dnd-kit/modifiers';
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -31,10 +30,10 @@ import {
   TableHeader,
   TableRow,
 } from '@frontend/components/ui/table';
-import { cn } from '@frontend/lib/utils';
-import { GripVerticalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { withFieldGroup } from '@frontend/hooks/use-app-form';
+import { cn } from '@frontend/lib/utils';
 import { useStore } from '@tanstack/react-form';
+import { GripVerticalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 
 interface SortableInterfaceRowProps {
   id: string;
@@ -116,11 +115,14 @@ function SortableInterfaceRow({
 }
 
 export const DeviceNetworkInterfacesForm = withFieldGroup({
-  defaultValues: [] as {
-    displayCode: string;
-    internalCode: string;
-    configurable: boolean;
-  }[],
+  defaultValues: {
+    interfaces: [] as {
+      id?: string;
+      displayCode: string;
+      internalCode: string;
+      configurable: boolean;
+    }[],
+  },
   render: function Render({ group }) {
     const sensors = useSensors(
       useSensor(PointerSensor),
@@ -129,27 +131,22 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
       }),
     );
 
-    const values = useStore(group.store, (state) => state.values);
+    const length = useStore(
+      group.store,
+      (state) => state.values.interfaces.length,
+    );
 
     const handleDragEnd = (event: DragEndEvent) => {
       const { active, over } = event;
 
       if (over && active.id !== over.id) {
-        const oldIndex = values.findIndex(
-          (_, i) => `interface-${i}` === active.id,
-        );
-        const newIndex = values.findIndex(
-          (_, i) => `interface-${i}` === over.id,
-        );
-
-        const reordered = arrayMove(values, oldIndex, newIndex);
-        group.form.setFieldValue('interfaces', reordered);
+        group.moveFieldValues('interfaces', Number(active.id), Number(over.id));
       }
     };
 
     return (
       <div className="space-y-4">
-        {values.length > 0 ? (
+        {length > 0 ? (
           <div className="overflow-hidden rounded-lg border">
             <DndContext
               sensors={sensors}
@@ -170,50 +167,61 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <SortableContext
-                    items={values.map((_, i) => `interface-${i}`)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {values.map((iface, index) => (
-                      <SortableInterfaceRow
-                        key={`interface-${index}`}
-                        id={`interface-${index}`}
-                        displayCode={iface.displayCode}
-                        internalCode={iface.internalCode}
-                        configurable={iface.configurable}
-                        onDisplayCodeChange={(value) => {
-                          const updated = [...values];
-                          updated[index] = {
-                            ...updated[index],
-                            displayCode: value,
-                          };
-                          group.form.setFieldValue('interfaces', updated);
-                        }}
-                        onInternalCodeChange={(value) => {
-                          const updated = [...values];
-                          updated[index] = {
-                            ...updated[index],
-                            internalCode: value,
-                          };
-                          group.form.setFieldValue('interfaces', updated);
-                        }}
-                        onConfigurableChange={(value) => {
-                          const updated = [...values];
-                          updated[index] = {
-                            ...updated[index],
-                            configurable: value,
-                          };
-                          group.form.setFieldValue('interfaces', updated);
-                        }}
-                        onDelete={() => {
-                          group.form.setFieldValue(
-                            'interfaces',
-                            values.filter((_, i) => i !== index),
-                          );
-                        }}
-                      />
-                    ))}
-                  </SortableContext>
+                  <group.Field name="interfaces" mode="array">
+                    {(field) => (
+                      <SortableContext
+                        items={field.state.value.map((_, i) => `${i}`)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {field.state.value.map(({ id }, index) => (
+                          <group.Field
+                            name={`interfaces[${index}]`}
+                            key={id || `temp-${index}`}
+                          >
+                            {(subField) => {
+                              const iface = subField.state.value;
+                              if (!iface.id) {
+                                subField.setValue({
+                                  ...iface,
+                                  id: crypto.randomUUID(),
+                                });
+                              }
+
+                              return (
+                                <SortableInterfaceRow
+                                  id={`${index}`}
+                                  displayCode={iface.displayCode}
+                                  internalCode={iface.internalCode}
+                                  configurable={iface.configurable}
+                                  onDisplayCodeChange={(value) => {
+                                    subField.setValue({
+                                      ...iface,
+                                      displayCode: value,
+                                    });
+                                  }}
+                                  onInternalCodeChange={(value) => {
+                                    subField.setValue({
+                                      ...iface,
+                                      internalCode: value,
+                                    });
+                                  }}
+                                  onConfigurableChange={(value) => {
+                                    subField.setValue({
+                                      ...iface,
+                                      configurable: value,
+                                    });
+                                  }}
+                                  onDelete={() => {
+                                    field.removeValue(index);
+                                  }}
+                                />
+                              );
+                            }}
+                          </group.Field>
+                        ))}
+                      </SortableContext>
+                    )}
+                  </group.Field>
                 </TableBody>
               </Table>
             </DndContext>
@@ -228,10 +236,12 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
           type="button"
           variant="outline"
           onClick={() => {
-            group.form.setFieldValue('interfaces', [
-              ...values,
-              { displayCode: '', internalCode: '', configurable: true },
-            ]);
+            group.pushFieldValue('interfaces', {
+              id: crypto.randomUUID(),
+              displayCode: '',
+              internalCode: '',
+              configurable: true,
+            });
           }}
         >
           <PlusIcon /> Add Interface

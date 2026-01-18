@@ -37,6 +37,7 @@ type BaseComboBoxProps = {
   disabled?: boolean;
   width?: string;
   allowClear?: boolean;
+  isInvalid?: boolean;
 };
 
 type ComboBoxProps = BaseComboBoxProps & {
@@ -53,6 +54,7 @@ export function ComboBox({
   disabled = false,
   width = 'w-[150px]',
   allowClear = false,
+  isInvalid = false,
 }: ComboBoxProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -82,9 +84,11 @@ export function ComboBox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-invalid={isInvalid}
           className={cn(
             width,
             'dark:bg-input/30 cursor-pointer! justify-between bg-transparent',
+            'aria-invalid:border-destructive',
           )}
           disabled={disabled}
         >
@@ -159,6 +163,7 @@ export function PaginatedComboBox<
   disabled = false,
   width = 'w-[150px]',
   allowClear = false,
+  isInvalid = false,
   endpoint,
   params,
   renderOption,
@@ -176,7 +181,6 @@ export function PaginatedComboBox<
         },
       },
       enabled: open,
-      staleTime: 1000 * 60 * 5,
     });
 
   React.useEffect(() => {
@@ -224,9 +228,11 @@ export function PaginatedComboBox<
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-invalid={isInvalid}
           className={cn(
             width,
             'dark:bg-input/30 cursor-pointer! justify-between bg-transparent',
+            'aria-invalid:border-destructive',
           )}
           disabled={disabled}
         >

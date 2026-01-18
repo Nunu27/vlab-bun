@@ -1,7 +1,3 @@
-/**
- * Generic pagination response types
- */
-
 export type PageInfo = {
   page: number;
   perPage: number;

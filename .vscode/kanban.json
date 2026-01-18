@@ -7,10 +7,6 @@
                 {
                     "text": "[Device Form] can't submit after clicking test device with invalid input",
                     "id": "ev92mpgs7ddlxouzskrblwxm"
-                },
-                {
-                    "text": "[WS] Duplicated logs after reconnection",
-                    "id": "f4q58kap4t3dgefltjpar7bt"
                 }
             ],
             "id": "o4x0r403uqgjddc49w08q8az",
@@ -55,8 +51,8 @@
             "title": "Doing",
             "tasks": [
                 {
-                    "text": "[Checker] Network",
-                    "id": "uz0cwkutvjrzrmbw1bb4k5hw"
+                    "text": "Refactor topology editor",
+                    "id": "vxcva6gnaymx872n39wh27i4"
                 }
             ],
             "id": "ppj2h8a0u0o1d4cyw3jf9ifh",
@@ -65,6 +61,14 @@
         {
             "title": "Done",
             "tasks": [
+                {
+                    "text": "[Checker] Network",
+                    "id": "uz0cwkutvjrzrmbw1bb4k5hw"
+                },
+                {
+                    "text": "[WS] Duplicated logs after reconnection",
+                    "id": "f4q58kap4t3dgefltjpar7bt"
+                },
                 {
                     "text": "[FE] Paginated data table with filter",
                     "id": "pju00y81x4xyozyouvl9rk7g"
@@ -128,5 +132,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1767059944673
+    "timestamp": 1768645586795
 }

@@ -28,8 +28,6 @@ export default createRouter().guard(
 					return status(404, failure({ message: "Device not found" }));
 				}
 
-				return success({
-					data
-				});
+				return success({ data });
 			})
 );

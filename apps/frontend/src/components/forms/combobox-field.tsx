@@ -45,6 +45,7 @@ function ComboBoxField({
         emptyMessage={emptyMessage}
         width={width}
         allowClear={allowClear}
+        isInvalid={isInvalid}
       />
       {isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>

@@ -141,15 +141,6 @@ export function usePagination<
     queryOptions,
   } = config;
 
-  const defaultQueryOptions = {
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
-    retry: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    ...queryOptions,
-  };
-
   const [{ page, perPage }, setPagination] = useQueryStates({
     page: parseAsInteger.withDefault(1),
     perPage: parseAsInteger.withDefault(defaultPerPage),
@@ -192,7 +183,7 @@ export function usePagination<
 
   const query = endpoint.useQuery({
     args: { query: apiParams },
-    ...defaultQueryOptions,
+    ...queryOptions,
   });
 
   const handlers: PaginationHandlers<TFields> = useMemo(

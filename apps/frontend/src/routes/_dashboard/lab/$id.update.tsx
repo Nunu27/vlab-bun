@@ -13,7 +13,7 @@ import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { queryClient } from '@frontend/lib/query';
 import { useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import TopologyEditor from './-module/topology';
 import { useTopologyStore } from './-module/topology/hook';
@@ -69,8 +69,8 @@ function UpdateLabForm() {
   const { mutate, isPending } = api.lab({ id }).put.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lab', 'pagination'] });
-      queryClient.invalidateQueries({ queryKey: ['lab', { id }] });
-      navigate({ to: '/lab' });
+      queryClient.invalidateQueries({ queryKey: ['lab', 'get', { id }] });
+      navigate({ to: '/lab', replace: true });
     },
   });
 
@@ -143,12 +143,8 @@ function UpdateLabForm() {
         </Card>
 
         <div className="flex justify-end gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate({ to: '/lab' })}
-          >
-            Cancel
+          <Button type="button" variant="outline" asChild>
+            <Link to="/lab">Cancel</Link>
           </Button>
           <Button onClick={handleSave} disabled={isPending}>
             {isPending ? 'Saving...' : 'Save Changes'}

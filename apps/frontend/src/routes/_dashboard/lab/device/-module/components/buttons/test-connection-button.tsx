@@ -16,9 +16,10 @@ import { DeviceTestRequest } from '@vlab/shared/schemas';
 import { Monitor } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { useTestDeviceStore } from '../../stores/test-device';
+import { useTestDeviceStore } from '../../stores/test-device-store';
 
 const validator = Compile(DeviceTestRequest);
+type FieldKeys = keyof typeof DeviceTestRequest.static;
 
 const TestConnectionButton = withFieldGroup({
   defaultValues: {} as typeof DeviceTestRequest.static,
@@ -51,6 +52,18 @@ const TestConnectionButton = withFieldGroup({
         toast.error('Validation failed', {
           description: 'Please check all required fields',
         });
+
+        const errors = validator.Errors(value);
+
+        for (const error of errors) {
+          const key = error.path.substring(1).replace(/\//g, '.') as FieldKeys;
+
+          group.setFieldMeta(key, (meta) => ({
+            ...meta,
+            errorMap: { onSubmit: [error] },
+          }));
+        }
+
         return;
       }
 

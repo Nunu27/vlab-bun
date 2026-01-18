@@ -17,6 +17,8 @@ export const getSession = async (id: string) => {
 	return {
 		data: await redis.get<Session>(`session:data:${userId}`),
 		extend: async () => {
+			if (!userId) return;
+
 			await redis.expire(key, env.SESSION_TTL);
 			if (userId) {
 				await redis.expire(`session:data:${userId}`, env.SESSION_TTL);
@@ -28,6 +30,8 @@ export const getSession = async (id: string) => {
 			await redis.set(`session:data:${data.id}`, data, env.SESSION_TTL);
 		},
 		delete: async () => {
+			if (!userId) return;
+
 			userId = null;
 			await redis.del(key);
 		}

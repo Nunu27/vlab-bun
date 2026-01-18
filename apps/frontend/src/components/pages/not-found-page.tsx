@@ -1,16 +1,12 @@
 import { Button } from '@frontend/components/ui/button';
-import { useRouter } from '@tanstack/react-router';
-import { HomeIcon, ArrowLeftIcon } from 'lucide-react';
+import { Link, useRouter } from '@tanstack/react-router';
+import { ArrowLeftIcon, HomeIcon } from 'lucide-react';
 
 function NotFoundPage() {
   const router = useRouter();
 
   const handleGoBack = () => {
     router.history.back();
-  };
-
-  const handleGoHome = () => {
-    router.navigate({ to: '/' });
   };
 
   return (
@@ -44,9 +40,11 @@ function NotFoundPage() {
             <ArrowLeftIcon />
             Go Back
           </Button>
-          <Button onClick={handleGoHome} size="lg" className="w-full sm:w-auto">
-            <HomeIcon />
-            Go to Home
+          <Button size="lg" className="w-full sm:w-auto" asChild>
+            <Link to="/">
+              <HomeIcon />
+              Go to Home
+            </Link>
           </Button>
         </div>
 

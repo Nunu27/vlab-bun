@@ -4,6 +4,11 @@ import { router } from '@frontend/lib/router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { enableArrayMethods, enableMapSet } from 'immer';
+
+enableMapSet();
+enableArrayMethods();
 
 function App() {
   return (
@@ -15,7 +20,9 @@ function App() {
         disableTransitionOnChange
       >
         <RouterProvider router={router} />
+
         <Toaster />
+        <ReactQueryDevtools initialIsOpen={false} />
       </ThemeProvider>
     </QueryClientProvider>
   );

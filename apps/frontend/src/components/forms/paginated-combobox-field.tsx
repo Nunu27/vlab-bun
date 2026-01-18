@@ -41,7 +41,7 @@ function PaginatedComboBoxField<
   placeholder,
   searchPlaceholder,
   emptyMessage,
-  width,
+  width = 'w-full',
   allowClear,
 }: PaginatedComboBoxFieldProps<TEndpoint>) {
   const field = useFieldContext<string>();
@@ -67,6 +67,7 @@ function PaginatedComboBoxField<
         emptyMessage={emptyMessage}
         width={width}
         allowClear={allowClear}
+        isInvalid={isInvalid}
       />
       {isInvalid && <FieldError errors={field.state.meta.errors} />}
     </Field>

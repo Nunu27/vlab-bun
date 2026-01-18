@@ -213,6 +213,8 @@ function FieldError({
       return uniqueErrors[0]?.message;
     }
 
+    console.log(uniqueErrors);
+
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
