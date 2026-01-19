@@ -24,25 +24,19 @@ export default createRouter().guard(
 			}))
 			.get("/pagination", async ({ query, session }) => {
 				const data = await paginator.paginate(query, {
-					columns: {
-						topology: false
-					},
+					columns: { topology: false },
 					with: {
 						author: {
 							columns: { id: true },
 							with: {
 								user: {
-									columns: {
-										name: true
-									}
+									columns: { name: true }
 								}
 							}
 						},
 						sessions: {
 							limit: 1,
-							columns: {
-								id: true
-							},
+							columns: { id: true },
 							where: (sessions, { eq }) => eq(sessions.ownerId, session.data.id)
 						}
 					}

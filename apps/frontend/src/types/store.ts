@@ -1,3 +1,8 @@
+export type Logs<TTypes extends string> = {
+  type: TTypes;
+  message: string;
+}[];
+
 export type Store<TState, TActions> = TState & { actions: TActions };
 
 export type WithSelectors<S> = S extends { getState: () => infer T }

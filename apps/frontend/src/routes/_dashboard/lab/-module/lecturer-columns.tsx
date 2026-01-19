@@ -1,10 +1,7 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { LabActionsCell } from './components/lab-actions-cell';
-import api from '@frontend/lib/api';
-import type { ExtractPaginationData } from '@frontend/types/api';
 import { formatTimeAgo } from '@frontend/helper/string';
-
-export type LabItem = ExtractPaginationData<typeof api.lab.pagination>;
+import { type ColumnDef } from '@tanstack/react-table';
+import type { LabItem } from './types';
+import LecturerLabActionsCell from './components/lecturer-lab-actions-cell';
 
 export const studentLabColumns: ColumnDef<LabItem>[] = [
   {
@@ -61,6 +58,6 @@ export const studentLabColumns: ColumnDef<LabItem>[] = [
     meta: {
       center: true,
     },
-    cell: ({ row }) => <LabActionsCell lab={row.original} />,
+    cell: ({ row }) => <LecturerLabActionsCell lab={row.original} />,
   },
 ];

@@ -1,25 +1,24 @@
 import { router } from '@frontend/lib/router';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { useDebounceCallback } from 'usehooks-ts';
 
 export function useRouterPendingAttribute() {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const onResolved = useDebounceCallback(() => {
+    document.body.removeAttribute('data-router-pending');
+  }, 500);
 
   useEffect(() => {
     const unsubStart = router.subscribe('onBeforeLoad', () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      onResolved.cancel();
       document.body.setAttribute('data-router-pending', 'true');
     });
     const unsubEnd = router.subscribe('onResolved', () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        document.body.removeAttribute('data-router-pending');
-        timeoutRef.current = null;
-      }, 100);
+      onResolved();
     });
 
     return () => {
       unsubStart();
       unsubEnd();
     };
-  }, []);
+  }, [onResolved]);
 }

@@ -5,16 +5,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@frontend/components/ui/popover';
+import type { Logs } from '@frontend/types/store';
 import { AlertTriangle, XCircle } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
-export interface LogEntry {
-  type: 'info' | 'warn' | 'error';
-  message: string;
-}
-
 interface LogViewerProps {
-  logs: LogEntry[];
+  logs: Logs<'info' | 'warn' | 'error'>;
   emptyMessage?: string;
   className?: string;
 }
@@ -71,7 +67,7 @@ export function LogViewer({
 }
 
 interface LogIssuesButtonProps {
-  logs: LogEntry[];
+  logs: Logs<'info' | 'warn' | 'error'>;
 }
 
 export function LogIssuesButton({ logs }: LogIssuesButtonProps) {
