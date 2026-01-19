@@ -1,87 +1,66 @@
 import { t } from "elysia/type-system";
 import { connectionTypeEnum, deviceKindEnum } from "../enums";
 import { createWSSchema } from "../types/ws";
+import { NonEmptyString } from "./common";
+
+export const DeviceEnvSchema = t.Record(NonEmptyString(), t.String());
+
+export const DeviceResourcesSchema = t.Object({
+	cpu: t.Optional(t.Number()),
+	memory: t.Optional(t.String())
+});
+
+export const DeviceConnectionSchema = t.Object({
+	type: t.UnionEnum(connectionTypeEnum),
+	data: t.Object({
+		port: t.Number(),
+		username: t.Optional(NonEmptyString()),
+		password: t.Optional(NonEmptyString())
+	})
+});
+
+export const DeviceInterfaceSchema = t.Object({
+	name: NonEmptyString(),
+	configurable: t.Boolean()
+});
+
+export type DeviceEnv = typeof DeviceEnvSchema.static;
+export type DeviceResources = typeof DeviceResourcesSchema.static;
+export type DeviceConnection = typeof DeviceConnectionSchema.static;
+export type DeviceInterface = typeof DeviceInterfaceSchema.static;
 
 export const CreateDeviceRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString({ title: "Name" }),
 	kind: t.UnionEnum(deviceKindEnum),
-	image: t.String({ minLength: 1 }),
-	icon: t.String({ minLength: 1 }),
+	image: NonEmptyString({ title: "Image" }),
+	icon: NonEmptyString({ title: "Icon" }),
 	categoryId: t.String({ format: "uuid" }),
-	env: t.Record(t.String(), t.String()),
-	resources: t.Object({
-		cpu: t.Optional(t.Number()),
-		memory: t.Optional(t.String())
-	}),
-	connection: t.Object({
-		type: t.UnionEnum(connectionTypeEnum),
-		data: t.Object({
-			port: t.Number(),
-			username: t.Optional(t.String({ minLength: 1 })),
-			password: t.Optional(t.String({ minLength: 1 }))
-		})
-	}),
-	interfaces: t.Array(
-		t.Object({
-			displayCode: t.String({ minLength: 1 }),
-			internalCode: t.String({ minLength: 1 }),
-			configurable: t.Boolean()
-		})
-	)
+	env: DeviceEnvSchema,
+	resources: DeviceResourcesSchema,
+	connection: DeviceConnectionSchema,
+	interfaces: t.Array(DeviceInterfaceSchema)
 });
 
 export const UpdateDeviceRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	kind: t.UnionEnum(deviceKindEnum),
-	image: t.String({ minLength: 1 }),
-	icon: t.String({ minLength: 1 }),
+	image: NonEmptyString(),
+	icon: NonEmptyString(),
 	categoryId: t.String({ format: "uuid" }),
-	env: t.Record(t.String(), t.String()),
-	resources: t.Object({
-		cpu: t.Optional(t.Number()),
-		memory: t.Optional(t.String())
-	}),
-	connection: t.Object({
-		type: t.UnionEnum(connectionTypeEnum),
-		data: t.Object({
-			port: t.Number(),
-			username: t.Optional(t.String({ minLength: 1 })),
-			password: t.Optional(t.String({ minLength: 1 }))
-		})
-	}),
-	interfaces: t.Array(
-		t.Object({
-			displayCode: t.String({ minLength: 1 }),
-			internalCode: t.String({ minLength: 1 }),
-			configurable: t.Boolean()
-		})
-	)
+	env: DeviceEnvSchema,
+	resources: DeviceResourcesSchema,
+	connection: DeviceConnectionSchema,
+	interfaces: t.Array(DeviceInterfaceSchema)
 });
 
 export const DeviceTestRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	kind: t.UnionEnum(deviceKindEnum),
-	image: t.String({ minLength: 1 }),
-	env: t.Record(t.String(), t.String()),
-	resources: t.Object({
-		cpu: t.Optional(t.Number()),
-		memory: t.Optional(t.String())
-	}),
-	connection: t.Object({
-		type: t.UnionEnum(connectionTypeEnum),
-		data: t.Object({
-			port: t.Number(),
-			username: t.Optional(t.String({ minLength: 1 })),
-			password: t.Optional(t.String({ minLength: 1 }))
-		})
-	}),
-	interfaces: t.Array(
-		t.Object({
-			displayCode: t.String({ minLength: 1 }),
-			internalCode: t.String({ minLength: 1 }),
-			configurable: t.Boolean()
-		})
-	)
+	image: NonEmptyString(),
+	env: DeviceEnvSchema,
+	resources: DeviceResourcesSchema,
+	connection: DeviceConnectionSchema,
+	interfaces: t.Array(DeviceInterfaceSchema)
 });
 
 // WS

@@ -1,29 +1,15 @@
+import { deviceKindEnum as deviceKindValues } from "@vlab/shared/enums";
+import type {
+	DeviceConnection,
+	DeviceEnv,
+	DeviceInterface,
+	DeviceResources
+} from "@vlab/shared/schemas";
 import { jsonb, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
-import { deviceKindEnum as deviceKindValues } from "@vlab/shared/enums";
 import { base } from "./base";
 
 export const deviceKindEnum = pgEnum("device_kind", deviceKindValues);
-export type DeviceInterface = {
-	displayCode: string;
-	internalCode: string;
-	configurable: boolean;
-};
-export type DeviceEnv = {
-	[key: string]: string;
-};
-export type DeviceResources = {
-	cpu?: number;
-	memory?: string;
-};
-export type DeviceConnection = {
-	type: "rdp" | "vnc" | "ssh" | "telnet";
-	data: {
-		port: number;
-		username?: string;
-		password?: string;
-	};
-};
 
 export const deviceCategories = pgTable("device_category", {
 	...base,

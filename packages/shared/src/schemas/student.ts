@@ -1,8 +1,9 @@
 import { t } from "elysia/type-system";
 import { degreeLevelEnum } from "../enums";
+import { NonEmptyString } from "./common";
 
 export const CreateStudentRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	email: t.String({ format: "email" }),
 	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
 	year: t.Integer({ min: 0 }),
@@ -15,7 +16,7 @@ export const CreateStudentRequest = t.Object({
 });
 
 export const UpdateStudentRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	email: t.String({ format: "email" }),
 	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
 	year: t.Integer({ min: 0 }),

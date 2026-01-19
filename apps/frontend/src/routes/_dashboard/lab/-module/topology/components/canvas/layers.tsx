@@ -3,6 +3,7 @@ import { GroupComponent } from './group';
 import { EdgeComponent } from './edge';
 import { NodeComponent } from './node';
 import type { NodeData, EdgeData, GroupNodeData, Position } from '../../types';
+import type { DeviceInterface, DeviceResources } from '@vlab/shared/schemas';
 
 interface LayersProps {
   sortedGroups: GroupNodeData[];
@@ -23,8 +24,8 @@ interface LayersProps {
     {
       icon: string;
       categoryColor: string;
-      resources: unknown;
-      interfaces: unknown;
+      resources: DeviceResources;
+      interfaces: DeviceInterface[];
     }
   >;
 }

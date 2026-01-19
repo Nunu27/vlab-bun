@@ -33,95 +33,89 @@ import {
 import { withFieldGroup } from '@frontend/hooks/use-app-form';
 import { cn } from '@frontend/lib/utils';
 import { useStore } from '@tanstack/react-form';
+import type { DeviceInterface } from '@vlab/shared/schemas';
 import { GripVerticalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 
-interface SortableInterfaceRowProps {
-  id: string;
-  displayCode: string;
-  internalCode: string;
-  configurable: boolean;
-  onDisplayCodeChange: (value: string) => void;
-  onInternalCodeChange: (value: string) => void;
-  onConfigurableChange: (value: boolean) => void;
-  onDelete: () => void;
-}
+type InterfaceEntry = DeviceInterface & {
+  id?: string;
+};
 
-function SortableInterfaceRow({
-  id,
-  displayCode,
-  internalCode,
-  configurable,
-  onDisplayCodeChange,
-  onInternalCodeChange,
-  onConfigurableChange,
-  onDelete,
-}: SortableInterfaceRowProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useSortable({ id });
+const SortableInterfaceRow = withFieldGroup({
+  defaultValues: {} as InterfaceEntry,
+  props: {
+    index: 0,
+    onDelete: () => {},
+  },
+  render: function Render({ group, index, onDelete }) {
+    const { attributes, listeners, setNodeRef, transform, isDragging } =
+      useSortable({ id: index });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-  };
+    const style = {
+      transform: CSS.Transform.toString(transform),
+    };
 
-  return (
-    <TableRow
-      ref={setNodeRef}
-      style={style}
-      className={cn(isDragging && 'opacity-50')}
-    >
-      <TableCell className="w-12 text-center">
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVerticalIcon className="size-5" />
-        </button>
-      </TableCell>
-      <TableCell>
-        <Input
-          placeholder="Display Code"
-          value={displayCode}
-          onChange={(e) => onDisplayCodeChange(e.target.value)}
-          className="h-9"
-        />
-      </TableCell>
-      <TableCell>
-        <Input
-          placeholder="Internal Code"
-          value={internalCode}
-          onChange={(e) => onInternalCodeChange(e.target.value)}
-          className="h-9"
-        />
-      </TableCell>
-      <TableCell className="w-24 text-center">
-        <Checkbox
-          checked={configurable}
-          onCheckedChange={onConfigurableChange}
-        />
-      </TableCell>
-      <TableCell className="w-16 text-center">
-        <ActionButton
-          icon={Trash2Icon}
-          tooltip="Delete"
-          type="button"
-          variant="destructive"
-          onClick={onDelete}
-        />
-      </TableCell>
-    </TableRow>
-  );
-}
+    return (
+      <TableRow
+        ref={setNodeRef}
+        style={style}
+        className={cn(isDragging && 'opacity-50')}
+      >
+        <TableCell className="w-12 text-center">
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon className="size-5" />
+          </button>
+        </TableCell>
+        <TableCell>
+          <group.Field name="name">
+            {({ state, handleChange, handleBlur }) => {
+              const isInvalid = state.meta.isTouched && !state.meta.isValid;
+
+              return (
+                <Input
+                  placeholder="Name"
+                  value={state.value}
+                  onChange={(e) => handleChange(e.target.value)}
+                  onBlur={handleBlur}
+                  className="h-9"
+                  aria-invalid={isInvalid}
+                />
+              );
+            }}
+          </group.Field>
+        </TableCell>
+        <TableCell className="w-24 text-center">
+          <group.Field name="configurable">
+            {({ state, handleChange, handleBlur }) => (
+              <Checkbox
+                checked={state.value}
+                onCheckedChange={(e) => handleChange(e === true)}
+                onBlur={handleBlur}
+              />
+            )}
+          </group.Field>
+        </TableCell>
+        <TableCell className="w-16 text-center">
+          <ActionButton
+            icon={Trash2Icon}
+            tooltip="Delete"
+            type="button"
+            variant="destructive"
+            onClick={onDelete}
+          />
+        </TableCell>
+      </TableRow>
+    );
+  },
+});
 
 export const DeviceNetworkInterfacesForm = withFieldGroup({
   defaultValues: {
-    interfaces: [] as {
-      id?: string;
-      displayCode: string;
-      internalCode: string;
-      configurable: boolean;
-    }[],
+    interfaces: [] as InterfaceEntry[],
   },
   render: function Render({ group }) {
     const sensors = useSensors(
@@ -131,9 +125,9 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
       }),
     );
 
-    const length = useStore(
+    const haveItem = useStore(
       group.store,
-      (state) => state.values.interfaces.length,
+      (state) => !!state.values.interfaces.length,
     );
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -146,7 +140,7 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
 
     return (
       <div className="space-y-4">
-        {length > 0 ? (
+        {haveItem ? (
           <div className="overflow-hidden rounded-lg border">
             <DndContext
               sensors={sensors}
@@ -158,8 +152,7 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Display Code</TableHead>
-                    <TableHead>Internal Code</TableHead>
+                    <TableHead>Name</TableHead>
                     <TableHead className="w-24 text-center">
                       Configurable
                     </TableHead>
@@ -170,55 +163,33 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
                   <group.Field name="interfaces" mode="array">
                     {(field) => (
                       <SortableContext
-                        items={field.state.value.map((_, i) => `${i}`)}
+                        items={field.state.value.map((_, i) => i)}
                         strategy={verticalListSortingStrategy}
                       >
-                        {field.state.value.map(({ id }, index) => (
-                          <group.Field
-                            name={`interfaces[${index}]`}
-                            key={id || `temp-${index}`}
-                          >
-                            {(subField) => {
-                              const iface = subField.state.value;
-                              if (!iface.id) {
-                                subField.setValue({
-                                  ...iface,
-                                  id: crypto.randomUUID(),
-                                });
-                              }
+                        {field.state.value.map((iface, index) => {
+                          if (!iface.id) {
+                            field.replaceValue(index, {
+                              ...iface,
+                              id: crypto.randomUUID(),
+                            });
+                          }
 
-                              return (
-                                <SortableInterfaceRow
-                                  id={`${index}`}
-                                  displayCode={iface.displayCode}
-                                  internalCode={iface.internalCode}
-                                  configurable={iface.configurable}
-                                  onDisplayCodeChange={(value) => {
-                                    subField.setValue({
-                                      ...iface,
-                                      displayCode: value,
-                                    });
-                                  }}
-                                  onInternalCodeChange={(value) => {
-                                    subField.setValue({
-                                      ...iface,
-                                      internalCode: value,
-                                    });
-                                  }}
-                                  onConfigurableChange={(value) => {
-                                    subField.setValue({
-                                      ...iface,
-                                      configurable: value,
-                                    });
-                                  }}
-                                  onDelete={() => {
-                                    field.removeValue(index);
-                                  }}
-                                />
-                              );
-                            }}
-                          </group.Field>
-                        ))}
+                          return (
+                            <SortableInterfaceRow
+                              key={iface.id || crypto.randomUUID()}
+                              index={index}
+                              form={group}
+                              fields={{
+                                id: `interfaces[${index}].id`,
+                                name: `interfaces[${index}].name`,
+                                configurable: `interfaces[${index}].configurable`,
+                              }}
+                              onDelete={() => {
+                                field.removeValue(index);
+                              }}
+                            />
+                          );
+                        })}
                       </SortableContext>
                     )}
                   </group.Field>
@@ -238,8 +209,7 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
           onClick={() => {
             group.pushFieldValue('interfaces', {
               id: crypto.randomUUID(),
-              displayCode: '',
-              internalCode: '',
+              name: '',
               configurable: true,
             });
           }}

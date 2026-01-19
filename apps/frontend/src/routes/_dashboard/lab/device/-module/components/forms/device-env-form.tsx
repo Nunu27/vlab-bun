@@ -6,6 +6,7 @@ import { withFieldGroup } from '@frontend/hooks/use-app-form';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { memo, useEffect } from 'react';
 import { useEnvFormStore } from '../../stores/env-form-store';
+import { ActionButton } from '@frontend/components/action-button';
 
 type EnvEntry = { id: string; key: string; value: string };
 
@@ -19,6 +20,7 @@ export const DeviceEnvForm = withFieldGroup({
     const entries = store.use.entries();
     const keyCounts = store.use.keyCounts();
     const { setValue, addEntry } = store.use.actions();
+    const errors = new Set<string>();
 
     useEffect(() => {
       setValue(group.getFieldValue('env'));
@@ -48,46 +50,43 @@ export const DeviceEnvForm = withFieldGroup({
     }, [entries]);
 
     return (
-      <group.Field name="env">
-        {(field) => {
-          const isInvalid =
-            field.state.meta.isTouched && !field.state.meta.isValid;
+      <div className="space-y-4">
+        {entries.length > 0 ? (
+          <div className="space-y-2">
+            {entries.map((entry, index) => {
+              const isDuplicate = (keyCounts.get(entry.key) ?? 0) > 1;
+              const isEmpty = entry.key === '';
+              const hasError = isDuplicate || isEmpty;
 
-          return (
-            <div className="space-y-4">
-              {entries.length > 0 ? (
-                <div className="space-y-2">
-                  {entries.map((entry, index) => {
-                    const isDuplicate = (keyCounts.get(entry.key) ?? 0) > 1;
-                    const isEmpty = entry.key === '';
-                    const hasError = isDuplicate || isEmpty;
+              if (isDuplicate) errors.add(`duplicated key`);
+              if (isEmpty) errors.add(`empty key`);
 
-                    return (
-                      <EnvEntryRow
-                        key={entry.id}
-                        entry={entry}
-                        index={index}
-                        hasError={hasError}
-                      />
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-muted-foreground rounded-lg border border-dashed py-4 text-center">
-                  No environment variables defined. Click the button below to
-                  add one.
-                </div>
-              )}
+              return (
+                <EnvEntryRow
+                  key={entry.id}
+                  entry={entry}
+                  index={index}
+                  hasError={hasError}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-muted-foreground rounded-lg border border-dashed py-4 text-center">
+            No environment variables defined. Click the button below to add one.
+          </div>
+        )}
 
-              {isInvalid && <FieldError errors={field.state.meta.errors} />}
+        {!!errors.size && (
+          <FieldError
+            errors={[{ message: Array.from(errors).join(' and ') }]}
+          />
+        )}
 
-              <Button type="button" variant="outline" onClick={addEntry}>
-                <PlusIcon /> Add Environment Variable
-              </Button>
-            </div>
-          );
-        }}
-      </group.Field>
+        <Button type="button" variant="outline" onClick={addEntry}>
+          <PlusIcon /> Add Environment Variable
+        </Button>
+      </div>
     );
   },
 });
@@ -121,14 +120,12 @@ const EnvEntryRow = memo<{
           }
         />
       </Field>
-      <Button
-        type="button"
+      <ActionButton
         variant="destructive"
-        size="icon"
         onClick={() => removeEntry(index)}
-      >
-        <Trash2Icon className="size-4" />
-      </Button>
+        icon={Trash2Icon}
+        tooltip="Delete"
+      />
     </div>
   );
 });

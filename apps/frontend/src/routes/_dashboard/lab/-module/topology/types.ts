@@ -1,9 +1,8 @@
 import type {
   LabDeviceNode,
+  LabEdge,
   LabGroupNode,
   LabNoteNode,
-  LabEdge,
-  LabNodeResources,
 } from '@vlab/shared/schemas';
 
 export interface Position {
@@ -12,15 +11,9 @@ export interface Position {
 }
 
 export interface LabDeviceInterface {
-  id: string;
-  displayCode: string;
-  internalCode: string;
+  name: string;
   connected: boolean;
-  configurable?: boolean;
 }
-
-export type DeviceInterface = LabDeviceInterface;
-export type NodeResources = LabNodeResources;
 
 export interface BaseNodeData {
   id: string;

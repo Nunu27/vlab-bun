@@ -1,11 +1,12 @@
 import { t } from "elysia/type-system";
+import { NonEmptyString } from "./common";
 
 export const CreateDeviceCategoryRequest = t.Object({
-	name: t.String({ minLength: 1 }),
-	color: t.String({ minLength: 1 })
+	name: NonEmptyString(),
+	color: NonEmptyString()
 });
 
 export const UpdateDeviceCategoryRequest = t.Object({
-	name: t.String({ minLength: 1 }),
-	color: t.String({ minLength: 1 })
+	name: NonEmptyString(),
+	color: NonEmptyString()
 });

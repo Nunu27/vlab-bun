@@ -194,7 +194,7 @@
 }
 
 body[data-router-pending='true'] [data-state='open'],
-body[data-router-pending='true'] canvas[popover] {
+body[data-router-pending='true'] [data-radix-popper-content-wrapper] {
   display: none !important;
   pointer-events: none;
 }

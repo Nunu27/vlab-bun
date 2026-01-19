@@ -1,10 +1,11 @@
 import type { Store } from '@frontend/types/store';
+import type { DeviceInterface } from '@vlab/shared/schemas';
 import type {
-  NodeData,
   EdgeData,
-  ViewState,
+  NodeData,
   Position,
   ResizeState,
+  ViewState,
 } from '../types';
 
 export interface TopologyState {
@@ -59,10 +60,7 @@ export interface NodesEdgesActions {
   setNodes: (nodes: NodeData[] | ((prev: NodeData[]) => NodeData[])) => void;
   setEdges: (edges: EdgeData[] | ((prev: EdgeData[]) => EdgeData[])) => void;
   deleteSelected: (
-    deviceMap: Map<
-      string,
-      { interfaces: { displayCode: string; internalCode: string }[] }
-    >,
+    deviceMap: Map<string, { interfaces: DeviceInterface[] }>,
   ) => void;
   addNote: (center: Position) => void;
   groupSelected: () => void;

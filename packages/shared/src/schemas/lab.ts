@@ -1,10 +1,7 @@
 import { t } from "elysia";
 import { createWSSchema } from "../types/ws";
-
-export const LabNodeResourcesSchema = t.Object({
-	cpu: t.Optional(t.Number()),
-	memory: t.Optional(t.String())
-});
+import { DeviceResourcesSchema } from "./device";
+import { NonEmptyString } from "./common";
 
 export const LabDeviceNodeSchema = t.Object({
 	id: t.String(),
@@ -16,7 +13,7 @@ export const LabDeviceNodeSchema = t.Object({
 	height: t.Number(),
 	deviceId: t.String(),
 	groupIds: t.Optional(t.Array(t.String())),
-	resources: t.Optional(LabNodeResourcesSchema),
+	resources: t.Optional(DeviceResourcesSchema),
 	interfaces: t.Array(t.Boolean()),
 	token: t.Optional(t.String())
 });
@@ -62,17 +59,16 @@ export const LabTopologySchema = t.Object({
 });
 
 export const LabRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	topology: LabTopologySchema
 });
 
-export type LabDeviceNode = (typeof LabDeviceNodeSchema)["static"];
-export type LabGroupNode = (typeof LabGroupNodeSchema)["static"];
-export type LabNoteNode = (typeof LabNoteNodeSchema)["static"];
-export type LabNode = (typeof LabNodeSchema)["static"];
-export type LabEdge = (typeof LabEdgeSchema)["static"];
-export type LabTopology = (typeof LabTopologySchema)["static"];
-export type LabNodeResources = (typeof LabNodeResourcesSchema)["static"];
+export type LabDeviceNode = typeof LabDeviceNodeSchema.static;
+export type LabGroupNode = typeof LabGroupNodeSchema.static;
+export type LabNoteNode = typeof LabNoteNodeSchema.static;
+export type LabNode = typeof LabNodeSchema.static;
+export type LabEdge = typeof LabEdgeSchema.static;
+export type LabTopology = typeof LabTopologySchema.static;
 
 export const StartLabSessionRequest = t.Object({
 	labId: t.String({ format: "uuid" })

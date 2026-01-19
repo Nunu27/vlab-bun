@@ -1,3 +1,4 @@
+import type { DeviceInterface } from '@vlab/shared/schemas';
 import { memo } from 'react';
 import type { EdgeData, NodeData } from '../../types';
 
@@ -12,7 +13,7 @@ interface EdgeProps {
       icon: string;
       categoryColor: string;
       resources: unknown;
-      interfaces: unknown;
+      interfaces: DeviceInterface[];
     }
   >;
 }
@@ -28,11 +29,8 @@ export const EdgeComponent = memo(
       if (node.type !== 'device') return '?';
       const device = deviceMap.get(node.deviceId);
       if (!device || !Array.isArray(device.interfaces)) return '?';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const iface = (device.interfaces as any[]).find(
-        (i) => i.displayCode === handleId,
-      );
-      return iface ? iface.displayCode : '?';
+      const iface = device.interfaces.find((i) => i.name === handleId);
+      return iface ? iface.name : '?';
     };
 
     const sourceIfaceName = getInterfaceName(source, edge.sourceHandle);

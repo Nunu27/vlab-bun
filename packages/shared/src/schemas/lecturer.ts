@@ -1,9 +1,10 @@
 import { t } from "elysia/type-system";
+import { NonEmptyString } from "./common";
 
 export const CreateLecturerRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	email: t.String({ format: "email" }),
-	nip: t.String({ minLength: 1, maxLength: 100, format: "numeric" }),
+	nip: NonEmptyString({  maxLength: 100, format: "numeric" }),
 	password: t.String({
 		minLength: 8,
 		maxLength: 128
@@ -11,7 +12,7 @@ export const CreateLecturerRequest = t.Object({
 });
 
 export const UpdateLecturerRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	email: t.String({ format: "email" }),
-	nip: t.String({ minLength: 1, maxLength: 100, format: "numeric" })
+	nip: NonEmptyString({  maxLength: 100, format: "numeric" })
 });

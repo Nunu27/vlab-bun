@@ -14,6 +14,7 @@ import type {
   DeviceNodeData,
   EdgeData,
   GroupNodeData,
+  LabDeviceInterface,
   NoteNodeData,
 } from './types';
 import { snapToGrid } from './utils';
@@ -126,11 +127,13 @@ export default function TopologyEditor() {
     const deviceDef = deviceMap.get(node.deviceId);
     if (!deviceDef) return [];
 
-    return deviceDef.interfaces.map((iface, index) => ({
-      ...iface,
-      id: iface.displayCode,
-      connected: node.interfaces[index] || false,
-    }));
+    return deviceDef.interfaces.map(
+      (iface, index) =>
+        ({
+          name: iface.name,
+          connected: node.interfaces[index] || !iface.configurable,
+        }) satisfies LabDeviceInterface,
+    );
   }, [nodes, modalNodeId, deviceMap]);
 
   // Define screenToWorld early
@@ -497,7 +500,7 @@ export default function TopologyEditor() {
     }
   };
 
-  const handleInterfaceSelect = (ifaceId: string) => {
+  const handleInterfaceSelect = (ifaceName: string) => {
     if (!modalNodeId) return;
     setNodes((ns) =>
       ns.map((n) => {
@@ -506,7 +509,7 @@ export default function TopologyEditor() {
           if (!deviceDef) return n;
 
           const ifaceIndex = deviceDef.interfaces.findIndex(
-            (i) => i.displayCode === ifaceId,
+            (i) => i.name === ifaceName,
           );
           if (ifaceIndex === -1) return n;
 
@@ -524,7 +527,7 @@ export default function TopologyEditor() {
     );
 
     if (!connectSource) {
-      setConnectSource({ nodeId: modalNodeId, ifaceId });
+      setConnectSource({ nodeId: modalNodeId, ifaceId: ifaceName });
       setModalOpen(false);
     } else {
       const newEdge: EdgeData = {
@@ -532,7 +535,7 @@ export default function TopologyEditor() {
         source: connectSource.nodeId,
         sourceHandle: connectSource.ifaceId,
         target: modalNodeId,
-        targetHandle: ifaceId,
+        targetHandle: ifaceName,
         selected: false,
       };
       setEdges((prev) => [...prev, newEdge]);

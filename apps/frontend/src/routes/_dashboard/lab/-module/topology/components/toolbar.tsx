@@ -1,5 +1,6 @@
+import type { DeviceInterface } from '@vlab/shared/schemas';
+import { Group, StickyNote, Trash2, Ungroup, Unplug } from 'lucide-react';
 import React from 'react';
-import { Unplug, Group, Ungroup, StickyNote, Trash2 } from 'lucide-react';
 import { useTopologyStore } from '../hook';
 
 interface ToolbarButtonProps {
@@ -50,10 +51,7 @@ function ToolbarButton({
 export default function Toolbar({
   deviceMap,
 }: {
-  deviceMap: Map<
-    string,
-    { interfaces: { displayCode: string; internalCode: string }[] }
-  >;
+  deviceMap: Map<string, { interfaces: DeviceInterface[] }>;
 }) {
   const store = useTopologyStore();
 
@@ -76,18 +74,6 @@ export default function Toolbar({
   const hasSelection = selectedNodes.length > 0 || selectedEdges.length > 0;
 
   const handleAddNote = () => {
-    // We need the center of the canvas, but we don't have the rect here easily.
-    // We can pass a dummy center or try to get it from the store if we stored the canvas rect.
-    // For now, let's assume the parent or store handles the "center" calculation or we pass it.
-    // Actually, the original code used canvasRef.current.getBoundingClientRect().
-    // I'll dispatch an action that might need the rect, but here I can't get it easily without ref.
-    // Maybe I should move the keydown listener and this toolbar logic to where the canvas ref is available,
-    // OR store the canvas dimensions in the store.
-
-    // Let's try to get the center of the window as a fallback if we can't get the canvas rect.
-    // Or better, let's just use a fixed position relative to view for now, or fix it in the store.
-    // The store's addNote expects a center position (screen coordinates).
-
     const rect = document
       .getElementById('topology-canvas')
       ?.getBoundingClientRect();

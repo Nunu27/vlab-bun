@@ -1,7 +1,8 @@
 import { t } from "elysia/type-system";
+import { NonEmptyString } from "./common";
 
 export const CreateAdminRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	email: t.String({ format: "email" }),
 	password: t.String({
 		minLength: 8,
@@ -10,6 +11,6 @@ export const CreateAdminRequest = t.Object({
 });
 
 export const UpdateAdminRequest = t.Object({
-	name: t.String({ minLength: 1 }),
+	name: NonEmptyString(),
 	email: t.String({ format: "email" })
 });

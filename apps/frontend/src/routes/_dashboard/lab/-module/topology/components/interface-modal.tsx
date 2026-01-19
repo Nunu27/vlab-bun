@@ -1,11 +1,11 @@
-import { X, Network } from 'lucide-react';
-import type { DeviceInterface } from '../types';
+import { Network, X } from 'lucide-react';
+import type { LabDeviceInterface } from '../types';
 
 interface InterfaceModalProps {
   isOpen: boolean;
   title: string;
-  interfaces: DeviceInterface[];
-  onSelect: (ifaceId: string) => void;
+  interfaces: LabDeviceInterface[];
+  onSelect: (name: string) => void;
   onClose: () => void;
 }
 
@@ -35,9 +35,9 @@ export default function InterfaceModal({
         <div className="max-h-80 overflow-y-auto p-2">
           {interfaces.map((iface) => (
             <button
-              key={iface.id}
+              key={iface.name}
               disabled={iface.connected}
-              onClick={() => onSelect(iface.id)}
+              onClick={() => onSelect(iface.name)}
               className={`mb-1 flex w-full items-center justify-between rounded-lg px-4 py-3 text-left transition-all ${
                 iface.connected
                   ? 'dark:bg-muted/50 cursor-not-allowed bg-gray-50 opacity-50'
@@ -54,15 +54,14 @@ export default function InterfaceModal({
                   }
                 />
                 <span className="dark:text-foreground font-medium">
-                  {iface.displayCode}
+                  {iface.name}
                 </span>
               </div>
-              {iface.connected && (
+              {iface.connected ? (
                 <span className="dark:text-destructive text-xs font-semibold tracking-wider text-red-500 uppercase">
                   Used
                 </span>
-              )}
-              {!iface.connected && (
+              ) : (
                 <span className="text-xs font-semibold tracking-wider text-green-600 uppercase dark:text-green-500">
                   Available
                 </span>

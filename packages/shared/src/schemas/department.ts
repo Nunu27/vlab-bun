@@ -1,9 +1,10 @@
 import { t } from "elysia/type-system";
+import { NonEmptyString } from "./common";
 
 export const CreateDepartmentRequest = t.Object({
-	name: t.String({ minLength: 1 })
+	name: NonEmptyString()
 });
 
 export const UpdateDepartmentRequest = t.Object({
-	name: t.String({ minLength: 1 })
+	name: NonEmptyString()
 });

@@ -58,7 +58,7 @@ export const createNodesEdgesSlice: StateCreator<
             ...n,
             interfaces: (n.interfaces || []).map((connected, index) => {
               if (!deviceDef || !deviceDef.interfaces[index]) return connected;
-              const ifaceId = deviceDef.interfaces[index].displayCode;
+              const ifaceId = deviceDef.interfaces[index].name;
               return remainingEdges.some(
                 (e) =>
                   (e.source === n.id && e.sourceHandle === ifaceId) ||
