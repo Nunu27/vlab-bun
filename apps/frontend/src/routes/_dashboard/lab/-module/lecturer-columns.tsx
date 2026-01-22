@@ -1,7 +1,7 @@
-import { formatTimeAgo } from '@frontend/helper/string';
+import { formatTimeAgo } from '@frontend/helper/date';
 import { type ColumnDef } from '@tanstack/react-table';
-import type { LabItem } from './types';
 import LecturerLabActionsCell from './components/lecturer-lab-actions-cell';
+import type { LabItem } from './types';
 
 export const studentLabColumns: ColumnDef<LabItem>[] = [
   {

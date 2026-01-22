@@ -33,7 +33,9 @@ export default createRouter().get(
 
 		casUrl.pathname = "/cas/serviceValidate";
 		casUrl.searchParams.set("ticket", ticket);
-		const res = await fetch(casUrl.toString());
+		const res = await fetch(casUrl.toString(), {
+			signal: AbortSignal.timeout(3000)
+		});
 		const text = await res.text();
 		const data = parser.parse(text) as CASResponse;
 

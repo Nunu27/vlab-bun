@@ -1,4 +1,4 @@
-import { formatTimeAgo } from '@frontend/helper/string';
+import { formatTimeAgo } from '@frontend/helper/date';
 import { type ColumnDef } from '@tanstack/react-table';
 import { StudentActionsCell } from './components/student-actions-cell';
 import type { StudentItem } from './types';
@@ -60,9 +60,7 @@ export const studentColumns: ColumnDef<StudentItem>[] = [
     meta: {
       label: 'Created At',
     },
-    cell: ({ row }) => {
-      return formatTimeAgo(row.original.createdAt);
-    },
+    cell: ({ row }) => formatTimeAgo(row.original.createdAt),
   },
   {
     id: 'actions',

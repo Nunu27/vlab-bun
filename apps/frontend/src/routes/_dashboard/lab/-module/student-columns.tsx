@@ -1,4 +1,4 @@
-import { formatTimeAgo } from '@frontend/helper/string';
+import { formatTimeAgo } from '@frontend/helper/date';
 import { type ColumnDef } from '@tanstack/react-table';
 import StudentLabActionsCell from './components/student-lab-actions-cell';
 import type { LabItem } from './types';

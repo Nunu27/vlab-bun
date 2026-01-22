@@ -3,12 +3,7 @@
     "cols": [
         {
             "title": "Bugs",
-            "tasks": [
-                {
-                    "text": "[Device Form] can't submit after clicking test device with invalid input",
-                    "id": "ev92mpgs7ddlxouzskrblwxm"
-                }
-            ],
+            "tasks": [],
             "id": "o4x0r403uqgjddc49w08q8az",
             "color": "#eb144c"
         },
@@ -32,16 +27,16 @@
                     "id": "h6veflm6nojyxf4441ndxgga"
                 },
                 {
-                    "text": "Course Management",
-                    "id": "jrot9x0vgdrrornb9p1whvxo"
-                },
-                {
                     "text": "[Checker] Linux",
                     "id": "yq13qyrod5ubzpv16yxunkxo"
                 },
                 {
                     "text": "[Checker] RouterOS",
                     "id": "k7piar066jbqss2a8q8gpkp1"
+                },
+                {
+                    "text": "Refactor topology editor",
+                    "id": "vxcva6gnaymx872n39wh27i4"
                 }
             ],
             "id": "v29x67aeud6wsrex3bp68yln",
@@ -49,18 +44,17 @@
         },
         {
             "title": "Doing",
-            "tasks": [
-                {
-                    "text": "Refactor topology editor",
-                    "id": "vxcva6gnaymx872n39wh27i4"
-                }
-            ],
+            "tasks": [],
             "id": "ppj2h8a0u0o1d4cyw3jf9ifh",
             "color": "#0693e3"
         },
         {
             "title": "Done",
             "tasks": [
+                {
+                    "text": "[Device Form] can't submit after clicking test device with invalid input",
+                    "id": "ev92mpgs7ddlxouzskrblwxm"
+                },
                 {
                     "text": "[Checker] Network",
                     "id": "uz0cwkutvjrzrmbw1bb4k5hw"
@@ -132,5 +126,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1768645586795
+    "timestamp": 1769069319887
 }

@@ -1,12 +1,7 @@
 import { Type } from "typebox";
-import type {
-	Evaluator,
-	TriggerHandler,
-	Condition,
-	LinuxContext
-} from "../../types";
+import type { Evaluator, Trigger, Condition, LinuxContext } from "../../types";
 
-const ipAddrTrigger: TriggerHandler<LinuxContext> = async (ctx, callback) => {
+const ipAddrTrigger: Trigger<LinuxContext> = async (ctx, callback) => {
 	try {
 		const output = await ctx.exec("ip -j addr");
 		const data = JSON.parse(output);

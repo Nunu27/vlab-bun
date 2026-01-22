@@ -11,7 +11,7 @@ import {
 	onDispose,
 	type WSHandler
 } from "@vlab/shared/schemas";
-import { sleep } from "@vlab/shared/utils";
+import { sleep } from "bun";
 
 const healthEmitter = dbListener.createEventEmitter(
 	"labNodes",

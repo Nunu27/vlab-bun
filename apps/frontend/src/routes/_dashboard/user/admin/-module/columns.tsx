@@ -1,4 +1,4 @@
-import { formatTimeAgo } from '@frontend/helper/string';
+import { formatTimeAgo } from '@frontend/helper/date';
 import { type ColumnDef } from '@tanstack/react-table';
 import { AdminActionsCell } from './components/admin-actions-cell';
 import type { AdminItem } from './types';
