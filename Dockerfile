@@ -37,7 +37,7 @@ RUN bun frontend build
 FROM build-base AS backend-builder
 
 COPY --from=deps /app ./
-COPY --parents apps/backend packages/* ./
+COPY --parents apps/backend packages/* tsconfig.base.json ./
 
 RUN bun backend build
 
