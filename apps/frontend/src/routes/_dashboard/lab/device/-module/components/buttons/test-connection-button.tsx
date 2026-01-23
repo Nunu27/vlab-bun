@@ -12,7 +12,7 @@ import { useWSAction } from '@frontend/hooks/use-ws-action';
 import GuacamoleConnection from '@frontend/shared/guacamole/components/guacamole-connection';
 import { GuacamoleConnectionProvider } from '@frontend/shared/guacamole/stores/guacamole-connection-store';
 import { Compile } from '@sinclair/typemap';
-import { DeviceTestRequest } from '@vlab/shared/schemas';
+import { DeviceTestRequest } from '@vlab/shared/schemas/ws';
 import { Monitor } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';

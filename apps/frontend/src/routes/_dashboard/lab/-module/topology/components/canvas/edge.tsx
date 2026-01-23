@@ -1,4 +1,4 @@
-import type { DeviceInterface } from '@vlab/shared/schemas';
+import type { DeviceInterface } from '@vlab/shared/schemas/rest';
 import { memo } from 'react';
 import type { EdgeData, NodeData } from '../../types';
 

@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		/* Base compiler options shared across all projects */
+		"strict": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"verbatimModuleSyntax": true,
+		"resolveJsonModule": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+
+		/* Module resolution */
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+
+		/* Path aliases - centralized */
+		"baseUrl": ".",
+		"paths": {
+			"@backend/*": ["./apps/backend/src/*"],
+			"@frontend/*": ["./apps/frontend/src/*"],
+			"@shared/*": ["./packages/shared/src/*"],
+			"@db-listener/*": ["./packages/db-listener/src/*"],
+			"@evaluator/*": ["./packages/evaluator/src/*"],
+			"@monitor/*": ["./packages/monitor/src/*"]
+		}
+	}
+}

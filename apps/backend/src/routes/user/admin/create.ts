@@ -2,7 +2,7 @@ import { users } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { CreateAdminRequest } from "@vlab/shared/schemas";
+import { CreateAdminRequest } from "@vlab/shared/schemas/rest";
 
 export default createRouter().post(
 	"/",

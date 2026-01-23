@@ -2,19 +2,20 @@ import AppLoadingPage from '@frontend/components/pages/app-loading-page';
 import { useRouterPendingAttribute } from '@frontend/hooks/use-router-pending-attribute';
 import api from '@frontend/lib/api';
 import { queryClient } from '@frontend/lib/query';
+import type { RouterContext } from '@frontend/lib/router';
 import { useAuthStore } from '@frontend/stores/auth-store';
 import {
   HeadContent,
   Navigate,
   Outlet,
-  createRootRoute,
+  createRootRouteWithContext,
   useRouterState,
 } from '@tanstack/react-router';
 import type { ToastItem } from '@vlab/shared/types';
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
 import { toast } from 'sonner';
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
     const { user, actions } = useAuthStore.getState();
 
@@ -31,6 +32,9 @@ export const Route = createRootRoute({
     toast[type](message);
 
     await cookieStore.delete('toast');
+  },
+  onStay: ({ context }) => {
+    context.breadcrumbData.clear();
   },
   pendingComponent: AppLoadingPage,
   component: RouteComponent,

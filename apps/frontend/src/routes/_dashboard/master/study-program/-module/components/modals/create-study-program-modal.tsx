@@ -10,7 +10,7 @@ import { FieldGroup } from '@frontend/components/ui/field';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
-import { CreateStudyProgramRequest } from '@vlab/shared/schemas';
+import { CreateStudyProgramRequest } from '@vlab/shared/schemas/rest';
 import { useStudyProgramActionStore } from '../../stores/study-program-action-store';
 
 const validator = Compile(CreateStudyProgramRequest);

@@ -3,7 +3,7 @@ import type {
   LabEdge,
   LabGroupNode,
   LabNoteNode,
-} from '@vlab/shared/schemas';
+} from '@vlab/shared/schemas/rest';
 
 export interface Position {
   x: number;

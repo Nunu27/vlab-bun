@@ -1,5 +1,6 @@
 import { getSession } from "@backend/middlewares/session";
 import { wsHandlers } from "@backend/routes/ws";
+import { TopicEmitter } from "@backend/utils/topic-emitter";
 import { Server as Engine } from "@socket.io/bun-engine";
 import { createAdapter } from "@socket.io/redis-streams-adapter";
 import {
@@ -8,7 +9,7 @@ import {
 	type InterServerEvents,
 	type Server2ClientEvents,
 	type SocketData
-} from "@vlab/shared/schemas";
+} from "@vlab/shared/schemas/ws";
 import cluster from "cluster";
 import { Server } from "socket.io";
 import parser from "socket.io-msgpack-parser";
@@ -58,6 +59,17 @@ io.use(async (socket, next) => {
 });
 
 io.on("connection", (socket) => {
+	// Handle topic subscriptions
+	socket.on("topic/subscribe", async (data) => {
+		const room = `${data.topic}${data.room}`;
+		await socket.join(room);
+	});
+
+	socket.on("topic/unsubscribe", async (data) => {
+		const room = `${data.topic}${data.room}`;
+		await socket.leave(room);
+	});
+
 	socket.on("unsubscribe", async (data) => {
 		const [event, id] = data.split("::");
 		const targetSchema = wsSchemas[event];
@@ -70,7 +82,10 @@ io.on("connection", (socket) => {
 	});
 
 	for (const [name, handler] of Object.entries(wsHandlers)) {
-		const event = name as Exclude<HandlerKey, "unsubscribe">;
+		const event = name as Exclude<
+			HandlerKey,
+			"unsubscribe" | "topic/subscribe" | "topic/unsubscribe"
+		>;
 		const schema = wsSchemas[event];
 
 		socket.join(event);
@@ -94,42 +109,42 @@ io.on("connection", (socket) => {
 
 			try {
 				await (handler as any)({ id, socket, data, reply });
+				reply("done");
+				if (!schema.cleanup) socket.leave(room);
 			} catch (error) {
 				console.error(error);
 				reply("error", (error as Error).message);
+				reply("done");
 				socket.emit("error", `Error handling event ${event}: ${error}`);
 				socket.leave(room);
-			} finally {
-				reply("done");
 			}
 		});
 	}
 });
 
-io.of("/").adapter.on("leave-room", (room, id) => {
+io.of("/").adapter.on("leave-room", async (room, id) => {
 	const [eventName, executionId] = room.split("::");
 	if (!eventName || !executionId) return;
 
 	const schema = wsSchemas[eventName as HandlerKey];
 	if (!schema?.cleanup) return;
 
-	setTimeout(() => {
-		const isConnected = io.sockets.sockets.has(id);
+	const isConnected = io.sockets.sockets.has(id);
 
-		if (isConnected) {
-			void schema.cleanup?.(executionId);
-		} else {
-			setTimeout(
-				async () => {
-					const sockets = await io.in(room).fetchSockets();
-					if (sockets.length === 0) {
-						void schema.cleanup?.(executionId);
-					}
-				},
-				2 * 60 * 1000
-			);
-		}
-	});
+	if (isConnected) {
+		void schema.cleanup?.(executionId);
+	} else {
+		// Delay cleanup for reconnection check
+		setTimeout(
+			async () => {
+				const sockets = await io.in(room).fetchSockets();
+				if (!sockets.length) void schema.cleanup?.(executionId);
+			},
+			2 * 60 * 1000
+		);
+	}
 });
 
-export { engine, io };
+const topicEmitter = new TopicEmitter(io);
+
+export { engine, io, topicEmitter };

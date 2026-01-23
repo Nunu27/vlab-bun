@@ -11,7 +11,7 @@ import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
 import { degreeLevelEnum } from '@vlab/shared/enums';
-import { UpdateStudentRequest } from '@vlab/shared/schemas';
+import { UpdateStudentRequest } from '@vlab/shared/schemas/rest';
 import { useStudentActionStore } from '../../stores/student-action-store';
 
 const validator = Compile(UpdateStudentRequest);

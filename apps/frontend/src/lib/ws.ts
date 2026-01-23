@@ -2,7 +2,7 @@ import type {
   Client2ServerEvents,
   InterServerEvents,
   Server2ClientEvents,
-} from '@vlab/shared/schemas';
+} from '@vlab/shared/schemas/ws';
 import { io } from 'socket.io-client';
 import parser from 'socket.io-msgpack-parser';
 

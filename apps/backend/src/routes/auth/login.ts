@@ -1,6 +1,6 @@
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { LoginRequest } from "@vlab/shared/schemas";
+import { LoginRequest } from "@vlab/shared/schemas/rest";
 
 export default createRouter().post(
 	"/login",

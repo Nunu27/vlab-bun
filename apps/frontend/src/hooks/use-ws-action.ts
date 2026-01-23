@@ -1,6 +1,6 @@
 import type { WSClient2ServerEvents } from '@frontend/lib/ws';
 import { useWSStore } from '@frontend/stores/ws-store';
-import type { WSSchemas } from '@vlab/shared/schemas';
+import type { WSSchemas } from '@vlab/shared/schemas/ws';
 import { useRef } from 'react';
 import { useUnmount } from 'usehooks-ts';
 

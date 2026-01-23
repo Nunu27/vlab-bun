@@ -7,7 +7,7 @@ function CreateDeviceCategoryButton() {
 
   return (
     <Button size="lg" onClick={() => setCreate()}>
-      <PlusIcon /> Add DeviceCategory
+      <PlusIcon /> Add Device Category
     </Button>
   );
 }

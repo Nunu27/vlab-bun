@@ -1,6 +1,5 @@
 export * from "./admin";
 export * from "./auth";
-export * from "./common";
 export * from "./department";
 export * from "./device";
 export * from "./device-category";
@@ -10,4 +9,3 @@ export * from "./lecturer";
 export * from "./student";
 export * from "./study-program";
 export * from "./user";
-export * from "./ws";

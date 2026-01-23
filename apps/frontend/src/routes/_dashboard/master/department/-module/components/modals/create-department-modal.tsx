@@ -9,7 +9,7 @@ import { FieldGroup } from '@frontend/components/ui/field';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
-import { CreateDepartmentRequest } from '@vlab/shared/schemas';
+import { CreateDepartmentRequest } from '@vlab/shared/schemas/rest';
 import { useDepartmentActionStore } from '../../stores/department-action-store';
 
 const validator = Compile(CreateDepartmentRequest);

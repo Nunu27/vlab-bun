@@ -3,7 +3,7 @@ import { base } from "./base";
 import { lecturers } from "./auth";
 import { labSessions } from "./lab-session";
 import { relations } from "drizzle-orm/relations";
-import type { LabTopology } from "@vlab/shared/schemas";
+import type { LabTopology } from "@vlab/shared/schemas/rest";
 
 export const labs = pgTable("lab", {
 	...base,

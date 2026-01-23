@@ -2,7 +2,7 @@ import { students, users } from "@backend/db/schema/auth";
 import env from "@backend/env";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
-import { CASRequestQuery, CASResponseSchema } from "@vlab/shared/schemas";
+import { CASRequestQuery, CASResponseSchema } from "@vlab/shared/schemas/rest";
 import { ToastType } from "@vlab/shared/types";
 import { compile } from "elysia/type-system/utils";
 import { XMLParser } from "fast-xml-parser";

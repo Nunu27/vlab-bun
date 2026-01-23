@@ -13,12 +13,22 @@ import { Fragment } from 'react';
 function AppBreadcrumb() {
   const breadcrumbs = useRouterState({
     select: (state) => {
-      const breadcrumbs = state.matches.at(-1)?.staticData?.breadcrumbs ?? [];
+      const routerState = state.matches.at(-1);
+      const rawBreadcrumbs = routerState?.staticData?.breadcrumbs ?? [];
+      const data =
+        routerState?.context.breadcrumbData ?? new Map<string, string>();
 
-      if (breadcrumbs.length) {
-        document.title = getTitleFromBreadcrumbs(breadcrumbs);
-      }
+      if (!rawBreadcrumbs.length) return [];
 
+      const breadcrumbs = rawBreadcrumbs.map((breadcrumb) => ({
+        ...breadcrumb,
+        title:
+          typeof breadcrumb.title === 'function'
+            ? breadcrumb.title(data) || 'Loading...'
+            : breadcrumb.title,
+      }));
+
+      document.title = getTitleFromBreadcrumbs(breadcrumbs);
       return breadcrumbs;
     },
   });

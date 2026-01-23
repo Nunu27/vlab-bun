@@ -2,7 +2,7 @@ import { devices } from "@backend/db/schema";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { CreateDeviceRequest } from "@vlab/shared/schemas";
+import { CreateDeviceRequest } from "@vlab/shared/schemas/rest";
 
 export default createRouter().post(
 	"/",

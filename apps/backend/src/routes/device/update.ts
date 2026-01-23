@@ -2,8 +2,9 @@ import { devices } from "@backend/db/schema/lab-device";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
+import { RequestWithId } from "@shared/schemas/common";
+import { UpdateDeviceRequest } from "@vlab/shared/schemas/rest";
 import { eq } from "drizzle-orm";
-import { RequestWithId, UpdateDeviceRequest } from "@vlab/shared/schemas";
 
 export default createRouter().put(
 	"/:id",

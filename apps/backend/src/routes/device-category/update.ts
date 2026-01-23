@@ -2,11 +2,9 @@ import { deviceCategories } from "@backend/db/schema/lab-device";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
+import { RequestWithId } from "@shared/schemas/common";
+import { UpdateDeviceCategoryRequest } from "@vlab/shared/schemas/rest";
 import { eq } from "drizzle-orm";
-import {
-	RequestWithId,
-	UpdateDeviceCategoryRequest
-} from "@vlab/shared/schemas";
 
 export default createRouter().put(
 	"/:id",

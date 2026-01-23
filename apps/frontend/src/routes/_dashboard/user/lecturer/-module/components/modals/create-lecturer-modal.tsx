@@ -9,7 +9,7 @@ import { FieldGroup } from '@frontend/components/ui/field';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
-import { CreateLecturerRequest } from '@vlab/shared/schemas';
+import { CreateLecturerRequest } from '@vlab/shared/schemas/rest';
 import { useLecturerActionStore } from '../../stores/lecturer-action-store';
 
 const validator = Compile(CreateLecturerRequest);

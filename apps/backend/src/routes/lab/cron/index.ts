@@ -21,7 +21,6 @@ const updateCronJob = debounce(
 			logger.debug("Resumed lab session cleanup cron job");
 		} else if (op === "DELETE" && cronEntry.isRunning()) {
 			const count = await db.$count(labSessions, eq(labSessions.type, "user"));
-
 			if (count) return;
 
 			cronEntry.pause();

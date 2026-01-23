@@ -21,11 +21,16 @@ import { TopologyProvider } from './-module/topology/provider';
 
 export const Route = createFileRoute('/_dashboard/lab/$id/update')({
   staticData: {
-    breadcrumbs: [{ title: 'Labs', url: '/lab' }, { title: 'Edit Lab' }],
+    breadcrumbs: [
+      { title: 'Labs', url: '/lab' },
+      { title: 'Edit Lab' },
+      { title: (data) => data.get('name') },
+    ],
   },
   beforeLoad: privateRoute(['lecturer']),
-  loader: async ({ params: { id } }) => {
-    await api.lab({ id }).get.ensureQueryData(queryClient);
+  loader: async ({ params: { id }, context }) => {
+    const { name } = await api.lab({ id }).get.ensureQueryData(queryClient);
+    context.breadcrumbData.set('name', name);
   },
   component: UpdateLabPage,
 });

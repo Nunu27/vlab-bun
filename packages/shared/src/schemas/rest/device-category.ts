@@ -1,5 +1,5 @@
 import { t } from "elysia/type-system";
-import { NonEmptyString } from "./common";
+import { NonEmptyString } from "../common";
 
 export const CreateDeviceCategoryRequest = t.Object({
 	name: NonEmptyString(),

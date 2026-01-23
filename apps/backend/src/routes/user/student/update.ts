@@ -3,7 +3,8 @@ import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure } from "@backend/utils/response";
 import { eq } from "drizzle-orm";
-import { RequestWithId, UpdateStudentRequest } from "@vlab/shared/schemas";
+import { UpdateStudentRequest } from "@vlab/shared/schemas/rest";
+import { RequestWithId } from "@shared/schemas/common";
 
 export default createRouter().put(
 	"/:id",

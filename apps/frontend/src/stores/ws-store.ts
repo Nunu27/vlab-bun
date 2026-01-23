@@ -1,25 +1,20 @@
 import { createSelectors } from '@frontend/helper/store';
-import type {
-  WSClient2ServerEvents,
-  WSServer2ClientEvents,
-} from '@frontend/lib/ws';
+import type { WSClient2ServerEvents } from '@frontend/lib/ws';
 import ws from '@frontend/lib/ws';
 import type { Store } from '@frontend/types/store';
-import type { WSSchemas } from '@vlab/shared/schemas';
+import type { WSSchemas } from '@vlab/shared/schemas/ws';
 import type { ReplyData } from '@vlab/shared/types';
 import type { MaybePromise, TSchema } from 'elysia';
 import { create } from 'zustand';
 import { useAuthStore } from './auth-store';
 
-type Server2ClientEvents = keyof WSServer2ClientEvents;
 type Client2ServerEvents = keyof WSClient2ServerEvents;
 
 interface WSActions {
-  subscribe: <TEvent extends Server2ClientEvents>(
-    event: TEvent,
-    callback: (
-      data: Parameters<WSServer2ClientEvents[TEvent]>[0],
-    ) => MaybePromise<void>,
+  subscribe: <TData = unknown>(
+    topicName: string,
+    room: string,
+    callback: (data: TData) => MaybePromise<void>,
   ) => VoidFunction;
   send: <
     TEvent extends Client2ServerEvents,
@@ -40,7 +35,7 @@ type WSStore = Store<WSState, WSActions>;
 
 const store = create<WSStore>()((set) => {
   const listeners = new Map<string, (data: never) => MaybePromise<void>>();
-  const listenersMap = new Map<Server2ClientEvents, string[]>();
+  const listenersMap = new Map<string, string[]>();
 
   const connect = () => {
     if (ws.listeners('connect').length) return;
@@ -63,8 +58,8 @@ const store = create<WSStore>()((set) => {
   const disconnect = () => {
     ws.disconnect();
 
-    for (const event of listenersMap.keys()) {
-      ws.off(event);
+    if (listeners.size) {
+      ws.off('topic');
     }
 
     listeners.clear();
@@ -84,39 +79,50 @@ const store = create<WSStore>()((set) => {
   return {
     connected: false,
     actions: {
-      subscribe: (event, callback) => {
-        const id = crypto.randomUUID();
+      subscribe: (topicName, room, callback) => {
+        const key = `${topicName}:${room}`;
+        const isFirstListener = !listenersMap.has(key);
 
-        listeners.set(id, callback);
-        if (!listenersMap.has(event)) {
-          listenersMap.set(event, [id]);
-
-          ws.on(event, ((
-            data: Parameters<WSServer2ClientEvents[typeof event]>[0],
-          ) => {
-            const listenerIds = listenersMap.get(event) || [];
+        // Register the global topic event listener once
+        if (!listeners.size) {
+          ws.on('topic', (payload) => {
+            const topicKey = `${payload.topic}:${payload.room}`;
+            const listenerIds = listenersMap.get(topicKey) || [];
 
             for (const listenerId of listenerIds) {
-              listeners.get(listenerId)?.(data as never);
+              listeners.get(listenerId)?.(payload.data as never);
             }
-          }) as never);
-        } else {
-          listenersMap.get(event)?.push(id);
+          });
         }
 
+        // Add callback to the listeners for this topic:room
+        const id = crypto.randomUUID();
+        listeners.set(id, callback as never);
+
+        if (!listenersMap.has(key)) {
+          listenersMap.set(key, []);
+        }
+        listenersMap.get(key)!.push(id);
+
+        // Send subscription to server if this is the first listener
+        if (isFirstListener) {
+          ws.emit('topic/subscribe', { topic: topicName, room });
+        }
+
+        // Return cleanup function
         return () => {
           listeners.delete(id);
-          const listenerIds = listenersMap.get(event) || [];
-          const index = listenerIds.indexOf(id);
-
-          if (index === -1) return;
-
-          listenerIds.splice(index, 1);
-          if (listenerIds.length === 0) {
-            ws.off(event);
-            listenersMap.delete(event);
-          } else {
-            listenersMap.set(event, listenerIds);
+          const listenerIds = listenersMap.get(key);
+          if (listenerIds) {
+            const index = listenerIds.indexOf(id);
+            if (index !== -1) {
+              listenerIds.splice(index, 1);
+            }
+            // Clean up empty arrays and unsubscribe from server
+            if (listenerIds.length === 0) {
+              listenersMap.delete(key);
+              ws.emit('topic/unsubscribe', { topic: topicName, room });
+            }
           }
         };
       },

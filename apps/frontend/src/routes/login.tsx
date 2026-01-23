@@ -13,7 +13,7 @@ import { guestRoute } from '@frontend/lib/middlewares';
 import { useAuthStore } from '@frontend/stores/auth-store';
 import { Compile } from '@sinclair/typemap';
 import { createFileRoute } from '@tanstack/react-router';
-import { LoginRequest } from '@vlab/shared/schemas';
+import { LoginRequest } from '@vlab/shared/schemas/rest';
 import { FlaskConicalIcon } from 'lucide-react';
 
 const validator = Compile(LoginRequest);

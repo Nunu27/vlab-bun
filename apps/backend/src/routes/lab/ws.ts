@@ -6,7 +6,7 @@ import type { Link, Node } from "@backend/types/containerlab";
 import { toKebabCase } from "@backend/utils/string";
 import { getMonitorPorts } from "@vlab/monitor";
 import { LABELS } from "@vlab/monitor/constants";
-import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas";
+import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas/ws";
 import { and, eq, inArray } from "drizzle-orm";
 
 const sessionDeleteEmitter = dbListener.createEventEmitter(

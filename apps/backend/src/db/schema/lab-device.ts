@@ -4,7 +4,7 @@ import type {
 	DeviceEnv,
 	DeviceInterface,
 	DeviceResources
-} from "@vlab/shared/schemas";
+} from "@vlab/shared/schemas/rest";
 import { jsonb, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
 import { base } from "./base";

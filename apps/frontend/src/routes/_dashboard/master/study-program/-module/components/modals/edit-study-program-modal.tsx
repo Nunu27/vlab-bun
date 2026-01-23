@@ -10,7 +10,7 @@ import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
-import { UpdateStudyProgramRequest } from '@vlab/shared/schemas';
+import { UpdateStudyProgramRequest } from '@vlab/shared/schemas/rest';
 import { useStudyProgramActionStore } from '../../stores/study-program-action-store';
 import { useEffect } from 'react';
 

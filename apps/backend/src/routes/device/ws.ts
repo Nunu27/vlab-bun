@@ -10,7 +10,7 @@ import {
 	deviceWSSchemas,
 	onDispose,
 	type WSHandler
-} from "@vlab/shared/schemas";
+} from "@vlab/shared/schemas/ws";
 import { sleep } from "bun";
 
 const healthEmitter = dbListener.createEventEmitter(

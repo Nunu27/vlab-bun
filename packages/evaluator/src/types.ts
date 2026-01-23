@@ -220,6 +220,7 @@ class EvaluatorExecutor<
 
 	public async check(): Promise<CheckResult[]> {
 		const results: CheckResult[] = [];
+		const timestamp = Date.now();
 
 		await Promise.all(
 			this.checks.map(async (check) => {
@@ -244,7 +245,7 @@ class EvaluatorExecutor<
 							type: check.type,
 							result,
 							data: currentData,
-							timestamp: Date.now()
+							timestamp
 						});
 					}
 				} catch (error) {

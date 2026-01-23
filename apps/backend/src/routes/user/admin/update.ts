@@ -2,7 +2,8 @@ import { users } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure } from "@backend/utils/response";
-import { RequestWithId, UpdateAdminRequest } from "@vlab/shared/schemas";
+import { RequestWithId } from "@shared/schemas/common";
+import { UpdateAdminRequest } from "@vlab/shared/schemas/rest";
 import { eq } from "drizzle-orm";
 
 export default createRouter().put(

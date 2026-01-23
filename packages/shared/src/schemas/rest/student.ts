@@ -1,6 +1,6 @@
 import { t } from "elysia/type-system";
-import { degreeLevelEnum } from "../enums";
-import { NonEmptyString } from "./common";
+import { degreeLevelEnum } from "../../enums";
+import { NonEmptyString } from "../common";
 
 export const CreateStudentRequest = t.Object({
 	name: NonEmptyString(),

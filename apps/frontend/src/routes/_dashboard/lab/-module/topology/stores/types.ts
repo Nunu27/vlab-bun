@@ -1,5 +1,5 @@
 import type { Store } from '@frontend/types/store';
-import type { DeviceInterface } from '@vlab/shared/schemas';
+import type { DeviceInterface } from '@vlab/shared/schemas/rest';
 import type {
   EdgeData,
   NodeData,

@@ -13,7 +13,7 @@ import { queryClient } from '@frontend/lib/query';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { UpdateDeviceRequest } from '@vlab/shared/schemas';
+import { UpdateDeviceRequest } from '@vlab/shared/schemas/rest';
 import { toast } from 'sonner';
 import TestConnectionButton from './-module/components/buttons/test-connection-button';
 import { DeviceBasicInfoForm } from './-module/components/forms/device-basic-info-form';
@@ -32,11 +32,13 @@ export const Route = createFileRoute('/_dashboard/lab/device/$id/update')({
       { title: 'Lab Data' },
       { title: 'Device', url: '/lab/device' },
       { title: 'Update Device' },
+      { title: (data) => data.get('name') },
     ],
   },
   beforeLoad: privateRoute(['admin']),
-  loader: async ({ params: { id } }) => {
-    await api.device({ id }).get.ensureQueryData(queryClient);
+  loader: async ({ params: { id }, context }) => {
+    const { name } = await api.device({ id }).get.ensureQueryData(queryClient);
+    context.breadcrumbData.set('name', name);
   },
   component: RouteComponent,
 });

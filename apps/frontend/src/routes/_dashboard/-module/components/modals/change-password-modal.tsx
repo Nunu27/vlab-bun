@@ -9,7 +9,7 @@ import { FieldGroup } from '@frontend/components/ui/field';
 import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
-import { AuthChangePasswordRequest } from '@vlab/shared/schemas';
+import { AuthChangePasswordRequest } from '@vlab/shared/schemas/rest';
 import { useEffect } from 'react';
 import { useDashboardActionStore } from '../../stores/dashboard-action-store';
 

@@ -1,7 +1,6 @@
 import { t } from "elysia/type-system";
-import { connectionTypeEnum, deviceKindEnum } from "../enums";
-import { createWSSchema } from "../types/ws";
-import { NonEmptyString } from "./common";
+import { connectionTypeEnum, deviceKindEnum } from "../../enums";
+import { NonEmptyString } from "../common";
 
 export const DeviceEnvSchema = t.Record(NonEmptyString(), t.String());
 
@@ -52,28 +51,3 @@ export const UpdateDeviceRequest = t.Object({
 	connection: DeviceConnectionSchema,
 	interfaces: t.Array(DeviceInterfaceSchema)
 });
-
-export const DeviceTestRequest = t.Object({
-	name: NonEmptyString(),
-	kind: t.UnionEnum(deviceKindEnum),
-	image: NonEmptyString(),
-	env: DeviceEnvSchema,
-	resources: DeviceResourcesSchema,
-	connection: DeviceConnectionSchema,
-	interfaces: t.Array(DeviceInterfaceSchema)
-});
-
-// WS
-export const deviceWSSchemas = [
-	createWSSchema({
-		type: "client2server",
-		name: "device/test",
-		private: ["admin"],
-		reply: {
-			message: t.String(),
-			warn: t.String(),
-			token: t.String()
-		},
-		data: DeviceTestRequest
-	})
-] as const;

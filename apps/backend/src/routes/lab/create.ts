@@ -2,7 +2,7 @@ import { labs } from "@backend/db/schema/lab";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { LabRequest } from "@vlab/shared/schemas";
+import { LabRequest } from "@vlab/shared/schemas/rest";
 
 export default createRouter().post(
 	"/",

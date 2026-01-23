@@ -1,7 +1,8 @@
 import { users } from "@backend/db/schema/auth";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { ChangePasswordRequest, RequestWithId } from "@vlab/shared/schemas";
+import { RequestWithId } from "@shared/schemas/common";
+import { ChangePasswordRequest } from "@vlab/shared/schemas/rest";
 import { eq } from "drizzle-orm";
 
 export default createRouter().post(

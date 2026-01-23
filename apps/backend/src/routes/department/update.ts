@@ -1,8 +1,9 @@
 import { departments } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
+import { RequestWithId } from "@shared/schemas/common";
+import { UpdateDepartmentRequest } from "@vlab/shared/schemas/rest";
 import { eq } from "drizzle-orm";
-import { RequestWithId, UpdateDepartmentRequest } from "@vlab/shared/schemas";
 
 export default createRouter().put(
 	"/:id",

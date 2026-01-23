@@ -5,7 +5,7 @@ import { createRouter } from "@backend/plugins/services";
 import { createGuacamoleToken } from "@backend/utils/crypto";
 import { failure, success } from "@backend/utils/response";
 import { toKebabCase } from "@backend/utils/string";
-import { RequestWithId } from "@vlab/shared/schemas";
+import { RequestWithId } from "@vlab/shared/schemas/common";
 import { eq, inArray } from "drizzle-orm";
 
 const sessionRoutes = createRouter().guard(

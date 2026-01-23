@@ -10,7 +10,7 @@ import { useActionState } from '@frontend/hooks/use-action-state';
 import api from '@frontend/lib/api';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
-import { UpdateDeviceCategoryRequest } from '@vlab/shared/schemas';
+import { UpdateDeviceCategoryRequest } from '@vlab/shared/schemas/rest';
 import { useEffect } from 'react';
 import { useDeviceCategoryActionStore } from '../../stores/device-category-action-store';
 

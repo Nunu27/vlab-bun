@@ -2,7 +2,7 @@ import { studyPrograms } from "@backend/db/schema/auth";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { success } from "@backend/utils/response";
-import { CreateStudyProgramRequest } from "@vlab/shared/schemas";
+import { CreateStudyProgramRequest } from "@vlab/shared/schemas/rest";
 
 export default createRouter().post(
 	"/",

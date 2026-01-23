@@ -33,7 +33,7 @@ import {
 import { withFieldGroup } from '@frontend/hooks/use-app-form';
 import { cn } from '@frontend/lib/utils';
 import { useStore } from '@tanstack/react-form';
-import type { DeviceInterface } from '@vlab/shared/schemas';
+import type { DeviceInterface } from '@vlab/shared/schemas/rest';
 import { GripVerticalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 
 type InterfaceEntry = DeviceInterface & {

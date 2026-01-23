@@ -12,7 +12,7 @@ import { privateRoute } from '@frontend/lib/middlewares';
 import { Compile } from '@sinclair/typemap';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { CreateDeviceRequest } from '@vlab/shared/schemas';
+import { CreateDeviceRequest } from '@vlab/shared/schemas/rest';
 import { toast } from 'sonner';
 import TestConnectionButton from './-module/components/buttons/test-connection-button';
 import { DeviceBasicInfoForm } from './-module/components/forms/device-basic-info-form';

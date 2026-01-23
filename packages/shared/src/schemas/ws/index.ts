@@ -1,18 +1,21 @@
+import type { MaybePromise } from "bun";
 import type { Static, TSchema } from "elysia";
 import { t } from "elysia/type-system";
 import { compile } from "elysia/type-system/utils";
 import { Socket } from "socket.io";
-import type { Session } from "../types";
+import type { Session } from "../../types";
 import {
 	createWSSchema,
 	type ExtractEvents,
 	type ReplyEvents,
 	type ReplyFunction,
 	type WSSchema
-} from "../types/ws";
+} from "../../types/ws";
 import { deviceWSSchemas } from "./device";
 import { labWSSchemas } from "./lab";
-import type { MaybePromise } from "bun";
+
+export * from "./device";
+export * from "./lab";
 
 const schemas = [
 	...deviceWSSchemas,
@@ -31,6 +34,31 @@ const schemas = [
 		type: "client2server",
 		name: "unsubscribe",
 		data: t.String()
+	}),
+	createWSSchema({
+		type: "server2client",
+		name: "topic",
+		data: t.Object({
+			topic: t.String(),
+			room: t.String(),
+			data: t.Any()
+		})
+	}),
+	createWSSchema({
+		type: "client2server",
+		name: "topic/subscribe",
+		data: t.Object({
+			topic: t.String(),
+			room: t.String()
+		})
+	}),
+	createWSSchema({
+		type: "client2server",
+		name: "topic/unsubscribe",
+		data: t.Object({
+			topic: t.String(),
+			room: t.String()
+		})
 	})
 ] as const;
 
@@ -94,7 +122,7 @@ export type WSHandler<
 };
 
 export function onDispose(
-	event: keyof Omit<Client2ServerEvents & InterServerEvents, "unsubscribe">,
+	event: keyof (Client2ServerEvents & InterServerEvents),
 	handler: (id: string) => MaybePromise<void>
 ) {
 	wsSchemas[event]!.cleanup = handler;

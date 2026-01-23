@@ -1,4 +1,4 @@
-import type { DeviceInterface } from '@vlab/shared/schemas';
+import type { DeviceInterface } from '@vlab/shared/schemas/rest';
 import { Group, StickyNote, Trash2, Ungroup, Unplug } from 'lucide-react';
 import React from 'react';
 import { useTopologyStore } from '../hook';

@@ -9,7 +9,10 @@
 	"exports": {
 		"./enums": "./src/enums.ts",
 		"./types": "./src/types/index.ts",
-		"./schemas": "./src/schemas/index.ts",
+		"./schemas/common": "./src/schemas/common.ts",
+		"./schemas/rest": "./src/schemas/rest/index.ts",
+		"./schemas/ws": "./src/schemas/ws/index.ts",
+		"./schemas/ws/*.ts": "./src/schemas/ws/*.ts",
 		"./utils": "./src/utils.ts"
 	},
 	"scripts": {

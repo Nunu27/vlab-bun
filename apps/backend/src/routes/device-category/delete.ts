@@ -2,7 +2,7 @@ import { deviceCategories } from "@backend/db/schema/lab-device";
 import { deleteCache } from "@backend/middlewares/caching";
 import { createRouter } from "@backend/plugins/services";
 import { failure, success } from "@backend/utils/response";
-import { RequestWithId } from "@vlab/shared/schemas";
+import { RequestWithId } from "@vlab/shared/schemas/common";
 import { eq } from "drizzle-orm";
 
 export default createRouter().delete(
