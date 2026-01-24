@@ -1,4 +1,4 @@
-import type { InferSelectModel } from "drizzle-orm";
+import type { InferSelectModel, ExtractTablesWithRelations } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PgTable } from "drizzle-orm/pg-core";
 import type { Pool, PoolClient } from "pg";
@@ -21,12 +21,65 @@ import {
 } from "./types";
 import { areSetsEqual, getChannelForTable, normalizeColumns } from "./utils";
 
+export interface DBListener<TSchema extends Record<string, any>> {
+	addListener<
+		TEntity extends keyof ExtractTablesWithRelations<TSchema>,
+		TTable extends TSchema[TEntity] extends PgTable
+			? TSchema[TEntity]
+			: PgTable,
+		TKeys extends keyof InferSelectModel<TTable>,
+		TOps extends Array<Operations>,
+		Bulk extends boolean
+	>(
+		entity: TEntity,
+		columns: TKeys[],
+		listener: Bulk extends false
+			? ListenerCallback<TTable, TOps[number], TKeys>
+			: BulkListenerCallback<TTable, TOps[number], TKeys>,
+		opts?: ListenerOptions<TOps, Bulk>
+	): void;
+
+	removeListener<
+		TTable extends PgTable,
+		TKeys extends keyof InferSelectModel<TTable>,
+		TOps extends Array<Operations>
+	>(
+		table: TTable,
+		columns: TKeys[],
+		listener:
+			| ListenerCallback<TTable, TOps[number], TKeys>
+			| BulkListenerCallback<TTable, TOps[number], TKeys>,
+		opts?: { ops?: TOps; bulk?: boolean }
+	): void;
+
+	syncChannels(): Promise<void>;
+	syncListeners(): Promise<void>;
+	flush(): Promise<void>;
+	cleanup(): Promise<void>;
+
+	createEventEmitter<
+		TData,
+		TEntity extends keyof ExtractTablesWithRelations<TSchema>,
+		TTable extends TSchema[TEntity] extends PgTable
+			? TSchema[TEntity]
+			: PgTable,
+		TKeys extends keyof InferSelectModel<TTable>,
+		TOps extends Array<Operations>
+	>(
+		entity: TEntity,
+		columns: TKeys[],
+		keyBuilder: (row: Pick<InferSelectModel<TTable>, TKeys>) => string,
+		valueBuilder: (row: Pick<InferSelectModel<TTable>, TKeys>) => TData,
+		opts?: { ops?: TOps }
+	): DBWatcher<TData>;
+}
+
 export function createDBListener<
 	TSchema extends Record<string, any> = Record<string, any>
 >(
 	db: NodePgDatabase<TSchema> & { $client: Pool },
 	config: DBListenerConfig = {}
-) {
+): DBListener<TSchema> {
 	const {
 		batchSize = DEFAULT_BATCH_SIZE,
 		debounceMs = DEFAULT_DEBOUNCE_MS,
@@ -78,8 +131,10 @@ export function createDBListener<
 
 	return {
 		addListener<
-			TEntity extends keyof TSchema,
-			TTable extends TSchema[TEntity],
+			TEntity extends keyof ExtractTablesWithRelations<TSchema>,
+			TTable extends TSchema[TEntity] extends PgTable
+				? TSchema[TEntity]
+				: PgTable,
 			TKeys extends keyof InferSelectModel<TTable>,
 			TOps extends Array<Operations> = [],
 			Bulk extends boolean = false
@@ -91,7 +146,9 @@ export function createDBListener<
 				: BulkListenerCallback<TTable, TOps[number], TKeys>,
 			opts?: ListenerOptions<TOps, Bulk>
 		) {
-			const table = (db as any)._.fullSchema[entity];
+			const tableConfig = (db as any)._.schema![entity];
+			const { columns: tableCols } = tableConfig;
+			const table = (Object.values(tableCols)[0] as any).table as TTable;
 			const channel = getChannelForTable(table);
 			const normalizedCols = normalizeColumns(table, columns);
 
@@ -170,8 +227,10 @@ export function createDBListener<
 
 		createEventEmitter<
 			TData,
-			TEntity extends keyof TSchema,
-			TTable extends TSchema[TEntity],
+			TEntity extends keyof ExtractTablesWithRelations<TSchema>,
+			TTable extends TSchema[TEntity] extends PgTable
+				? TSchema[TEntity]
+				: PgTable,
 			TKeys extends keyof InferSelectModel<TTable>,
 			TOps extends Array<Operations> = []
 		>(

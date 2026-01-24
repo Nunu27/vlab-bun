@@ -1,15 +1,22 @@
 import { useWSStore } from '@frontend/stores/ws-store';
-import type { RoomParams, Topic } from '@vlab/shared/types';
+import type { RoomDefinition, RoomParams } from '@vlab/shared/types';
 import type { Static, TSchema } from 'elysia';
 import { useEffect, useRef } from 'react';
 
 export function useWSTopic<
   TName extends string,
-  TRoom extends string,
+  TRooms extends readonly RoomDefinition<string>[],
   TData extends TSchema,
+  TRoom extends string,
 >(
-  topic: Topic<TName, TRoom, TData>,
-  params: RoomParams<TRoom>,
+  topic: {
+    name: TName;
+    rooms: TRooms;
+    data: TData;
+    buildRoom: (path: TRoom, params: RoomParams<TRoom>) => string;
+  },
+  path: TRoom,
+  params: RoomParams<TRoom> | null,
   callback: (data: Static<TData>) => void,
 ): void {
   const { subscribe } = useWSStore.use.actions();
@@ -22,12 +29,12 @@ export function useWSTopic<
   useEffect(() => {
     if (!params) return;
 
-    const room = topic.buildRoom(params);
+    const room = topic.buildRoom(path, params);
 
     const unsubscribe = subscribe<Static<TData>>(topic.name, room, (data) =>
       callbackRef.current(data),
     );
 
     return unsubscribe;
-  }, [topic, params, subscribe]);
+  }, [topic, path, params, subscribe]);
 }

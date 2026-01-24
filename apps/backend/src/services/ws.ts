@@ -59,15 +59,25 @@ io.use(async (socket, next) => {
 });
 
 io.on("connection", (socket) => {
-	// Handle topic subscriptions
+	// Handle topic subscriptions with access control
 	socket.on("topic/subscribe", async (data) => {
-		const room = `${data.topic}${data.room}`;
-		await socket.join(room);
+		const hasAccess = await topicEmitter.handleSubscribe(
+			socket,
+			data.topic,
+			data.room,
+			socket.data.session
+		);
+
+		if (!hasAccess) {
+			socket.emit(
+				"error",
+				`Access denied to topic ${data.topic} room ${data.room}`
+			);
+		}
 	});
 
 	socket.on("topic/unsubscribe", async (data) => {
-		const room = `${data.topic}${data.room}`;
-		await socket.leave(room);
+		await topicEmitter.handleUnsubscribe(socket, data.topic, data.room);
 	});
 
 	socket.on("unsubscribe", async (data) => {
