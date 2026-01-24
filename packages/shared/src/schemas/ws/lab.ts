@@ -1,3 +1,5 @@
+import { nodeHealthEnum } from "@shared/enums";
+import { createRoom, createTopic } from "@shared/types";
 import { createWSSchema } from "@shared/types/ws";
 import { t } from "elysia/type-system";
 
@@ -33,3 +35,9 @@ export const labWSSchemas = [
 		data: StopLabSessionRequest
 	})
 ] as const;
+
+export const labNodeHealthTopic = createTopic({
+	name: "lab-node",
+	rooms: createRoom("health/:nodeId"),
+	data: t.Nullable(t.UnionEnum([...nodeHealthEnum, "deleted"]))
+});

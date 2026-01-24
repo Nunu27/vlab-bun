@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root';
 import { Route as LoginRouteImport } from './routes/login';
-import { Route as ConnectRouteImport } from './routes/connect';
 import { Route as DashboardRouteImport } from './routes/_dashboard';
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index';
 import { Route as DashboardLabIndexRouteImport } from './routes/_dashboard/lab/index';
@@ -25,16 +24,12 @@ import { Route as DashboardLabDeviceCategoryIndexRouteImport } from './routes/_d
 import { Route as DashboardLabSessionSessionIdRouteImport } from './routes/_dashboard/lab/session/$sessionId';
 import { Route as DashboardLabDeviceCreateRouteImport } from './routes/_dashboard/lab/device/create';
 import { Route as DashboardLabIdUpdateRouteImport } from './routes/_dashboard/lab/$id.update';
+import { Route as SessionIdNodeNodeIdDisplayRouteImport } from './routes/session/$id.node.$nodeId.display';
 import { Route as DashboardLabDeviceIdUpdateRouteImport } from './routes/_dashboard/lab/device/$id.update';
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any);
-const ConnectRoute = ConnectRouteImport.update({
-  id: '/connect',
-  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any);
 const DashboardRoute = DashboardRouteImport.update({
@@ -113,6 +108,12 @@ const DashboardLabIdUpdateRoute = DashboardLabIdUpdateRouteImport.update({
   path: '/lab/$id/update',
   getParentRoute: () => DashboardRoute,
 } as any);
+const SessionIdNodeNodeIdDisplayRoute =
+  SessionIdNodeNodeIdDisplayRouteImport.update({
+    id: '/session/$id/node/$nodeId/display',
+    path: '/session/$id/node/$nodeId/display',
+    getParentRoute: () => rootRouteImport,
+  } as any);
 const DashboardLabDeviceIdUpdateRoute =
   DashboardLabDeviceIdUpdateRouteImport.update({
     id: '/lab/device/$id/update',
@@ -122,7 +123,6 @@ const DashboardLabDeviceIdUpdateRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute;
-  '/connect': typeof ConnectRoute;
   '/login': typeof LoginRoute;
   '/lab/create': typeof DashboardLabCreateRoute;
   '/lab/': typeof DashboardLabIndexRoute;
@@ -137,9 +137,9 @@ export interface FileRoutesByFullPath {
   '/user/lecturer/': typeof DashboardUserLecturerIndexRoute;
   '/user/student/': typeof DashboardUserStudentIndexRoute;
   '/lab/device/$id/update': typeof DashboardLabDeviceIdUpdateRoute;
+  '/session/$id/node/$nodeId/display': typeof SessionIdNodeNodeIdDisplayRoute;
 }
 export interface FileRoutesByTo {
-  '/connect': typeof ConnectRoute;
   '/login': typeof LoginRoute;
   '/': typeof DashboardIndexRoute;
   '/lab/create': typeof DashboardLabCreateRoute;
@@ -155,11 +155,11 @@ export interface FileRoutesByTo {
   '/user/lecturer': typeof DashboardUserLecturerIndexRoute;
   '/user/student': typeof DashboardUserStudentIndexRoute;
   '/lab/device/$id/update': typeof DashboardLabDeviceIdUpdateRoute;
+  '/session/$id/node/$nodeId/display': typeof SessionIdNodeNodeIdDisplayRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   '/_dashboard': typeof DashboardRouteWithChildren;
-  '/connect': typeof ConnectRoute;
   '/login': typeof LoginRoute;
   '/_dashboard/': typeof DashboardIndexRoute;
   '/_dashboard/lab/create': typeof DashboardLabCreateRoute;
@@ -175,12 +175,12 @@ export interface FileRoutesById {
   '/_dashboard/user/lecturer/': typeof DashboardUserLecturerIndexRoute;
   '/_dashboard/user/student/': typeof DashboardUserStudentIndexRoute;
   '/_dashboard/lab/device/$id/update': typeof DashboardLabDeviceIdUpdateRoute;
+  '/session/$id/node/$nodeId/display': typeof SessionIdNodeNodeIdDisplayRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
-    | '/connect'
     | '/login'
     | '/lab/create'
     | '/lab/'
@@ -194,10 +194,10 @@ export interface FileRouteTypes {
     | '/user/admin/'
     | '/user/lecturer/'
     | '/user/student/'
-    | '/lab/device/$id/update';
+    | '/lab/device/$id/update'
+    | '/session/$id/node/$nodeId/display';
   fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/connect'
     | '/login'
     | '/'
     | '/lab/create'
@@ -212,11 +212,11 @@ export interface FileRouteTypes {
     | '/user/admin'
     | '/user/lecturer'
     | '/user/student'
-    | '/lab/device/$id/update';
+    | '/lab/device/$id/update'
+    | '/session/$id/node/$nodeId/display';
   id:
     | '__root__'
     | '/_dashboard'
-    | '/connect'
     | '/login'
     | '/_dashboard/'
     | '/_dashboard/lab/create'
@@ -231,13 +231,14 @@ export interface FileRouteTypes {
     | '/_dashboard/user/admin/'
     | '/_dashboard/user/lecturer/'
     | '/_dashboard/user/student/'
-    | '/_dashboard/lab/device/$id/update';
+    | '/_dashboard/lab/device/$id/update'
+    | '/session/$id/node/$nodeId/display';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren;
-  ConnectRoute: typeof ConnectRoute;
   LoginRoute: typeof LoginRoute;
+  SessionIdNodeNodeIdDisplayRoute: typeof SessionIdNodeNodeIdDisplayRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -247,13 +248,6 @@ declare module '@tanstack/react-router' {
       path: '/login';
       fullPath: '/login';
       preLoaderRoute: typeof LoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    '/connect': {
-      id: '/connect';
-      path: '/connect';
-      fullPath: '/connect';
-      preLoaderRoute: typeof ConnectRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     '/_dashboard': {
@@ -354,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLabIdUpdateRouteImport;
       parentRoute: typeof DashboardRoute;
     };
+    '/session/$id/node/$nodeId/display': {
+      id: '/session/$id/node/$nodeId/display';
+      path: '/session/$id/node/$nodeId/display';
+      fullPath: '/session/$id/node/$nodeId/display';
+      preLoaderRoute: typeof SessionIdNodeNodeIdDisplayRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/_dashboard/lab/device/$id/update': {
       id: '/_dashboard/lab/device/$id/update';
       path: '/lab/device/$id/update';
@@ -404,8 +405,8 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
-  ConnectRoute: ConnectRoute,
   LoginRoute: LoginRoute,
+  SessionIdNodeNodeIdDisplayRoute: SessionIdNodeNodeIdDisplayRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

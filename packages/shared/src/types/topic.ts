@@ -1,4 +1,4 @@
-import type { Static, TSchema } from "elysia";
+import type { MaybeArray, Static, TSchema } from "elysia";
 import type { Session } from "./session";
 
 /**
@@ -47,6 +47,15 @@ export type RoomDefinition<TRoom extends string> =
 	  };
 
 /**
+ * Helper to create a room definition with type-safe params in check function
+ */
+export const createRoom = <TRoom extends string>(
+	path: TRoom,
+	check?: RoomAccessCheck<TRoom>
+): RoomDefinition<TRoom> =>
+	(check ? { path, check } : path) as RoomDefinition<TRoom>;
+
+/**
  * Extract the path string from a room definition
  */
 export type RoomPath<T> = T extends string
@@ -60,7 +69,7 @@ export type RoomPath<T> = T extends string
  */
 export type TopicSchema<
 	TName extends string,
-	TRooms extends readonly RoomDefinition<string>[],
+	TRooms extends MaybeArray<RoomDefinition<string>>,
 	TData extends TSchema
 > = {
 	/** Topic name */
@@ -76,27 +85,43 @@ export type TopicSchema<
  */
 export type Topic<
 	TName extends string,
-	TRooms extends readonly RoomDefinition<string>[],
+	TRooms extends MaybeArray<RoomDefinition<string>>,
 	TData extends TSchema
 > = TopicSchema<TName, TRooms, TData> & {
 	/** Build room name from parameters */
-	buildRoom: <TRoom extends RoomPath<TRooms[number]>>(
+	buildRoom: <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		path: TRoom,
 		params: RoomParams<TRoom>
 	) => string;
 	/** Get full topic room (topic name + room) */
-	getTopicRoom: <TRoom extends RoomPath<TRooms[number]>>(
+	getTopicRoom: <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		path: TRoom,
 		params: RoomParams<TRoom>
 	) => string;
 	/** Check if user has access to a room */
-	checkAccess: <TRoom extends RoomPath<TRooms[number]>>(
+	checkAccess: <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		path: TRoom,
 		params: RoomParams<TRoom>,
 		session: Session
 	) => Promise<boolean>;
 	/** Get room definition by path */
-	getRoom: <TRoom extends RoomPath<TRooms[number]>>(
+	getRoom: <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		path: TRoom
 	) => RoomDefinition<TRoom> | undefined;
 };
@@ -106,12 +131,21 @@ export type Topic<
  */
 export const createTopic = <
 	TName extends string,
-	TRooms extends readonly RoomDefinition<string>[],
+	TRooms extends MaybeArray<RoomDefinition<string>>,
 	TData extends TSchema
 >(
 	config: TopicSchema<TName, TRooms, TData>
-): Topic<TName, TRooms, TData> => {
-	const buildRoom = <TRoom extends RoomPath<TRooms[number]>>(
+) => {
+	// Normalize rooms to array for internal use
+	const roomsArray = (
+		Array.isArray(config.rooms) ? config.rooms : [config.rooms]
+	) as readonly RoomDefinition<string>[];
+
+	const buildRoom = <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		path: TRoom,
 		params: RoomParams<TRoom>
 	): string => {
@@ -122,24 +156,36 @@ export const createTopic = <
 		return room;
 	};
 
-	const getTopicRoom = <TRoom extends RoomPath<TRooms[number]>>(
+	const getTopicRoom = <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		path: TRoom,
 		params: RoomParams<TRoom>
 	): string => {
-		return `${config.name}${buildRoom(path, params)}`;
+		return `${config.name}/${buildRoom(path, params)}`;
 	};
 
-	const getRoom = <TRoom extends RoomPath<TRooms[number]>>(
+	const getRoom = <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		rawPath: TRoom
 	): RoomDefinition<TRoom> | undefined => {
-		const room = config.rooms.find((r) => {
+		const room = roomsArray.find((r) => {
 			const path = typeof r === "string" ? r : r.path;
 			return path === rawPath;
 		});
 		return room as RoomDefinition<TRoom> | undefined;
 	};
 
-	const checkAccess = async <TRoom extends RoomPath<TRooms[number]>>(
+	const checkAccess = async <
+		TRoom extends RoomPath<
+			TRooms extends readonly any[] ? TRooms[number] : TRooms
+		>
+	>(
 		path: TRoom,
 		params: RoomParams<TRoom>,
 		session: Session
@@ -158,11 +204,12 @@ export const createTopic = <
 
 	return {
 		...config,
+		rooms: roomsArray,
 		buildRoom,
 		getTopicRoom,
 		checkAccess,
 		getRoom
-	};
+	} as Topic<TName, TRooms, TData>;
 };
 
 /**

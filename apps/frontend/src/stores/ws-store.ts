@@ -1,9 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSelectors } from '@frontend/helper/store';
 import type { WSClient2ServerEvents } from '@frontend/lib/ws';
 import ws from '@frontend/lib/ws';
 import type { Store } from '@frontend/types/store';
 import type { WSSchemas } from '@vlab/shared/schemas/ws';
-import type { ReplyData } from '@vlab/shared/types';
+import type {
+  ReplyData,
+  Topic,
+  TopicData,
+  RoomParams,
+} from '@vlab/shared/types';
 import type { MaybePromise, TSchema } from 'elysia';
 import { create } from 'zustand';
 import { useAuthStore } from './auth-store';
@@ -11,10 +17,20 @@ import { useAuthStore } from './auth-store';
 type Client2ServerEvents = keyof WSClient2ServerEvents;
 
 interface WSActions {
-  subscribe: <TData = unknown>(
-    topicName: string,
-    room: string,
-    callback: (data: TData) => MaybePromise<void>,
+  subscribe: <
+    T extends Topic<any, any, any>,
+    TRooms extends T['rooms'],
+    TRoom extends TRooms extends readonly any[] ? TRooms[number] : TRooms,
+    TPath extends TRoom extends string
+      ? TRoom
+      : TRoom extends { path: infer P }
+        ? P
+        : never,
+  >(
+    topic: T,
+    path: TPath,
+    params: RoomParams<TPath & string>,
+    callback: (data: TopicData<T>) => MaybePromise<void>,
   ) => VoidFunction;
   send: <
     TEvent extends Client2ServerEvents,
@@ -79,9 +95,9 @@ const store = create<WSStore>()((set) => {
   return {
     connected: false,
     actions: {
-      subscribe: (topicName, room, callback) => {
-        const key = `${topicName}:${room}`;
-        const isFirstListener = !listenersMap.has(key);
+      subscribe: (topic, path, params, callback) => {
+        const room = topic.buildRoom(path as any, params);
+        const key = `${topic.name}:${room}`;
 
         // Register the global topic event listener once
         if (!listeners.size) {
@@ -99,31 +115,31 @@ const store = create<WSStore>()((set) => {
         const id = crypto.randomUUID();
         listeners.set(id, callback as never);
 
-        if (!listenersMap.has(key)) {
-          listenersMap.set(key, []);
-        }
-        listenersMap.get(key)!.push(id);
-
-        // Send subscription to server if this is the first listener
-        if (isFirstListener) {
-          ws.emit('topic/subscribe', { topic: topicName, room });
+        if (listenersMap.has(key)) {
+          listenersMap.get(key)!.push(id);
+        } else {
+          listenersMap.set(key, [id]);
+          ws.emit('topic/subscribe', { topic: topic.name, room });
         }
 
         // Return cleanup function
         return () => {
           listeners.delete(id);
           const listenerIds = listenersMap.get(key);
-          if (listenerIds) {
-            const index = listenerIds.indexOf(id);
-            if (index !== -1) {
-              listenerIds.splice(index, 1);
-            }
-            // Clean up empty arrays and unsubscribe from server
-            if (listenerIds.length === 0) {
-              listenersMap.delete(key);
-              ws.emit('topic/unsubscribe', { topic: topicName, room });
-            }
+          if (!listenerIds) return;
+
+          const index = listenerIds.indexOf(id);
+          if (index !== -1) {
+            listenerIds.splice(index, 1);
           }
+
+          // Clean up empty arrays and unsubscribe from server
+          if (!listenerIds.length) {
+            listenersMap.delete(key);
+            ws.emit('topic/unsubscribe', { topic: topic.name, room });
+          }
+
+          if (!listeners.size) ws.off('topic');
         };
       },
       send: (event, data, callback) => {

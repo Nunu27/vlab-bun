@@ -50,5 +50,9 @@ export const labNodesRelations = relations(labNodes, ({ one }) => ({
 	labSession: one(labSessions, {
 		fields: [labNodes.labSessionId],
 		references: [labSessions.id]
+	}),
+	device: one(devices, {
+		fields: [labNodes.deviceId],
+		references: [devices.id]
 	})
 }));

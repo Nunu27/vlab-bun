@@ -27,12 +27,11 @@ export const useGuacamoleClient = ({
   const { setState, setError, setConnected, reset } = store.use.actions();
 
   useEffect(() => {
-    reset();
-
     if (!connected) {
-      setError('Server not connected');
-      return;
+      return setError('Server not connected');
     }
+
+    reset();
 
     const tunnel = new Guacamole.WebSocketTunnel('/display');
     const client = new Guacamole.Client(tunnel);

@@ -13,8 +13,7 @@ export const LabDeviceNodeSchema = t.Object({
 	deviceId: t.String(),
 	groupIds: t.Optional(t.Array(t.String())),
 	resources: t.Optional(DeviceResourcesSchema),
-	interfaces: t.Array(t.Boolean()),
-	token: t.Optional(t.String())
+	interfaces: t.Array(t.Boolean())
 });
 
 export const LabGroupNodeSchema = t.Object({
@@ -68,3 +67,8 @@ export type LabNoteNode = typeof LabNoteNodeSchema.static;
 export type LabNode = typeof LabNodeSchema.static;
 export type LabEdge = typeof LabEdgeSchema.static;
 export type LabTopology = typeof LabTopologySchema.static;
+
+export const SessionNodeRequest = t.Object({
+	id: t.String({ format: "uuid" }),
+	nodeId: t.String({ format: "uuid" })
+});

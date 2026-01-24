@@ -10,6 +10,8 @@ import { createMonitor } from "@vlab/monitor";
 import { eq, notInArray, sql } from "drizzle-orm";
 import docker from "./docker";
 import { childLogger } from "./logger";
+import { topicEmitter } from "./ws";
+import { labNodeHealthTopic } from "@shared/schemas/ws";
 
 let initialized = false;
 const logger = childLogger("clab-sync");
@@ -109,6 +111,14 @@ export function startSync() {
 		logger.debug({ id: node.id }, "Node created");
 	});
 
+	clabMonitor.on("node-remove", (id) => {
+		topicEmitter.emit(labNodeHealthTopic, {
+			path: "health/:nodeId",
+			params: { nodeId: id },
+			data: "deleted"
+		});
+	});
+
 	clabMonitor.on("node-health", async (node) => {
 		await sessionThrottle.wait(node.labSessionId, {
 			id: "health",
@@ -118,6 +128,12 @@ export function startSync() {
 					.set({ health: node.health })
 					.where(eq(labNodes.id, node.id));
 				await deleteCache(`lab:session:${node.labSessionId}`);
+
+				topicEmitter.emit(labNodeHealthTopic, {
+					path: "health/:nodeId",
+					params: { nodeId: node.id },
+					data: node.health
+				});
 
 				logger.debug(
 					{ id: node.id, health: node.health },

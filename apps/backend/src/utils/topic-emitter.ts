@@ -1,11 +1,14 @@
+import { childLogger } from "@backend/services/logger";
 import type {
 	Client2ServerEvents,
 	InterServerEvents,
 	Server2ClientEvents,
 	SocketData
 } from "@vlab/shared/schemas/ws";
-import type { Session, Topic, TopicData } from "@vlab/shared/types";
+import type { RoomParams, Session, Topic, TopicData } from "@vlab/shared/types";
 import type { Server, Socket } from "socket.io";
+
+const logger = childLogger("ws-topic");
 
 type IOServer = Server<
 	Client2ServerEvents,
@@ -43,59 +46,85 @@ export class TopicEmitter {
 	/**
 	 * Emit data to a specific topic room
 	 */
-	emit<T extends Topic<any, any, any>, TRoom extends T["rooms"][number]>(
-		topic: T,
-		roomPattern: TRoom extends string
+	emit<
+		T extends Topic<any, any, any>,
+		TRooms extends T["rooms"],
+		TRoom extends TRooms extends readonly any[] ? TRooms[number] : TRooms,
+		TPath extends TRoom extends string
 			? TRoom
 			: TRoom extends { path: infer P }
 				? P
-				: never,
-		params: Record<string, string>,
-		data: TopicData<T>
+				: never
+	>(
+		topic: T,
+		config: {
+			path: TPath;
+			params: RoomParams<TPath & string>;
+			data: TopicData<T>;
+		}
 	): void {
-		const room = topic.getTopicRoom(roomPattern as any, params);
+		const room = topic.getTopicRoom(config.path as any, config.params);
 		this.io.to(room).emit("topic", {
 			topic: topic.name,
-			room: topic.buildRoom(roomPattern as any, params),
-			data
+			room: topic.buildRoom(config.path as any, config.params),
+			data: config.data
 		});
+
+		logger.debug(
+			{ topic: topic.name, room, data: config.data },
+			"Topic emitted"
+		);
 	}
 
 	/**
 	 * Emit data to multiple rooms
 	 */
-	emitToMany<T extends Topic<any, any, any>, TRoom extends T["rooms"][number]>(
-		topic: T,
-		roomPattern: TRoom extends string
+	emitToMany<
+		T extends Topic<any, any, any>,
+		TRooms extends T["rooms"],
+		TRoom extends TRooms extends readonly any[] ? TRooms[number] : TRooms,
+		TPath extends TRoom extends string
 			? TRoom
 			: TRoom extends { path: infer P }
 				? P
-				: never,
-		paramsList: Array<Record<string, string>>,
-		data: TopicData<T>
+				: never
+	>(
+		topic: T,
+		config: {
+			path: TPath;
+			paramsList: Array<RoomParams<TPath & string>>;
+			data: TopicData<T>;
+		}
 	): void {
-		for (const params of paramsList) {
-			this.emit(topic, roomPattern as any, params, data);
+		for (const params of config.paramsList) {
+			this.emit(topic, { path: config.path, params, data: config.data });
 		}
 	}
 
 	/**
 	 * Emit batch of different data to different rooms
 	 */
-	emitBatch<T extends Topic<any, any, any>, TRoom extends T["rooms"][number]>(
-		topic: T,
-		roomPattern: TRoom extends string
+	emitBatch<
+		T extends Topic<any, any, any>,
+		TRooms extends T["rooms"],
+		TRoom extends TRooms extends readonly any[] ? TRooms[number] : TRooms,
+		TPath extends TRoom extends string
 			? TRoom
-			: TRoom extends { pattern: infer P }
+			: TRoom extends { path: infer P }
 				? P
-				: never,
-		items: Array<{
-			params: Record<string, string>;
-			data: TopicData<T>;
-		}>
+				: never
+	>(
+		topic: T,
+		config: {
+			path: TPath;
+			items: Array<{
+				params: RoomParams<TPath & string>;
+				data: TopicData<T>;
+			}>;
+		}
 	): void {
-		for (const { params, data } of items) {
-			this.emit(topic, roomPattern as any, params, data);
+		for (const { params, data } of config.items) {
+			this.emit(topic, { path: config.path, params, data });
 		}
 	}
 
@@ -111,7 +140,7 @@ export class TopicEmitter {
 	): Promise<boolean> {
 		const topic = this.topicRegistry.get(topicName);
 		if (!topic) {
-			console.warn(`Topic not found: ${topicName}`);
+			logger.warn(`Topic not found: ${topicName}`);
 			return false;
 		}
 
@@ -119,7 +148,7 @@ export class TopicEmitter {
 		// Room format: "/user/123" -> pattern: "/user/:userId", params: { userId: "123" }
 		const { pattern, params } = this.parseRoom(topic, room);
 		if (!pattern) {
-			console.warn(
+			logger.warn(
 				`Could not match room ${room} to any pattern in topic ${topicName}`
 			);
 			return false;
@@ -132,7 +161,7 @@ export class TopicEmitter {
 		}
 
 		// Join the room
-		const fullRoom = `${topicName}${room}`;
+		const fullRoom = `${topicName}/${room}`;
 		await socket.join(fullRoom);
 
 		return true;
@@ -196,7 +225,7 @@ export class TopicEmitter {
 		topicName: string,
 		room: string
 	): Promise<void> {
-		const fullRoom = `${topicName}${room}`;
+		const fullRoom = `${topicName}/${room}`;
 		await socket.leave(fullRoom);
 	}
 }

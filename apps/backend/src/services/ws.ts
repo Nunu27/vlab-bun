@@ -14,9 +14,11 @@ import cluster from "cluster";
 import { Server } from "socket.io";
 import parser from "socket.io-msgpack-parser";
 import { redisClient } from "./redis";
+import { childLogger } from "./logger";
 
 type HandlerKey = keyof Client2ServerEvents | keyof InterServerEvents;
 
+const logger = childLogger("ws");
 const io = new Server<
 	Client2ServerEvents,
 	Server2ClientEvents,
@@ -74,10 +76,19 @@ io.on("connection", (socket) => {
 				`Access denied to topic ${data.topic} room ${data.room}`
 			);
 		}
+
+		logger.debug(
+			{ id: socket.id, topic: data.topic, room: data.room },
+			"Topic subscribed"
+		);
 	});
 
 	socket.on("topic/unsubscribe", async (data) => {
 		await topicEmitter.handleUnsubscribe(socket, data.topic, data.room);
+		logger.debug(
+			{ id: socket.id, topic: data.topic, room: data.room },
+			"Topic unsubscribed"
+		);
 	});
 
 	socket.on("unsubscribe", async (data) => {
@@ -89,6 +100,7 @@ io.on("connection", (socket) => {
 		}
 
 		await socket.leave(id);
+		logger.debug({ id: socket.id, event, room: id }, "Unsubscribed");
 	});
 
 	for (const [name, handler] of Object.entries(wsHandlers)) {
@@ -97,8 +109,6 @@ io.on("connection", (socket) => {
 			"unsubscribe" | "topic/subscribe" | "topic/unsubscribe"
 		>;
 		const schema = wsSchemas[event];
-
-		socket.join(event);
 
 		socket.on(event as any, async (data: any) => {
 			if (!schema.data.Check(data)) {

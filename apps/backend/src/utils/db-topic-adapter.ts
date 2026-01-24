@@ -1,5 +1,10 @@
 import type { DBListener, Operations } from "@vlab/db-listener";
-import type { Topic, TopicData } from "@vlab/shared/types";
+import type {
+	Topic,
+	TopicData,
+	RoomPath,
+	RoomParams
+} from "@vlab/shared/types";
 import type {
 	ExtractTablesWithRelations,
 	InferSelectModel,
@@ -7,17 +12,51 @@ import type {
 } from "drizzle-orm";
 import type { TopicEmitter } from "./topic-emitter";
 
-type RoomConfig =
-	| string
-	| string[]
-	| { path: string; params: Record<string, string> }
-	| Array<{ path: string; params: Record<string, string> }>;
+type RoomConfig<TTopic extends Topic<any, any, any>> =
+	| RoomPath<
+			TTopic["rooms"] extends readonly any[]
+				? TTopic["rooms"][number]
+				: TTopic["rooms"]
+	  >
+	| RoomPath<
+			TTopic["rooms"] extends readonly any[]
+				? TTopic["rooms"][number]
+				: TTopic["rooms"]
+	  >[]
+	| {
+			path: RoomPath<
+				TTopic["rooms"] extends readonly any[]
+					? TTopic["rooms"][number]
+					: TTopic["rooms"]
+			>;
+			params: RoomParams<
+				RoomPath<
+					TTopic["rooms"] extends readonly any[]
+						? TTopic["rooms"][number]
+						: TTopic["rooms"]
+				>
+			>;
+	  }
+	| Array<{
+			path: RoomPath<
+				TTopic["rooms"] extends readonly any[]
+					? TTopic["rooms"][number]
+					: TTopic["rooms"]
+			>;
+			params: RoomParams<
+				RoomPath<
+					TTopic["rooms"] extends readonly any[]
+						? TTopic["rooms"][number]
+						: TTopic["rooms"]
+				>
+			>;
+	  }>;
 
-type RoomConfigFunction<TData> = (event: {
+type RoomConfigFunction<TData, TTopic extends Topic<any, any, any>> = (event: {
 	op: Operations;
 	table: string;
 	data: TData;
-}) => RoomConfig;
+}) => RoomConfig<TTopic>;
 
 // Check if transformer is required based on data compatibility
 type IsTransformerRequired<
@@ -44,11 +83,14 @@ type DBEmitterConfig<
 	columns: TKeys[];
 	topic: TTopic;
 	room:
-		| RoomConfig
-		| RoomConfigFunction<{
-				previous: Pick<InferSelectModel<TTable>, TKeys> | null;
-				current: Pick<InferSelectModel<TTable>, TKeys> | null;
-		  }>;
+		| RoomConfig<TTopic>
+		| RoomConfigFunction<
+				{
+					previous: Pick<InferSelectModel<TTable>, TKeys> | null;
+					current: Pick<InferSelectModel<TTable>, TKeys> | null;
+				},
+				TTopic
+		  >;
 	ops?: TOps;
 	paused?: boolean;
 } & (IsTransformerRequired<TTable, TKeys, TTopic> extends true
@@ -98,9 +140,9 @@ export function addDBTopicEmitter<
 		paused
 	} = config;
 
-	// Normalize room config to array of {pattern, params}
+	// Normalize room config to array of {path, params}
 	const normalizeRoomConfig = (
-		roomConfig: RoomConfig
+		roomConfig: RoomConfig<TTopic>
 	): Array<{ path: string; params: Record<string, string> }> => {
 		if (typeof roomConfig === "string") {
 			return [{ path: roomConfig, params: {} }];
@@ -123,7 +165,10 @@ export function addDBTopicEmitter<
 			if (!current) return;
 
 			// Determine rooms to emit to
-			const roomConfig = typeof room === "function" ? room(event) : room;
+			const roomConfig =
+				typeof room === "function"
+					? (room as RoomConfigFunction<typeof event.data, TTopic>)(event)
+					: room;
 			const rooms = normalizeRoomConfig(roomConfig);
 
 			// Transform data if transformer provided
