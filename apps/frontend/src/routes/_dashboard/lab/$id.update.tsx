@@ -12,12 +12,14 @@ import { Input } from '@frontend/components/ui/input';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { queryClient } from '@frontend/lib/query';
+import TopologyEditor from '@frontend/shared/topology/components/topology-editor';
+import {
+  TopologyStoreProvider,
+  useTopologyStore,
+} from '@frontend/shared/topology/stores';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import TopologyEditor from './-module/topology';
-import { useTopologyStore } from './-module/topology/hook';
-import { TopologyProvider } from './-module/topology/provider';
 
 export const Route = createFileRoute('/_dashboard/lab/$id/update')({
   staticData: {
@@ -37,9 +39,9 @@ export const Route = createFileRoute('/_dashboard/lab/$id/update')({
 
 function UpdateLabPage() {
   return (
-    <TopologyProvider>
+    <TopologyStoreProvider>
       <UpdateLabForm />
-    </TopologyProvider>
+    </TopologyStoreProvider>
   );
 }
 

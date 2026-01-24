@@ -72,7 +72,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 			const template = deviceTemplateMap.get(node.deviceId);
 			if (!template) continue;
 
-			const nodeName = toKebabCase(node.label);
+			const nodeName = toKebabCase(node.name);
 
 			nodeMap.set(node.id, nodeName);
 

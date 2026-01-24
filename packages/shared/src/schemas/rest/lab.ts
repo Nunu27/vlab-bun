@@ -5,11 +5,9 @@ import { DeviceResourcesSchema } from "./device";
 export const LabDeviceNodeSchema = t.Object({
 	id: t.String(),
 	type: t.Literal("device"),
-	label: t.String(),
+	name: t.String(),
 	x: t.Number(),
 	y: t.Number(),
-	width: t.Number(),
-	height: t.Number(),
 	deviceId: t.String(),
 	groupIds: t.Optional(t.Array(t.String())),
 	resources: t.Optional(DeviceResourcesSchema),
@@ -19,7 +17,7 @@ export const LabDeviceNodeSchema = t.Object({
 export const LabGroupNodeSchema = t.Object({
 	id: t.String(),
 	type: t.Literal("group"),
-	label: t.String(),
+	name: t.String(),
 	x: t.Number(),
 	y: t.Number(),
 	width: t.Number(),
@@ -30,7 +28,7 @@ export const LabGroupNodeSchema = t.Object({
 export const LabNoteNodeSchema = t.Object({
 	id: t.String(),
 	type: t.Literal("note"),
-	label: t.String(),
+	content: t.String(),
 	x: t.Number(),
 	y: t.Number(),
 	width: t.Number(),

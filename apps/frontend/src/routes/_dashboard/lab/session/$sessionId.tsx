@@ -1,9 +1,9 @@
+import { toKebabCase } from '@backend/utils/string';
 import api from '@frontend/lib/api';
 import { privateRoute } from '@frontend/lib/middlewares';
 import { queryClient } from '@frontend/lib/query';
+import TopologyViewer from '@frontend/shared/topology/components/topology-viewer';
 import { createFileRoute } from '@tanstack/react-router';
-import TopologyViewer from '../-module/topology/viewer';
-import { toKebabCase } from '@backend/utils/string';
 
 export const Route = createFileRoute('/_dashboard/lab/session/$sessionId')({
   staticData: {
@@ -32,14 +32,20 @@ function SessionPage() {
       const left = (window.screen.width - width) / 2;
       const top = (window.screen.height - height) / 2;
 
-      const nodeName = toKebabCase(node.label);
+      const nodeName = toKebabCase(node.name);
       const nodeId = session.nodes[nodeName].id;
 
-      window.open(
-        `/session/${sessionId}/node/${nodeId}/display`,
-        `vlab-session-${nodeId}`,
-        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,location=no,toolbar=no,menubar=no`,
-      );
+      const url = `/session/${sessionId}/node/${nodeId}/display`;
+      const name = `vlab-session-${nodeId}`;
+      const features = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,location=no,toolbar=no,menubar=no`;
+
+      const win = window.open('', name, features);
+      if (win) {
+        if (win.location.pathname !== url) {
+          win.location.href = url;
+        }
+        win.focus();
+      }
     }
   };
 
