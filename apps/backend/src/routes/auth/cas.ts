@@ -106,6 +106,7 @@ export default createRouter().get(
 		return redirect(BASE_URL);
 	},
 	{
+		guest: true,
 		query: CASRequestQuery,
 		detail: {
 			description: "Login with email and password"

@@ -451,3 +451,34 @@ export interface ContainerlabTopology {
 	/** Global settings (optional) */
 	settings?: Settings;
 }
+
+export interface LabNode {
+	id: string;
+	name: string;
+	image: string;
+	kind: string;
+	env: Record<string, string>;
+	resources: {
+		cpu?: number;
+		memory?: string;
+	};
+	deviceId?: string;
+	ports: number[];
+}
+
+export interface LabLink {
+	sourceId: string;
+	sourceInterface: string;
+
+	targetId: string;
+	targetInterface: string;
+}
+
+export interface LabConfig {
+	id?: string;
+	type: string;
+	sessionId: string;
+	ownerId: string;
+	nodes: Array<LabNode>;
+	links?: Array<LabLink>;
+}

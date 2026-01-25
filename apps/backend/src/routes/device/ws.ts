@@ -1,11 +1,9 @@
 import dbListener from "@backend/db/listener";
 import env from "@backend/env";
-import clab, { clabWrapper } from "@backend/services/clab";
+import clab from "@backend/services/clab";
 import docker from "@backend/services/docker";
 import { createGuacamoleToken } from "@backend/utils/crypto";
-import { toKebabCase } from "@backend/utils/string";
 import { getMonitorPorts } from "@vlab/monitor";
-import { LABELS } from "@vlab/monitor/constants";
 import {
 	deviceWSSchemas,
 	onDispose,
@@ -38,7 +36,6 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		},
 		reply
 	}) => {
-		const deviceName = toKebabCase(data.name);
 		const labName = id.replace(/-/g, "");
 		const nodeId = Bun.randomUUIDv7();
 
@@ -81,39 +78,24 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 			...getMonitorPorts(data.kind)
 		];
 
-		const response = await clabWrapper(() =>
-			clab.POST("/api/v1/labs", {
-				body: {
-					topologyContent: {
-						name: labName,
-						topology: {
-							defaults: {
-								labels: {
-									[LABELS.SESSION_ID]: id,
-									[LABELS.LAB_TYPE]: "device-test",
-									[LABELS.OWNER_ID]: session.id
-								}
-							},
-							nodes: {
-								[deviceName]: {
-									image: data.image,
-									kind: data.kind,
-									env: data.env,
-									cpu: data.resources.cpu,
-									memory: data.resources.memory,
-									ports: originPorts.map((port) => `0:${port}`),
-									labels: {
-										[LABELS.NODE_ID]: nodeId
-									}
-								}
-							}
-						}
-					}
+		const { response } = await clab.deploy(labName, {
+			sessionId: id,
+			type: "device-test",
+			ownerId: session.id,
+			nodes: [
+				{
+					id: nodeId,
+					name: data.name,
+					image: data.image,
+					kind: data.kind,
+					env: data.env,
+					ports: originPorts,
+					resources: data.resources
 				}
-			})
-		);
+			]
+		});
 
-		if (!response.response.ok) {
+		if (!response.ok) {
 			throw new Error("Error during device provisioning");
 		}
 
@@ -135,16 +117,6 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 		const ports = await portPromise;
 		if (!ports) {
 			throw new Error("Failed to retrieve device port mapping.");
-		}
-
-		// TODO: Access check (monitor and evaluator)
-		reply("message", "Checking accessibility...");
-		const evaluationCanAccess = false;
-
-		if (evaluationCanAccess) {
-			reply("message", "Evaluation service can access the device.");
-		} else {
-			reply("warn", "Evaluation service cannot access the device.");
 		}
 
 		// Access token generation
@@ -169,15 +141,7 @@ const deviceWSHandler: WSHandler<typeof deviceWSSchemas> = {
 
 onDispose("device/test", async (id) => {
 	const labName = id.replace(/-/g, "");
-
-	await clabWrapper(() =>
-		clab.DELETE(`/api/v1/labs/{labName}`, {
-			params: {
-				path: { labName },
-				query: { cleanup: true }
-			}
-		})
-	);
+	await clab.destroy(labName);
 });
 
 export default deviceWSHandler;

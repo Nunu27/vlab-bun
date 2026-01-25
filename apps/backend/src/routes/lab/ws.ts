@@ -1,11 +1,9 @@
 import db from "@backend/db";
 import dbListener from "@backend/db/listener";
 import { devices, labSessions, labs } from "@backend/db/schema";
-import clab, { clabWrapper } from "@backend/services/clab";
-import type { Link, Node } from "@backend/types/containerlab";
-import { toKebabCase } from "@backend/utils/string";
+import clab from "@backend/services/clab";
+import type { LabLink } from "@backend/types/containerlab";
 import { getMonitorPorts } from "@vlab/monitor";
-import { LABELS } from "@vlab/monitor/constants";
 import { labWSSchemas, type WSHandler } from "@vlab/shared/schemas/ws";
 import { and, eq, inArray } from "drizzle-orm";
 
@@ -52,10 +50,13 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 		const sessionId = Bun.randomUUIDv7();
 		const labName = sessionId.replace(/-/g, "");
 
-		const deviceNodes = lab.topology.nodes.filter(
-			(node) => node.type === "device"
-		);
-		const deviceIds = new Set(deviceNodes.map((node) => node.deviceId));
+		const deviceIds = new Set<string>();
+		const deviceNodes = lab.topology.nodes.filter((node) => {
+			const isDevice = node.type === "device";
+			if (isDevice) deviceIds.add(node.deviceId);
+
+			return isDevice;
+		});
 
 		if (!deviceIds.size) throw new Error("No devices in lab topology");
 
@@ -63,79 +64,65 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 			where: inArray(devices.id, Array.from(deviceIds))
 		});
 		const deviceTemplateMap = new Map(deviceTemplates.map((d) => [d.id, d]));
-		const nodes: Record<string, Node> = {};
+
+		// Build nodes configuration
 		const nodeMap = new Map<string, string>();
-		const links: Link[] = [];
-
-		// Re-iterate to build the map first
-		for (const node of deviceNodes) {
+		const nodes = deviceNodes.map((node) => {
 			const template = deviceTemplateMap.get(node.deviceId);
-			if (!template) continue;
+			if (!template) {
+				throw new Error(`Device template not found for ${node.deviceId}`);
+			}
 
-			const nodeName = toKebabCase(node.name);
+			const id = Bun.randomUUIDv7();
+			nodeMap.set(node.id, id);
 
-			nodeMap.set(node.id, nodeName);
-
-			const ports = [
-				template.connection.data.port,
-				...getMonitorPorts(template.kind)
-			];
-
-			nodes[nodeName] = {
+			return {
+				id,
+				name: node.name,
 				kind: template.kind,
 				image: template.image,
 				env: template.env,
-				cpu: node.resources?.cpu || template.resources.cpu,
-				memory: node.resources?.memory || template.resources.memory,
-				ports: ports.map((port) => `0:${port}`),
-				labels: {
-					[LABELS.NODE_ID]: Bun.randomUUIDv7(),
-					[LABELS.DEVICE_ID]: node.deviceId
-				}
+				ports: [
+					template.connection.data.port,
+					...getMonitorPorts(template.kind)
+				],
+				resources: {
+					cpu: node.resources?.cpu || template.resources.cpu,
+					memory: node.resources?.memory || template.resources.memory
+				},
+				deviceId: node.deviceId
 			};
-		}
+		});
 
-		// Map Edges (Links)
+		const links: LabLink[] = [];
+
 		for (const edge of lab.topology.edges) {
-			const src = nodeMap.get(edge.source);
-			const dst = nodeMap.get(edge.target);
+			const sourceId = nodeMap.get(edge.source);
+			const targetId = nodeMap.get(edge.target);
 
-			if (!src || !dst) continue;
+			if (!sourceId || !targetId) continue;
 
 			links.push({
-				endpoints: [
-					`${src}:${edge.sourceHandle}`,
-					`${dst}:${edge.targetHandle}`
-				]
+				sourceId,
+				sourceInterface: edge.sourceHandle,
+				targetId,
+				targetInterface: edge.targetHandle
 			});
 		}
 
 		reply("message", "Deploying lab...");
 
-		const response = await clabWrapper(() =>
-			clab.POST("/api/v1/labs", {
-				body: {
-					topologyContent: {
-						name: labName,
-						topology: {
-							defaults: {
-								labels: {
-									[LABELS.SESSION_ID]: sessionId,
-									[LABELS.LAB_TYPE]: "user",
-									[LABELS.LAB_ID]: labId,
-									[LABELS.OWNER_ID]: session.id
-								}
-							},
-							nodes: nodes,
-							links: links
-						}
-					}
-				}
-			})
-		);
+		const { response } = await clab.deploy(labName, {
+			sessionId,
+			type: "user",
+			id: labId,
+			ownerId: session.id,
+			nodes,
+			links
+		});
 
-		if (!response.response.ok) {
-			throw new Error(`Error during lab provisioning`);
+		if (!response.ok) {
+			throw new Error("Error during lab provisioning");
 		}
 
 		reply("message", "Lab deployed successfully.");
@@ -156,14 +143,7 @@ const labWSHandler: WSHandler<typeof labWSSchemas> = {
 			120000,
 			null
 		);
-		await clabWrapper(() =>
-			clab.DELETE(`/api/v1/labs/{labName}`, {
-				params: {
-					path: { labName: sessionId.replace(/-/g, "") },
-					query: { cleanup: true }
-				}
-			})
-		);
+		await clab.destroy(sessionId.replace(/-/g, ""));
 		await sessionPromise;
 
 		reply("message", "Lab stopped successfully.");

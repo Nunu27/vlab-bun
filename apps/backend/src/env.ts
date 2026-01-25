@@ -1,3 +1,4 @@
+import { dns } from "bun";
 import "dotenv/config";
 
 import { Type as t } from "typebox";
@@ -36,6 +37,7 @@ const EnvSchema = t.Object({
 	COOKIE_SECRET: t.String({ minLength: 32, maxLength: 64 }),
 
 	// Labs
+	GUACD_IP: t.Optional(t.String({ format: "ipv4" })),
 	GUACD_HOST: t.String(),
 	GUACD_PORT: t.Number({ default: 4822 }),
 	GUACD_SECRET: t.String({ minLength: 32, maxLength: 64 }),
@@ -60,6 +62,10 @@ if (errors.length > 0) {
 }
 
 const env = validator.Parse(process.env);
+if (!env.GUACD_IP) {
+	const [{ address }] = await dns.lookup(env.GUACD_HOST, { family: 4 });
+	env.GUACD_IP = address;
+}
 
 export default env;
 export const inProduction = env.NODE_ENV === "production";

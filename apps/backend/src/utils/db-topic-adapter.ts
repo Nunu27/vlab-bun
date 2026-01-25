@@ -178,7 +178,7 @@ export function addDBTopicEmitter<
 
 			// Emit to all rooms
 			for (const { path, params } of rooms) {
-				emitter.emit(topic, path as any, params, emitData);
+				emitter.emit(topic, { path: path as any, params, data: emitData });
 			}
 		},
 		{ ops, paused, bulk: false }

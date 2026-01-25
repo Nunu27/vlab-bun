@@ -4,7 +4,7 @@ import redis from "@backend/services/redis";
 import { failure } from "@backend/utils/response";
 import type { Session } from "@vlab/shared/types";
 import { ToastItemSchema } from "@vlab/shared/types";
-import { Elysia, t } from "elysia";
+import { Elysia, status, t } from "elysia";
 
 export const deleteSession = async (userId: string) => {
 	await redis.del(`session:data:${userId}`);
@@ -38,6 +38,8 @@ export const getSession = async (id: string) => {
 	};
 };
 
+type SessionContext = Awaited<ReturnType<typeof getSession>>;
+
 export default new Elysia({ name: "session" })
 	.guard({
 		cookie: t.Object({
@@ -45,46 +47,62 @@ export default new Elysia({ name: "session" })
 			session: t.Optional(t.String())
 		})
 	})
-	.resolve(async ({ cookie: { session } }) => {
-		session.value ??= Bun.randomUUIDv7();
-
-		return {
-			session: await getSession(session.value)
-		};
-	})
 	.as("global")
 	.macro({
+		auth: {
+			resolve: async ({ cookie: { session } }) => {
+				session.value ??= Bun.randomUUIDv7();
+
+				return { session: await getSession(session.value) };
+			}
+		},
 		guest: {
-			beforeHandle({ session, status }) {
+			auth: true,
+			beforeHandle: ({ session: s }: any) => {
+				const session = s as SessionContext;
+
 				if (!session.data) return;
 				return status(400, failure({ message: "Already logged in" }));
 			}
 		},
 		protected: {
-			async beforeHandle({ session, status }) {
+			auth: true,
+			beforeHandle: async ({ session: s }: any) => {
+				const session = s as SessionContext;
+
 				if (session.data) await session.extend();
 				else return status(401, failure({ message: "Unauthorized" }));
 			},
-			resolve: ({ session }) => ({
-				session: {
-					...session,
-					data: session.data!
-				}
-			})
-		},
-		private(roles: Role[]) {
-			return {
-				async beforeHandle({ session, status }) {
-					if (!session.data) status(401, failure({ message: "Unauthorized" }));
-					else if (roles.includes(session.data.role)) await session.extend();
-					else return status(403, failure({ message: "Forbidden" }));
-				},
-				resolve: ({ session }) => ({
+			resolve: ({ session: s }: any) => {
+				const session = s as SessionContext;
+
+				return {
 					session: {
 						...session,
 						data: session.data!
 					}
-				})
-			};
-		}
+				};
+			}
+		},
+		private: (roles: Role[]) => ({
+			auth: true,
+			beforeHandle: async ({ session: s }: any) => {
+				const session = s as SessionContext;
+
+				if (!session.data)
+					return status(401, failure({ message: "Unauthorized" }));
+				else if (roles.includes(session.data.role)) await session.extend();
+				else return status(403, failure({ message: "Forbidden" }));
+			},
+			resolve: ({ session: s }: any) => {
+				const session = s as SessionContext;
+
+				return {
+					session: {
+						...session,
+						data: session.data!
+					}
+				};
+			}
+		})
 	});
