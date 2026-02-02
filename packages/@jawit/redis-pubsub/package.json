@@ -1,0 +1,16 @@
+{
+	"name": "@jawit/redis-pubsub",
+	"module": "src/index.ts",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"@msgpack/msgpack": "^3.1.3",
+		"ioredis": "^5.10.0",
+		"typescript": "^5"
+	}
+}

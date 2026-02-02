@@ -1,0 +1,37 @@
+{
+	"name": "api",
+	"version": "1.0.50",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "bun run --watch src/index.ts | pino-pretty",
+		"build": "bun build src/index.ts --compile --minify --sourcemap --outfile ../../build/vlab && cp -r migrations ../../build/migrations",
+		"drizzle:generate": "drizzle-kit generate",
+		"drizzle:migrate": "drizzle-kit migrate",
+		"drizzle:studio": "drizzle-kit studio"
+	},
+	"dependencies": {
+		"@bogeychan/elysia-logger": "^0.1.10",
+		"@jawit/common": "workspace:*",
+		"@jawit/drizzle-paginator": "workspace:*",
+		"@jawit/redis-pubsub": "workspace:*",
+		"@jawit/ws": "workspace:*",
+		"@msgpack/msgpack": "^3.1.3",
+		"@sinclair/typebox": "^0.34.48",
+		"@vlab/shared": "workspace:*",
+		"dotenv": "^17.3.1",
+		"drizzle-orm": "^0.45.1",
+		"elysia": "latest",
+		"fast-xml-parser": "^5.4.2",
+		"ioredis": "^5.10.0",
+		"pg": "^8.19.0",
+		"pg-native": "^3.6.0",
+		"pino": "^10.3.1",
+		"socket.io": "^4.8.3"
+	},
+	"devDependencies": {
+		"@types/pg": "^8.16.0",
+		"bun-types": "latest",
+		"drizzle-kit": "^0.31.9"
+	},
+	"module": "src/index.js"
+}

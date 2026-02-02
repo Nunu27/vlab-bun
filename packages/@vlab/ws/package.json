@@ -1,0 +1,14 @@
+{
+  "name": "@vlab/ws",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@vlab/shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "@jawit/ws": "workspace:*",
+    "@sinclair/typebox": "^0.34.48",
+    "typescript": "^5"
+  }
+}

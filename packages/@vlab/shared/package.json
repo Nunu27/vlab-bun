@@ -1,0 +1,20 @@
+{
+	"name": "@vlab/shared",
+	"module": "src/index.ts",
+	"type": "module",
+	"exports": {
+		"./enums": "./src/enums.ts",
+		"./types": "./src/types.ts",
+		"./schemas": "./src/schemas/index.ts",
+		"./schemas/*": "./src/schemas/*.ts",
+		"./utils": "./src/utils.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"@sinclair/typebox": "^0.34.48",
+		"elysia": "^1.4.26",
+		"typescript": "^5"
+	}
+}

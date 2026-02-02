@@ -1,0 +1,20 @@
+{
+	"name": "@jawit/drizzle-paginator",
+	"module": "src/index.ts",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"devDependencies": {
+		"@jawit/common": "workspace:*",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"@sinclair/typebox": "^0.34.48",
+		"drizzle-orm": "^0.45.1",
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"drizzle-typebox": "^0.3.3"
+	}
+}

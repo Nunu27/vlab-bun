@@ -1,0 +1,14 @@
+{
+  "name": "@vlab/evaluator",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/dockerode": "^4.0.1"
+  },
+  "peerDependencies": {
+    "@sinclair/typebox": "^0.34.48",
+    "dockerode": "^4.0.9",
+    "typescript": "^5"
+  }
+}

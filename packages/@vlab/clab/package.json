@@ -1,0 +1,19 @@
+{
+	"name": "@vlab/clab",
+	"module": "src/index.ts",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"openapi-typescript": "^7.13.0",
+		"openapi-typescript-helpers": "^0.1.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"openapi-fetch": "^0.17.0"
+	}
+}
