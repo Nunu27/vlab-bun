@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import { createRouter } from "@api/plugins/system";
 
 import cas from "./cas";
 import changePassword from "./change-password";
@@ -6,7 +6,8 @@ import login from "./login";
 import logout from "./logout";
 import me from "./me";
 
-const authRoutes = new Elysia({
+const authRoutes = createRouter({
+	prefix: "/auth",
 	detail: { tags: ["Authentication"] },
 })
 	.use(cas)

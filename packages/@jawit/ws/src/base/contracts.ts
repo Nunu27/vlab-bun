@@ -28,19 +28,27 @@ class WSContracts<
 		TType extends WSEventType,
 		TData extends TSchema,
 		TReplies extends TProperties = never,
-	>(config: {
-		event: TEvent;
-		type: TType;
-		data: TData;
-		replies?: TReplies;
-		meta?: TMeta;
-	}) {
+	>(
+		config: TType extends "server2client"
+			? {
+					event: TEvent;
+					type: TType;
+					data?: TData;
+				}
+			: {
+					event: TEvent;
+					type: TType;
+					data?: TData;
+					replies?: TReplies;
+					meta?: TMeta;
+				},
+	) {
 		type Addition = Record<
 			TEvent,
 			{
 				event: TEvent;
 				type: TType;
-				data: TData;
+				data?: TData;
 				replies?: TReplies;
 				meta?: TMeta;
 			}

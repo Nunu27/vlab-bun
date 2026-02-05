@@ -27,7 +27,7 @@ export const deviceTemplates = pgTable("device_template", {
 	icon: text().notNull(),
 	kind: text().notNull(),
 	image: text().notNull(),
-	categoryId: uuid()
+	deviceCategoryId: uuid()
 		.references(() => deviceCategories.id, { onDelete: "restrict" })
 		.notNull(),
 	env: jsonb().$type<DeviceTemplateEnv>().notNull(),
@@ -40,7 +40,7 @@ export const deviceTemplatesRelations = relations(
 	deviceTemplates,
 	({ one }) => ({
 		category: one(deviceCategories, {
-			fields: [deviceTemplates.categoryId],
+			fields: [deviceTemplates.deviceCategoryId],
 			references: [deviceCategories.id],
 		}),
 	}),

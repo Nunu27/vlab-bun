@@ -19,6 +19,7 @@ client.on("error", (error) => {
 logger.debug("Connecting to Redis...");
 
 export default {
+	client,
 	async get<T>(key: string) {
 		const value = await client.getBuffer(key);
 		if (!value) {

@@ -1,7 +1,7 @@
 import type { NodeHealth } from "@vlab/shared/enums";
 import { LABELS } from "./constants";
 import networkMonitor from "./network-monitor";
-import type { ContainerEvent, Context, NodeInfo, SessionData } from "./types";
+import type { ContainerEvent, Context, NodeData, NodeInfo } from "./types";
 import { extractPortMappings } from "./utils";
 
 async function onContainerCreate(ctx: Context, event: ContainerEvent) {
@@ -11,30 +11,31 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 
 	const {
 		[LABELS.SESSION_ID]: labSessionId,
-		[LABELS.LAB_TYPE]: type,
 		[LABELS.LAB_ID]: labId,
 		[LABELS.OWNER_ID]: ownerId,
 	} = Attributes;
 
-	if (!labSessionId || !type || !ownerId) return;
+	// Non lab container
+	if (!labSessionId || !ownerId) return;
 
-	if (!sessionIds.has(labSessionId)) {
+	if (!sessionIds.has(labSessionId) && labId) {
 		eventEmitter.emit("session-create", {
 			id: labSessionId,
-			type,
 			labId,
 			ownerId,
-		} as SessionData);
+		});
 		sessionIds.add(labSessionId);
 	}
 
 	const {
-		[LABELS.NODE_ID]: id,
+		[LABELS.SESSION_NODE_ID]: id,
 		[LABELS.CLAB_NODE_NAME]: name,
-		[LABELS.DEVICE_ID]: deviceId,
+		[LABELS.LAB_NODE_ID]: labNodeId,
+		[LABELS.DEVICE_TEMPLATE_ID]: deviceTemplateId,
 		[LABELS.CLAB_NODE_KIND]: deviceKind,
 	} = Attributes;
 
+	// Non lab container
 	if (!id || !name || !deviceKind) return;
 
 	const container = docker.getContainer(ID);
@@ -49,10 +50,12 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 		ports,
 	} as NodeInfo;
 
-	eventEmitter.emit("node-create", {
+	const nodeData = {
 		id,
 		name,
-		deviceId,
+		labNodeId,
+		deviceTemplateId,
+		containerId: ID,
 		health,
 		labSessionId,
 		ports,
@@ -61,8 +64,9 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 			container,
 			nodeInfo,
 		),
-	});
+	} satisfies NodeData;
 
+	eventEmitter.emit("node-create", nodeData);
 	networkMonitor.start(ctx, container, nodeInfo);
 }
 
@@ -72,15 +76,15 @@ async function onContainerRemove(ctx: Context, event: ContainerEvent) {
 
 	const {
 		[LABELS.SESSION_ID]: labSessionId,
-		[LABELS.NODE_ID]: id,
+		[LABELS.SESSION_NODE_ID]: id,
 		[LABELS.CLAB_NODE_KIND]: deviceKind,
+		[LABELS.LAB_NODE_ID]: labNodeId,
 	} = event.Actor.Attributes;
 
 	if (!id || !labSessionId || !deviceKind) return;
 
 	networkMonitor.stop(ctx, { id, labSessionId, deviceKind } as NodeInfo);
-
-	eventEmitter.emit("node-remove", id);
+	eventEmitter.emit("node-remove", id, !labNodeId);
 
 	if (!sessionIds.has(labSessionId)) return;
 
@@ -93,7 +97,7 @@ async function onContainerHealthStatus(
 	event: ContainerEvent,
 ) {
 	const { Action, Actor } = event;
-	const { [LABELS.NODE_ID]: id, [LABELS.SESSION_ID]: labSessionId } =
+	const { [LABELS.SESSION_NODE_ID]: id, [LABELS.SESSION_ID]: labSessionId } =
 		Actor.Attributes;
 
 	if (!id || !labSessionId) return;

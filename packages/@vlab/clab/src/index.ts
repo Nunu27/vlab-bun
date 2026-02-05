@@ -3,18 +3,18 @@ import createClient from "openapi-fetch";
 import type { MediaType } from "openapi-typescript-helpers";
 import type { paths } from "./clab";
 
-export function createCLABClient({
-	host,
+export function createContainerlabClient({
+	uri,
 	username,
 	password,
 }: {
-	host: string;
+	uri: string;
 	username: string;
 	password: string;
 }) {
 	let token: string | undefined;
 	const client = createClient<paths>({
-		baseUrl: `http://${host}:8080`,
+		baseUrl: uri,
 	});
 
 	const getToken = async () => {

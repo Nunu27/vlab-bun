@@ -12,6 +12,7 @@ import {
 import { relations } from "drizzle-orm/relations";
 import { students } from "./auth";
 import { base } from "./base";
+import { deviceTemplates } from "./device-template";
 import { labs } from "./lab";
 
 export const nodeHealthEnum = pgEnum("node_health", nodeHealthValues);
@@ -19,13 +20,13 @@ export const nodeHealthEnum = pgEnum("node_health", nodeHealthValues);
 export const labSessions = pgTable("lab_session", {
 	...base,
 	labId: uuid()
-		.references(() => labs.id, { onDelete: "restrict" })
-		.notNull(),
+		.notNull()
+		.references(() => labs.id, { onDelete: "restrict" }),
 	studentId: uuid()
-		.references(() => students.id, { onDelete: "restrict" })
-		.notNull(),
+		.notNull()
+		.references(() => students.id, { onDelete: "restrict" }),
 	clientId: uuid(),
-	score: numeric(),
+	score: numeric().notNull().default("0"),
 	submittedAt: timestamp({ withTimezone: true }),
 });
 
@@ -45,10 +46,10 @@ export const labSessionsRelations = relations(labSessions, ({ one, many }) => ({
 export const labSessionChecks = pgTable("lab_session_check", {
 	...base,
 	labSessionId: uuid()
-		.references(() => labSessions.id, { onDelete: "cascade" })
-		.notNull(),
+		.notNull()
+		.references(() => labSessions.id, { onDelete: "cascade" }),
 	checkId: uuid().notNull(),
-	completed: boolean().default(false).notNull(),
+	completed: boolean().notNull().default(false),
 });
 
 export const labSessionChecksRelations = relations(
@@ -65,12 +66,16 @@ export const labSessionNodes = pgTable("lab_session_node", {
 	...base,
 	name: text().notNull(),
 	health: nodeHealthEnum(),
-	ports: jsonb().notNull(),
-	interfaces: jsonb().notNull(),
+	ports: jsonb().$type<Record<string, number>>().notNull(),
+	interfaces: jsonb().$type<Record<string, string[]>>().notNull(),
+	labNodeId: uuid().notNull(),
 	containerId: text().notNull(),
 	labSessionId: uuid()
-		.references(() => labSessions.id, { onDelete: "cascade" })
-		.notNull(),
+		.notNull()
+		.references(() => labSessions.id, { onDelete: "cascade" }),
+	deviceTemplateId: uuid()
+		.notNull()
+		.references(() => deviceTemplates.id, { onDelete: "restrict" }),
 });
 
 export const labSessionNodesRelations = relations(
@@ -79,6 +84,10 @@ export const labSessionNodesRelations = relations(
 		labSession: one(labSessions, {
 			fields: [labSessionNodes.labSessionId],
 			references: [labSessions.id],
+		}),
+		deviceTemplate: one(deviceTemplates, {
+			fields: [labSessionNodes.deviceTemplateId],
+			references: [deviceTemplates.id],
 		}),
 	}),
 );

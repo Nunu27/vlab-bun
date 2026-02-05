@@ -13,6 +13,7 @@
 	},
 	"peerDependencies": {
 		"@sinclair/typebox": "^0.34.48",
+		"@vlab/shared": "workspace:*",
 		"typescript": "^5"
 	}
 }

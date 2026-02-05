@@ -231,6 +231,7 @@ async function runContainer(
 		"--privileged",
 		`--network ${opts.network}`,
 		"--pid host",
+		"--restart unless-stopped",
 		`-e LOG_LEVEL=${opts.logLevel}`,
 		`-e API_PORT=${opts.port}`,
 		`-e JWT_SECRET=${opts.jwtSecret}`,

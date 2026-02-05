@@ -1,0 +1,19 @@
+import { createRouter } from "@api/plugins/system";
+
+import create from "./create";
+import _delete from "./delete";
+import detail from "./detail";
+import pagination from "./pagination";
+import update from "./update";
+
+const deviceCategoryRoutes = createRouter({
+	prefix: "/device-category",
+	detail: { tags: ["Device Category"] },
+})
+	.use(create)
+	.use(detail)
+	.use(update)
+	.use(_delete)
+	.use(pagination);
+
+export default deviceCategoryRoutes;

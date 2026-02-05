@@ -6,6 +6,7 @@ const logger = pino({
 	formatters,
 	serializers,
 	level: inProduction ? "info" : "debug",
+	base: { service: "system" },
 });
 
 export default logger;

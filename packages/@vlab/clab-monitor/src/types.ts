@@ -1,5 +1,5 @@
 import type EventEmitter from "node:events";
-import type { DeviceKind, LabType, NodeHealth } from "@vlab/shared/enums";
+import type { DeviceKind, NodeHealth } from "@vlab/shared/enums";
 import type { MaybePromise } from "bun";
 import type Dockerode from "dockerode";
 import type { Container } from "dockerode";
@@ -10,13 +10,12 @@ export interface NodeInfo {
 	labSessionId: string;
 	deviceKind: DeviceKind;
 	health: NodeHealth | null;
-	ports?: Record<number, number>;
+	ports: Record<number, number>;
 }
 
 export interface SessionData {
 	id: string;
-	type: LabType;
-	labId?: string;
+	labId: string;
 	ownerId: string;
 }
 
@@ -24,10 +23,12 @@ export interface NodeData {
 	id: string;
 	name: string;
 	health: NodeHealth | null;
-	labSessionId: string;
-	deviceId?: string;
 	ports: Record<number, number>;
 	interfaces: Record<string, string[]>;
+	labNodeId?: string;
+	containerId: string;
+	labSessionId: string;
+	deviceTemplateId?: string;
 }
 
 export interface Events {
@@ -37,10 +38,11 @@ export interface Events {
 			nodes: NodeData[];
 		},
 	];
+	"stale-session": [string];
 	"session-create": [SessionData];
 	"session-remove": [string];
 	"node-create": [NodeData];
-	"node-remove": [string];
+	"node-remove": [string, boolean];
 	"node-health": [
 		{
 			id: string;

@@ -2,10 +2,10 @@ import db from "@api/db";
 import { students, users } from "@api/db/schema/auth";
 import env from "@api/env";
 import auth from "@api/middlewares/auth";
-import { deleteCache } from "@api/middlewares/caching";
+import { cache } from "@api/middlewares/caching";
 import toast from "@api/middlewares/toast";
+import { createRouter } from "@api/plugins/system";
 import { CASResponseSchema } from "@vlab/shared/schemas/cas";
-import Elysia from "elysia";
 import { compile } from "elysia/type-system/utils";
 import { XMLParser } from "fast-xml-parser";
 
@@ -21,17 +21,14 @@ const parser = new XMLParser({
 	transformTagName: (tagName) => tagName.slice(4),
 });
 
-export default new Elysia()
+export default createRouter()
 	.use(toast)
 	.use(auth)
 	.get(
 		"/cas",
-		async ({ session, redirect, query: { ticket }, cookie: { toast } }) => {
+		async ({ session, redirect, query: { ticket }, setToast }) => {
 			if (session.data) {
-				toast.value = {
-					message: "You are already logged in",
-					type: "error",
-				};
+				setToast("error", "You are already logged in");
 
 				return redirect(BASE_URL);
 			} else if (!ticket) return redirect(CAS_LOGIN);
@@ -45,10 +42,7 @@ export default new Elysia()
 				!CASResponseValidator.Check(data) ||
 				!data.serviceResponse.authenticationSuccess
 			) {
-				toast.value = {
-					message: "CAS authentication failed",
-					type: "error",
-				};
+				setToast("error", "CAS authentication failed");
 
 				return redirect(BASE_URL);
 			}
@@ -96,15 +90,11 @@ export default new Elysia()
 					role: "student",
 				};
 
-				await deleteCache("student:pagination:*");
+				await cache.delete("student:pagination:*");
 			}
 
 			await session.set({ ...user, useCAS: true });
-
-			toast.value = {
-				message: "Logged in successfully via CAS",
-				type: "success",
-			};
+			setToast("success", "Logged in successfully via CAS");
 
 			return redirect(BASE_URL);
 		},

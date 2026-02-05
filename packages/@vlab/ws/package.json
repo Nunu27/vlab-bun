@@ -1,14 +1,17 @@
 {
-  "name": "@vlab/ws",
-  "module": "src/index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest",
-    "@vlab/shared": "workspace:*"
-  },
-  "peerDependencies": {
-    "@jawit/ws": "workspace:*",
-    "@sinclair/typebox": "^0.34.48",
-    "typescript": "^5"
-  }
+	"name": "@vlab/ws",
+	"module": "src/index.ts",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"@jawit/ws": "workspace:*",
+		"@sinclair/typebox": "^0.34.48",
+		"@vlab/shared": "workspace:*",
+		"typescript": "^5"
+	}
 }

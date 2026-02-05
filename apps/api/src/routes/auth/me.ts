@@ -1,11 +1,9 @@
 import db from "@api/db";
-import auth from "@api/middlewares/auth";
 import caching from "@api/middlewares/caching";
+import { createRouter } from "@api/plugins/system";
 import { failure, success } from "@jawit/common";
-import Elysia from "elysia";
 
-export default new Elysia()
-	.use(auth)
+export default createRouter()
 	.use(caching)
 	.get(
 		"/me",
@@ -36,10 +34,7 @@ export default new Elysia()
 			});
 		},
 		{
-			protected: true,
-			cached: {
-				key: "me",
-				personalized: true,
-			},
+			personalized: true,
+			cached: { key: "me" },
 		},
 	);

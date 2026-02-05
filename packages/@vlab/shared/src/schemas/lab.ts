@@ -79,18 +79,16 @@ export const LabRequest = t.Object({
 	content: NonEmptyString(),
 	cover: t.Optional(t.String()),
 	isPublished: t.Boolean(),
-	startAt: t.String({ format: "date-time" }),
-	endAt: t.String({ format: "date-time" }),
+	startAt: t.Date(),
+	endAt: t.Date(),
 	maxAttempt: t.Optional(t.Integer({ min: 1 })),
 	topology: LabTopologySchema,
 	instructions: t.Array(LabInstructionSchema),
-	attachments: t.Optional(
-		t.Array(
-			t.Object({
-				name: NonEmptyString(),
-				filePath: NonEmptyString(),
-			}),
-		),
+	attachments: t.Array(
+		t.Object({
+			name: NonEmptyString(),
+			file: NonEmptyString(),
+		}),
 	),
 });
 

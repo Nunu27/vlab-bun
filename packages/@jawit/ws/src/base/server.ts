@@ -1,6 +1,7 @@
 import type { Static, TProperties, TSchema } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import type {
+	ExtractMeta,
 	ExtractWSContracts,
 	MaybePromise,
 	WSServerHandler,
@@ -19,7 +20,7 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 	// Global middleware hooks
 	protected middlewares: WSServerMiddleware<
 		TContext,
-		TWSContracts["contracts"][string]["meta"]
+		ExtractMeta<TWSContracts>
 	>[] = [];
 
 	// Event handlers registered
@@ -34,12 +35,7 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 	constructor(public readonly contracts: TWSContracts) {}
 
 	// Register global middleware pipeline
-	use(
-		middleware: WSServerMiddleware<
-			TContext,
-			TWSContracts["contracts"][string]["meta"]
-		>,
-	) {
+	use(middleware: WSServerMiddleware<TContext, ExtractMeta<TWSContracts>>) {
 		this.middlewares.push(middleware);
 		return this;
 	}
@@ -85,7 +81,6 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 		}
 
 		if (!Value.Check(contract.data, data)) {
-			// You could aggregate Value.Errors() here if you want detailed validation errors
 			throw new Error(`Data validation failed for event: ${event}`);
 		}
 

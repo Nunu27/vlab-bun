@@ -24,7 +24,7 @@ async function handleDockerEvent(ctx: Context, event: ContainerEvent) {
 		: event.Action;
 	if (!isKey(key, containerHandler)) return;
 
-	const shouldHandle = event.Actor.Attributes[LABELS.NODE_ID];
+	const shouldHandle = event.Actor.Attributes[LABELS.LAB_NODE_ID];
 	if (!shouldHandle) return;
 
 	try {
@@ -43,8 +43,34 @@ async function emitInitialState(ctx: Context) {
 	const containers = await docker.listContainers();
 	const sessions: SessionData[] = [];
 	const nodes: NodeData[] = [];
+	const staleSessions = new Set<string>();
 
 	for (const container of containers) {
+		const {
+			[LABELS.SESSION_ID]: labSessionId,
+			[LABELS.LAB_ID]: labId,
+			[LABELS.OWNER_ID]: ownerId,
+			[LABELS.LAB_NODE_ID]: id,
+			[LABELS.CLAB_NODE_NAME]: name,
+			[LABELS.CLAB_NODE_KIND]: deviceKind,
+			[LABELS.DEVICE_TEMPLATE_ID]: deviceId,
+		} = container.Labels;
+
+		// Not a vlab container
+		if (!labSessionId || !id || !name || !deviceKind || !ownerId) continue;
+
+		if (!deviceId || !labId) {
+			if (!staleSessions.has(labSessionId)) {
+				staleSessions.add(labSessionId);
+				logger.warn(
+					{ labSessionId },
+					"Detected stale session during hydration, will destroy",
+				);
+				eventEmitter.emit("stale-session", labSessionId);
+			}
+			continue;
+		}
+
 		if (!("Health" in container)) continue;
 
 		const healthData =
@@ -55,20 +81,6 @@ async function emitInitialState(ctx: Context) {
 				: (healthData.Status as NodeHealth)
 			: null;
 
-		const {
-			[LABELS.NODE_ID]: id,
-			[LABELS.CLAB_NODE_NAME]: name,
-			[LABELS.CLAB_NODE_KIND]: deviceKind,
-			[LABELS.DEVICE_ID]: deviceId,
-			[LABELS.SESSION_ID]: labSessionId,
-			[LABELS.LAB_TYPE]: type,
-			[LABELS.LAB_ID]: labId,
-			[LABELS.OWNER_ID]: ownerId,
-		} = container.Labels;
-
-		if (!id || !name || !deviceKind || !labSessionId || !type || !ownerId)
-			continue;
-
 		const ports: Record<number, number> = {};
 
 		for (const { PublicPort, PrivatePort } of container.Ports) {
@@ -77,29 +89,31 @@ async function emitInitialState(ctx: Context) {
 			ports[PrivatePort] = PublicPort;
 		}
 
-		nodes.push({
+		const nodeData: NodeData = {
 			id,
 			name,
 			health,
 			labSessionId,
-			deviceId,
+			deviceTemplateId: deviceId,
+			containerId: container.Id,
 			ports,
 			interfaces: await networkMonitor.extractInterfaces(
 				ctx,
 				docker.getContainer(container.Id),
 				{ id, health, labSessionId, deviceKind, ports } as NodeInfo,
 			),
-		});
+		};
+
+		nodes.push(nodeData);
 
 		if (!sessionIds.has(labSessionId)) {
 			sessionIds.add(labSessionId);
 
 			sessions.push({
 				id: labSessionId,
-				type,
 				labId,
 				ownerId,
-			} as SessionData);
+			});
 		}
 
 		networkMonitor.start(ctx, docker.getContainer(container.Id), {
@@ -187,41 +201,57 @@ async function initMonitoring(emitter: EventEmitter<Events>, options: Options) {
 		},
 	};
 
-	logger.info("Initializing monitor...");
-
-	await emitInitialState(ctx);
-	const stream = await docker.getEvents({
-		filters: {
-			type: ["container"],
-			event: ["create", "destroy", "health_status"],
-		},
-	});
-	stream.on("data", (chunk: string) => {
+	const startStream = async (isRestart = false) => {
 		try {
-			const str = chunk.toString();
-			const lines = str.split("\n").filter((l) => l.trim());
-			for (const line of lines) {
-				handleDockerEvent(ctx, JSON.parse(line));
-			}
+			logger.info(
+				isRestart ? "Restarting monitor..." : "Initializing monitor...",
+			);
+
+			await emitInitialState(ctx);
+			const stream = await docker.getEvents({
+				filters: {
+					type: ["container"],
+					event: ["create", "destroy", "health_status"],
+				},
+			});
+
+			stream.on("data", (chunk: string) => {
+				try {
+					const str = chunk.toString();
+					const lines = str.split("\n").filter((l) => l.trim());
+					for (const line of lines) {
+						handleDockerEvent(ctx, JSON.parse(line));
+					}
+				} catch (error) {
+					logger.error({ error }, "Error parsing docker event");
+				}
+			});
+
+			stream.on("error", (error) => {
+				logger.error({ error }, "Docker event stream failed, restarting...");
+				setTimeout(() => startStream(true), 5000);
+			});
+
+			logger.info("Monitor initialized");
 		} catch (error) {
-			logger.error({ error }, "Error parsing docker event");
+			if (isRestart) {
+				logger.error({ error }, "Failed to restart monitor, retrying in 5s...");
+				setTimeout(() => startStream(true), 5000);
+			} else {
+				throw error;
+			}
 		}
-	});
+	};
 
-	stream.on("error", (error) => {
-		logger.error({ error }, "Docker event stream failed, restarting...");
-		setTimeout(createMonitor, 5000, ctx);
-	});
-
-	logger.info("Monitor initialized");
+	await startStream();
 
 	return emitter;
 }
 
-export async function createMonitor(options: Options) {
+export function createMonitor(options: Options) {
 	const emitter = new EventEmitter<Events>();
 
-	return await initMonitoring(emitter, options);
+	return { emitter, init: () => initMonitoring(emitter, options) };
 }
 
 export function getMonitorPorts(kind: DeviceKind) {

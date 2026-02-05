@@ -1,45 +1,39 @@
-import { SocketIOServer, WSContracts } from "@jawit/ws";
-import { Type } from "@sinclair/typebox";
-import { Server } from "socket.io";
+import { sessions } from "@api/middlewares/auth";
+import type { WSContext } from "@api/types/ws";
+import { SocketIOServer } from "@jawit/ws";
+import { Server as Engine } from "@socket.io/bun-engine";
+import contracts from "@vlab/ws";
+import { type DefaultEventsMap, Server } from "socket.io";
 
-// Define your initial WebSocket contracts here
-export const wsContracts = new WSContracts().register({
-	event: "ping",
-	type: "client2server",
-	data: Type.Object({ timestamp: Type.Number() }),
+const io = new Server<
+	DefaultEventsMap,
+	DefaultEventsMap,
+	DefaultEventsMap,
+	WSContext
+>();
+const engine = new Engine({ path: "/ws" });
+const server = new SocketIOServer<typeof contracts, WSContext>(contracts);
+
+io.bind(engine);
+
+io.use(async (socket, next) => {
+	const sessionId = socket.handshake.auth.session;
+	if (typeof sessionId !== "string") return next(new Error("Unauthorized"));
+
+	const session = await sessions.get(sessionId);
+	if (!session.data) return next(new Error("Unauthorized"));
+
+	socket.data.session = session.data;
+
+	next();
 });
 
-// Initialize the WebSocket Server using the Socket.IO Adapter
-export const wsServer = new SocketIOServer(wsContracts);
-
-// Middleware Example globally checking contracts
-wsServer.use((socket, meta) => {
-	// e.g., if (meta?.admin && socket.data.session.role !== "admin") return false;
-	return true;
+server.use(({ socket, meta }, next) => {
+	const allowed = meta?.private?.includes(socket.data.session.role) ?? true;
+	if (!allowed) return next(new Error("Unauthorized"));
+	next();
 });
 
-// Since @jawit/ws purely acts as an attachment pattern,
-// you maintain 100% control over the underlying Server instantiation!
-export const initWS = () => {
-	// Import engine from bun specific implementation
-	// import { Engine } from "@socket.io/bun-engine";
-	// const engine = new Engine({ path: "/ws" });
+server.attach(io);
 
-	const io = new Server({
-		cors: { origin: "*" },
-	});
-
-	// io.bind(engine)
-	//
-	// io.use(async (socket, next) => {
-	// 	const sessionId: string | undefined = socket.handshake.auth.session;
-	// 	if (!sessionId) return next(new Error("Unauthorized"));
-	// 	socket.data.session = { role: "user" };
-	// 	next();
-	// });
-
-	// Bootstraps @jawit/ws handlers onto your native instance
-	wsServer.attach(io);
-
-	return io;
-};
+export default { engine, server, io };

@@ -8,7 +8,7 @@ import mikrotik_ros from "./mikrotik_ros";
 const waiters = new Map<string, () => void>();
 const monitors: Partial<Record<DeviceKind, NetworkMonitor>> = {
 	linux,
-	mikrotik_ros
+	mikrotik_ros,
 };
 
 export const getPorts = (kind: DeviceKind) => {
@@ -32,7 +32,7 @@ export default {
 		if (!handler) {
 			logger.warn(
 				"No network monitor found for device kind %s",
-				node.deviceKind
+				node.deviceKind,
 			);
 			return;
 		}
@@ -51,7 +51,7 @@ export default {
 		if (!handler) {
 			logger.warn(
 				"No network monitor found for device kind %s",
-				node.deviceKind
+				node.deviceKind,
 			);
 			return;
 		}
@@ -72,17 +72,17 @@ export default {
 		if (!handler) {
 			logger.warn(
 				"No network monitor found for device kind %s",
-				node.deviceKind
+				node.deviceKind,
 			);
 			return {};
 		} else if (!healthyStatus.has(node.health)) {
 			logger.debug(
 				"The node %s is not healthy. Skipping network interface extraction.",
-				node.id
+				node.id,
 			);
 			return {};
 		}
 
 		return handler.extractInterfaces(ctx, container, node);
-	}
+	},
 } satisfies NetworkMonitor;

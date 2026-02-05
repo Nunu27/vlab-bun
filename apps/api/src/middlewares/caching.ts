@@ -1,7 +1,13 @@
-import env from "@api/env";
 import baseLogger from "@api/services/logger";
 import redis from "@api/services/redis";
+import { md5 } from "@api/utils/hash";
+import {
+	type CacheAdapter,
+	type CacheMetadata,
+	createCachingPlugin,
+} from "@jawit/elysia-caching";
 import { encode } from "@msgpack/msgpack";
+import type { Session } from "@vlab/shared/types";
 import Elysia from "elysia";
 import auth from "./auth";
 
@@ -11,153 +17,48 @@ const META_PREFIX = `${PREFIX}:meta:`;
 
 const logger = baseLogger.child({ service: "caching" });
 
-type CacheOptions = {
-	key?: string;
-	ttl?: number;
-	personalized?: boolean;
-	useETag?: boolean; // Enable/disable ETag support
-	useLastModified?: boolean; // Enable/disable Last-Modified support
-};
-
-type CacheMetadata = {
-	etag: string;
-	lastModified: Date;
-};
-
-const parseHTTPDate = (dateString: string) => {
-	const date = new Date(dateString);
-	return Number.isNaN(date.getTime()) ? null : date;
-};
-
-export const deleteCache = async (...keys: string[]) => {
-	logger.debug(`Deleting cache for keys: ${keys.join(", ")}`);
-
-	const allKeys = keys.flatMap((key) => [DATA_PREFIX + key, META_PREFIX + key]);
-	await redis.del(...allKeys);
-};
-
-export const clearCache = async () => {
-	const deletedCount = await redis.delByPattern(`${PREFIX}:*`);
-	if (deletedCount) {
-		logger.debug(`Cleared ${deletedCount} cache entries.`);
-	}
+export const cache: CacheAdapter = {
+	get: (key) => redis.get(DATA_PREFIX + key),
+	set: (key, value, ttl) => redis.set(DATA_PREFIX + key, value, ttl),
+	delete: async (...keys) => {
+		logger.debug(`Deleting cache for keys: ${keys.join(", ")}`);
+		const allKeys = keys.flatMap((key) => [
+			DATA_PREFIX + key,
+			META_PREFIX + key,
+		]);
+		await redis.del(...allKeys);
+	},
+	generateETag: (value) => md5(encode(value)),
+	meta: {
+		get: (key) => redis.get<CacheMetadata>(META_PREFIX + key),
+		set: (key, value, ttl) => redis.set(META_PREFIX + key, value, ttl),
+	},
 };
 
 export default new Elysia({ name: "caching" })
 	.use(auth)
-	.derive(() => ({ cacheKey: undefined as string | undefined }))
+	.use(createCachingPlugin(cache))
 	.macro({
-		cached: (options: CacheOptions | boolean) => {
-			if (!options) return;
+		personalized: {
+			protected: true,
+			resolve({ cacheKey, session }) {
+				const userId = session?.data?.id;
+				if (!cacheKey || !userId) return { cacheKey: null };
 
-			const {
-				key,
-				ttl = env.SESSION_TTL,
-				personalized = false,
-				useETag = true,
-				useLastModified = true,
-			} = options === true ? {} : options;
-
-			const usingLastModified = useLastModified && !personalized;
-
-			return {
-				protected: true,
-				resolve: ({ cacheKey, session }) => {
-					let finalKey = key ?? cacheKey;
-
-					if (!finalKey || (personalized && !session?.data)) {
-						return { cacheKey: null };
-					} else if (personalized) {
-						finalKey += `:${session?.data?.id}`;
-					}
-
-					return { cacheKey: finalKey };
-				},
-				beforeHandle: async ({ cacheKey, headers, set }) => {
-					if (!cacheKey) return;
-
-					const metadata = await redis.get<CacheMetadata>(
-						META_PREFIX + cacheKey,
-					);
-					if (!metadata) return;
-
-					const clientETag = headers["if-none-match"];
-					const clientModifiedSince = headers["if-modified-since"];
-
-					set.headers["cache-control"] = `no-cache`;
-					set.headers.etag = useETag ? metadata.etag : undefined;
-					set.headers["last-modified"] = usingLastModified
-						? metadata.lastModified.toISOString()
-						: undefined;
-
-					// Check ETag match
-					if (useETag && clientETag === metadata.etag) {
-						logger.debug(
-							{ key: cacheKey },
-							"Cache hit by ETag header, returning 304",
-						);
-						return new Response(null, { status: 304 });
-					}
-
-					// Check If-Modified-Since
-					if (useLastModified && clientModifiedSince) {
-						const clientDate = parseHTTPDate(clientModifiedSince);
-
-						if (clientDate && clientDate >= metadata.lastModified) {
-							logger.debug(
-								{ key: cacheKey },
-								"Cache hit by Last-Modified header, returning 304",
-							);
-							return new Response(null, { status: 304 });
-						}
-					}
-
-					const cachedData = await redis.get(DATA_PREFIX + cacheKey);
-					if (cachedData) {
-						logger.debug({ key: cacheKey }, "Cache hit");
-						return cachedData;
-					} else {
-						logger.debug({ key: cacheKey }, "Cache miss");
-						set.headers["cache-control"] = undefined;
-					}
-				},
-				afterHandle({ set, responseValue }) {
-					if (set.headers["cache-control"]) {
-						set.headers["x-cache"] = "HIT";
-					} else {
-						set.headers["x-cache"] = "MISS";
-						set.headers["cache-control"] = `no-cache`;
-						set.headers.etag = useETag
-							? `"${new Bun.CryptoHasher("md5").update(encode(responseValue)).digest("hex")}"`
-							: undefined;
-						set.headers["last-modified"] = usingLastModified
-							? new Date().toISOString()
-							: undefined;
-					}
-				},
-				async afterResponse({ set, cacheKey, responseValue }) {
-					if (set.headers["x-cache"] === "HIT" || set.status !== 200) return;
-					if (!cacheKey) return;
-
-					logger.debug(
-						`Caching response for key: ${cacheKey} with TTL: ${ttl}`,
-					);
-
-					await Promise.all([
-						redis.set(DATA_PREFIX + cacheKey, responseValue, ttl),
-						redis.set(
-							META_PREFIX + cacheKey,
-							{
-								etag: set.headers.etag,
-								lastModified:
-									parseHTTPDate(set.headers["last-modified"] ?? "") ??
-									new Date(),
-							},
-							ttl,
-						),
-					]);
-				},
-			};
+				return {
+					cacheKey: `${cacheKey}:${userId}`,
+					session: {
+						...session,
+						data: session.data as Session,
+					},
+				};
+			},
+			beforeHandle: ({ headers }) => {
+				headers["last-modified"] = undefined;
+			},
+			afterHandle({ set }) {
+				set.headers["last-modified"] = undefined;
+			},
 		},
 	})
 	.as("scoped");
