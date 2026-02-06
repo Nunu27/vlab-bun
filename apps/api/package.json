@@ -1,6 +1,10 @@
 {
 	"name": "@vlab/api",
 	"version": "1.0.50",
+	"exports": {
+		".": "./src/index.ts",
+		"./server": "./src/server.ts"
+	},
 	"scripts": {
 		"dev": "bun run --watch src/index.ts serve | pino-pretty",
 		"seed": "bun run src/index.ts seed | pino-pretty",
@@ -27,7 +31,7 @@
 		"dockerode": "^4.0.10",
 		"dotenv": "^17.3.1",
 		"drizzle-orm": "^0.45.1",
-		"elysia": "latest",
+		"elysia": "^1.4.28",
 		"elysia-helmet": "^3.0.0",
 		"fast-xml-parser": "^5.5.9",
 		"guacamole-lite": "^1.2.0",

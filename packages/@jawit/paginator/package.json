@@ -7,7 +7,7 @@
 	},
 	"peerDependencies": {
 		"drizzle-orm": "^0.45.1",
-		"elysia": "latest",
+		"elysia": "^1.4.28",
 		"typescript": "^5"
 	},
 	"exports": {

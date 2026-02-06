@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: intentional loose typing for proxy internals */
 export type SuccessResponse<
 	T = undefined,
 	M extends string | undefined = undefined,
@@ -14,11 +15,9 @@ export type FailureResponse<
 } & (M extends string ? { message: M } : unknown) &
 	(E extends undefined ? unknown : { errors: E });
 
-export type BaseResponse<
-	T = undefined,
-	E = undefined,
-	M extends string | undefined = undefined,
-> = SuccessResponse<T, M> | FailureResponse<E, M>;
+export type BaseResponse<T = any, E = any, M extends string | undefined = any> =
+	| SuccessResponse<T, M>
+	| FailureResponse<E, M>;
 
 export interface PaginatedData<T> {
 	items: T[];

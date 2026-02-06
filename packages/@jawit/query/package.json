@@ -3,13 +3,14 @@
   "module": "src/index.ts",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts"
   },
   "devDependencies": {
     "@elysiajs/eden": "^1.4.8",
     "@jawit/common": "workspace:*",
     "@types/bun": "latest",
-    "elysia": "latest"
+    "elysia": "^1.4.28"
   },
   "peerDependencies": {
     "typescript": "^5"

@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: proxy internals require loose typing */
 
+import type { Treaty } from "@elysiajs/eden";
 import type { AnyElysia } from "elysia";
 import {
 	ALL_HOOKS,
@@ -17,7 +18,7 @@ import {
 	createUseQuery,
 	createUseSuspenseQuery,
 } from "./hooks";
-import type { EdenQueryOptions, TreatyClient, TreatyQueryProxy } from "./types";
+import type { EdenQueryOptions, TreatyQueryProxy } from "./types";
 
 // ---------------------------------------------------------------------------
 // Hook dispatcher
@@ -125,7 +126,7 @@ function createProxy(
 
 export function treatyQuery<
 	TApp extends AnyElysia,
-	TTreaty extends object = TreatyClient<TApp>,
+	TTreaty extends object = Treaty.Create<TApp>,
 >(eden: TTreaty, options?: EdenQueryOptions): TreatyQueryProxy<TTreaty> {
 	const { prefixKey = [], ...clientOptions } = options ?? {};
 	return createProxy(
