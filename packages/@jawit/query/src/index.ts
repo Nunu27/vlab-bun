@@ -7,7 +7,7 @@ import {
 	MUTATION_METHODS,
 	PROXY_SYMBOL_HANDLERS,
 	QUERY_METHODS,
-	TREATY_TYPES,
+	TREATY_TYPES
 } from "./constants";
 import {
 	createEnsureQueryData,
@@ -16,7 +16,7 @@ import {
 	createUseInfiniteQuery,
 	createUseMutation,
 	createUseQuery,
-	createUseSuspenseQuery,
+	createUseSuspenseQuery
 } from "./hooks";
 import type { EdenQueryOptions, TreatyQueryProxy } from "./types";
 
@@ -33,7 +33,7 @@ function dispatchHook(
 	target: any,
 	key: unknown[],
 	lastMethod: string | null,
-	clientOptions?: EdenQueryOptions,
+	clientOptions?: EdenQueryOptions
 ): unknown {
 	const isQueryMethod = lastMethod !== null && QUERY_METHOD_SET.has(lastMethod);
 	const isMutationMethod =
@@ -53,8 +53,12 @@ function dispatchHook(
 				? createUseSuspenseQuery(target, key, clientOptions)
 				: undefined;
 		case "useInfiniteQuery":
-			return isQueryMethod
+			return isQueryMethod || isMutationMethod
 				? createUseInfiniteQuery(target, key, clientOptions)
+				: undefined;
+		case "usePagination":
+			return isQueryMethod || isMutationMethod
+				? createUseQuery(target, key, clientOptions)
 				: undefined;
 		case "ensureQueryData":
 			return isQueryMethod
@@ -79,7 +83,7 @@ function createProxy(
 	target: any,
 	key: unknown[],
 	lastMethod: string | null,
-	clientOptions?: EdenQueryOptions,
+	clientOptions?: EdenQueryOptions
 ): unknown {
 	return new Proxy(target, {
 		get(obj, prop, receiver) {
@@ -114,9 +118,9 @@ function createProxy(
 				result,
 				key.concat(...args),
 				lastMethod,
-				clientOptions,
+				clientOptions
 			);
-		},
+		}
 	});
 }
 
@@ -126,13 +130,13 @@ function createProxy(
 
 export function treatyQuery<
 	TApp extends AnyElysia,
-	TTreaty extends object = Treaty.Create<TApp>,
+	TTreaty extends object = Treaty.Create<TApp>
 >(eden: TTreaty, options?: EdenQueryOptions): TreatyQueryProxy<TTreaty> {
 	const { prefixKey = [], ...clientOptions } = options ?? {};
 	return createProxy(
 		eden,
 		prefixKey,
 		null,
-		clientOptions,
+		clientOptions
 	) as TreatyQueryProxy<TTreaty>;
 }

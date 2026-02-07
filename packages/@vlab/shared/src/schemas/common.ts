@@ -19,3 +19,8 @@ export const NonEmptyString = (property: Parameters<typeof t.String>[0] = {}) =>
 		minLength: 1,
 		...property,
 	});
+
+export const DateRange = t.Object({
+	from: t.Date(),
+	to: t.Date(),
+});

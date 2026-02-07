@@ -129,16 +129,18 @@ export function createUseInfiniteQuery(
 ) {
 	return ({
 		args,
+		getArgs,
 		onSuccessMessage,
 		onErrorMessage,
+		queryKey,
 		...options
-	}: { args?: any } & Record<string, any> = {}) =>
+	}: { args?: any; getArgs: (page: number, args: any) => any; queryKey?: unknown[] } & Record<string, any> = {} as any) =>
 		useInfiniteQuery({
 			...(options as Omit<
 				UseInfiniteQueryOptions<any, any, InfiniteData<any>, any, number>,
 				"queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam"
 			>),
-			queryKey: [...key, args],
+			queryKey: [...key, ...(queryKey ? queryKey : [args])],
 			initialPageParam: 1,
 			getNextPageParam: (lastPage: any) => {
 				const pageInfo = lastPage?.pageInfo;
@@ -149,7 +151,7 @@ export function createUseInfiniteQuery(
 				return undefined;
 			},
 			queryFn: ({ pageParam = 1 }) =>
-				executeQuery(fn, [args(pageParam as number)], {
+				executeQuery(fn, [getArgs(pageParam as number, args)], {
 					onSuccessMessage: onSuccessMessage ?? clientOptions?.onSuccessMessage,
 					onErrorMessage: onErrorMessage ?? clientOptions?.onErrorMessage,
 				}),

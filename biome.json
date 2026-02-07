@@ -1,0 +1,13 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+    "linter": {
+        "rules": {
+            "correctness": {
+                "useUniqueElementIds": "off"
+            },
+            "a11y": {
+                "noStaticElementInteractions": "off"
+            }
+        }
+    }
+}

@@ -3,9 +3,15 @@
 	"module": "index.ts",
 	"type": "module",
 	"private": true,
+	"scripts": {
+		"dev": "concurrently -n web,api -c cyan,magenta \"bun web dev\" \"bun api dev\"",
+		"web": "bun --filter @vlab/web",
+		"api": "bun --filter @vlab/api"
+	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.4",
-		"@types/bun": "latest"
+		"@biomejs/biome": "^2.4.9",
+		"@types/bun": "latest",
+		"concurrently": "^9.2.1"
 	},
 	"peerDependencies": {
 		"typescript": "^5"

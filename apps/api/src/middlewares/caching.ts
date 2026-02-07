@@ -28,6 +28,12 @@ export const cache: CacheAdapter = {
 		]);
 		await redis.del(...allKeys);
 	},
+	clear: async () => {
+		const deletedCount = await redis.delByPattern(`${PREFIX}*`);
+		if (deletedCount) {
+			logger.debug(`Cleared ${deletedCount} cache entries.`);
+		}
+	},
 	generateETag: (value) => md5(encode(value)),
 	meta: {
 		get: (key) => redis.get<CacheMetadata>(META_PREFIX + key),
@@ -37,16 +43,17 @@ export const cache: CacheAdapter = {
 
 export default new Elysia({ name: "caching" })
 	.use(auth)
-	.use(createCachingPlugin(cache))
+	.use(createCachingPlugin(cache, logger))
 	.macro({
 		personalized: {
 			protected: true,
-			resolve({ cacheKey, session }) {
+			resolve({ cache, session }) {
 				const userId = session?.data?.id;
-				if (!cacheKey || !userId) return { cacheKey: null };
+				if (!cache?.get() || !userId) return;
+
+				cache.addSuffix(userId);
 
 				return {
-					cacheKey: `${cacheKey}:${userId}`,
 					session: {
 						...session,
 						data: session.data as Session,

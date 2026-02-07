@@ -84,7 +84,6 @@ function getValidationMessage(error: ValidationError["all"][number]) {
 }
 
 export function formatValidationError(error: Readonly<ValidationError>) {
-	console.log(error);
 	return error.all.reduce(
 		(acc, err) => {
 			if (!err.path) {

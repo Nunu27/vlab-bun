@@ -17,6 +17,10 @@ const errorHandler = new Elysia({ name: "error-handler" })
 	.onError(({ code, error, status }) => {
 		switch (code) {
 			case "VALIDATION":
+				if (!error.all) {
+					return status(422, failure({ message: error.message }));
+				}
+
 				return status(
 					422,
 					failure({

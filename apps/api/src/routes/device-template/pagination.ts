@@ -7,7 +7,7 @@ import { createPaginator } from "@jawit/paginator";
 
 const { paginate, schema } = createPaginator(db, "deviceTemplates", {
 	searchableColumns: ["name"],
-	usableColumns: ["name", "kind", "createdAt", "updatedAt"],
+	usableColumns: ["name", "kind", "deviceCategoryId", "createdAt", "updatedAt"],
 });
 
 export default createRouter()
@@ -15,16 +15,16 @@ export default createRouter()
 	.guard(
 		{
 			private: ["admin"],
-			query: schema,
+			body: schema,
 			cached: true,
 		},
 		(app) => {
 			return app
-				.resolve(({ query, entity: { key } }) => ({
-					cacheKey: `${key}:pagination:${md5(query)}`,
+				.resolve(({ body, entity: { key } }) => ({
+					cacheKey: `${key}:pagination:${md5(body)}`,
 				}))
-				.get("/pagination", async ({ query }) => {
-					const data = await paginate(query, {
+				.post("/pagination", async ({ body }) => {
+					const data = await paginate(body, {
 						columns: {
 							deviceCategoryId: false,
 							env: false,

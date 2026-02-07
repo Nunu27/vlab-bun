@@ -22,12 +22,12 @@ export default createRouter()
 			status,
 			entity: { label, key },
 		}) => {
-			const { attachments, ...labData } = body;
+			const { attachments, date, ...labData } = body;
 
 			const updated = await db.transaction(async (tx) => {
 				const { rowCount } = await tx
 					.update(labs)
-					.set(labData)
+					.set({ ...labData, startAt: date.from, endAt: date.to })
 					.where(and(eq(labs.id, id), eq(labs.instructorId, userId)));
 				if (!rowCount) return false;
 

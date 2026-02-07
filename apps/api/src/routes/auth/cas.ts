@@ -12,7 +12,7 @@ import { XMLParser } from "fast-xml-parser";
 const { BASE_URL, CAS_BASE_URL } = env;
 const SERVICE = `${BASE_URL}/api/auth/cas`;
 const CAS_LOGIN = `${CAS_BASE_URL}/cas/login?service=${encodeURIComponent(SERVICE)}`;
-const CAS_VALIDATE = `${CAS_BASE_URL}/cas/validate?service=${encodeURIComponent(SERVICE)}&ticket=`;
+const CAS_VALIDATE = `${CAS_BASE_URL}/cas/serviceValidate?service=${encodeURIComponent(SERVICE)}&ticket=`;
 
 type CASResponse = typeof CASResponseSchema.static;
 

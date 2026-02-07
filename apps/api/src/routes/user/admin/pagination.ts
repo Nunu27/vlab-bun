@@ -15,16 +15,16 @@ export default createRouter()
 	.guard(
 		{
 			private: ["admin"],
-			query: schema,
+			body: schema,
 			cached: true,
 		},
 		(app) =>
 			app
-				.resolve(({ query, entity: { key } }) => ({
-					cacheKey: `${key}:pagination:${md5(query)}`,
+				.resolve(({ body, entity: { key } }) => ({
+					cacheKey: `${key}:pagination:${md5(body)}`,
 				}))
-				.get("/pagination", async ({ query }) => {
-					const data = await paginate(query, {
+				.post("/pagination", async ({ body }) => {
+					const data = await paginate(body, {
 						where: (users, { eq }) => eq(users.role, "admin"),
 						columns: { passwordHash: false, role: false },
 					});

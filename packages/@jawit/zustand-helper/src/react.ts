@@ -6,8 +6,8 @@ import {
 	useState,
 } from "react";
 import type { StoreApi, UseBoundStore } from "zustand";
-import { createActionStore, createSelectors } from "./index";
-import type { ActionConfigItem, WithSelectors } from "./types";
+import { createModalStore, createSelectors } from "./index";
+import type { ModalConfigItem, WithSelectors } from "./types";
 
 export const createScopedStore = <S extends UseBoundStore<StoreApi<object>>>(
 	factory: () => S,
@@ -30,8 +30,8 @@ export const createScopedStore = <S extends UseBoundStore<StoreApi<object>>>(
 	};
 };
 
-export const createScopedActionStore = <TData>() => {
-	return <const TConfig extends ReadonlyArray<ActionConfigItem>>(
+export const createScopedModalStore = <TData>() => {
+	return <const TConfig extends ReadonlyArray<ModalConfigItem>>(
 		actions: TConfig,
-	) => createScopedStore(() => createActionStore<TData>()(actions));
+	) => createScopedStore(() => createModalStore<TData>()(actions));
 };

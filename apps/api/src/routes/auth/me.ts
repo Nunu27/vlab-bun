@@ -9,6 +9,7 @@ export default createRouter()
 		"/me",
 		async ({ session, status }) => {
 			const user = await db.query.users.findFirst({
+				columns: { createdAt: false, updatedAt: false },
 				where: (user, { eq }) => eq(user.id, session.data.id),
 				with: {
 					instructor: {

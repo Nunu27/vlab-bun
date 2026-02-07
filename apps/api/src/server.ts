@@ -5,6 +5,7 @@ import baseLogger from "@api/services/logger";
 import type { WebSocketData } from "@socket.io/bun-engine";
 import type { Server } from "bun";
 import { Elysia } from "elysia";
+import { cache } from "./middlewares/caching";
 import documentation from "./plugins/documentation";
 import errorHandler from "./plugins/error-handler";
 import fallback from "./plugins/fallback";
@@ -54,6 +55,8 @@ process.once("SIGINT", shutdown);
 
 export type App = typeof app;
 export async function startServer() {
+	await cache.clear();
+
 	await checkAndRunMigration();
 	await initClabSync();
 

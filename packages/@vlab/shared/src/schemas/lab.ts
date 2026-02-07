@@ -1,5 +1,5 @@
 import { t } from "elysia";
-import { NonEmptyString } from "./common";
+import { DateRange, NonEmptyString } from "./common";
 import { DeviceTemplateResourcesSchema } from "./device-template";
 
 const BaseNodeSchema = t.Object({
@@ -79,8 +79,7 @@ export const LabRequest = t.Object({
 	content: NonEmptyString(),
 	cover: t.Optional(t.String()),
 	isPublished: t.Boolean(),
-	startAt: t.Date(),
-	endAt: t.Date(),
+	date: DateRange,
 	maxAttempt: t.Optional(t.Integer({ min: 1 })),
 	topology: LabTopologySchema,
 	instructions: t.Array(LabInstructionSchema),

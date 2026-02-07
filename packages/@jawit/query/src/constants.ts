@@ -8,11 +8,16 @@ export const QUERY_HOOKS = [
 	"useQuery",
 	"useSuspenseQuery",
 	"useInfiniteQuery",
+	"usePagination",
 	"ensureQueryData",
-	"invalidateQuery",
+	"invalidateQuery"
 ] as const;
 
-export const MUTATION_HOOKS = ["useMutation"] as const;
+export const MUTATION_HOOKS = [
+	"useMutation",
+	"useInfiniteQuery",
+	"usePagination"
+] as const;
 
 export const ALL_HOOKS = [...QUERY_HOOKS, ...MUTATION_HOOKS] as const;
 
@@ -21,5 +26,5 @@ export const PROXY_SYMBOL_HANDLERS: Record<string | symbol, unknown> = {
 	[Symbol.toStringTag]: "EdenQueryReference",
 	toString: () => "EdenQueryReference",
 	valueOf: () => "EdenQueryReference",
-	toJSON: () => "EdenQueryReference",
+	toJSON: () => "EdenQueryReference"
 };

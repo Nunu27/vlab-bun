@@ -1,8 +1,8 @@
 import { create, type StoreApi, type UseBoundStore } from "zustand";
 import type {
-	ActionConfigItem,
-	ActionStore,
 	InferSchemaFromConfig,
+	ModalConfigItem,
+	ModalStore,
 	WithSelectors,
 } from "./types";
 
@@ -28,12 +28,12 @@ export const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(
 	return store;
 };
 
-export const createActionStore = <TData>() => {
-	return <const TConfig extends ReadonlyArray<ActionConfigItem>>(
+export const createModalStore = <TData>() => {
+	return <const TConfig extends ReadonlyArray<ModalConfigItem>>(
 		actions: TConfig,
 	) => {
 		type Schema = InferSchemaFromConfig<TData, TConfig>;
-		type StoreType = ActionStore<Schema>;
+		type StoreType = ModalStore<Schema>;
 
 		return create<StoreType>()((set) => {
 			const state: Record<string, unknown> = {};
@@ -53,14 +53,16 @@ export const createActionStore = <TData>() => {
 
 				state[key] = isCreate ? false : null;
 
-				const setterName = `set${key.charAt(0).toUpperCase()}${key.slice(1)}`;
-
 				if (isCreate) {
-					actionMethods[setterName] = (value: boolean = true) =>
-						set({ [key]: value } as Partial<StoreType>);
+					actionMethods[key] = {
+						open: () => set({ [key]: true } as Partial<StoreType>),
+						close: () => set({ [key]: false } as Partial<StoreType>),
+					};
 				} else {
-					actionMethods[setterName] = (data: unknown) =>
-						set({ [key]: data } as Partial<StoreType>);
+					actionMethods[key] = {
+						open: (data: unknown) => set({ [key]: data } as Partial<StoreType>),
+						close: () => set({ [key]: null } as Partial<StoreType>),
+					};
 				}
 			});
 

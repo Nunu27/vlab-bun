@@ -13,13 +13,15 @@ export default createRouter()
 	.post(
 		"/",
 		async ({ body, session, entity: { label, key } }) => {
-			const { attachments, ...labData } = body;
+			const { attachments, date, ...labData } = body;
 
 			const id = await db.transaction(async (tx) => {
 				const [{ id }] = await tx
 					.insert(labs)
 					.values({
 						...labData,
+						startAt: date.from,
+						endAt: date.to,
 						instructorId: session.data.id,
 					})
 					.returning({ id: labs.id });

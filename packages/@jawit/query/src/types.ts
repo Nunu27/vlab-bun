@@ -4,7 +4,7 @@ import type {
 	BaseResponse,
 	FailureResponse,
 	PaginatedData,
-	SuccessResponse,
+	SuccessResponse
 } from "@jawit/common";
 import type {
 	InfiniteData,
@@ -17,7 +17,7 @@ import type {
 	UseQueryOptions,
 	UseQueryResult,
 	UseSuspenseQueryOptions,
-	UseSuspenseQueryResult,
+	UseSuspenseQueryResult
 } from "@tanstack/react-query";
 import type { MUTATION_METHODS, QUERY_METHODS } from "./constants";
 
@@ -33,7 +33,9 @@ type MutationMethod = (typeof MUTATION_METHODS)[number];
 // ---------------------------------------------------------------------------
 
 /** Unwrap the `data` field from a Treaty Promise response (200 status) */
-type ExtractTreatyResponse<T> = T extends (...args: any[]) => Promise<infer R>
+export type ExtractTreatyResponse<T> = T extends (
+	...args: any[]
+) => Promise<infer R>
 	? R extends { data: infer D; error: null }
 		? D extends BaseResponse<any, any, any>
 			? D
@@ -50,12 +52,20 @@ export type ExtractTreatyError<T> =
 
 /** Extract the first parameter type from a Treaty leaf function */
 export type ExtractTreatyParams<TFn> = TFn extends (
-	params?: infer P,
+	params: infer P,
 	...rest: any[]
-) => any
-	? P
-	: TFn extends (params: infer P, ...rest: any[]) => any
-		? P
+) => Promise<any>
+	? keyof P extends never
+		? // biome-ignore lint/suspicious/noConfusingVoidType: indicate no parameter
+			void
+		: P
+	: never;
+
+export type ExtractTreatyPaginationData<
+	TEndpoint extends { post: (...args: any[]) => Promise<any> }
+> =
+	ExtractTreatyData<TEndpoint["post"]> extends PaginatedData<infer D>
+		? D
 		: never;
 
 // ---------------------------------------------------------------------------
@@ -75,7 +85,21 @@ type SuspenseQueryOptions<TData, TError, TArgs> = Omit<
 type InfiniteQueryOptions<TData, TError, TArgs> = Omit<
 	UseInfiniteQueryOptions<TData, TError, InfiniteData<TData>, any[]>,
 	"queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam"
-> & { args: (page: number) => TArgs } & Omit<EdenQueryOptions, "prefixKey">;
+> & {
+	/**
+	 * Static, serializable params passed to the query.
+	 * These are included in the query key so that changing them
+	 * (e.g. changing `search`) triggers a fresh fetch.
+	 */
+	args?: TArgs;
+	/**
+	 * A function that receives the current page number and the static `args`,
+	 * and returns the full request argument for that page.
+	 * Defaults to merging `{ query: { page } }` into args.
+	 */
+	getArgs: (page: number, args: TArgs | undefined) => TArgs;
+	queryKey?: unknown[];
+} & Omit<EdenQueryOptions, "prefixKey">;
 
 type MutationOptions<TData, TError, TArgs> = Omit<
 	UseMutationOptions<TData, TError, TArgs>,
@@ -93,7 +117,7 @@ type QueryHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>,
+		>
 	): UseBaseQueryOptions;
 
 	useQuery(
@@ -101,7 +125,7 @@ type QueryHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>,
+		>
 	): UseQueryResult<
 		ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 		ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
@@ -112,11 +136,26 @@ type QueryHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>,
+		>
 	): UseSuspenseQueryResult<
 		ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 		ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
 	>;
+
+	usePagination: ExtractTreatyData<
+		Extract<TFn, (...a: any[]) => any>
+	> extends PaginatedData<any>
+		? (
+				options?: QueryOptions<
+					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
+					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
+					ExtractTreatyParams<TFn>
+				>
+			) => UseQueryResult<
+				ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
+				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
+			>
+		: never;
 
 	useInfiniteQuery: ExtractTreatyData<
 		Extract<TFn, (...a: any[]) => any>
@@ -126,7 +165,7 @@ type QueryHooks<TFn> = {
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyParams<TFn>
-				>,
+				>
 			) => UseInfiniteQueryResult<
 				InfiniteData<ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>>,
 				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
@@ -135,7 +174,7 @@ type QueryHooks<TFn> = {
 
 	ensureQueryData(
 		queryClient: QueryClient,
-		args?: ExtractTreatyParams<TFn>,
+		args?: ExtractTreatyParams<TFn>
 	): Promise<ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>>;
 
 	invalidateQuery(queryClient: QueryClient): Promise<void>;
@@ -147,12 +186,42 @@ type MutationHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>,
+		>
 	): UseMutationResult<
 		ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 		ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 		ExtractTreatyParams<TFn>
 	>;
+
+	usePagination: ExtractTreatyData<
+		Extract<TFn, (...a: any[]) => any>
+	> extends PaginatedData<any>
+		? (
+				options?: QueryOptions<
+					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
+					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
+					ExtractTreatyParams<TFn>
+				>
+			) => UseQueryResult<
+				ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
+				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
+			>
+		: never;
+
+	useInfiniteQuery: ExtractTreatyData<
+		Extract<TFn, (...a: any[]) => any>
+	> extends PaginatedData<any>
+		? (
+				options?: InfiniteQueryOptions<
+					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
+					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
+					ExtractTreatyParams<TFn>
+				>
+			) => UseInfiniteQueryResult<
+				InfiniteData<ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>>,
+				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
+			>
+		: never;
 };
 
 // ---------------------------------------------------------------------------

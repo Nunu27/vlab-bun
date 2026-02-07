@@ -18,24 +18,24 @@ export default createRouter()
 		{
 			cached: true,
 			private: ["instructor", "student"],
-			query: t.Intersect([
+			body: t.Intersect([
 				schema,
 				t.Object({ enrolled: t.Optional(t.Boolean()) }),
 			]),
 		},
 		(app) => {
 			return app
-				.resolve(({ session: { data }, query, entity: { key } }) => {
-					const cacheKey = `${key}:pagination:${md5(query)}`;
+				.resolve(({ session: { data }, body, entity: { key } }) => {
+					const cacheKey = `${key}:pagination:${md5(body)}`;
 
-					if (data.role === "admin" || query.enrolled) {
+					if (data.role === "admin" || body.enrolled) {
 						return { cacheKey: `${cacheKey}:${data.id}` };
 					} else return { cacheKey };
 				})
-				.get(
+				.post(
 					"/pagination",
-					async ({ query: { enrolled, ...query }, session }) => {
-						const { items, pageInfo } = await paginate(query, {
+					async ({ body: { enrolled, ...body }, session }) => {
+						const { items, pageInfo } = await paginate(body, {
 							columns: { topology: false },
 							with: {
 								instructor: {

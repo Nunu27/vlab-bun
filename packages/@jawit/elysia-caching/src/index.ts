@@ -1,4 +1,5 @@
 import Elysia from "elysia";
+import type { Logger } from "pino";
 import type { CacheAdapter, CacheOptions } from "./types";
 
 export * from "./types";
@@ -8,9 +9,34 @@ const parseHTTPDate = (dateString: string) => {
 	return Number.isNaN(date.getTime()) ? null : date;
 };
 
-export const createCachingPlugin = (adapter: CacheAdapter) =>
+export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 	new Elysia({ name: "@jawit/caching" })
-		.derive(() => ({ cacheKey: undefined as string | undefined }))
+		.derive(() => {
+			const cache = {
+				key: undefined as string | undefined,
+				prefix: "",
+				suffix: "",
+			};
+
+			return {
+				cache: {
+					set: (key: string) => {
+						cache.key = key;
+					},
+					get: () => {
+						const { key, prefix, suffix } = cache;
+						if (!key) return null;
+						return `${prefix}${key}${suffix}`;
+					},
+					addPrefix: (prefix: string) => {
+						cache.prefix += `${prefix}:`;
+					},
+					addSuffix: (suffix: string) => {
+						cache.suffix += `:${suffix}`;
+					},
+				},
+			};
+		})
 		.macro({
 			cached: (options: CacheOptions | boolean) => {
 				if (!options) return;
@@ -23,11 +49,11 @@ export const createCachingPlugin = (adapter: CacheAdapter) =>
 				} = options === true ? {} : options;
 
 				return {
-					resolve({ cacheKey }) {
-						const finalKey = key ?? cacheKey;
-						return { cacheKey: finalKey ?? null };
+					transform({ cache }) {
+						if (key) cache?.set(key);
 					},
-					async beforeHandle({ cacheKey, headers, set }) {
+					async beforeHandle({ cache, headers, set }) {
+						const cacheKey = cache?.get();
 						if (!cacheKey) return;
 
 						const metadata = await adapter.meta.get(cacheKey);
@@ -44,6 +70,10 @@ export const createCachingPlugin = (adapter: CacheAdapter) =>
 
 						// Check ETag match
 						if (useETag && clientETag === metadata.etag) {
+							logger?.debug(
+								{ key: cacheKey },
+								"Cache hit by ETag header, returning 304",
+							);
 							return new Response(null, { status: 304 });
 						}
 
@@ -52,14 +82,20 @@ export const createCachingPlugin = (adapter: CacheAdapter) =>
 							const clientDate = parseHTTPDate(clientModifiedSince);
 
 							if (clientDate && clientDate >= metadata.lastModified) {
+								logger?.debug(
+									{ key: cacheKey },
+									"Cache hit by Last-Modified header, returning 304",
+								);
 								return new Response(null, { status: 304 });
 							}
 						}
 
 						const cachedData = await adapter.get(cacheKey);
 						if (cachedData) {
+							logger?.debug({ key: cacheKey }, "Cache hit");
 							return cachedData;
 						} else {
+							logger?.debug({ key: cacheKey }, "Cache miss");
 							set.headers["cache-control"] = undefined;
 						}
 					},
@@ -77,9 +113,15 @@ export const createCachingPlugin = (adapter: CacheAdapter) =>
 								: undefined;
 						}
 					},
-					async afterResponse({ set, cacheKey, responseValue }) {
+					async afterResponse({ set, cache, responseValue }) {
+						const cacheKey = cache?.get();
+
 						if (set.headers["x-cache"] === "HIT" || set.status !== 200) return;
 						if (!cacheKey || !set.headers.etag) return;
+
+						logger?.debug(
+							`Caching response for key: ${cacheKey} with TTL: ${ttl}`,
+						);
 
 						await Promise.all([
 							adapter.set(cacheKey, responseValue, ttl),

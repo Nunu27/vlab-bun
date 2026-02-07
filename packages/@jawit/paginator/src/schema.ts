@@ -1,7 +1,7 @@
+import { type TSchema, Type as t } from "@sinclair/typebox";
 import { getTableColumns } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-typebox";
-import { type TSchema, t } from "elysia";
 import {
 	COLUMN_FILTER_OPS,
 	type FilterOp,
@@ -92,14 +92,12 @@ export const buildPaginationSchema = <TTable extends PgTable>(
 				? filterItem
 				: t.Union(filterItems);
 
-	const filterSchema = t.Array(baseFilterSchema);
-
 	const baseSchema = {
-		page: t.Integer({ minimum: 1 }),
-		perPage: t.Integer(),
+		page: t.Integer({ minimum: 1, default: 1 }),
+		perPage: t.Integer({ minimum: 1, maximum: 100, default: 10 }),
 		sortBy: t.Optional(t.Union(columnNames.map((col) => t.Literal(col)))),
 		sortOrder: t.Optional(t.Union(sortOrder.map((order) => t.Literal(order)))),
-		filters: t.Optional(filterSchema),
+		filters: t.Optional(t.Array(baseFilterSchema)),
 	};
 
 	if (searchableColumns?.length) {
