@@ -6,12 +6,20 @@
 	"scripts": {
 		"dev": "concurrently -n web,api -c cyan,magenta \"bun web dev\" \"bun api dev\"",
 		"web": "bun --filter @vlab/web",
-		"api": "bun --filter @vlab/api"
+		"api": "bun --filter @vlab/api",
+		"check": "biome check --write .",
+		"check:ci": "biome check .",
+		"lint": "biome lint --write .",
+		"format": "biome format --write .",
+		"typecheck": "bun --filter='*' run typecheck",
+		"prepare": "simple-git-hooks"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.9",
 		"@types/bun": "latest",
-		"concurrently": "^9.2.1"
+		"concurrently": "^9.2.1",
+		"lint-staged": "^16.1.0",
+		"simple-git-hooks": "^2.13.0"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
@@ -19,5 +27,14 @@
 	"workspaces": [
 		"apps/*",
 		"packages/*/*"
-	]
+	],
+	"simple-git-hooks": {
+		"pre-commit": "bunx lint-staged",
+		"pre-push": "bun --filter='*' run typecheck"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx,json,css}": [
+			"biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+		]
+	}
 }
