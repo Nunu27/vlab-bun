@@ -11,6 +11,12 @@ import type WSContracts from "./contracts";
 abstract class WSClient<TWSContracts extends WSContracts<any, any>> {
 	constructor(protected contracts: TWSContracts) {}
 
+	// Connection State
+	abstract get isConnected(): boolean;
+	abstract subscribeConnectionState(
+		handler: (isConnected: boolean) => void,
+	): () => void;
+
 	// Subscribe to server2client | inter events based on contracts, should return a function to unsubscribe
 	abstract subscribe<
 		const TEvent extends keyof ExtractWSContracts<
@@ -56,6 +62,8 @@ abstract class WSClient<TWSContracts extends WSContracts<any, any>> {
 								>,
 							) => void;
 						}>;
+						onError?: (error: string) => void;
+						timeoutMs?: number;
 					}),
 	): () => void;
 

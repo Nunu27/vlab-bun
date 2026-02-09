@@ -4,13 +4,14 @@ import { SocketIOServer } from "@jawit/ws";
 import { Server as Engine } from "@socket.io/bun-engine";
 import contracts from "@vlab/ws";
 import { type DefaultEventsMap, Server } from "socket.io";
+import parser from "socket.io-msgpack-parser";
 
 const io = new Server<
 	DefaultEventsMap,
 	DefaultEventsMap,
 	DefaultEventsMap,
 	WSContext
->();
+>({ parser });
 const engine = new Engine({ path: "/ws" });
 const server = new SocketIOServer<typeof contracts, WSContext>(contracts);
 

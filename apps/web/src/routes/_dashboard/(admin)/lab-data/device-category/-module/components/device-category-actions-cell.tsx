@@ -1,5 +1,5 @@
 import { ActionButton } from "@web/components/buttons/action-button";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useDeviceCategoryModalStore } from "../stores/device-category-modal-store";
 import type { DeviceCategoryItem } from "../types";
 
@@ -12,14 +12,14 @@ export function DeviceCategoryActionsCell({
 	const actions = store.use.actions();
 
 	return (
-		<div className="flex gap-2 justify-center">
+		<div className="flex gap-2">
 			<ActionButton
-				icon={EditIcon}
+				icon={PencilIcon}
 				tooltip="Edit"
 				onClick={() => actions.update.open(deviceCategory)}
 			/>
 			<ActionButton
-				icon={TrashIcon}
+				icon={Trash2Icon}
 				tooltip="Delete"
 				variant="destructive"
 				onClick={() => actions.delete.open(deviceCategory)}

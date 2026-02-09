@@ -114,6 +114,12 @@ export default class SocketIOServer<
 
 								await handler(config as Parameters<typeof handler>[0]);
 							} catch (err) {
+								if (payload.requestId) {
+									socket.emit(`${event}:reply:${payload.requestId}`, {
+										type: "__error",
+										data: err instanceof Error ? err.message : String(err),
+									});
+								}
 								console.error(`Error handling event ${event}:`, err);
 							}
 						},

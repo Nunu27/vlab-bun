@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ActionButton } from "@web/components/buttons/action-button";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useDeviceTemplateModalStore } from "../stores/device-template-modal-store";
 import type { DeviceTemplateItem } from "../types";
 
@@ -13,15 +13,15 @@ export function DeviceTemplateActionsCell({
 	const actions = store.use.actions();
 
 	return (
-		<div className="flex gap-2 justify-center">
-			<ActionButton icon={EditIcon} tooltip="Edit" asChild>
+		<div className="flex gap-2">
+			<ActionButton icon={PencilIcon} tooltip="Edit" asChild>
 				<Link
 					to="/lab-data/device-template/$deviceTemplateId/edit"
 					params={{ deviceTemplateId: deviceTemplate.id }}
 				/>
 			</ActionButton>
 			<ActionButton
-				icon={TrashIcon}
+				icon={Trash2Icon}
 				tooltip="Delete"
 				variant="destructive"
 				onClick={() => actions.delete.open(deviceTemplate)}

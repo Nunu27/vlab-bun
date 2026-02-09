@@ -12,10 +12,52 @@ export default class SocketIOClient<
 	TWSContracts extends WSContracts<any, any>,
 > extends WSClient<TWSContracts> {
 	private socket?: Socket;
+	private connectionHandlers = new Set<(isConnected: boolean) => void>();
+	private boundOnConnect?: () => void;
+	private boundOnDisconnect?: () => void;
 
 	public attach(socket: Socket) {
 		this.socket = socket;
 		return this;
+	}
+
+	get isConnected(): boolean {
+		return this.socket?.connected ?? false;
+	}
+
+	subscribeConnectionState(
+		handler: (isConnected: boolean) => void,
+	): () => void {
+		if (!this.socket) {
+			throw new Error("SocketIOClient is not attached to a socket.");
+		}
+
+		this.connectionHandlers.add(handler);
+
+		if (this.connectionHandlers.size === 1) {
+			this.boundOnConnect = () => {
+				for (const h of this.connectionHandlers) h(true);
+			};
+			this.boundOnDisconnect = () => {
+				for (const h of this.connectionHandlers) h(false);
+			};
+			this.socket.on("connect", this.boundOnConnect);
+			this.socket.on("disconnect", this.boundOnDisconnect);
+		}
+
+		handler(this.socket.connected);
+
+		return () => {
+			this.connectionHandlers.delete(handler);
+			if (this.connectionHandlers.size === 0) {
+				if (this.boundOnConnect)
+					this.socket?.off("connect", this.boundOnConnect);
+				if (this.boundOnDisconnect)
+					this.socket?.off("disconnect", this.boundOnDisconnect);
+				this.boundOnConnect = undefined;
+				this.boundOnDisconnect = undefined;
+			}
+		};
 	}
 
 	subscribe<
@@ -83,6 +125,8 @@ export default class SocketIOClient<
 			data: unknown;
 			params?: Record<string, unknown>;
 			callbacks?: Record<string, (data: unknown) => void>;
+			onError?: (error: string) => void;
+			timeoutMs?: number;
 		},
 	): () => void {
 		const requestId = crypto.randomUUID();
@@ -99,23 +143,37 @@ export default class SocketIOClient<
 			throw new Error("SocketIOClient is not attached to a socket.");
 		}
 
-		if (config.callbacks) {
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+		if (config.callbacks || config.onError) {
 			this.socket.on(
 				replyEvent,
 				(replyPayload: { type: string; data: unknown }) => {
+					if (replyPayload.type === "__error") {
+						config.onError?.(replyPayload.data as string);
+						return;
+					}
+
 					const fn = config.callbacks?.[replyPayload.type];
 					if (fn) {
 						fn(replyPayload.data);
 					}
 				},
 			);
+
+			const ms = config.timeoutMs ?? 15000;
+			timeoutId = setTimeout(() => {
+				config.onError?.(`Timeout: Server did not respond within ${ms}ms`);
+				this.socket?.off(replyEvent);
+			}, ms);
 		}
 
 		this.socket.emit(event, payload);
 
 		return () => {
-			if (config.callbacks) {
+			if (config.callbacks || config.onError) {
 				this.socket?.off(replyEvent);
+				if (timeoutId) clearTimeout(timeoutId);
 			}
 			this.socket?.emit("_jawit:cancel", `${event}::${requestId}`);
 		};

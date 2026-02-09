@@ -1,5 +1,5 @@
 import { ActionButton } from "@web/components/buttons/action-button";
-import { EditIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useStudentModalStore } from "../stores/student-modal-store";
 import type { StudentItem } from "../types";
 
@@ -8,14 +8,14 @@ export function StudentActionsCell({ student }: { student: StudentItem }) {
 	const actions = store.use.actions();
 
 	return (
-		<div className="flex gap-2 justify-center">
+		<div className="flex gap-2">
 			<ActionButton
-				icon={EditIcon}
+				icon={PencilIcon}
 				tooltip="Edit"
 				onClick={() => actions.update.open(student)}
 			/>
 			<ActionButton
-				icon={TrashIcon}
+				icon={Trash2Icon}
 				tooltip="Delete"
 				variant="destructive"
 				onClick={() => actions.delete.open(student)}

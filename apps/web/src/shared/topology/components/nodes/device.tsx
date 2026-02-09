@@ -1,4 +1,5 @@
 import type { NodeHealth } from "@vlab/shared/enums";
+import { useWSData } from "@web/hooks/ws";
 import { cn } from "@web/lib/utils";
 import { memo, type RefObject, useRef } from "react";
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from "../../constants";
@@ -26,8 +27,10 @@ function Device({ id }: { id: string }) {
 	const { selected, state, data } = useTopologyDevice(id);
 
 	const template = useTopologyTemplate(state?.deviceId);
-	// const health = useLabNodeHealth(data?.id, data?.health);
-	const health = data?.health || "starting";
+	const health = useWSData("node:[id]:health", {
+		params: { id },
+		default: data?.health ?? null,
+	});
 	const healthColor = getHealthColor(health);
 
 	useTopologyNodeInteraction({

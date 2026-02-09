@@ -11,7 +11,7 @@ export function StudyProgramActionsCell({
 	const actions = useStudyProgramModalStore().use.actions();
 
 	return (
-		<div className="flex items-center justify-center gap-1">
+		<div className="flex gap-2">
 			<ActionButton
 				icon={PencilIcon}
 				tooltip="Edit"
