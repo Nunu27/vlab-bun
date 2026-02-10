@@ -20,7 +20,7 @@ import { Route as DashboardadminMasterDepartmentIndexRouteImport } from './route
 import { Route as DashboardadminLabDataDeviceTemplateIndexRouteImport } from './routes/_dashboard/(admin)/lab-data/device-template/index'
 import { Route as DashboardadminLabDataDeviceCategoryIndexRouteImport } from './routes/_dashboard/(admin)/lab-data/device-category/index'
 import { Route as DashboardadminLabDataDeviceTemplateCreateRouteImport } from './routes/_dashboard/(admin)/lab-data/device-template/create'
-import { Route as DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRouteImport } from './routes/_dashboard/(admin)/lab-data/device-template/$deviceTemplateId.edit'
+import { Route as DashboardadminLabDataDeviceTemplateIdEditRouteImport } from './routes/_dashboard/(admin)/lab-data/device-template/$id.edit'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -84,10 +84,10 @@ const DashboardadminLabDataDeviceTemplateCreateRoute =
     path: '/lab-data/device-template/create',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute =
-  DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRouteImport.update({
-    id: '/(admin)/lab-data/device-template/$deviceTemplateId/edit',
-    path: '/lab-data/device-template/$deviceTemplateId/edit',
+const DashboardadminLabDataDeviceTemplateIdEditRoute =
+  DashboardadminLabDataDeviceTemplateIdEditRouteImport.update({
+    id: '/(admin)/lab-data/device-template/$id/edit',
+    path: '/lab-data/device-template/$id/edit',
     getParentRoute: () => DashboardRoute,
   } as any)
 
@@ -102,7 +102,7 @@ export interface FileRoutesByFullPath {
   '/user/admin/': typeof DashboardadminUserAdminIndexRoute
   '/user/instructor/': typeof DashboardadminUserInstructorIndexRoute
   '/user/student/': typeof DashboardadminUserStudentIndexRoute
-  '/lab-data/device-template/$deviceTemplateId/edit': typeof DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute
+  '/lab-data/device-template/$id/edit': typeof DashboardadminLabDataDeviceTemplateIdEditRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -115,7 +115,7 @@ export interface FileRoutesByTo {
   '/user/admin': typeof DashboardadminUserAdminIndexRoute
   '/user/instructor': typeof DashboardadminUserInstructorIndexRoute
   '/user/student': typeof DashboardadminUserStudentIndexRoute
-  '/lab-data/device-template/$deviceTemplateId/edit': typeof DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute
+  '/lab-data/device-template/$id/edit': typeof DashboardadminLabDataDeviceTemplateIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -130,7 +130,7 @@ export interface FileRoutesById {
   '/_dashboard/(admin)/user/admin/': typeof DashboardadminUserAdminIndexRoute
   '/_dashboard/(admin)/user/instructor/': typeof DashboardadminUserInstructorIndexRoute
   '/_dashboard/(admin)/user/student/': typeof DashboardadminUserStudentIndexRoute
-  '/_dashboard/(admin)/lab-data/device-template/$deviceTemplateId/edit': typeof DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute
+  '/_dashboard/(admin)/lab-data/device-template/$id/edit': typeof DashboardadminLabDataDeviceTemplateIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -145,7 +145,7 @@ export interface FileRouteTypes {
     | '/user/admin/'
     | '/user/instructor/'
     | '/user/student/'
-    | '/lab-data/device-template/$deviceTemplateId/edit'
+    | '/lab-data/device-template/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -158,7 +158,7 @@ export interface FileRouteTypes {
     | '/user/admin'
     | '/user/instructor'
     | '/user/student'
-    | '/lab-data/device-template/$deviceTemplateId/edit'
+    | '/lab-data/device-template/$id/edit'
   id:
     | '__root__'
     | '/_dashboard'
@@ -172,7 +172,7 @@ export interface FileRouteTypes {
     | '/_dashboard/(admin)/user/admin/'
     | '/_dashboard/(admin)/user/instructor/'
     | '/_dashboard/(admin)/user/student/'
-    | '/_dashboard/(admin)/lab-data/device-template/$deviceTemplateId/edit'
+    | '/_dashboard/(admin)/lab-data/device-template/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -259,11 +259,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardadminLabDataDeviceTemplateCreateRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/(admin)/lab-data/device-template/$deviceTemplateId/edit': {
-      id: '/_dashboard/(admin)/lab-data/device-template/$deviceTemplateId/edit'
-      path: '/lab-data/device-template/$deviceTemplateId/edit'
-      fullPath: '/lab-data/device-template/$deviceTemplateId/edit'
-      preLoaderRoute: typeof DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRouteImport
+    '/_dashboard/(admin)/lab-data/device-template/$id/edit': {
+      id: '/_dashboard/(admin)/lab-data/device-template/$id/edit'
+      path: '/lab-data/device-template/$id/edit'
+      fullPath: '/lab-data/device-template/$id/edit'
+      preLoaderRoute: typeof DashboardadminLabDataDeviceTemplateIdEditRouteImport
       parentRoute: typeof DashboardRoute
     }
   }
@@ -279,7 +279,7 @@ interface DashboardRouteChildren {
   DashboardadminUserAdminIndexRoute: typeof DashboardadminUserAdminIndexRoute
   DashboardadminUserInstructorIndexRoute: typeof DashboardadminUserInstructorIndexRoute
   DashboardadminUserStudentIndexRoute: typeof DashboardadminUserStudentIndexRoute
-  DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute: typeof DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute
+  DashboardadminLabDataDeviceTemplateIdEditRoute: typeof DashboardadminLabDataDeviceTemplateIdEditRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -298,8 +298,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardadminUserInstructorIndexRoute:
     DashboardadminUserInstructorIndexRoute,
   DashboardadminUserStudentIndexRoute: DashboardadminUserStudentIndexRoute,
-  DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute:
-    DashboardadminLabDataDeviceTemplateDeviceTemplateIdEditRoute,
+  DashboardadminLabDataDeviceTemplateIdEditRoute:
+    DashboardadminLabDataDeviceTemplateIdEditRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

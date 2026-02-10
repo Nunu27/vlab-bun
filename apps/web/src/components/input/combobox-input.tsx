@@ -1,5 +1,5 @@
 import { cn } from "@web/lib/utils";
-import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
@@ -30,6 +30,7 @@ type ComboboxInputProps = {
 	value?: string;
 	onChange?: (value: string) => void;
 	disabled?: boolean;
+	className?: string; // e.g. for width control
 };
 
 function ComboboxInput({
@@ -44,6 +45,7 @@ function ComboboxInput({
 	value,
 	onChange,
 	disabled,
+	className,
 }: ComboboxInputProps) {
 	const [open, setOpen] = useState(false);
 	const [cachedLabel, setCachedLabel] = useState<string | undefined>();
@@ -60,7 +62,7 @@ function ComboboxInput({
 	const displayLabel = cachedLabel || placeholder;
 
 	return (
-		<Field>
+		<Field className={className}>
 			{label && (
 				<FieldLabel htmlFor={name} required={required}>
 					{label}
@@ -73,11 +75,15 @@ function ComboboxInput({
 						variant="outline"
 						role="combobox"
 						aria-expanded={open}
-						className="w-full justify-between"
+						className={cn(
+							"w-full justify-between bg-transparent px-2.5 font-normal shadow-xs hover:bg-transparent aria-expanded:bg-transparent dark:bg-input/30 dark:aria-expanded:bg-input/50 dark:hover:bg-input/50",
+							!value &&
+								"text-muted-foreground aria-expanded:text-muted-foreground",
+						)}
 						disabled={disabled}
 						aria-invalid={isInvalid}
 					>
-						{displayLabel}
+						<span className="flex-1 truncate text-left">{displayLabel}</span>
 						<ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
 					</Button>
 				</PopoverTrigger>
@@ -91,18 +97,13 @@ function ComboboxInput({
 									<CommandItem
 										key={option.value}
 										value={option.label}
+										data-checked={value === option.value}
 										onSelect={() => {
 											onChange?.(option.value === value ? "" : option.value);
 											setOpen(false);
 										}}
 									>
-										{option.label}
-										<CheckIcon
-											className={cn(
-												"ml-auto size-4",
-												value === option.value ? "opacity-100" : "opacity-0",
-											)}
-										/>
+										<span className="truncate">{option.label}</span>
 									</CommandItem>
 								))}
 							</CommandGroup>

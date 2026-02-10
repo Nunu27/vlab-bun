@@ -5,11 +5,11 @@ type CheckboxFieldProps = Omit<
 	React.ComponentProps<typeof CheckboxInput>,
 	"checked" | "onCheckedChange" | "name" | "onBlur"
 > & {
-	label: string;
+	label?: string;
 	required?: boolean;
 };
 
-function CheckboxField({ label, required, ...props }: CheckboxFieldProps) {
+function CheckboxField(props: CheckboxFieldProps) {
 	const field = useFieldContext<boolean>();
 	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -20,8 +20,6 @@ function CheckboxField({ label, required, ...props }: CheckboxFieldProps) {
 			checked={field.state.value}
 			onCheckedChange={(checked) => field.handleChange(checked === true)}
 			onBlur={field.handleBlur}
-			label={label}
-			required={required}
 			isInvalid={isInvalid}
 			errors={field.state.meta.errors}
 		/>

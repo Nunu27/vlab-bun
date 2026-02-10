@@ -34,7 +34,7 @@ function RouteComponent() {
 						<NavUser />
 					</div>
 				</header>
-				<div className="flex-1 px-4 py-4">
+				<div className="flex-1 p-4 pt-0">
 					<Outlet />
 				</div>
 			</SidebarInset>

@@ -2,6 +2,7 @@ import { name, version } from "@api/../package.json";
 import Elysia from "elysia";
 
 import auth from "./auth";
+import dashboard from "./dashboard";
 import department from "./department";
 import deviceCategory from "./device-category";
 import deviceTemplate from "./device-template";
@@ -14,6 +15,7 @@ import user from "./user";
 export default new Elysia({ prefix: "/api" })
 	.get("/", () => ({ name, version }))
 	.use(auth)
+	.use(dashboard)
 	.use(lab)
 	.use(department)
 	.use(studyProgram)

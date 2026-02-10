@@ -46,6 +46,7 @@ const EnvSchema = t.Object(
 		GUACD_SECRET: t.String({ minLength: 32, maxLength: 64 }),
 
 		CLAB_URL: t.String({ format: "uri" }),
+		CLAB_HOST: t.Optional(t.String()),
 		CLAB_USERNAME: t.String(),
 		CLAB_PASSWORD: t.String(),
 	},
@@ -74,5 +75,10 @@ export async function populateEnv() {
 	if (!env.GUACD_IP) {
 		const data = await dns.lookup(env.GUACD_HOST, { family: 4 });
 		env.GUACD_IP = data.address;
+	}
+
+	if (!env.CLAB_HOST) {
+		const clabUrl = new URL(env.CLAB_URL);
+		env.CLAB_HOST = clabUrl.hostname;
 	}
 }

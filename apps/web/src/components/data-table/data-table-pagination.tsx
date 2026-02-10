@@ -52,7 +52,7 @@ export function DataTablePagination({
 	return (
 		<div className="flex items-center justify-between">
 			<div className="flex items-center gap-2">
-				<Label htmlFor="rows-per-page" className="text-sm font-medium">
+				<Label htmlFor="rows-per-page" className="font-medium text-sm">
 					Rows per page
 				</Label>
 				<Select

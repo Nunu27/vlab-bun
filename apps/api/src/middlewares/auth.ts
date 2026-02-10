@@ -54,6 +54,10 @@ export default new Elysia({ name: "auth" })
 
 			return { session: await sessions.get(session.value) };
 		},
+		afterResponse: async ({ session, set }) => {
+			if (typeof set.status !== "number" || set.status >= 400) return;
+			await session?.extend();
+		},
 	})
 	.macro("guest", {
 		auth: true,

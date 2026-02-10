@@ -1,10 +1,11 @@
+import { deviceKindValues } from "@vlab/shared/enums";
 import type {
 	DeviceTemplateConnection,
 	DeviceTemplateEnv,
 	DeviceTemplateInterface,
 	DeviceTemplateResources,
 } from "@vlab/shared/schemas/device-template";
-import { jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { jsonb, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
 import { base } from "./base";
 
@@ -21,11 +22,13 @@ export const deviceCategoriesRelations = relations(
 	}),
 );
 
+export const deviceKindEnum = pgEnum("device_kind", deviceKindValues);
+
 export const deviceTemplates = pgTable("device_template", {
 	...base,
 	name: text().notNull(),
 	icon: text().notNull(),
-	kind: text().notNull(),
+	kind: deviceKindEnum().notNull(),
 	image: text().notNull(),
 	deviceCategoryId: uuid()
 		.references(() => deviceCategories.id, { onDelete: "restrict" })

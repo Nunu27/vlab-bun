@@ -5,7 +5,7 @@ import {
 } from "@web/hooks/pagination/use-api-infinite-list";
 import { cn } from "@web/lib/utils";
 import type { PaginationEndpoint } from "@web/types";
-import { CheckIcon, ChevronDownIcon, Loader2Icon } from "lucide-react";
+import { ChevronDownIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDebounceValue, useIntersectionObserver } from "usehooks-ts";
 import { Button } from "../ui/button";
@@ -37,6 +37,7 @@ type PaginatedComboboxInputProps<TEndpoint extends PaginationEndpoint> = {
 	defaultLabel?: string;
 	onChange?: (value: string) => void;
 	disabled?: boolean;
+	className?: string; // e.g. for width control
 };
 
 export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
@@ -55,6 +56,7 @@ export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
 	defaultLabel,
 	onChange,
 	disabled,
+	className,
 }: PaginatedComboboxInputProps<TEndpoint>) {
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useDebounceValue("", 500);
@@ -104,7 +106,7 @@ export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
 	const displayLabel = cachedLabel || placeholder;
 
 	return (
-		<Field>
+		<Field className={className}>
 			{label && (
 				<FieldLabel htmlFor={name} required={required}>
 					{label}
@@ -117,11 +119,15 @@ export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
 						variant="outline"
 						role="combobox"
 						aria-expanded={open}
-						className="w-full justify-between"
+						className={cn(
+							"w-full justify-between bg-transparent px-2.5 font-normal shadow-xs hover:bg-transparent aria-expanded:bg-transparent dark:bg-input/30 dark:aria-expanded:bg-input/50 dark:hover:bg-input/50",
+							!value &&
+								"text-muted-foreground aria-expanded:text-muted-foreground",
+						)}
 						disabled={disabled}
 						aria-invalid={isInvalid}
 					>
-						{displayLabel}
+						<span className="flex-1 truncate text-left">{displayLabel}</span>
 						<ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
 					</Button>
 				</PopoverTrigger>
@@ -130,8 +136,8 @@ export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
 						<CommandInput placeholder={placeholder} onValueChange={setSearch} />
 						<CommandList>
 							{(isLoading || (isFetching && items.length === 0)) && (
-								<div className="py-6 text-center text-sm flex items-center justify-center">
-									<Loader2Icon className="size-4 animate-spin text-muted-foreground mr-2" />
+								<div className="flex items-center justify-center py-6 text-center text-sm">
+									<Loader2Icon className="mr-2 size-4 animate-spin text-muted-foreground" />
 									Loading...
 								</div>
 							)}
@@ -146,19 +152,14 @@ export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
 									return (
 										<CommandItem
 											key={itemValue}
-											value={itemLabel} // Note: since shouldFilter={false}, this doesn't affect fuzzy search anymore, but used for accessibility
+											value={itemLabel}
+											data-checked={value === itemValue}
 											onSelect={() => {
 												onChange?.(itemValue === value ? "" : itemValue);
 												setOpen(false);
 											}}
 										>
-											{itemLabel}
-											<CheckIcon
-												className={cn(
-													"ml-auto size-4",
-													value === itemValue ? "opacity-100" : "opacity-0",
-												)}
-											/>
+											<span className="truncate">{itemLabel}</span>
 										</CommandItem>
 									);
 								})}
@@ -167,7 +168,7 @@ export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
 							{hasNextPage && (
 								<div
 									ref={ref}
-									className="py-2 flex items-center justify-center text-sm text-muted-foreground"
+									className="flex items-center justify-center py-2 text-muted-foreground text-sm"
 								>
 									{isFetchingNextPage ? (
 										<Loader2Icon className="size-4 animate-spin" />

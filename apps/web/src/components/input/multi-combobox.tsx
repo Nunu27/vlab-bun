@@ -13,7 +13,7 @@ import {
 	PopoverTrigger,
 } from "@web/components/ui/popover";
 import { cn } from "@web/lib/utils";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { ChevronsUpDownIcon } from "lucide-react";
 import * as React from "react";
 
 type Option = {
@@ -59,7 +59,7 @@ export function MultiComboBox({
 					role="combobox"
 					aria-expanded={open}
 					disabled={disabled}
-					className="dark:bg-input/30 bg-transparent"
+					className="bg-transparent dark:bg-input/30"
 				>
 					{icon}
 					{label && <span className="hidden lg:inline">{label}</span>}
@@ -77,14 +77,12 @@ export function MultiComboBox({
 								<CommandItem
 									key={option.value}
 									value={option.value}
+									data-checked={option.checked}
 									onSelect={() => {
 										handleToggle(option.value, !option.checked);
 									}}
 								>
 									<span className="truncate">{option.label}</span>
-									{option.checked && (
-										<CheckIcon size={16} className="ml-auto" />
-									)}
 								</CommandItem>
 							))}
 						</CommandGroup>

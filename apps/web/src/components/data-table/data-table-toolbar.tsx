@@ -1,7 +1,7 @@
 import type { Table as TanStackTable } from "@tanstack/react-table";
+import { MultiComboBox } from "@web/components/input/multi-combobox";
 import { Button } from "@web/components/ui/button";
 import { Input } from "@web/components/ui/input";
-import { MultiComboBox } from "@web/components/ui/multi-combobox";
 import { LayoutListIcon, RefreshCwIcon } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { useDebounceCallback } from "usehooks-ts";

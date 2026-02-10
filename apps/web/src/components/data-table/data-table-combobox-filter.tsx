@@ -23,6 +23,7 @@ type DataTableComboboxFilterProps<
 	getValue: (item: InfiniteEndpointItem<TEndpoint>) => string;
 	placeholder?: string;
 	params?: Omit<ExtractEndpointQuery<TEndpoint>, "page" | "search">;
+	className?: string; // e.g. for fixing the width of the filter
 };
 
 /**
@@ -55,28 +56,26 @@ export function DataTableComboboxFilter<
 	getValue,
 	placeholder = "Filter...",
 	params,
+	className = "w-50",
 }: DataTableComboboxFilterProps<TEndpoint, TParentQuery>) {
 	const { filters, setFilters } = pagination;
 
-	const currentFilters = (filters ?? []) as any[];
+	const currentFilters = filters ?? [];
 	const currentFilter = currentFilters.find(
-		(f: any) => f.field === field && f.op === "eq",
+		(f) => f.field === field && f.op === "eq",
 	);
 	const currentValue =
 		typeof currentFilter?.value === "string" ? currentFilter.value : undefined;
 
 	const handleChange = (value: string) => {
 		const withoutCurrent = currentFilters.filter(
-			(f: any) => !(f.field === field && f.op === "eq"),
+			(f) => !(f.field === field && f.op === "eq"),
 		);
 
 		if (!value) {
-			setFilters((withoutCurrent.length > 0 ? withoutCurrent : null) as any);
+			setFilters(withoutCurrent.length > 0 ? withoutCurrent : null);
 		} else {
-			setFilters([
-				...withoutCurrent,
-				{ field, op: "eq" as const, value },
-			] as any);
+			setFilters([...withoutCurrent, { field, op: "eq" as const, value }]);
 		}
 	};
 
@@ -89,6 +88,7 @@ export function DataTableComboboxFilter<
 			params={params}
 			value={currentValue}
 			onChange={handleChange}
+			className={className}
 		/>
 	);
 }

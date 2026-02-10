@@ -48,10 +48,10 @@ type GenericFormOptions<TFormData> = FormOptions<
 
 export function useApiForm<
 	TFn extends BaseApiFunction,
-	TFormData extends ExtractTreatyParams<TFn> = ExtractTreatyParams<TFn>,
+	TData extends ExtractTreatyParams<TFn> = ExtractTreatyParams<TFn>,
 >(
-	endpoint: ApiMutationEndpoint<TFn>,
-	options?: Omit<GenericFormOptions<TFormData>, "onSubmit"> & {
+	endpoint: TFn & ApiMutationEndpoint<TFn>,
+	options?: Omit<GenericFormOptions<TData>, "onSubmit"> & {
 		mutation?: GenericMutationOptions<TFn>;
 	},
 ) {
@@ -60,7 +60,7 @@ export function useApiForm<
 	const { mutation: _, ...formOptions } = options || {};
 
 	return useAppForm<
-		TFormData,
+		TData,
 		any,
 		any,
 		any,

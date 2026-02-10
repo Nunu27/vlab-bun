@@ -16,8 +16,8 @@ export function DeviceTemplateActionsCell({
 		<div className="flex gap-2">
 			<ActionButton icon={PencilIcon} tooltip="Edit" asChild>
 				<Link
-					to="/lab-data/device-template/$deviceTemplateId/edit"
-					params={{ deviceTemplateId: deviceTemplate.id }}
+					to="/lab-data/device-template/$id/edit"
+					params={{ id: deviceTemplate.id }}
 				/>
 			</ActionButton>
 			<ActionButton

@@ -66,6 +66,7 @@ export function ChangePasswordModal({
 										label="Old Password"
 										type="password"
 										placeholder="Enter your current password"
+										required
 									/>
 								)}
 							</form.AppField>

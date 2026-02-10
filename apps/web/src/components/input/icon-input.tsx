@@ -1,5 +1,4 @@
-import { cn } from "@web/lib/utils";
-import { CheckIcon, icons } from "lucide-react";
+import { icons } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DynamicIcon } from "../dynamic-icon";
 import { Button } from "../ui/button";
@@ -25,6 +24,7 @@ type IconInputProps = {
 	value?: string;
 	onChange?: (value: string) => void;
 	disabled?: boolean;
+	className?: string; // e.g. for width control
 };
 
 // Limit how many we render to prevent slowdowns.
@@ -44,6 +44,7 @@ function IconInput({
 	value,
 	onChange,
 	disabled,
+	className,
 }: IconInputProps) {
 	const [open, setOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -57,7 +58,7 @@ function IconInput({
 	}, [searchQuery]);
 
 	return (
-		<Field>
+		<Field className={className}>
 			{label && (
 				<FieldLabel htmlFor={name} required={required}>
 					{label}
@@ -70,21 +71,18 @@ function IconInput({
 						variant="outline"
 						role="combobox"
 						aria-expanded={open}
-						className="w-full justify-start font-normal px-3"
+						className="aspect-square h-auto w-full justify-center p-0 font-normal"
 						disabled={disabled}
 						aria-invalid={isInvalid}
 					>
 						{value ? (
-							<div className="flex items-center gap-2">
-								<DynamicIcon name={value} className="size-4 shrink-0" />
-								<span className="truncate">{value}</span>
-							</div>
+							<DynamicIcon name={value} className="size-16 text-primary" />
 						) : (
-							<span className="text-muted-foreground">{placeholder}</span>
+							<span className="text-muted-foreground">Select</span>
 						)}
 					</Button>
 				</PopoverTrigger>
-				<PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+				<PopoverContent className="w-[320px] p-0">
 					<Command shouldFilter={false}>
 						<CommandInput
 							placeholder={placeholder}
@@ -94,26 +92,26 @@ function IconInput({
 						<CommandList>
 							<CommandEmpty>{emptyText}</CommandEmpty>
 							<CommandGroup>
-								{filteredIcons.map((iconName) => (
-									<CommandItem
-										key={iconName}
-										value={iconName}
-										onSelect={() => {
-											onChange?.(iconName === value ? "" : iconName);
-											setOpen(false);
-										}}
-										className="flex items-center gap-2"
-									>
-										<DynamicIcon name={iconName} className="size-4 shrink-0" />
-										<span className="flex-1 truncate">{iconName}</span>
-										<CheckIcon
-											className={cn(
-												"ml-auto size-4 shrink-0",
-												value === iconName ? "opacity-100" : "opacity-0",
-											)}
-										/>
-									</CommandItem>
-								))}
+								<div className="grid grid-cols-4 gap-1 pb-2">
+									{filteredIcons.map((iconName) => (
+										<CommandItem
+											key={iconName}
+											value={iconName}
+											data-checked={value === iconName}
+											onSelect={() => {
+												onChange?.(iconName === value ? "" : iconName);
+												setOpen(false);
+											}}
+											className="relative flex h-16 flex-col items-center justify-center p-0 [&>svg:last-child]:hidden"
+										>
+											<DynamicIcon
+												name={iconName}
+												className="size-6 shrink-0"
+											/>
+											<span className="truncate text-[10px]">{iconName}</span>
+										</CommandItem>
+									))}
+								</div>
 							</CommandGroup>
 						</CommandList>
 					</Command>
