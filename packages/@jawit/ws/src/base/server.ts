@@ -28,7 +28,8 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 		string,
 		WSServerHandler<
 			string,
-			{ data: TSchema; event: string; replies?: TProperties }
+			{ data: TSchema; event: string; type: any; replies?: TProperties },
+			TContext
 		>
 	>();
 
@@ -43,20 +44,24 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 	// Register handler for client2server | inter events based on contracts
 	on<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"client2server" | "inter"
 		> &
 			string,
 	>(
 		event: TEvent,
-		handler: WSServerHandler<TEvent, TWSContracts["contracts"][TEvent]>,
+		handler: WSServerHandler<
+			TEvent,
+			TWSContracts["contracts"][TEvent],
+			TContext
+		>,
 	) {
 		this.handlers.set(
 			event,
 			handler as WSServerHandler<
 				string,
-				{ data: TSchema; event: string; replies?: TProperties }
+				{ data: TSchema; event: string; type: any; replies?: TProperties },
+				TContext
 			>,
 		);
 		return this;
@@ -64,7 +69,6 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 
 	public validateIncomingData<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"client2server" | "inter"
 		> &
@@ -90,7 +94,6 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 	// Register a stateless cleanup handler invoked specifically per-event
 	onDispose<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"client2server" | "inter"
 		> &

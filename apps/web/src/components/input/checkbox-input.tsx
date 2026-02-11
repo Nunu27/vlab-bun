@@ -32,7 +32,7 @@ function CheckboxInput({
 						<FieldLabel
 							htmlFor={name}
 							required={required}
-							className="font-normal border-none bg-transparent p-0 m-0 w-auto"
+							className="m-0 w-auto border-none bg-transparent p-0 font-normal"
 						>
 							{label}
 						</FieldLabel>

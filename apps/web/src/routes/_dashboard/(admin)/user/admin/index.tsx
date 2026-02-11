@@ -4,6 +4,8 @@ import { PageHeading } from "@web/components/sections/page-heading";
 import { useApiPagination } from "@web/hooks/pagination/use-api-pagination";
 import api from "@web/lib/api";
 import { privateRoute } from "@web/lib/middlewares";
+import { ChangePasswordModal } from "../-module/components/modals/change-password-modal";
+import { UserPasswordModalProvider } from "../-module/stores/user-password-modal-store";
 import { adminColumns } from "./-module/columns";
 import { CreateAdminButton } from "./-module/components/buttons/create-admin-button";
 import { CreateAdminModal } from "./-module/components/modals/create-admin-modal";
@@ -24,22 +26,25 @@ function RouteComponent() {
 
 	return (
 		<AdminModalProvider>
-			<div className="flex flex-col gap-4">
-				<PageHeading
-					title="Admin Directory"
-					subtitle="Manage system administrators and privileges."
-					actions={<CreateAdminButton />}
-				/>
-				<DataTable
-					pagination={pagination}
-					columns={adminColumns}
-					searchPlaceholder="Search by admin name..."
-				/>
-			</div>
+			<UserPasswordModalProvider>
+				<div className="flex flex-col gap-4">
+					<PageHeading
+						title="Admin Directory"
+						subtitle="Manage system administrators and privileges."
+						actions={<CreateAdminButton />}
+					/>
+					<DataTable
+						pagination={pagination}
+						columns={adminColumns}
+						searchPlaceholder="Search by admin name..."
+					/>
+				</div>
 
-			<CreateAdminModal />
-			<EditAdminModal />
-			<DeleteAdminModal />
+				<CreateAdminModal />
+				<EditAdminModal />
+				<DeleteAdminModal />
+				<ChangePasswordModal />
+			</UserPasswordModalProvider>
 		</AdminModalProvider>
 	);
 }

@@ -56,6 +56,15 @@ export function EditInstructorModal() {
 					}}
 				>
 					<FieldGroup>
+						<form.AppField name="nip">
+							{(field) => (
+								<field.TextField
+									label="NIP"
+									placeholder="e.g., 12345678"
+									required
+								/>
+							)}
+						</form.AppField>
 						<form.AppField name="name">
 							{(field) => (
 								<field.TextField
@@ -71,15 +80,6 @@ export function EditInstructorModal() {
 									type="email"
 									label="Email Address"
 									placeholder="e.g., john@example.com"
-									required
-								/>
-							)}
-						</form.AppField>
-						<form.AppField name="nip">
-							{(field) => (
-								<field.TextField
-									label="NIP (Employee ID)"
-									placeholder="e.g., 12345678"
 									required
 								/>
 							)}

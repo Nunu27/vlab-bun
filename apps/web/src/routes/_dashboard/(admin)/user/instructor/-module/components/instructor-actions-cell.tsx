@@ -1,5 +1,6 @@
 import { ActionButton } from "@web/components/buttons/action-button";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { KeyRoundIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { useUserPasswordModalStore } from "../../../-module/stores/user-password-modal-store";
 import { useInstructorModalStore } from "../stores/instructor-modal-store";
 import type { InstructorItem } from "../types";
 
@@ -8,11 +9,16 @@ export function InstructorActionsCell({
 }: {
 	instructor: InstructorItem;
 }) {
-	const store = useInstructorModalStore();
-	const actions = store.use.actions();
+	const { changePassword } = useUserPasswordModalStore().use.actions();
+	const actions = useInstructorModalStore().use.actions();
 
 	return (
 		<div className="flex gap-2">
+			<ActionButton
+				icon={KeyRoundIcon}
+				tooltip="Change Password"
+				onClick={() => changePassword.open(instructor)}
+			/>
 			<ActionButton
 				icon={PencilIcon}
 				tooltip="Edit"

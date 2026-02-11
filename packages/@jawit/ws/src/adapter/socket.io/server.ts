@@ -99,6 +99,7 @@ export default class SocketIOServer<
 									: undefined;
 
 								const config = {
+									socket,
 									data: validatedData,
 									...(payload.params ? { params: payload.params } : {}),
 									...(replyFn ? { reply: replyFn } : {}),

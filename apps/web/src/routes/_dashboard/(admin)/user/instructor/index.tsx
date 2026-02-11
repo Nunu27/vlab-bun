@@ -4,6 +4,8 @@ import { PageHeading } from "@web/components/sections/page-heading";
 import { useApiPagination } from "@web/hooks/pagination/use-api-pagination";
 import api from "@web/lib/api";
 import { privateRoute } from "@web/lib/middlewares";
+import { ChangePasswordModal } from "../-module/components/modals/change-password-modal";
+import { UserPasswordModalProvider } from "../-module/stores/user-password-modal-store";
 import { instructorColumns } from "./-module/columns";
 import { CreateInstructorButton } from "./-module/components/buttons/create-instructor-button";
 import { CreateInstructorModal } from "./-module/components/modals/create-instructor-modal";
@@ -24,22 +26,25 @@ function RouteComponent() {
 
 	return (
 		<InstructorModalProvider>
-			<div className="flex flex-col gap-4">
-				<PageHeading
-					title="Instructor Directory"
-					subtitle="Manage instructor accounts and profiles."
-					actions={<CreateInstructorButton />}
-				/>
-				<DataTable
-					pagination={pagination}
-					columns={instructorColumns}
-					searchPlaceholder="Search by instructor name..."
-				/>
-			</div>
+			<UserPasswordModalProvider>
+				<div className="flex flex-col gap-4">
+					<PageHeading
+						title="Instructor Directory"
+						subtitle="Manage instructor accounts and profiles."
+						actions={<CreateInstructorButton />}
+					/>
+					<DataTable
+						pagination={pagination}
+						columns={instructorColumns}
+						searchPlaceholder="Search by instructor name..."
+					/>
+				</div>
 
-			<CreateInstructorModal />
-			<EditInstructorModal />
-			<DeleteInstructorModal />
+				<CreateInstructorModal />
+				<EditInstructorModal />
+				<DeleteInstructorModal />
+				<ChangePasswordModal />
+			</UserPasswordModalProvider>
 		</InstructorModalProvider>
 	);
 }

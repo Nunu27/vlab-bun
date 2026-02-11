@@ -31,18 +31,18 @@ function InterfaceLabel({
 						width={width}
 						height="16"
 						rx="4"
-						className="fill-card stroke-border stroke-1 opacity-90"
+						className="fill-card stroke-1 stroke-border opacity-90"
 					/>
 					<text
 						y="3"
 						textAnchor="middle"
-						className="fill-muted-foreground font-mono text-[8px] select-none"
+						className="select-none fill-muted-foreground font-mono text-[8px]"
 					>
 						{interfaceName}
 					</text>
 				</g>
 			</TooltipTrigger>
-			<TooltipContent className="px-2 py-1 text-xs whitespace-pre">
+			<TooltipContent className="whitespace-pre px-2 py-1 text-xs">
 				testing
 			</TooltipContent>
 		</Tooltip>

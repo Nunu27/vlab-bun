@@ -30,7 +30,7 @@ function Note({ id }: { id: string }) {
 			className={cn(
 				"node pointer-events-auto absolute rounded-lg border",
 				selected
-					? "border-dashed border-indigo-400"
+					? "border-indigo-400 border-dashed"
 					: "border-transparent bg-transparent",
 			)}
 			style={{
@@ -42,7 +42,7 @@ function Note({ id }: { id: string }) {
 				ref={textareaRef}
 				value={state.content}
 				className={
-					"text-foreground font-sm block field-sizing-content w-full resize-none overflow-hidden bg-transparent p-2 font-sans leading-snug outline-none"
+					"field-sizing-content block w-full resize-none overflow-hidden bg-transparent p-2 font-sans font-sm text-foreground leading-snug outline-none"
 				}
 				rows={1}
 			/>

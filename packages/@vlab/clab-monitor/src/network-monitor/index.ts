@@ -19,7 +19,7 @@ export default {
 	checkAccess(ctx, node) {
 		const handler = monitors[node.deviceKind];
 
-		if (!handler || !handler.checkAccess) {
+		if (!handler?.checkAccess) {
 			return true;
 		}
 

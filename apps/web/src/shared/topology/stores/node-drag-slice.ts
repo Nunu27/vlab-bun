@@ -96,7 +96,7 @@ export const createNodeDragSlice: StateCreator<
 			};
 
 			if (!lookup[source.type].has(source.id)) {
-				actions.select({ [source.type + "s"]: [source.id] });
+				actions.select({ [`${source.type}s`]: [source.id] });
 				return actions.setDragState(start, source);
 			}
 		}

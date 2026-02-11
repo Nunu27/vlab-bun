@@ -19,6 +19,8 @@ import { useAuthStore } from "@web/stores/auth-store";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import { toast } from "sonner";
 
+import "@web/lib/ws";
+
 export const Route = createRootRouteWithContext<RouterContext>()({
 	beforeLoad: async () => {
 		const { user, actions } = useAuthStore.getState();

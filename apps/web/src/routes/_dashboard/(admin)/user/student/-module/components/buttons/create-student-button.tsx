@@ -7,7 +7,7 @@ export default function CreateStudentButton() {
 
 	return (
 		<Button onClick={actions.create.open}>
-			<PlusIcon className="w-4 h-4 mr-2" />
+			<PlusIcon className="mr-2 h-4 w-4" />
 			Create Student
 		</Button>
 	);

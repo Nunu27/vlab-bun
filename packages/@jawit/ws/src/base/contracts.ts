@@ -26,7 +26,7 @@ class WSContracts<
 	register<
 		const TEvent extends string,
 		TType extends WSEventType,
-		TData extends TSchema,
+		TData extends TSchema | undefined = undefined,
 		TReplies extends TProperties = never,
 	>(
 		config: TType extends "server2client"

@@ -56,6 +56,15 @@ export function CreateInstructorModal() {
 						form.handleSubmit();
 					}}
 				>
+					<form.AppField name="nip">
+						{(field) => (
+							<field.TextField
+								label="NIP"
+								placeholder="e.g., 12345678"
+								required
+							/>
+						)}
+					</form.AppField>
 					<FieldGroup>
 						<form.AppField name="name">
 							{(field) => (
@@ -72,15 +81,6 @@ export function CreateInstructorModal() {
 									type="email"
 									label="Email Address"
 									placeholder="e.g., john@example.com"
-									required
-								/>
-							)}
-						</form.AppField>
-						<form.AppField name="nip">
-							{(field) => (
-								<field.TextField
-									label="NIP (Employee ID)"
-									placeholder="e.g., 12345678"
 									required
 								/>
 							)}

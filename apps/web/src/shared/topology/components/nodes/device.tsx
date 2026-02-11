@@ -44,7 +44,7 @@ function Device({ id }: { id: string }) {
 		<div
 			ref={ref}
 			className={cn(
-				"node border-border bg-card pointer-events-auto absolute flex flex-col items-center justify-center rounded-lg border shadow-sm transition-shadow duration-200",
+				"node pointer-events-auto absolute flex flex-col items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-shadow duration-200",
 				selected && "shadow-lg ring-2 ring-indigo-500",
 			)}
 			style={{
@@ -66,12 +66,12 @@ function Device({ id }: { id: string }) {
 			{healthColor && (
 				<div
 					className={cn(
-						"border-background absolute top-1 right-1 h-2 w-2 rounded-full border",
+						"absolute top-1 right-1 h-2 w-2 rounded-full border border-background",
 						healthColor,
 					)}
 				/>
 			)}
-			<div className="bg-popover text-popover-foreground/80 border-border pointer-events-none absolute top-full mt-2 rounded border px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap shadow-sm">
+			<div className="pointer-events-none absolute top-full mt-2 whitespace-nowrap rounded border border-border bg-popover px-2 py-0.5 font-semibold text-[10px] text-popover-foreground/80 shadow-sm">
 				{state.name}
 			</div>
 		</div>

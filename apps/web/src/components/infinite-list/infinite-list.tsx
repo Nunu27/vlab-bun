@@ -63,7 +63,7 @@ function DefaultLoadMore({
 
 function DefaultEmpty() {
 	return (
-		<div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-16 text-sm">
+		<div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground text-sm">
 			No items found.
 		</div>
 	);

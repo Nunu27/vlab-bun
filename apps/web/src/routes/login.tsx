@@ -38,13 +38,13 @@ function RouteComponent() {
 	});
 
 	return (
-		<div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+		<div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
 			<div className="w-full max-w-sm">
 				<div className="flex flex-col gap-6">
 					<Card>
 						<CardHeader className="pb-4 text-center">
-							<CardTitle className="flex items-center justify-center gap-2 text-xl font-bold">
-								<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+							<CardTitle className="flex items-center justify-center gap-2 font-bold text-xl">
+								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
 									<FlaskConicalIcon className="size-4" />
 								</div>
 								vLab

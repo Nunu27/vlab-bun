@@ -42,7 +42,7 @@ export async function gatherAndSetupEnvironment(
 	const existingDbUrl = parseEnv("DATABASE_URL");
 	if (existingDbUrl) {
 		const dbMatch = existingDbUrl.match(
-			/postgresql:\/\/([^:]+):([^@]+)@([^:]+):([^\/]+)\/(.*)/,
+			/postgresql:\/\/([^:]+):([^@]+)@([^:]+):([^/]+)\/(.*)/,
 		);
 		if (dbMatch) {
 			existingDbUser = dbMatch[1] || "";

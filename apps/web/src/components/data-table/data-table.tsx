@@ -151,10 +151,10 @@ export function DataTable<TData>({
 								{isLoading && (
 									<tr className="pointer-events-none absolute inset-0 z-20">
 										<td className="h-full w-full">
-											<div className="bg-background/80 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
-												<div className="bg-card text-card-foreground flex items-center gap-2 rounded-lg border px-4 py-2 shadow-sm">
+											<div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+												<div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-card-foreground shadow-sm">
 													<Spinner className="h-4 w-4" />
-													<span className="text-sm font-medium">Loading</span>
+													<span className="font-medium text-sm">Loading</span>
 												</div>
 											</div>
 										</td>

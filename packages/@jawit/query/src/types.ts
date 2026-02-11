@@ -4,7 +4,7 @@ import type {
 	BaseResponse,
 	FailureResponse,
 	PaginatedData,
-	SuccessResponse
+	SuccessResponse,
 } from "@jawit/common";
 import type {
 	InfiniteData,
@@ -17,7 +17,7 @@ import type {
 	UseQueryOptions,
 	UseQueryResult,
 	UseSuspenseQueryOptions,
-	UseSuspenseQueryResult
+	UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 import type { MUTATION_METHODS, QUERY_METHODS } from "./constants";
 
@@ -62,7 +62,7 @@ export type ExtractTreatyParams<TFn> = TFn extends (
 	: never;
 
 export type ExtractTreatyPaginationData<
-	TEndpoint extends { post: (...args: any[]) => Promise<any> }
+	TEndpoint extends { post: (...args: any[]) => Promise<any> },
 > =
 	ExtractTreatyData<TEndpoint["post"]> extends PaginatedData<infer D>
 		? D
@@ -117,7 +117,7 @@ type QueryHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>
+		>,
 	): UseBaseQueryOptions;
 
 	useQuery(
@@ -125,7 +125,7 @@ type QueryHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>
+		>,
 	): UseQueryResult<
 		ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 		ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
@@ -136,7 +136,7 @@ type QueryHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>
+		>,
 	): UseSuspenseQueryResult<
 		ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 		ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
@@ -150,7 +150,7 @@ type QueryHooks<TFn> = {
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyParams<TFn>
-				>
+				>,
 			) => UseQueryResult<
 				ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
@@ -165,7 +165,7 @@ type QueryHooks<TFn> = {
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyParams<TFn>
-				>
+				>,
 			) => UseInfiniteQueryResult<
 				InfiniteData<ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>>,
 				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
@@ -174,7 +174,7 @@ type QueryHooks<TFn> = {
 
 	ensureQueryData(
 		queryClient: QueryClient,
-		args?: ExtractTreatyParams<TFn>
+		args?: ExtractTreatyParams<TFn>,
 	): Promise<ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>>;
 
 	invalidateQuery(queryClient: QueryClient): Promise<void>;
@@ -186,7 +186,7 @@ type MutationHooks<TFn> = {
 			ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 			ExtractTreatyParams<TFn>
-		>
+		>,
 	): UseMutationResult<
 		ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 		ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
@@ -201,7 +201,7 @@ type MutationHooks<TFn> = {
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyParams<TFn>
-				>
+				>,
 			) => UseQueryResult<
 				ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
@@ -216,7 +216,7 @@ type MutationHooks<TFn> = {
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>,
 					ExtractTreatyParams<TFn>
-				>
+				>,
 			) => UseInfiniteQueryResult<
 				InfiniteData<ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>>,
 				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>

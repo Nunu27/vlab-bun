@@ -98,8 +98,8 @@ emitter.on("node-create", async ({ labNodeId, deviceTemplateId, ...node }) => {
 			.insert(labSessionNodes)
 			.values({ labNodeId, deviceTemplateId, ...node });
 	} else {
-		tempNodeEvents.emit(`${node.id}.health`, node.health);
-		tempNodeEvents.emit(`${node.id}.ports`, node.ports);
+		tempNodeEvents.emit(`${node.id}:health`, node.health);
+		tempNodeEvents.emit(`${node.id}:ports`, node.ports);
 	}
 
 	logger.debug({ nodeId: node.id }, "Node created");
@@ -108,7 +108,7 @@ emitter.on("node-create", async ({ labNodeId, deviceTemplateId, ...node }) => {
 emitter.on("node-remove", async (id, isTemp) => {
 	if (!isTemp) return;
 
-	tempNodeEvents.emit(`${id}.health`, "deleted");
+	tempNodeEvents.emit(`${id}:health`, "deleted");
 });
 
 // Health & interface events

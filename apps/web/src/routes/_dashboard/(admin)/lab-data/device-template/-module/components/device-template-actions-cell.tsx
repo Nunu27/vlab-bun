@@ -9,8 +9,7 @@ export function DeviceTemplateActionsCell({
 }: {
 	deviceTemplate: DeviceTemplateItem;
 }) {
-	const store = useDeviceTemplateModalStore();
-	const actions = store.use.actions();
+	const actions = useDeviceTemplateModalStore().use.actions();
 
 	return (
 		<div className="flex gap-2">

@@ -127,14 +127,20 @@ export function createUseInfiniteQuery(
 	key: unknown[],
 	clientOptions?: EdenQueryOptions,
 ) {
-	return ({
-		args,
-		getArgs,
-		onSuccessMessage,
-		onErrorMessage,
-		queryKey,
-		...options
-	}: { args?: any; getArgs: (page: number, args: any) => any; queryKey?: unknown[] } & Record<string, any> = {} as any) =>
+	return (
+		{
+			args,
+			getArgs,
+			onSuccessMessage,
+			onErrorMessage,
+			queryKey,
+			...options
+		}: {
+			args?: any;
+			getArgs: (page: number, args: any) => any;
+			queryKey?: unknown[];
+		} & Record<string, any> = {} as any,
+	) =>
 		useInfiniteQuery({
 			...(options as Omit<
 				UseInfiniteQueryOptions<any, any, InfiniteData<any>, any, number>,

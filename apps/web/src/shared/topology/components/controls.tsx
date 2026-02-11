@@ -15,7 +15,7 @@ function Controls({ canvasRef }: ControlsProps) {
 
 	return (
 		<div className="absolute right-6 bottom-6 z-50 flex flex-col gap-2">
-			<div className="border-border bg-card/90 flex flex-col gap-1 rounded-xl border p-1.5 shadow-lg backdrop-blur-sm">
+			<div className="flex flex-col gap-1 rounded-xl border border-border bg-card/90 p-1.5 shadow-lg backdrop-blur-sm">
 				<ActionButton
 					icon={MaximizeIcon}
 					tooltip="Fit to Screen"
@@ -47,7 +47,7 @@ function Controls({ canvasRef }: ControlsProps) {
 					}}
 				/>
 			</div>
-			<div className="border-border bg-card/90 text-muted-foreground pointer-events-none flex w-12 items-center justify-center rounded-xl border px-3 py-1 text-[10px] font-medium shadow-sm backdrop-blur-sm">
+			<div className="pointer-events-none flex w-12 items-center justify-center rounded-xl border border-border bg-card/90 px-3 py-1 font-medium text-[10px] text-muted-foreground shadow-sm backdrop-blur-sm">
 				{Math.round(scale * 100)}%
 			</div>
 		</div>

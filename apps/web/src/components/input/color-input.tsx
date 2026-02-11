@@ -29,7 +29,7 @@ function ColorInput({
 				id={name}
 				name={name}
 				aria-invalid={isInvalid}
-				className="h-10 w-full cursor-pointer p-1 py-0.5 px-1"
+				className="h-10 w-full cursor-pointer p-1 px-1 py-0.5"
 			/>
 			{isInvalid && <FieldError errors={errors} />}
 		</Field>

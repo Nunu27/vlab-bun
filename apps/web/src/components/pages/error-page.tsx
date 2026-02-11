@@ -18,22 +18,22 @@ function ErrorPage(props: ErrorComponentProps) {
 				{/* Main Error Display */}
 				<div className="space-y-4">
 					<div className="flex justify-center">
-						<AlertTriangleIcon className="text-destructive h-24 w-24" />
+						<AlertTriangleIcon className="h-24 w-24 text-destructive" />
 					</div>
 
 					<div className="space-y-2">
-						<h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+						<h1 className="font-bold text-3xl tracking-tight md:text-4xl">
 							Something Went Wrong
 						</h1>
-						<p className="text-muted-foreground mx-auto max-w-md text-lg md:text-xl">
+						<p className="mx-auto max-w-md text-lg text-muted-foreground md:text-xl">
 							An unexpected error occurred while processing your request.
 						</p>
 					</div>
 
 					{/* Error Details */}
 					{error && (
-						<div className="bg-destructive/10 border-destructive/20 rounded-lg border p-4">
-							<p className="text-destructive font-mono text-sm">{error}</p>
+						<div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4">
+							<p className="font-mono text-destructive text-sm">{error}</p>
 						</div>
 					)}
 				</div>
@@ -60,7 +60,7 @@ function ErrorPage(props: ErrorComponentProps) {
 				</div>
 
 				{/* Additional helpful text */}
-				<p className="text-muted-foreground pt-8 text-sm">
+				<p className="pt-8 text-muted-foreground text-sm">
 					If this problem persists, please contact support.
 				</p>
 			</div>

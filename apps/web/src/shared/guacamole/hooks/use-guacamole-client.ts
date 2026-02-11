@@ -106,7 +106,7 @@ export const useGuacamoleClient = ({
 
 		// Connect
 		try {
-			client.connect("token=" + token);
+			client.connect(`token=${token}`);
 		} catch (e) {
 			console.error("Error on client.connect():", e);
 			setError("Failed to initiate connection");

@@ -30,10 +30,10 @@ export const deviceCategoryColumns: ColumnDef<DeviceCategoryItem>[] = [
 		cell: ({ row }) => (
 			<div className="flex items-center justify-center gap-2">
 				<div
-					className="w-4 h-4 rounded-full border shadow-sm"
+					className="h-4 w-4 rounded-full border shadow-sm"
 					style={{ backgroundColor: row.original.color }}
 				/>
-				<span className="text-sm text-muted-foreground">
+				<span className="text-muted-foreground text-sm">
 					{row.original.color}
 				</span>
 			</div>

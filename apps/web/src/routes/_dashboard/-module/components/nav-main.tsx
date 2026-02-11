@@ -27,7 +27,7 @@ export function NavMain({ sections }: { sections: MenuSection[] }) {
 			{sections.map((section, index) => (
 				<SidebarGroup key={section.title ?? `section-${index}`}>
 					{section.title && (
-						<SidebarGroupLabel className="text-sidebar-foreground/70 text-xs font-bold tracking-wider uppercase">
+						<SidebarGroupLabel className="font-bold text-sidebar-foreground/70 text-xs uppercase tracking-wider">
 							{section.title}
 						</SidebarGroupLabel>
 					)}

@@ -62,14 +62,13 @@ export default class SocketIOClient<
 
 	subscribe<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"server2client" | "inter"
 		> &
 			string,
 	>(
 		event: TEvent,
-		...args: EventParams<TEvent> extends never
+		...args: keyof EventParams<TEvent> extends never
 			? [handler: WSClientHandler<TWSContracts["contracts"][TEvent]>]
 			: [
 					params: EventParams<TEvent>,
@@ -114,20 +113,14 @@ export default class SocketIOClient<
 
 	emit<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"client2server" | "inter"
 		> &
 			string,
 	>(
 		event: TEvent,
-		config: {
-			data: unknown;
-			params?: Record<string, unknown>;
-			callbacks?: Record<string, (data: unknown) => void>;
-			onError?: (error: string) => void;
-			timeoutMs?: number;
-		},
+		// biome-ignore lint/suspicious/noExplicitAny: interface implementation override constraint
+		config: any,
 	): () => void {
 		const requestId = crypto.randomUUID();
 

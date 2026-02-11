@@ -55,21 +55,21 @@ export const GuacamoleConnectionStates: React.FC<ConnectionStatesProps> = ({
 		(state === "error" ? errorMessage : config.defaultDescription);
 
 	return (
-		<div className="bg-background absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 text-center backdrop-blur-sm">
-			{config.showSpinner && <Spinner className="text-primary size-10" />}
+		<div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-background p-6 text-center backdrop-blur-sm">
+			{config.showSpinner && <Spinner className="size-10 text-primary" />}
 
 			{config.showIcon && (
-				<div className="bg-destructive/10 rounded-full p-4">
-					<AlertCircle className="text-destructive size-10" />
+				<div className="rounded-full bg-destructive/10 p-4">
+					<AlertCircle className="size-10 text-destructive" />
 				</div>
 			)}
 
 			<div className="flex flex-col gap-2">
-				<h3 className="text-foreground text-lg font-semibold">
+				<h3 className="font-semibold text-foreground text-lg">
 					{displayTitle}
 				</h3>
 				{displayDescription && (
-					<p className="text-muted-foreground text-sm font-medium">
+					<p className="font-medium text-muted-foreground text-sm">
 						{displayDescription}
 					</p>
 				)}

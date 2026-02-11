@@ -12,6 +12,7 @@ import type WSContracts from "../base/contracts";
 import type {
 	EventParams,
 	ExtractWSContracts,
+	Simplify,
 	WSClientHandler,
 } from "../types";
 
@@ -37,14 +38,12 @@ export function createWSHooks<
 	}
 
 	type ServerClientInterEvents = keyof ExtractWSContracts<
-		Record<string, unknown>,
 		TContracts["contracts"],
 		"server2client" | "inter"
 	> &
 		string;
 
 	type ClientServerInterEvents = keyof ExtractWSContracts<
-		Record<string, unknown>,
 		TContracts["contracts"],
 		"client2server" | "inter"
 	> &
@@ -62,35 +61,47 @@ export function createWSHooks<
 
 		const send = useCallback(
 			(
-				config: {
-					data: Static<TContracts["contracts"][TEvent]["data"]>;
-				} & (EventParams<TEvent> extends never
-					? unknown
-					: { params: EventParams<TEvent> }) &
-					(TContracts["contracts"][TEvent]["replies"] extends undefined
-						? unknown
-						: {
-								callbacks?: Partial<{
-									[K in keyof NonNullable<
-										TContracts["contracts"][TEvent]["replies"]
-									>]: (
-										data: NonNullable<
+				config: Simplify<
+					([NonNullable<TContracts["contracts"][TEvent]["data"]>] extends [
+						TSchema,
+					]
+						? {
+								data: Static<
+									NonNullable<TContracts["contracts"][TEvent]["data"]>
+								>;
+							}
+						: {}) &
+						(keyof EventParams<TEvent> extends never
+							? {}
+							: { params: EventParams<TEvent> }) &
+						([NonNullable<TContracts["contracts"][TEvent]["replies"]>] extends [
+							Record<string, any>,
+						]
+							? {
+									callbacks?: Partial<{
+										[K in keyof NonNullable<
 											TContracts["contracts"][TEvent]["replies"]
-										>[K] extends TSchema
-											? Static<
-													NonNullable<
-														TContracts["contracts"][TEvent]["replies"]
-													>[K]
-												>
-											: never,
-									) => void;
-								}>;
-								onError?: (error: string) => void;
-								timeoutMs?: number;
-							}),
+										>]: (
+											data: NonNullable<
+												TContracts["contracts"][TEvent]["replies"]
+											>[K] extends TSchema
+												? Static<
+														NonNullable<
+															TContracts["contracts"][TEvent]["replies"]
+														>[K]
+													>
+												: never,
+										) => void;
+									}>;
+									onError?: (error: string) => void;
+									timeoutMs?: number;
+								}
+							: {})
+				>,
 			) => {
 				dispose();
-				const unsubscribe = client.emit(event, config);
+				// biome-ignore lint/suspicious/noExplicitAny: config is strictly typed at the boundary but ts struggles mapping to the client.emit method generics
+				const unsubscribe = client.emit(event, config as any);
 				disposeRef.current = unsubscribe;
 			},
 			[event, dispose],
@@ -104,73 +115,75 @@ export function createWSHooks<
 		return { send, dispose };
 	}
 
-	function useWSData<TEvent extends ServerClientInterEvents>(
-		event: TEvent,
-		...args: EventParams<TEvent> extends never
-			? [
-					options: {
-						default: Static<TContracts["contracts"][TEvent]["data"]>;
-					},
-				]
-			: [
-					options: {
-						params: EventParams<TEvent>;
-						default: Static<TContracts["contracts"][TEvent]["data"]>;
-					},
-				]
-	): Static<TContracts["contracts"][TEvent]["data"]>;
+	type WSDataValue<TEvent extends ServerClientInterEvents> = [
+		NonNullable<TContracts["contracts"][TEvent]["data"]>,
+	] extends [TSchema]
+		? Static<NonNullable<TContracts["contracts"][TEvent]["data"]>>
+		: undefined;
 
 	function useWSData<TEvent extends ServerClientInterEvents>(
 		event: TEvent,
-		...args: EventParams<TEvent> extends never
+		...args: keyof EventParams<TEvent> extends never
 			? [
-					options?: {
-						default?: Static<TContracts["contracts"][TEvent]["data"]>;
+					options: {
+						default: WSDataValue<TEvent>;
 					},
 				]
 			: [
 					options: {
 						params: EventParams<TEvent>;
-						default?: Static<TContracts["contracts"][TEvent]["data"]>;
+						default: WSDataValue<TEvent>;
 					},
 				]
-	): Static<TContracts["contracts"][TEvent]["data"]> | undefined;
+	): WSDataValue<TEvent>;
 
 	function useWSData<TEvent extends ServerClientInterEvents>(
 		event: TEvent,
-		...args: EventParams<TEvent> extends never
+		...args: keyof EventParams<TEvent> extends never
 			? [
 					options?: {
-						default?: Static<TContracts["contracts"][TEvent]["data"]>;
+						default?: WSDataValue<TEvent>;
 					},
 				]
 			: [
 					options: {
 						params: EventParams<TEvent>;
-						default?: Static<TContracts["contracts"][TEvent]["data"]>;
+						default?: WSDataValue<TEvent>;
+					},
+				]
+	): WSDataValue<TEvent> | undefined;
+
+	function useWSData<TEvent extends ServerClientInterEvents>(
+		event: TEvent,
+		...args: keyof EventParams<TEvent> extends never
+			? [
+					options?: {
+						default?: WSDataValue<TEvent>;
+					},
+				]
+			: [
+					options: {
+						params: EventParams<TEvent>;
+						default?: WSDataValue<TEvent>;
 					},
 				]
 	) {
 		const options = args[0] as Record<string, unknown> | undefined;
 		const params = options?.params;
-		const defaultValue = options?.default as
-			| Static<TContracts["contracts"][TEvent]["data"]>
-			| undefined;
+		const defaultValue = options?.default as WSDataValue<TEvent> | undefined;
 
 		const memoizedParams = useDeepCompareMemoize(params);
 		const isConnected = useWSConnectionState();
 
-		const [data, setData] = useState<
-			Static<TContracts["contracts"][TEvent]["data"]> | undefined
-		>(defaultValue);
+		const [data, setData] = useState<WSDataValue<TEvent> | undefined>(
+			defaultValue,
+		);
 
 		useEffect(() => {
 			if (!isConnected) return;
 
 			let unsubscribe: () => void;
-			const handler = (
-				newData: Static<TContracts["contracts"][TEvent]["data"]>,
-			) => {
+			const handler = (newData: WSDataValue<TEvent>) => {
 				setData(newData);
 			};
 
@@ -190,7 +203,7 @@ export function createWSHooks<
 
 	function useWSEvent<TEvent extends ServerClientInterEvents>(
 		event: TEvent,
-		...args: EventParams<TEvent> extends never
+		...args: keyof EventParams<TEvent> extends never
 			? [
 					options: {
 						handler: WSClientHandler<TContracts["contracts"][TEvent]>;

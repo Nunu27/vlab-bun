@@ -20,7 +20,7 @@ function SelectionLayer() {
 				y={Math.min(state.start.y, state.current.y)}
 				width={Math.abs(state.current.x - state.start.x)}
 				height={Math.abs(state.current.y - state.start.y)}
-				className="fill-primary/20 stroke-primary stroke-1"
+				className="fill-primary/20 stroke-1 stroke-primary"
 			/>
 		</svg>
 	);

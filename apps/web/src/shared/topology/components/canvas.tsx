@@ -61,7 +61,7 @@ function TopologyCanvas() {
 			id="topology-canvas"
 			data-sessionid={sessionId}
 			ref={canvasRef}
-			className="relative flex-1 overflow-hidden select-none"
+			className="relative flex-1 select-none overflow-hidden"
 			onDragOver={(e) => e.preventDefault()}
 			onContextMenu={(e) => e.preventDefault()}
 		>

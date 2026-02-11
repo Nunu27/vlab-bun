@@ -38,7 +38,7 @@ function Group({ id }: { id: string }) {
 			>
 				<div className="flex items-center gap-1.5">
 					<GroupIcon size={14} className="text-foreground" />
-					<span className="text-foreground text-[10px] font-extrabold tracking-wider whitespace-nowrap uppercase">
+					<span className="whitespace-nowrap font-extrabold text-[10px] text-foreground uppercase tracking-wider">
 						{state.name}
 					</span>
 				</div>

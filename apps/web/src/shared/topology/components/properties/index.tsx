@@ -9,9 +9,9 @@ export default function NodeProperties() {
 	if (!state) return null;
 
 	return (
-		<div className="animate-in slide-in-from-right dark:border-border dark:bg-card z-20 flex w-80 flex-col border-l border-gray-200 bg-white shadow-xl duration-300">
-			<div className="dark:border-border dark:bg-card flex items-center justify-between border-b border-gray-200 bg-white p-4">
-				<h2 className="dark:text-muted-foreground text-xs font-semibold tracking-wider text-gray-500 uppercase">
+		<div className="slide-in-from-right z-20 flex w-80 animate-in flex-col border-gray-200 border-l bg-white shadow-xl duration-300 dark:border-border dark:bg-card">
+			<div className="flex items-center justify-between border-gray-200 border-b bg-white p-4 dark:border-border dark:bg-card">
+				<h2 className="font-semibold text-gray-500 text-xs uppercase tracking-wider dark:text-muted-foreground">
 					Configuration
 				</h2>
 				<Button type="button" onClick={state.clear} variant="ghost" size="icon">

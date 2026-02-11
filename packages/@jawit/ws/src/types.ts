@@ -3,7 +3,8 @@ import type WSContracts from "./base/contracts";
 
 export type WSEventType = "client2server" | "server2client" | "inter";
 
-export type BaseWSContract<TMeta extends Record<string, unknown>> = {
+// biome-ignore lint/suspicious/noExplicitAny: generic constraint
+export type BaseWSContract<TMeta extends Record<string, unknown> = any> = {
 	event: string;
 	type: WSEventType;
 	data?: TSchema;
@@ -12,8 +13,8 @@ export type BaseWSContract<TMeta extends Record<string, unknown>> = {
 };
 
 export type ExtractWSContracts<
-	TMeta extends Record<string, unknown>,
-	TContracts extends Record<string, BaseWSContract<TMeta>>,
+	// biome-ignore lint/suspicious/noExplicitAny: generic constraint
+	TContracts extends Record<string, BaseWSContract<any>>,
 	TType extends WSEventType,
 > = {
 	[TEvent in keyof TContracts as TContracts[TEvent]["type"] extends TType
@@ -21,44 +22,71 @@ export type ExtractWSContracts<
 		: never]: TContracts[TEvent];
 };
 
-export type ExtractPathParams<TEvent extends string> =
+export type EventParams<TEvent extends string> =
 	TEvent extends `${infer _Start}:[${infer Param}]${infer Rest}`
-		? { [K in Param]: string } & (ExtractPathParams<Rest> extends never
-				? unknown
-				: ExtractPathParams<Rest>)
-		: never;
+		? { [K in Param]: string } & EventParams<Rest>
+		: Record<string, never>; // Return empty object instead of never when no params
 
-export type EventParams<TEvent extends string> = ExtractPathParams<TEvent>;
+// Helper to clean up object types
+export type Simplify<T> = { [K in keyof T]: T[K] } & {};
 
 export type MaybePromise<T> = T | Promise<T>;
 
+export type WSDataConfig<TContract extends BaseWSContract> = [
+	TContract["data"],
+] extends [undefined]
+	? Record<string, never>
+	: { data: Static<NonNullable<TContract["data"]>> };
+
+export type WSClientDataConfig<TContract extends BaseWSContract> = [
+	NonNullable<TContract["data"]>,
+] extends [TSchema]
+	? { data: Static<NonNullable<TContract["data"]>> }
+	: Record<string, never>;
+
+export type WSParamsConfig<TEvent extends string> =
+	EventParams<TEvent> extends Record<string, never>
+		? Record<string, never>
+		: { params: EventParams<TEvent> };
+
+export type WSServerRepliesConfig<TContract extends BaseWSContract> = [
+	TContract["replies"],
+] extends [undefined]
+	? Record<string, never>
+	: {
+			reply: <
+				TReplies extends NonNullable<TContract["replies"]>,
+				K extends keyof TReplies,
+			>(
+				type: K,
+				data: Static<TReplies[K]>,
+			) => void;
+		};
+
+export type WSClientCallbacksConfig<TContract extends BaseWSContract> = [
+	NonNullable<TContract["replies"]>,
+] extends [Record<string, unknown>]
+	? {
+			callbacks?: Partial<{
+				[K in keyof NonNullable<TContract["replies"]>]: (
+					data: Static<NonNullable<TContract["replies"]>[K]>,
+				) => void;
+			}>;
+			onError?: (error: string) => void;
+			timeoutMs?: number;
+		}
+	: Record<string, never>;
+
 export type WSServerHandler<
 	TEvent extends string,
-	TEventContract extends {
-		data?: TSchema;
-		event: string;
-		replies?: TProperties;
-	},
+	TEventContract extends BaseWSContract,
+	TContext = unknown,
 > = (
-	config: {
-		executionId?: string;
-	} & (TEventContract["data"] extends TSchema
-		? { data: Static<TEventContract["data"]> }
-		: unknown) &
-		(EventParams<TEvent> extends never
-			? unknown
-			: { params: EventParams<TEvent> }) &
-		(TEventContract["replies"] extends undefined
-			? unknown
-			: {
-					reply: <
-						TReplies extends NonNullable<TEventContract["replies"]>,
-						K extends keyof TReplies,
-					>(
-						type: K,
-						data: Static<TReplies[K]>,
-					) => void;
-				}),
+	config: Simplify<
+		{ executionId?: string; socket: TContext } & WSDataConfig<TEventContract> &
+			WSParamsConfig<TEvent> &
+			WSServerRepliesConfig<TEventContract>
+	>,
 ) => MaybePromise<void>;
 
 export type WSServerMiddleware<TContext, TMeta> = (
@@ -66,9 +94,11 @@ export type WSServerMiddleware<TContext, TMeta> = (
 	next: (err?: Error) => void,
 ) => void | Promise<void>;
 
-export type WSClientHandler<
-	TEventContract extends { data: TSchema; event: string },
-> = (data: Static<TEventContract["data"]>) => void | Promise<void>;
+export type WSClientHandler<TEventContract extends BaseWSContract> = (
+	data: [TEventContract["data"]] extends [undefined]
+		? undefined
+		: Static<NonNullable<TEventContract["data"]>>,
+) => void | Promise<void>;
 
 // biome-ignore lint/suspicious/noExplicitAny: generic constraint
 export type ExtractMeta<T> = T extends WSContracts<infer M, any> ? M : never;

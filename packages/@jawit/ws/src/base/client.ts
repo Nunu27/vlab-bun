@@ -3,7 +3,11 @@ import { Value } from "@sinclair/typebox/value";
 import type {
 	EventParams,
 	ExtractWSContracts,
+	Simplify,
+	WSClientCallbacksConfig,
+	WSClientDataConfig,
 	WSClientHandler,
+	WSParamsConfig,
 } from "../types";
 import type WSContracts from "./contracts";
 
@@ -20,14 +24,13 @@ abstract class WSClient<TWSContracts extends WSContracts<any, any>> {
 	// Subscribe to server2client | inter events based on contracts, should return a function to unsubscribe
 	abstract subscribe<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"server2client" | "inter"
 		> &
 			string,
 	>(
 		event: TEvent,
-		...args: EventParams<TEvent> extends never
+		...args: keyof EventParams<TEvent> extends never
 			? [handler: WSClientHandler<TWSContracts["contracts"][TEvent]>]
 			: [
 					params: EventParams<TEvent>,
@@ -38,38 +41,21 @@ abstract class WSClient<TWSContracts extends WSContracts<any, any>> {
 	// Emit client2server | inter events based on contracts. it should also accept a callback for each reply registered in that event contract
 	abstract emit<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"client2server" | "inter"
 		> &
 			string,
 	>(
 		event: TEvent,
-		config: {
-			data: Static<TWSContracts["contracts"][TEvent]["data"]>;
-		} & (EventParams<TEvent> extends never
-			? unknown
-			: { params: EventParams<TEvent> }) &
-			(TWSContracts["contracts"][TEvent]["replies"] extends undefined
-				? unknown
-				: {
-						callbacks?: Partial<{
-							[K in keyof NonNullable<
-								TWSContracts["contracts"][TEvent]["replies"]
-							>]: (
-								data: Static<
-									NonNullable<TWSContracts["contracts"][TEvent]["replies"]>[K]
-								>,
-							) => void;
-						}>;
-						onError?: (error: string) => void;
-						timeoutMs?: number;
-					}),
+		config: Simplify<
+			WSClientDataConfig<TWSContracts["contracts"][TEvent]> &
+				WSParamsConfig<TEvent> &
+				WSClientCallbacksConfig<TWSContracts["contracts"][TEvent]>
+		>,
 	): () => void;
 
 	public validateIncomingData<
 		const TEvent extends keyof ExtractWSContracts<
-			Record<string, unknown>,
 			TWSContracts["contracts"],
 			"server2client" | "inter"
 		> &

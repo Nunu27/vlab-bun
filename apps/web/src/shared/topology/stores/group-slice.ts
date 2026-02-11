@@ -58,7 +58,7 @@ export const createGroupSlice: StateCreator<
 
 		const newGroups = { ...groups };
 		newGroups[id] = {
-			name: "Group-" + (Object.keys(newGroups).length + 1),
+			name: `Group-${Object.keys(newGroups).length + 1}`,
 			color: getRandom(GROUP_COLORS),
 			members,
 			...calculateGroupDimensions(members, newDevices),

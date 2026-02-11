@@ -29,9 +29,9 @@ export interface LabConfig {
 }
 
 type TempNodeHealthEvent = Record<
-	`${string}.health`,
+	`${string}:health`,
 	[NodeHealth | "deleted" | null]
 >;
-type TempNodePortsEvent = Record<`${string}.ports`, [Record<number, number>]>;
+type TempNodePortsEvent = Record<`${string}:ports`, [Record<number, number>]>;
 
 export type TempNodeEvents = TempNodeHealthEvent & TempNodePortsEvent;

@@ -14,15 +14,15 @@ function NotFoundPage() {
 			<div className="z-10 w-full max-w-2xl space-y-8 text-center">
 				{/* Main 404 Display */}
 				<div className="space-y-4">
-					<div className="from-primary via-primary/80 to-primary/60 bg-linear-to-br bg-clip-text text-[12rem] leading-none font-bold text-transparent drop-shadow-2xl md:text-[16rem]">
+					<div className="bg-linear-to-br from-primary via-primary/80 to-primary/60 bg-clip-text font-bold text-[12rem] text-transparent leading-none drop-shadow-2xl md:text-[16rem]">
 						404
 					</div>
 
 					<div className="space-y-2">
-						<h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+						<h1 className="font-bold text-3xl tracking-tight md:text-4xl">
 							Page Not Found
 						</h1>
-						<p className="text-muted-foreground mx-auto max-w-md text-lg md:text-xl">
+						<p className="mx-auto max-w-md text-lg text-muted-foreground md:text-xl">
 							The page you are looking for does not exist or has been moved to a
 							different location.
 						</p>
@@ -49,7 +49,7 @@ function NotFoundPage() {
 				</div>
 
 				{/* Additional helpful text */}
-				<p className="text-muted-foreground pt-8 text-sm">
+				<p className="pt-8 text-muted-foreground text-sm">
 					If you believe this is an error, please contact support.
 				</p>
 			</div>

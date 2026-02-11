@@ -16,7 +16,7 @@ export function PageHeading({
 	return (
 		<div className={cn("flex items-center justify-between gap-4", className)}>
 			<div className="space-y-1">
-				<h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+				<h1 className="font-semibold text-2xl tracking-tight">{title}</h1>
 				{subtitle && (
 					<p className="text-muted-foreground text-sm">{subtitle}</p>
 				)}

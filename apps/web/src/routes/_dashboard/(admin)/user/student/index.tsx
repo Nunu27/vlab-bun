@@ -4,6 +4,8 @@ import { PageHeading } from "@web/components/sections/page-heading";
 import { useApiPagination } from "@web/hooks/pagination/use-api-pagination";
 import api from "@web/lib/api";
 import { privateRoute } from "@web/lib/middlewares";
+import { ChangePasswordModal } from "../-module/components/modals/change-password-modal";
+import { UserPasswordModalProvider } from "../-module/stores/user-password-modal-store";
 import { studentColumns } from "./-module/columns";
 import CreateStudentButton from "./-module/components/buttons/create-student-button";
 import { CreateStudentModal } from "./-module/components/modals/create-student-modal";
@@ -24,22 +26,25 @@ function RouteComponent() {
 
 	return (
 		<StudentModalProvider>
-			<div className="flex flex-col gap-4">
-				<PageHeading
-					title="Student Directory"
-					subtitle="Manage student accounts and profiles."
-					actions={<CreateStudentButton />}
-				/>
-				<DataTable
-					pagination={pagination}
-					columns={studentColumns}
-					searchPlaceholder="Search by student name..."
-				/>
-			</div>
+			<UserPasswordModalProvider>
+				<div className="flex flex-col gap-4">
+					<PageHeading
+						title="Student Directory"
+						subtitle="Manage student accounts and profiles."
+						actions={<CreateStudentButton />}
+					/>
+					<DataTable
+						pagination={pagination}
+						columns={studentColumns}
+						searchPlaceholder="Search by student name..."
+					/>
+				</div>
 
-			<CreateStudentModal />
-			<EditStudentModal />
-			<DeleteStudentModal />
+				<CreateStudentModal />
+				<EditStudentModal />
+				<DeleteStudentModal />
+				<ChangePasswordModal />
+			</UserPasswordModalProvider>
 		</StudentModalProvider>
 	);
 }

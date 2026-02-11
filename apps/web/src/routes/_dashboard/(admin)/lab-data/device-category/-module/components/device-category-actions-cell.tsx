@@ -8,8 +8,7 @@ export function DeviceCategoryActionsCell({
 }: {
 	deviceCategory: DeviceCategoryItem;
 }) {
-	const store = useDeviceCategoryModalStore();
-	const actions = store.use.actions();
+	const actions = useDeviceCategoryModalStore().use.actions();
 
 	return (
 		<div className="flex gap-2">

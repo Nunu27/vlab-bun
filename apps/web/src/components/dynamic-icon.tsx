@@ -18,7 +18,7 @@ const IconRenderer = lazy(async () => {
 
 			if (!Icon) {
 				console.warn(`Icon "${name}" not found`);
-				return <div className={cn("bg-muted h-6 w-6 rounded-sm", className)} />;
+				return <div className={cn("h-6 w-6 rounded-sm bg-muted", className)} />;
 			}
 
 			return <Icon className={className} {...props} />;
@@ -43,7 +43,7 @@ export function DynamicIcon({
 				fallback || (
 					<div
 						className={cn(
-							"bg-muted/20 h-6 w-6 animate-pulse rounded-sm",
+							"h-6 w-6 animate-pulse rounded-sm bg-muted/20",
 							className,
 						)}
 					/>

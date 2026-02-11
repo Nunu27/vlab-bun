@@ -46,11 +46,11 @@ function DateInput({
 						disabled={disabled}
 						aria-invalid={isInvalid}
 						className={cn(
-							"w-full justify-start text-left font-normal px-3",
+							"w-full justify-start px-3 text-left font-normal",
 							!value && "text-muted-foreground",
 						)}
 					>
-						<CalendarIcon className="mr-2 size-4 opacity-50 shrink-0" />
+						<CalendarIcon className="mr-2 size-4 shrink-0 opacity-50" />
 						{value ? format(value, formatStr) : <span>{placeholder}</span>}
 					</Button>
 				</PopoverTrigger>
