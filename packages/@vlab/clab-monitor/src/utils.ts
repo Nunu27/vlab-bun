@@ -1,4 +1,4 @@
-import type { ContainerInspectInfo } from "dockerode";
+import type { ContainerInfo } from "dockerode";
 
 export const healthyStatus = new Set([null, "healthy"]);
 
@@ -9,23 +9,29 @@ export function isKey<T extends object>(
 	return key in obj;
 }
 
-export function extractPortMappings(inspect: ContainerInspectInfo) {
-	const portMappings: Record<number, number> = {};
+export function extractManagementIp(
+	networkSettings: ContainerInfo["NetworkSettings"],
+) {
+	const networks = networkSettings?.Networks;
+	if (!networks) return null;
 
-	for (const [containerPortKey, bindings] of Object.entries(
-		inspect.NetworkSettings?.Ports,
-	)) {
-		if (!bindings || bindings.length === 0) continue;
+	const keys = Object.keys(networks);
+	if (keys.length === 0) return null;
 
-		const containerPort = parseInt(containerPortKey, 10);
-		const hostPort = parseInt(bindings[0]?.HostPort ?? "", 10);
-
-		if (!Number.isNaN(containerPort) && !Number.isNaN(hostPort)) {
-			portMappings[containerPort] = hostPort;
+	for (const [key, network] of Object.entries(networks)) {
+		if (
+			network.IPAddress &&
+			(key.includes("clab") || key === "bridge" || key === "management")
+		) {
+			return network.IPAddress;
 		}
 	}
 
-	return portMappings;
+	for (const network of Object.values(networks)) {
+		if (network.IPAddress) return network.IPAddress;
+	}
+
+	return null;
 }
 
 export function removeItemFromArray<T>(arr: T[], item: T) {

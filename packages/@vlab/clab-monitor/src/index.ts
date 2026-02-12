@@ -4,7 +4,7 @@ import type { MaybePromise } from "bun";
 import type { ContainerInspectInfo } from "dockerode";
 import { LABELS } from "./constants";
 import containerHandler from "./container-handler";
-import networkMonitor, { getPorts } from "./network-monitor";
+import networkMonitor from "./network-monitor";
 import type {
 	ContainerEvent,
 	Context,
@@ -14,7 +14,7 @@ import type {
 	Options,
 	SessionData,
 } from "./types";
-import { healthyStatus, isKey } from "./utils";
+import { extractManagementIp, healthyStatus, isKey } from "./utils";
 
 async function handleDockerEvent(ctx: Context, event: ContainerEvent) {
 	const { logger } = ctx;
@@ -24,7 +24,7 @@ async function handleDockerEvent(ctx: Context, event: ContainerEvent) {
 		: event.Action;
 	if (!isKey(key, containerHandler)) return;
 
-	const shouldHandle = event.Actor.Attributes[LABELS.LAB_NODE_ID];
+	const shouldHandle = event.Actor.Attributes[LABELS.SESSION_ID];
 	if (!shouldHandle) return;
 
 	try {
@@ -81,13 +81,17 @@ async function emitInitialState(ctx: Context) {
 				: (healthData.Status as NodeHealth)
 			: null;
 
-		const ports: Record<number, number> = {};
+		const ip = extractManagementIp(container.NetworkSettings);
+		if (!ip) continue;
 
-		for (const { PublicPort, PrivatePort } of container.Ports) {
-			if (!PublicPort) continue;
-
-			ports[PrivatePort] = PublicPort;
-		}
+		const nodeInfo: NodeInfo = {
+			id,
+			health,
+			labSessionId,
+			deviceKind: deviceKind as DeviceKind,
+			ip,
+			isTemp: !labId,
+		};
 
 		const nodeData: NodeData = {
 			id,
@@ -96,11 +100,11 @@ async function emitInitialState(ctx: Context) {
 			labSessionId,
 			deviceTemplateId: deviceId,
 			containerId: container.Id,
-			ports,
+			ip,
 			interfaces: await networkMonitor.extractInterfaces(
 				ctx,
 				docker.getContainer(container.Id),
-				{ id, health, labSessionId, deviceKind, ports } as NodeInfo,
+				nodeInfo,
 			),
 		};
 
@@ -116,13 +120,7 @@ async function emitInitialState(ctx: Context) {
 			});
 		}
 
-		networkMonitor.start(ctx, docker.getContainer(container.Id), {
-			id,
-			health,
-			labSessionId,
-			deviceKind,
-			ports,
-		} as NodeInfo);
+		networkMonitor.start(ctx, docker.getContainer(container.Id), nodeInfo);
 	}
 
 	eventEmitter.emit("snapshot", { sessions, nodes });
@@ -252,8 +250,4 @@ export function createMonitor(options: Options) {
 	const emitter = new EventEmitter<Events>();
 
 	return { emitter, init: () => initMonitoring(emitter, options) };
-}
-
-export function getMonitorPorts(kind: DeviceKind) {
-	return getPorts(kind);
 }

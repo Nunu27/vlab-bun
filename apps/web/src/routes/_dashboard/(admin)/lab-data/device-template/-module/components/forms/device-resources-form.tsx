@@ -1,10 +1,8 @@
+import type { DeviceTemplateResources } from "@vlab/shared/schemas";
 import { withFieldGroup } from "@web/hooks/form/use-app-form";
 
 export const DeviceResourcesForm = withFieldGroup({
-	defaultValues: {} as {
-		cpu?: number;
-		memory?: string;
-	},
+	defaultValues: {} as DeviceTemplateResources,
 	render: function Render({ group }) {
 		return (
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">

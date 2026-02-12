@@ -11,10 +11,6 @@ const monitors: Partial<Record<DeviceKind, NetworkMonitor>> = {
 	mikrotik_ros,
 };
 
-export const getPorts = (kind: DeviceKind) => {
-	return monitors[kind]?.ports ?? [];
-};
-
 export default {
 	checkAccess(ctx, node) {
 		const handler = monitors[node.deviceKind];
@@ -29,12 +25,15 @@ export default {
 		const { logger } = ctx;
 		const handler = monitors[node.deviceKind];
 
+		if (node.isTemp) {
+			return logger.debug("Skipping network monitor for temp node %s", node.id);
+		}
+
 		if (!handler) {
-			logger.warn(
+			return logger.warn(
 				"No network monitor found for device kind %s",
 				node.deviceKind,
 			);
-			return;
 		}
 
 		const cancel = ctx.waitForHealth(node.id, async () => {

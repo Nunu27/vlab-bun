@@ -1,8 +1,9 @@
-import { ask } from "../common/input";
+import { ask, askPassword, confirm } from "../common/input";
 import logger from "../common/logger";
 import { execute, initShell, isRemote } from "../common/shell";
 import { detectArchitecture } from "../common/utils";
 import { deployClab } from "./clab";
+import { setupClabUser } from "./clab/auth";
 import { gatherAndSetupEnvironment, writeEnvFile } from "./env";
 import { deployGuacd } from "./guacamole";
 import { installPrerequisites } from "./install";
@@ -65,7 +66,34 @@ async function main() {
 		}
 	}
 
-	await deployGuacd({ network: vlabNetwork });
+	// Ensure clab network exists to prevent overlap issues
+	const clabNetCheck = await execute(
+		`docker network inspect clab >/dev/null 2>&1 && echo yes || echo no`,
+	);
+	if (clabNetCheck.stdout.toString().trim() === "no") {
+		logger.info(`Creating non-conflicting clab network`);
+		await execute(
+			`docker network create clab --subnet=172.31.20.0/24 --subnet=3fff:172:31:20::/64 --ipv6`,
+		);
+	}
+
+	await deployGuacd({ networks: [vlabNetwork, "clab"] });
+
+	logger.section("Containerlab API Authentication");
+	const setupAuth = await confirm(
+		"Do you want to create an admin account for the clab-api-server?",
+		true,
+	);
+	if (setupAuth) {
+		const clabUsername = await ask(
+			"Username for clab-api-server admin",
+			"admin",
+		);
+		const clabPassword = await askPassword(
+			"Password for clab-api-server admin",
+		);
+		await setupClabUser(clabUsername, clabPassword);
+	}
 
 	const clabJwtSecretRes = await execute("openssl rand -hex 32");
 	const clabJwtSecret = clabJwtSecretRes.stdout.toString().trim();

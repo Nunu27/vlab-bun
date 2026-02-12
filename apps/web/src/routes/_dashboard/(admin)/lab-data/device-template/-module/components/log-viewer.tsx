@@ -1,0 +1,36 @@
+import type { LogEntry } from "../stores/test-device-store";
+
+interface LogViewerProps {
+	logs: LogEntry[];
+	emptyMessage?: string;
+}
+
+export function LogViewer({ logs, emptyMessage }: LogViewerProps) {
+	return (
+		<div className="flex aspect-video w-full flex-col overflow-y-auto bg-slate-950 p-4 font-mono text-xs">
+			{logs.length === 0 && emptyMessage && (
+				<div className="text-slate-500">{emptyMessage}</div>
+			)}
+			{logs.map((log, index) => (
+				<div
+					key={index.toString()}
+					className={`mb-1 ${
+						log.type === "error"
+							? "text-red-400"
+							: log.type === "warn"
+								? "text-yellow-400"
+								: "text-slate-300"
+					}`}
+				>
+					<span className="mr-2 opacity-50">
+						[{new Date().toLocaleTimeString()}]
+					</span>
+					<span className="mr-2 font-semibold uppercase opacity-75">
+						[{log.type}]
+					</span>
+					{log.message}
+				</div>
+			))}
+		</div>
+	);
+}

@@ -1,12 +1,14 @@
-import env from "@api/env";
 import clab from "@api/services/clab";
 import docker from "@api/services/docker";
 import { tempNodeEvents } from "@api/services/events";
 import guacamole from "@api/services/guacamole";
 import ws from "@api/services/ws";
 import { waitForEvent } from "@api/utils/events";
-import { getMonitorPorts } from "@vlab/clab-monitor";
 import { sleep } from "bun";
+
+ws.server.onDispose("device-template:test", async (id) => {
+	await clab.destroyLab(id);
+});
 
 ws.server.on(
 	"device-template:test",
@@ -32,6 +34,11 @@ ws.server.on(
 
 		// Lab provisioning
 		reply("info", "Provisioning device...");
+
+		const ipPromise = waitForEvent(tempNodeEvents, `${nodeId}:ip`, {
+			timeout: 120000,
+		});
+
 		const healthPromise = waitForEvent(tempNodeEvents, `${nodeId}:health`, {
 			predicate: (health) => {
 				if (!health) return null;
@@ -39,19 +46,6 @@ ws.server.on(
 			},
 			timeout: 120000,
 		});
-
-		const portPromise = waitForEvent(tempNodeEvents, `${nodeId}:ports`, {
-			predicate: (ports) => {
-				if (!ports) return null;
-				else return ports || undefined;
-			},
-			timeout: 120000,
-		});
-
-		const originPorts = [
-			data.connection.data.port,
-			...getMonitorPorts(data.kind),
-		];
 
 		const { response } = await clab.deployLab(executionId, {
 			ownerId: socket.data.session.id,
@@ -62,7 +56,6 @@ ws.server.on(
 					image: data.image,
 					kind: data.kind,
 					env: data.env,
-					ports: originPorts,
 					resources: data.resources,
 				},
 			],
@@ -73,6 +66,11 @@ ws.server.on(
 		}
 
 		reply("info", "Device provisioned.");
+
+		const ip = await ipPromise;
+		if (!ip) {
+			throw new Error("Failed to retrieve container IP.");
+		}
 
 		// Health check
 		reply("info", "Waiting for device to become healthy...");
@@ -87,18 +85,12 @@ ws.server.on(
 			reply("warn", "Device did not become healthy in time.");
 		}
 
-		const ports = await portPromise;
-		if (!ports) {
-			throw new Error("Failed to retrieve device port mapping.");
-		}
-
-		// Access token generation
 		reply("info", "Generating access token...");
 		const token = guacamole.generateToken({
 			type: data.connection.type,
 			settings: {
-				hostname: env.CLAB_HOST,
-				port: ports[data.connection.data.port].toString(),
+				hostname: ip,
+				port: data.connection.data.port.toString(),
 				username: data.connection.data.username,
 				password: data.connection.data.password,
 			},

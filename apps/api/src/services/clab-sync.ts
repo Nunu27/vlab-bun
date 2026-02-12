@@ -99,7 +99,7 @@ emitter.on("node-create", async ({ labNodeId, deviceTemplateId, ...node }) => {
 			.values({ labNodeId, deviceTemplateId, ...node });
 	} else {
 		tempNodeEvents.emit(`${node.id}:health`, node.health);
-		tempNodeEvents.emit(`${node.id}:ports`, node.ports);
+		tempNodeEvents.emit(`${node.id}:ip`, node.ip);
 	}
 
 	logger.debug({ nodeId: node.id }, "Node created");
@@ -112,7 +112,9 @@ emitter.on("node-remove", async (id, isTemp) => {
 });
 
 // Health & interface events
-emitter.on("node-health", async (node) => {
+emitter.on("node-health", async (node, isTemp) => {
+	if (isTemp) tempNodeEvents.emit(`${node.id}:health`, node.health);
+
 	await sessionThrottle.wait(node.labSessionId, {
 		id: "health",
 		execute: async () => {
@@ -131,7 +133,9 @@ emitter.on("node-health", async (node) => {
 	});
 });
 
-emitter.on("interface-update", (node) => {
+emitter.on("interface-update", (node, isTemp) => {
+	if (isTemp) return;
+
 	interfaceDebounce.run(node.id, async () => {
 		await db
 			.update(labSessionNodes)

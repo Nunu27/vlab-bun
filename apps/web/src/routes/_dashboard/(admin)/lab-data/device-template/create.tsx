@@ -15,12 +15,14 @@ import { useApiForm } from "@web/hooks/form/use-api-form";
 import api from "@web/lib/api";
 import { privateRoute } from "@web/lib/middlewares";
 import { toast } from "sonner";
+import TestConnectionButton from "./-module/components/buttons/test-connection-button";
 import { DeviceBasicInfoForm } from "./-module/components/forms/device-basic-info-form";
 import { DeviceConnectionForm } from "./-module/components/forms/device-connection-form";
 import { DeviceEnvForm } from "./-module/components/forms/device-env-form";
 import { DeviceNetworkInterfacesForm } from "./-module/components/forms/device-network-interfaces-form";
 import { DeviceResourcesForm } from "./-module/components/forms/device-resources-form";
 import { EnvFormStoreProvider } from "./-module/stores/env-form-store";
+import { TestDeviceStoreProvider } from "./-module/stores/test-device-store";
 
 const validator = Compile(CreateDeviceTemplateRequest);
 
@@ -67,126 +69,120 @@ function RouteComponent() {
 		},
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["device", "pagination"] });
-				queryClient.invalidateQueries({ queryKey: ["device", "list"] });
+				queryClient.invalidateQueries({
+					queryKey: ["device-template", "pagination"],
+				});
+				queryClient.invalidateQueries({
+					queryKey: ["device-template", "list"],
+				});
 				navigate({ to: "/lab-data/device-template", replace: true });
 			},
 		},
 	});
 
 	return (
-		<div className="space-y-6 pb-8">
-			<PageHeading
-				title="Create Device"
-				subtitle="Add a new device configuration"
-			/>
+		<TestDeviceStoreProvider>
+			<EnvFormStoreProvider>
+				<div className="space-y-6 pb-8">
+					<PageHeading
+						title="Create Device"
+						subtitle="Add a new device configuration"
+					/>
 
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					form.handleSubmit();
-				}}
-				className="space-y-6"
-			>
-				<form.AppForm>
-					{/* Basic Information */}
-					<Card>
-						<CardHeader className="border-b">
-							<CardTitle>Basic Information</CardTitle>
-							<CardDescription>
-								Basic device identification and configuration
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<DeviceBasicInfoForm
-								form={form}
-								defaultCategory={undefined}
-								fields={{
-									name: "name",
-									kind: "kind",
-									image: "image",
-									icon: "icon",
-									deviceCategoryId: "deviceCategoryId",
-								}}
-							/>
-						</CardContent>
-					</Card>
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							form.handleSubmit();
+						}}
+						className="space-y-6"
+					>
+						<form.AppForm>
+							{/* Basic Information */}
+							<Card>
+								<CardHeader className="border-b">
+									<CardTitle>Basic Information</CardTitle>
+									<CardDescription>
+										Basic device identification and configuration
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<DeviceBasicInfoForm
+										form={form}
+										fields={{
+											name: "name",
+											kind: "kind",
+											image: "image",
+											icon: "icon",
+											deviceCategoryId: "deviceCategoryId",
+										}}
+									/>
+								</CardContent>
+							</Card>
 
-					<Card>
-						<CardHeader className="border-b">
-							<CardTitle>Resources</CardTitle>
-							<CardDescription>CPU and memory allocation</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<DeviceResourcesForm form={form} fields="resources" />
-						</CardContent>
-					</Card>
+							<Card>
+								<CardHeader className="border-b">
+									<CardTitle>Resources</CardTitle>
+									<CardDescription>CPU and memory allocation</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<DeviceResourcesForm form={form} fields="resources" />
+								</CardContent>
+							</Card>
 
-					<Card>
-						<CardHeader className="border-b">
-							<CardTitle>Environment Variables</CardTitle>
-							<CardDescription>
-								Define environment variables for the device
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<EnvFormStoreProvider>
-								<DeviceEnvForm form={form} fields={{ env: "env" }} />
-							</EnvFormStoreProvider>
-						</CardContent>
-					</Card>
+							<Card>
+								<CardHeader className="border-b">
+									<CardTitle>Environment Variables</CardTitle>
+									<CardDescription>
+										Define environment variables for the device
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<DeviceEnvForm form={form} fields={{ env: "env" }} />
+								</CardContent>
+							</Card>
 
-					<Card>
-						<CardHeader className="flex justify-between border-b">
-							<div>
-								<CardTitle>Connection</CardTitle>
-								<CardDescription>Remote access configuration</CardDescription>
+							<Card>
+								<CardHeader className="flex justify-between border-b">
+									<div>
+										<CardTitle>Connection</CardTitle>
+										<CardDescription>
+											Remote access configuration
+										</CardDescription>
+									</div>
+									<TestConnectionButton form={form} />
+								</CardHeader>
+								<CardContent>
+									<DeviceConnectionForm form={form} fields="connection" />
+								</CardContent>
+							</Card>
+
+							<Card>
+								<CardHeader className="border-b">
+									<CardTitle>Network Interfaces</CardTitle>
+									<CardDescription>
+										Define network interfaces for the device
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<DeviceNetworkInterfacesForm
+										form={form}
+										fields={{
+											interfaces: "interfaces",
+										}}
+									/>
+								</CardContent>
+							</Card>
+
+							<div className="flex justify-end gap-4">
+								<Button type="button" variant="outline" asChild>
+									<Link to="/lab-data/device-template">Cancel</Link>
+								</Button>
+								<form.SubmitButton label="Create Device" />
 							</div>
-							{/* <TestDeviceStoreProvider>
-								<TestConnectionButton
-									form={form}
-									fields={{
-										name: "name",
-										kind: "kind",
-										image: "image",
-										env: "env",
-										resources: "resources",
-										connection: "connection",
-										interfaces: "interfaces",
-									}}
-								/>
-							</TestDeviceStoreProvider> */}
-						</CardHeader>
-						<CardContent>
-							<DeviceConnectionForm form={form} fields="connection" />
-						</CardContent>
-					</Card>
-
-					<Card>
-						<CardHeader className="border-b">
-							<CardTitle>Network Interfaces</CardTitle>
-							<CardDescription>
-								Define network interfaces for the device
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<DeviceNetworkInterfacesForm
-								form={form}
-								fields={{
-									interfaces: "interfaces",
-								}}
-							/>
-						</CardContent>
-					</Card>
-
-					<div className="flex justify-end gap-4">
-						<Button type="button" variant="outline" asChild>
-							<Link to="/lab-data/device-template">Cancel</Link>
-						</Button>
-						<form.SubmitButton label="Create Device" />
-					</div>
-				</form.AppForm>
-			</form>
-		</div>
+						</form.AppForm>
+					</form>
+				</div>
+			</EnvFormStoreProvider>
+		</TestDeviceStoreProvider>
 	);
 }

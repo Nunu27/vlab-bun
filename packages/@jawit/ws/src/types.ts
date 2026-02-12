@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/complexity/noBannedTypes: for type inference */
 import type { Static, TProperties, TSchema } from "@sinclair/typebox";
 import type WSContracts from "./base/contracts";
 
@@ -25,7 +26,7 @@ export type ExtractWSContracts<
 export type EventParams<TEvent extends string> =
 	TEvent extends `${infer _Start}:[${infer Param}]${infer Rest}`
 		? { [K in Param]: string } & EventParams<Rest>
-		: Record<string, never>; // Return empty object instead of never when no params
+		: {}; // Return empty object instead of never when no params
 
 // Helper to clean up object types
 export type Simplify<T> = { [K in keyof T]: T[K] } & {};
@@ -45,8 +46,8 @@ export type WSClientDataConfig<TContract extends BaseWSContract> = [
 	: Record<string, never>;
 
 export type WSParamsConfig<TEvent extends string> =
-	EventParams<TEvent> extends Record<string, never>
-		? Record<string, never>
+	keyof EventParams<TEvent> extends never
+		? {}
 		: { params: EventParams<TEvent> };
 
 export type WSServerRepliesConfig<TContract extends BaseWSContract> = [
@@ -77,6 +78,15 @@ export type WSClientCallbacksConfig<TContract extends BaseWSContract> = [
 		}
 	: Record<string, never>;
 
+export type WSClientEmitConfig<
+	TEvent extends string,
+	TContract extends BaseWSContract,
+> = Simplify<
+	WSClientDataConfig<TContract> &
+		WSParamsConfig<TEvent> &
+		WSClientCallbacksConfig<TContract>
+>;
+
 export type WSServerHandler<
 	TEvent extends string,
 	TEventContract extends BaseWSContract,
@@ -94,10 +104,13 @@ export type WSServerMiddleware<TContext, TMeta> = (
 	next: (err?: Error) => void,
 ) => void | Promise<void>;
 
+export type ExtractWSData<TContract extends BaseWSContract> =
+	NonNullable<TContract["data"]> extends TSchema
+		? Static<NonNullable<TContract["data"]>>
+		: undefined;
+
 export type WSClientHandler<TEventContract extends BaseWSContract> = (
-	data: [TEventContract["data"]] extends [undefined]
-		? undefined
-		: Static<NonNullable<TEventContract["data"]>>,
+	data: ExtractWSData<TEventContract>,
 ) => void | Promise<void>;
 
 // biome-ignore lint/suspicious/noExplicitAny: generic constraint

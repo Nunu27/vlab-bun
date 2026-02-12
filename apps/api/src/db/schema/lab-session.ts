@@ -66,7 +66,7 @@ export const labSessionNodes = pgTable("lab_session_node", {
 	...base,
 	name: text().notNull(),
 	health: nodeHealthEnum(),
-	ports: jsonb().$type<Record<string, number>>().notNull(),
+	ip: text().notNull(),
 	interfaces: jsonb().$type<Record<string, string[]>>().notNull(),
 	labNodeId: uuid().notNull(),
 	containerId: text().notNull(),

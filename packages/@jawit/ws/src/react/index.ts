@@ -1,4 +1,3 @@
-import type { Static, TSchema } from "@sinclair/typebox";
 import isEqual from "fast-deep-equal";
 import {
 	useCallback,
@@ -12,7 +11,8 @@ import type WSContracts from "../base/contracts";
 import type {
 	EventParams,
 	ExtractWSContracts,
-	Simplify,
+	ExtractWSData,
+	WSClientEmitConfig,
 	WSClientHandler,
 } from "../types";
 
@@ -60,54 +60,14 @@ export function createWSHooks<
 		}, []);
 
 		const send = useCallback(
-			(
-				config: Simplify<
-					([NonNullable<TContracts["contracts"][TEvent]["data"]>] extends [
-						TSchema,
-					]
-						? {
-								data: Static<
-									NonNullable<TContracts["contracts"][TEvent]["data"]>
-								>;
-							}
-						: {}) &
-						(keyof EventParams<TEvent> extends never
-							? {}
-							: { params: EventParams<TEvent> }) &
-						([NonNullable<TContracts["contracts"][TEvent]["replies"]>] extends [
-							Record<string, any>,
-						]
-							? {
-									callbacks?: Partial<{
-										[K in keyof NonNullable<
-											TContracts["contracts"][TEvent]["replies"]
-										>]: (
-											data: NonNullable<
-												TContracts["contracts"][TEvent]["replies"]
-											>[K] extends TSchema
-												? Static<
-														NonNullable<
-															TContracts["contracts"][TEvent]["replies"]
-														>[K]
-													>
-												: never,
-										) => void;
-									}>;
-									onError?: (error: string) => void;
-									timeoutMs?: number;
-								}
-							: {})
-				>,
-			) => {
+			(config: WSClientEmitConfig<TEvent, TContracts["contracts"][TEvent]>) => {
 				dispose();
-				// biome-ignore lint/suspicious/noExplicitAny: config is strictly typed at the boundary but ts struggles mapping to the client.emit method generics
-				const unsubscribe = client.emit(event, config as any);
+				const unsubscribe = client.emit(event, config);
 				disposeRef.current = unsubscribe;
 			},
 			[event, dispose],
 		);
 
-		// Cleanup on unmount
 		useEffect(() => {
 			return () => dispose();
 		}, [dispose]);
@@ -115,62 +75,43 @@ export function createWSHooks<
 		return { send, dispose };
 	}
 
-	type WSDataValue<TEvent extends ServerClientInterEvents> = [
-		NonNullable<TContracts["contracts"][TEvent]["data"]>,
-	] extends [TSchema]
-		? Static<NonNullable<TContracts["contracts"][TEvent]["data"]>>
-		: undefined;
+	type WSDataValue<TEvent extends ServerClientInterEvents> = ExtractWSData<
+		TContracts["contracts"][TEvent]
+	>;
 
-	function useWSData<TEvent extends ServerClientInterEvents>(
-		event: TEvent,
-		...args: keyof EventParams<TEvent> extends never
-			? [
-					options: {
-						default: WSDataValue<TEvent>;
-					},
-				]
+	type UseWSDataArgs<
+		TEvent extends ServerClientInterEvents,
+		TRequired extends boolean = false,
+	> = keyof EventParams<TEvent> extends never
+		? TRequired extends true
+			? [options: { default: WSDataValue<TEvent> }]
+			: [options?: { default?: WSDataValue<TEvent> }]
+		: TRequired extends true
+			? [options: { params: EventParams<TEvent>; default: WSDataValue<TEvent> }]
 			: [
 					options: {
 						params: EventParams<TEvent>;
-						default: WSDataValue<TEvent>;
+						default?: WSDataValue<TEvent>;
 					},
-				]
+				];
+
+	function useWSData<TEvent extends ServerClientInterEvents>(
+		event: TEvent,
+		...args: UseWSDataArgs<TEvent, true>
 	): WSDataValue<TEvent>;
 
 	function useWSData<TEvent extends ServerClientInterEvents>(
 		event: TEvent,
-		...args: keyof EventParams<TEvent> extends never
-			? [
-					options?: {
-						default?: WSDataValue<TEvent>;
-					},
-				]
-			: [
-					options: {
-						params: EventParams<TEvent>;
-						default?: WSDataValue<TEvent>;
-					},
-				]
+		...args: UseWSDataArgs<TEvent, false>
 	): WSDataValue<TEvent> | undefined;
 
 	function useWSData<TEvent extends ServerClientInterEvents>(
 		event: TEvent,
-		...args: keyof EventParams<TEvent> extends never
-			? [
-					options?: {
-						default?: WSDataValue<TEvent>;
-					},
-				]
-			: [
-					options: {
-						params: EventParams<TEvent>;
-						default?: WSDataValue<TEvent>;
-					},
-				]
+		...args: UseWSDataArgs<TEvent, false>
 	) {
-		const options = args[0] as Record<string, unknown> | undefined;
-		const params = options?.params;
-		const defaultValue = options?.default as WSDataValue<TEvent> | undefined;
+		const options = args[0] ?? {};
+		const params = "params" in options ? options.params : undefined;
+		const defaultValue = options?.default;
 
 		const memoizedParams = useDeepCompareMemoize(params);
 		const isConnected = useWSConnectionState();
@@ -201,32 +142,28 @@ export function createWSHooks<
 		return data;
 	}
 
-	function useWSEvent<TEvent extends ServerClientInterEvents>(
-		event: TEvent,
-		...args: keyof EventParams<TEvent> extends never
-			? [
-					options: {
-						handler: WSClientHandler<TContracts["contracts"][TEvent]>;
-					},
-				]
+	type UseWSEventArgs<TEvent extends ServerClientInterEvents> =
+		keyof EventParams<TEvent> extends never
+			? [options: { handler: WSClientHandler<TContracts["contracts"][TEvent]> }]
 			: [
 					options: {
 						params: EventParams<TEvent>;
 						handler: WSClientHandler<TContracts["contracts"][TEvent]>;
 					},
-				]
+				];
+
+	function useWSEvent<TEvent extends ServerClientInterEvents>(
+		event: TEvent,
+		...args: UseWSEventArgs<TEvent>
 	) {
-		const options = args[0] as Record<string, unknown>;
-		const params = options.params;
-		const handler = options.handler as WSClientHandler<
-			TContracts["contracts"][TEvent]
-		>;
+		const options = args[0];
+		const params = "params" in options ? options.params : undefined;
+		const handler = options.handler;
 
 		const memoizedParams = useDeepCompareMemoize(params);
 		const isConnected = useWSConnectionState();
 
-		const handlerRef =
-			useRef<WSClientHandler<TContracts["contracts"][TEvent]>>(handler);
+		const handlerRef = useRef<UseWSEventArgs<TEvent>[0]["handler"]>(handler);
 
 		useEffect(() => {
 			handlerRef.current = handler;
@@ -237,9 +174,7 @@ export function createWSHooks<
 
 			let unsubscribe: () => void;
 
-			const currentHandler = (
-				data: Static<TContracts["contracts"][TEvent]["data"]>,
-			) => {
+			const currentHandler = (data: WSDataValue<TEvent>) => {
 				handlerRef.current?.(data);
 			};
 

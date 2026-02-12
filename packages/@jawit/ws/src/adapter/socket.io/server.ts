@@ -121,7 +121,6 @@ export default class SocketIOServer<
 										data: err instanceof Error ? err.message : String(err),
 									});
 								}
-								console.error(`Error handling event ${event}:`, err);
 							}
 						},
 					);

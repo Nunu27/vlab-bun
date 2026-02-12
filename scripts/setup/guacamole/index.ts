@@ -3,7 +3,7 @@ import { execute } from "../../common/shell";
 import { detectArchitecture } from "../../common/utils";
 
 export interface GuacamoleOptions {
-	network: string;
+	networks: string[];
 }
 
 const GUACD_CONTAINER = "guacd";
@@ -46,11 +46,11 @@ export async function deployGuacd(options: GuacamoleOptions) {
 			);
 			if (isRunning.stdout.toString().trim() === "yes") {
 				logger.success(`guacd container running (${GUACD_VERSION})`);
-				await ensureNetwork(options.network);
+				for (const network of options.networks) await ensureNetwork(network);
 			} else {
 				logger.info("Starting guacd container...");
 				await execute(`docker start "${GUACD_CONTAINER}"`);
-				await ensureNetwork(options.network);
+				for (const network of options.networks) await ensureNetwork(network);
 				logger.success("guacd container started");
 			}
 			return; // We're done if it exists and matches version
@@ -138,8 +138,9 @@ export async function deployGuacd(options: GuacamoleOptions) {
 	}
 
 	logger.info(`Creating guacd container (${GUACD_VERSION})...`);
+	const [primaryNetwork, ...additionalNetworks] = options.networks;
 	const runRes = await execute(
-		`docker run -d --name "${GUACD_CONTAINER}" --network "${options.network}" --restart unless-stopped "${guacdImage}"`,
+		`docker run -d --name "${GUACD_CONTAINER}" --network "${primaryNetwork}" --restart unless-stopped "${guacdImage}"`,
 	);
 
 	if (runRes.exitCode !== 0) {
@@ -150,6 +151,8 @@ export async function deployGuacd(options: GuacamoleOptions) {
 	await new Promise((r) => setTimeout(r, 3000));
 
 	logger.success("guacd container created and started");
+
+	for (const network of additionalNetworks) await ensureNetwork(network);
 
 	logger.info("Verifying guacd...");
 	await new Promise((r) => setTimeout(r, 2000));
@@ -167,11 +170,28 @@ export async function deployGuacd(options: GuacamoleOptions) {
 }
 
 async function ensureNetwork(network: string) {
+	// The pipeline always exits 0 (echo yes/no), safe to call without try/catch
+	const netExists = await execute(
+		`docker network inspect "${network}" > /dev/null 2>&1 && echo yes || echo no`,
+	);
+	if (netExists.stdout.toString().trim() !== "yes") {
+		logger.warn(
+			`Network "${network}" does not exist yet — skipping guacd attachment`,
+		);
+		return;
+	}
+
 	const netCheck = await execute(
-		`docker network inspect "${network}" | grep -q "\\"${GUACD_CONTAINER}\\"" && echo yes || echo no`,
+		`docker network inspect "${network}" | grep -q '"${GUACD_CONTAINER}"' && echo yes || echo no`,
 	);
 	if (netCheck.stdout.toString().trim() !== "yes") {
 		logger.info(`Connecting guacd to ${network} network...`);
-		await execute(`docker network connect "${network}" "${GUACD_CONTAINER}"`);
+		try {
+			await execute(`docker network connect "${network}" "${GUACD_CONTAINER}"`);
+		} catch (err) {
+			logger.warn(
+				`Failed to connect guacd to "${network}" network: ${err instanceof Error ? err.message : String(err)}`,
+			);
+		}
 	}
 }

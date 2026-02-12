@@ -8,7 +8,7 @@ const nodeInterfaceMap = new Map<string, Record<string, string[]>>();
 export default {
 	async start(ctx, container, node) {
 		const { docker, logger, eventEmitter } = ctx;
-		const { id, labSessionId } = node;
+		const { id, labSessionId, isTemp } = node;
 
 		if (monitors.has(id)) return;
 
@@ -48,7 +48,11 @@ export default {
 					interfaces[iface]?.push(ip);
 				}
 
-				eventEmitter.emit("interface-update", { id, labSessionId, interfaces });
+				eventEmitter.emit(
+					"interface-update",
+					{ id, labSessionId, interfaces },
+					isTemp,
+				);
 			});
 
 			rawStream.on("end", () => {

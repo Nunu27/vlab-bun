@@ -1,5 +1,6 @@
 CREATE TYPE "public"."degree_level" AS ENUM('D3', 'LJ', 'D4', 'S2');--> statement-breakpoint
 CREATE TYPE "public"."role" AS ENUM('student', 'instructor', 'admin');--> statement-breakpoint
+CREATE TYPE "public"."device_kind" AS ENUM('nokia_srlinux', 'nokia_sros', 'nokia_srsim', 'arista_ceos', 'arista_veos', 'juniper_crpd', 'juniper_vmx', 'juniper_vqfx', 'juniper_vsrx', 'juniper_vjunosrouter', 'juniper_vjunosswitch', 'juniper_vjunosevolved', 'juniper_cjunosevolved', 'cisco_xrd', 'cisco_xrv', 'cisco_xrv9k', 'cisco_csr1000v', 'cisco_n9kv', 'cisco_c8000', 'cisco_c8000v', 'cisco_cat9kv', 'cisco_iol', 'cisco_ftdv', 'cumulus_cvx', 'aruba_aoscx', 'sonic-vs', 'sonic-vm', 'dell_ftosv', 'dell_sonic', 'mikrotik_ros', 'huawei_vrp', 'ipinfusion_ocnos', 'paloalto_panos', 'fortinet_fortigate', 'checkpoint_cloudguard', '6wind_vsr', 'keysight_ixia-c-one', 'arrcus_arcos', 'fdio_vpp', 'rare', 'vyosnetworks_vyos', 'generic_vm', 'linux', 'freebsd', 'openwrt', 'openbsd', 'k8s-kind', 'bridge', 'ovs-bridge', 'ext-container', 'host');--> statement-breakpoint
 CREATE TYPE "public"."node_health" AS ENUM('healthy', 'unhealthy', 'starting');--> statement-breakpoint
 CREATE TABLE "department" (
 	"id" uuid PRIMARY KEY NOT NULL,
@@ -62,7 +63,7 @@ CREATE TABLE "device_template" (
 	"updated_at" timestamp with time zone,
 	"name" text NOT NULL,
 	"icon" text NOT NULL,
-	"kind" text NOT NULL,
+	"kind" "device_kind" NOT NULL,
 	"image" text NOT NULL,
 	"device_category_id" uuid NOT NULL,
 	"env" jsonb NOT NULL,
@@ -128,10 +129,12 @@ CREATE TABLE "lab_session_node" (
 	"updated_at" timestamp with time zone,
 	"name" text NOT NULL,
 	"health" "node_health",
-	"ports" jsonb NOT NULL,
+	"ip" text NOT NULL,
 	"interfaces" jsonb NOT NULL,
+	"lab_node_id" uuid NOT NULL,
 	"container_id" text NOT NULL,
-	"lab_session_id" uuid NOT NULL
+	"lab_session_id" uuid NOT NULL,
+	"device_template_id" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "lab_session" (
@@ -141,7 +144,7 @@ CREATE TABLE "lab_session" (
 	"lab_id" uuid NOT NULL,
 	"student_id" uuid NOT NULL,
 	"client_id" uuid,
-	"score" numeric,
+	"score" numeric DEFAULT '0' NOT NULL,
 	"submitted_at" timestamp with time zone
 );
 --> statement-breakpoint
@@ -156,5 +159,7 @@ ALTER TABLE "lab_enrollment" ADD CONSTRAINT "lab_enrollment_student_id_student_i
 ALTER TABLE "lab" ADD CONSTRAINT "lab_instructor_id_instructor_id_fk" FOREIGN KEY ("instructor_id") REFERENCES "public"."instructor"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lab_session_check" ADD CONSTRAINT "lab_session_check_lab_session_id_lab_session_id_fk" FOREIGN KEY ("lab_session_id") REFERENCES "public"."lab_session"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lab_session_node" ADD CONSTRAINT "lab_session_node_lab_session_id_lab_session_id_fk" FOREIGN KEY ("lab_session_id") REFERENCES "public"."lab_session"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "lab_session_node" ADD CONSTRAINT "lab_session_node_device_template_id_device_template_id_fk" FOREIGN KEY ("device_template_id") REFERENCES "public"."device_template"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lab_session" ADD CONSTRAINT "lab_session_lab_id_lab_id_fk" FOREIGN KEY ("lab_id") REFERENCES "public"."lab"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "lab_session" ADD CONSTRAINT "lab_session_student_id_student_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."student"("id") ON DELETE restrict ON UPDATE no action;
+ALTER TABLE "lab_session" ADD CONSTRAINT "lab_session_student_id_student_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."student"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "file_name_index" ON "file" USING btree ("name");

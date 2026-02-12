@@ -19,7 +19,6 @@ export default createRouter()
 				}))
 				.get("/:id", async ({ params: { id }, status, entity: { label } }) => {
 					const data = await db.query.deviceTemplates.findFirst({
-						with: { category: { columns: { id: true, name: true } } },
 						where: (dt, { eq }) => eq(dt.id, id),
 					});
 

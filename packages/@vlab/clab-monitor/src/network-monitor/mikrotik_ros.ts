@@ -47,15 +47,14 @@ const getApi = async (
 };
 
 export default {
-	ports: [8728],
-	async checkAccess({ host, logger }, { id, ports = {} }) {
-		if (!(8728 in ports)) {
-			logger.warn("MikroTik ROS monitor: No port 8728 detected, skipping");
+	async checkAccess({ logger }, { id, ip }) {
+		if (!ip) {
+			logger.warn("MikroTik ROS monitor: No ip detected, skipping");
 			return false;
 		}
 
 		try {
-			await getApi(id, { host, port: ports[8728], logger });
+			await getApi(id, { host: ip, port: 8728, logger });
 
 			return true;
 		} catch (error) {
@@ -68,13 +67,11 @@ export default {
 		}
 	},
 	async start(ctx, container, node) {
-		const { host, logger, eventEmitter } = ctx;
-		const { id, ports = {}, labSessionId } = node;
+		const { logger, eventEmitter } = ctx;
+		const { id, ip, labSessionId, isTemp } = node;
 
-		if (!(8728 in ports)) {
-			return logger.warn(
-				"MikroTik ROS monitor: No port 8728 detected, skipping",
-			);
+		if (!ip) {
+			return logger.warn("MikroTik ROS monitor: No ip detected, skipping");
 		}
 
 		try {
@@ -82,16 +79,20 @@ export default {
 
 			if (!nodeInterfaceMap.has(id)) {
 				const interfaces = await this.extractInterfaces(ctx, container, node);
-				eventEmitter.emit("interface-update", {
-					id,
-					interfaces,
-					labSessionId,
-				});
+				eventEmitter.emit(
+					"interface-update",
+					{
+						id,
+						interfaces,
+						labSessionId,
+					},
+					isTemp,
+				);
 			}
 
 			const api = await getApi(id, {
-				host,
-				port: ports[8728],
+				host: ip,
+				port: 8728,
 				logger,
 			});
 
@@ -132,7 +133,11 @@ export default {
 					}
 				}
 
-				eventEmitter.emit("interface-update", { id, labSessionId, interfaces });
+				eventEmitter.emit(
+					"interface-update",
+					{ id, labSessionId, interfaces },
+					isTemp,
+				);
 			});
 			listener.on("stop", () => {
 				logger.debug("Network monitor for node %s ended", id);
@@ -161,19 +166,19 @@ export default {
 			await client?.disconnect();
 		}
 	},
-	async extractInterfaces({ host, logger }, _, { id, ports = {} }) {
+	async extractInterfaces({ logger }, _, { id, ip }) {
 		const existingInterfaces = nodeInterfaceMap.get(id);
 		if (existingInterfaces) return existingInterfaces;
 
-		if (!(8728 in ports)) {
-			logger.warn("MikroTik ROS monitor: No port 8728 detected, skipping");
+		if (!ip) {
+			logger.warn("MikroTik ROS monitor: No ip detected, skipping");
 			return {};
 		}
 
 		try {
 			const api = await getApi(id, {
-				host,
-				port: ports[8728],
+				host: ip,
+				port: 8728,
 				logger,
 			});
 

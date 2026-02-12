@@ -1,4 +1,4 @@
-// import { useWSStore } from "@web/stores/ws-store";
+import { useWSConnectionState } from "@web/hooks/ws";
 import Guacamole from "guacamole-common-js";
 import { type RefObject, useEffect, useRef } from "react";
 import { useGuacamoleConnectionStore } from "../stores/guacamole-connection-store";
@@ -22,13 +22,14 @@ export const useGuacamoleClient = ({
 	const clientRef = useRef<Guacamole.Client | null>(null);
 	const displayElementRef = useRef<HTMLElement | null>(null);
 
-	// const connected = useWSStore.use.connected();
+	const connected = useWSConnectionState();
 	const store = useGuacamoleConnectionStore();
 	const actions = store.use.actions();
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: other dependencies are stable
 	useEffect(() => {
 		const { setState, setError, setConnected, reset } = actions;
+		if (!connected) return setError("Server not connected");
 
 		reset();
 
@@ -132,7 +133,7 @@ export const useGuacamoleClient = ({
 			clientRef.current = null;
 			displayElementRef.current = null;
 		};
-	}, [token]);
+	}, [token, connected]);
 
 	return { clientRef, displayElementRef };
 };

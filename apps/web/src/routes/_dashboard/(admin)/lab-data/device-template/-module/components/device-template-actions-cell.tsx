@@ -17,7 +17,9 @@ export function DeviceTemplateActionsCell({
 				<Link
 					to="/lab-data/device-template/$id/edit"
 					params={{ id: deviceTemplate.id }}
-				/>
+				>
+					<PencilIcon />
+				</Link>
 			</ActionButton>
 			<ActionButton
 				icon={Trash2Icon}

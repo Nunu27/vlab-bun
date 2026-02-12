@@ -27,16 +27,17 @@ export async function deployLab(sessionId: string, config: LabConfig) {
 	for (const {
 		id,
 		name,
-		ports,
 		resources,
 		deviceId,
+		labNodeId,
 		...rest
 	} of config.nodes) {
 		const labels: Record<string, string> = {
-			[LABELS.LAB_NODE_ID]: id,
+			[LABELS.SESSION_NODE_ID]: id,
 		};
-		if (deviceId) {
+		if (deviceId && labNodeId) {
 			labels[LABELS.DEVICE_TEMPLATE_ID] = deviceId;
+			labels[LABELS.LAB_NODE_ID] = labNodeId;
 		}
 
 		const kebabName = toKebabCase(name);
@@ -44,7 +45,6 @@ export async function deployLab(sessionId: string, config: LabConfig) {
 
 		nodes[kebabName] = {
 			...rest,
-			ports: ports.map((port) => `0:${port}`),
 			cpu: resources.cpu,
 			memory: resources.memory,
 			labels,
@@ -79,7 +79,7 @@ export async function destroyLab(sessionId: string) {
 		client.DELETE("/api/v1/labs/{labName}", {
 			params: {
 				path: { labName: sessionId },
-				query: { cleanup: true },
+				query: { cleanup: true, keepMgmtNet: true },
 			},
 		}),
 	);

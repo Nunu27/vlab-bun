@@ -10,7 +10,8 @@ export interface NodeInfo {
 	labSessionId: string;
 	deviceKind: DeviceKind;
 	health: NodeHealth | null;
-	ports: Record<number, number>;
+	ip: string;
+	isTemp: boolean;
 }
 
 export interface SessionData {
@@ -23,7 +24,7 @@ export interface NodeData {
 	id: string;
 	name: string;
 	health: NodeHealth | null;
-	ports: Record<number, number>;
+	ip: string;
 	interfaces: Record<string, string[]>;
 	labNodeId?: string;
 	containerId: string;
@@ -49,6 +50,7 @@ export interface Events {
 			labSessionId: string;
 			health: NodeHealth;
 		},
+		boolean,
 	];
 	"interface-update": [
 		{
@@ -56,6 +58,7 @@ export interface Events {
 			labSessionId: string;
 			interfaces: Record<string, string[]>;
 		},
+		boolean,
 	];
 }
 
@@ -228,7 +231,6 @@ export type DockerEvent = BaseDockerEvent &
 // Network
 
 export interface NetworkMonitor {
-	ports?: number[];
 	checkAccess?: (ctx: Context, node: NodeInfo) => MaybePromise<boolean>;
 	start: (
 		ctx: Context,

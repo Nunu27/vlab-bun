@@ -42,3 +42,32 @@ export async function confirm(
 		rl.close();
 	}
 }
+
+export async function askPassword(question: string): Promise<string> {
+	let muted = false;
+	const { Writable } = await import("node:stream");
+
+	const mutableStdout = new Writable({
+		write(chunk, encoding, callback) {
+			if (!muted) {
+				output.write(chunk, encoding);
+			}
+			callback();
+		},
+	});
+
+	const rl = readline.createInterface({
+		input,
+		output: mutableStdout,
+		terminal: true,
+	});
+
+	const formattedQuestion = `${colors.cyan}${colors.bold}?${colors.reset} ${question} ${colors.gray}›${colors.reset} `;
+
+	const answerPromise = rl.question(formattedQuestion);
+	muted = true;
+	const answer = await answerPromise;
+	output.write("\n");
+	rl.close();
+	return answer.trim();
+}

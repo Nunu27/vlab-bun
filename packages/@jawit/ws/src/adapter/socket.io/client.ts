@@ -136,8 +136,6 @@ export default class SocketIOClient<
 			throw new Error("SocketIOClient is not attached to a socket.");
 		}
 
-		let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
 		if (config.callbacks || config.onError) {
 			this.socket.on(
 				replyEvent,
@@ -153,12 +151,6 @@ export default class SocketIOClient<
 					}
 				},
 			);
-
-			const ms = config.timeoutMs ?? 15000;
-			timeoutId = setTimeout(() => {
-				config.onError?.(`Timeout: Server did not respond within ${ms}ms`);
-				this.socket?.off(replyEvent);
-			}, ms);
 		}
 
 		this.socket.emit(event, payload);
@@ -166,7 +158,6 @@ export default class SocketIOClient<
 		return () => {
 			if (config.callbacks || config.onError) {
 				this.socket?.off(replyEvent);
-				if (timeoutId) clearTimeout(timeoutId);
 			}
 			this.socket?.emit("_jawit:cancel", `${event}::${requestId}`);
 		};

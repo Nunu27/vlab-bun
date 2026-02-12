@@ -1,8 +1,8 @@
-import type { NodeHealth } from "@vlab/shared/enums";
+import type { DeviceKind, NodeHealth } from "@vlab/shared/enums";
 import { LABELS } from "./constants";
 import networkMonitor from "./network-monitor";
 import type { ContainerEvent, Context, NodeData, NodeInfo } from "./types";
-import { extractPortMappings } from "./utils";
+import { extractManagementIp } from "./utils";
 
 async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 	const { logger, docker, sessionIds, eventEmitter } = ctx;
@@ -41,14 +41,18 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 	const container = docker.getContainer(ID);
 	const info = await container.inspect();
 	const health = (info.State.Health?.Status as NodeHealth) || null;
-	const ports = extractPortMappings(info);
-	const nodeInfo = {
+	const ip = extractManagementIp(info.NetworkSettings);
+
+	if (!ip) return;
+
+	const nodeInfo: NodeInfo = {
 		id,
 		health,
 		labSessionId,
-		deviceKind,
-		ports,
-	} as NodeInfo;
+		deviceKind: deviceKind as DeviceKind,
+		ip,
+		isTemp: !labNodeId,
+	};
 
 	const nodeData = {
 		id,
@@ -58,7 +62,7 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 		containerId: ID,
 		health,
 		labSessionId,
-		ports,
+		ip,
 		interfaces: await networkMonitor.extractInterfaces(
 			ctx,
 			container,
@@ -97,19 +101,26 @@ async function onContainerHealthStatus(
 	event: ContainerEvent,
 ) {
 	const { Action, Actor } = event;
-	const { [LABELS.SESSION_NODE_ID]: id, [LABELS.SESSION_ID]: labSessionId } =
-		Actor.Attributes;
+	const {
+		[LABELS.SESSION_NODE_ID]: id,
+		[LABELS.SESSION_ID]: labSessionId,
+		[LABELS.LAB_NODE_ID]: labNodeId,
+	} = Actor.Attributes;
 
 	if (!id || !labSessionId) return;
 
 	const health = Action.split(": ")[1] as NodeHealth;
 
 	logger.debug("Container health status: %s, %s", Actor.ID, health);
-	eventEmitter.emit("node-health", {
-		id,
-		labSessionId,
-		health,
-	});
+	eventEmitter.emit(
+		"node-health",
+		{
+			id,
+			labSessionId,
+			health,
+		},
+		!labNodeId,
+	);
 }
 
 export default {

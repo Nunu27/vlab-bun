@@ -1,5 +1,5 @@
 {
-	"id": "fbd25142-273b-4770-a381-c64223c6b186",
+	"id": "e4112885-d724-4f41-85d1-5b8320d3b041",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -389,7 +389,8 @@
 				},
 				"kind": {
 					"name": "kind",
-					"type": "text",
+					"type": "device_kind",
+					"typeSchema": "public",
 					"primaryKey": false,
 					"notNull": true
 				},
@@ -485,7 +486,23 @@
 					"default": 0
 				}
 			},
-			"indexes": {},
+			"indexes": {
+				"file_name_index": {
+					"name": "file_name_index",
+					"columns": [
+						{
+							"expression": "name",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
 			"foreignKeys": {},
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {
@@ -821,15 +838,21 @@
 					"primaryKey": false,
 					"notNull": false
 				},
-				"ports": {
-					"name": "ports",
-					"type": "jsonb",
+				"ip": {
+					"name": "ip",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
 				"interfaces": {
 					"name": "interfaces",
 					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"lab_node_id": {
+					"name": "lab_node_id",
+					"type": "uuid",
 					"primaryKey": false,
 					"notNull": true
 				},
@@ -844,6 +867,12 @@
 					"type": "uuid",
 					"primaryKey": false,
 					"notNull": true
+				},
+				"device_template_id": {
+					"name": "device_template_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
 				}
 			},
 			"indexes": {},
@@ -855,6 +884,15 @@
 					"columnsFrom": ["lab_session_id"],
 					"columnsTo": ["id"],
 					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"lab_session_node_device_template_id_device_template_id_fk": {
+					"name": "lab_session_node_device_template_id_device_template_id_fk",
+					"tableFrom": "lab_session_node",
+					"tableTo": "device_template",
+					"columnsFrom": ["device_template_id"],
+					"columnsTo": ["id"],
+					"onDelete": "restrict",
 					"onUpdate": "no action"
 				}
 			},
@@ -909,7 +947,8 @@
 					"name": "score",
 					"type": "numeric",
 					"primaryKey": false,
-					"notNull": false
+					"notNull": true,
+					"default": "'0'"
 				},
 				"submitted_at": {
 					"name": "submitted_at",
@@ -956,6 +995,63 @@
 			"name": "role",
 			"schema": "public",
 			"values": ["student", "instructor", "admin"]
+		},
+		"public.device_kind": {
+			"name": "device_kind",
+			"schema": "public",
+			"values": [
+				"nokia_srlinux",
+				"nokia_sros",
+				"nokia_srsim",
+				"arista_ceos",
+				"arista_veos",
+				"juniper_crpd",
+				"juniper_vmx",
+				"juniper_vqfx",
+				"juniper_vsrx",
+				"juniper_vjunosrouter",
+				"juniper_vjunosswitch",
+				"juniper_vjunosevolved",
+				"juniper_cjunosevolved",
+				"cisco_xrd",
+				"cisco_xrv",
+				"cisco_xrv9k",
+				"cisco_csr1000v",
+				"cisco_n9kv",
+				"cisco_c8000",
+				"cisco_c8000v",
+				"cisco_cat9kv",
+				"cisco_iol",
+				"cisco_ftdv",
+				"cumulus_cvx",
+				"aruba_aoscx",
+				"sonic-vs",
+				"sonic-vm",
+				"dell_ftosv",
+				"dell_sonic",
+				"mikrotik_ros",
+				"huawei_vrp",
+				"ipinfusion_ocnos",
+				"paloalto_panos",
+				"fortinet_fortigate",
+				"checkpoint_cloudguard",
+				"6wind_vsr",
+				"keysight_ixia-c-one",
+				"arrcus_arcos",
+				"fdio_vpp",
+				"rare",
+				"vyosnetworks_vyos",
+				"generic_vm",
+				"linux",
+				"freebsd",
+				"openwrt",
+				"openbsd",
+				"k8s-kind",
+				"bridge",
+				"ovs-bridge",
+				"ext-container",
+				"host"
+			]
 		},
 		"public.node_health": {
 			"name": "node_health",

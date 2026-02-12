@@ -1,12 +1,9 @@
 import db from "@api/db";
-import env from "@api/env";
 import caching from "@api/middlewares/caching";
 import { createRouter } from "@api/plugins/system";
 import guacamole from "@api/services/guacamole";
 import { failure, success } from "@jawit/common";
 import { RequestWithId } from "@vlab/shared/schemas/common";
-
-const CLAB_HOST = new URL(env.CLAB_URL).hostname;
 
 export default createRouter()
 	.use(caching)
@@ -26,7 +23,7 @@ export default createRouter()
 					async ({ params: { id, labId, labSessionId }, status }) => {
 						const node = await db.query.labSessionNodes.findFirst({
 							where: (n, { eq }) => eq(n.id, id),
-							columns: { id: true, name: true, health: true, ports: true },
+							columns: { id: true, name: true, health: true, ip: true },
 							with: {
 								deviceTemplate: { columns: { connection: true } },
 								labSession: { columns: { id: true, labId: true } },
@@ -36,7 +33,7 @@ export default createRouter()
 							return status(404, failure({ message: "Node not found" }));
 						}
 
-						const { ports, deviceTemplate, labSession, ...nodeData } = node;
+						const { ip, deviceTemplate, labSession, ...nodeData } = node;
 
 						if (labSession.id !== labSessionId || labSession.labId !== labId) {
 							return status(404, failure({ message: "Node not found" }));
@@ -53,8 +50,8 @@ export default createRouter()
 								token: guacamole.generateToken({
 									type,
 									settings: {
-										hostname: CLAB_HOST,
-										port: ports[port].toString(),
+										hostname: ip,
+										port: port.toString(),
 										username,
 										password,
 									},

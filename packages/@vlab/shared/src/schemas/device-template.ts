@@ -32,10 +32,10 @@ export type DeviceTemplateInterface =
 	typeof DeviceTemplateInterfaceSchema.static;
 
 export const CreateDeviceTemplateRequest = t.Object({
-	name: NonEmptyString({ title: "Name" }),
+	name: NonEmptyString(),
 	kind: t.UnionEnum(deviceKindValues),
-	image: NonEmptyString({ title: "Image" }),
-	icon: NonEmptyString({ title: "Icon" }),
+	image: NonEmptyString(),
+	icon: NonEmptyString(),
 	deviceCategoryId: t.String({ format: "uuid" }),
 	env: DeviceTemplateEnvSchema,
 	resources: DeviceTemplateResourcesSchema,

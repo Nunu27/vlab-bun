@@ -46,15 +46,18 @@ type GenericFormOptions<TFormData> = FormOptions<
 	any
 >;
 
+type ApiFormOptions<
+	TFn extends BaseApiFunction,
+	TData extends ExtractTreatyParams<TFn>,
+> = Omit<GenericFormOptions<TData>, "onSubmit"> & {
+	mutation?: GenericMutationOptions<TFn>;
+};
+
 export function useApiForm<
 	TFn extends BaseApiFunction,
 	TData extends ExtractTreatyParams<TFn> = ExtractTreatyParams<TFn>,
->(
-	endpoint: TFn & ApiMutationEndpoint<TFn>,
-	options?: Omit<GenericFormOptions<TData>, "onSubmit"> & {
-		mutation?: GenericMutationOptions<TFn>;
-	},
-) {
+	TOptions extends ApiFormOptions<TFn, TData> = ApiFormOptions<TFn, TData>,
+>(endpoint: TFn & ApiMutationEndpoint<TFn>, options?: TOptions) {
 	const mutation = endpoint.useMutation(options?.mutation);
 
 	const { mutation: _, ...formOptions } = options || {};

@@ -1,4 +1,5 @@
-import { type ConnectionType, connectionTypeValues } from "@vlab/shared/enums";
+import { connectionTypeValues } from "@vlab/shared/enums";
+import type { DeviceTemplateConnection } from "@vlab/shared/schemas/device-template";
 import { withFieldGroup } from "@web/hooks/form/use-app-form";
 
 const connectionTypeOptions = connectionTypeValues.map((type) => ({
@@ -7,19 +8,7 @@ const connectionTypeOptions = connectionTypeValues.map((type) => ({
 }));
 
 export const DeviceConnectionForm = withFieldGroup({
-	defaultValues: {
-		type: "ssh",
-		data: {
-			port: 22,
-		},
-	} as {
-		type: ConnectionType;
-		data: {
-			port: number;
-			username?: string;
-			password?: string;
-		};
-	},
+	defaultValues: {} as DeviceTemplateConnection,
 	render: function Render({ group }) {
 		return (
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">

@@ -3,25 +3,25 @@
 		"PreToolUse": [
 			{
 				"type": "command",
-				"command": "/run/user/1000/fnm_multishells/28858_1775008997402/bin/context-mode hook vscode-copilot pretooluse"
+				"command": "/home/nunu27/.bun/bin/bunx context-mode hook vscode-copilot pretooluse"
 			}
 		],
 		"PostToolUse": [
 			{
 				"type": "command",
-				"command": "/run/user/1000/fnm_multishells/28858_1775008997402/bin/context-mode hook vscode-copilot posttooluse"
+				"command": "/home/nunu27/.bun/bin/bunx context-mode hook vscode-copilot posttooluse"
 			}
 		],
 		"PreCompact": [
 			{
 				"type": "command",
-				"command": "/run/user/1000/fnm_multishells/28858_1775008997402/bin/context-mode hook vscode-copilot precompact"
+				"command": "/home/nunu27/.bun/bin/bunx context-mode hook vscode-copilot precompact"
 			}
 		],
 		"SessionStart": [
 			{
 				"type": "command",
-				"command": "/run/user/1000/fnm_multishells/28858_1775008997402/bin/context-mode hook vscode-copilot sessionstart"
+				"command": "/home/nunu27/.bun/bin/bunx context-mode hook vscode-copilot sessionstart"
 			}
 		]
 	}
