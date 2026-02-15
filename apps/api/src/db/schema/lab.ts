@@ -7,6 +7,7 @@ import {
 	primaryKey,
 	text,
 	timestamp,
+	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
@@ -40,14 +41,18 @@ export const labsRelations = relations(labs, ({ one, many }) => ({
 	sessions: many(labSessions),
 }));
 
-export const labAttachments = pgTable("lab_attachments", {
-	...base,
-	name: text().notNull(),
-	file: text().notNull(),
-	labId: uuid()
-		.references(() => labs.id, { onDelete: "cascade" })
-		.notNull(),
-});
+export const labAttachments = pgTable(
+	"lab_attachments",
+	{
+		...base,
+		name: text().notNull(),
+		file: text().notNull(),
+		labId: uuid()
+			.references(() => labs.id, { onDelete: "cascade" })
+			.notNull(),
+	},
+	(t) => [uniqueIndex().on(t.labId, t.file)],
+);
 
 export const labAttachmentsRelations = relations(labAttachments, ({ one }) => ({
 	lab: one(labs, {

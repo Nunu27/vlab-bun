@@ -36,5 +36,8 @@
 		"*.{ts,tsx,js,jsx,json,css}": [
 			"biome check --write --unsafe --no-errors-on-unmatched --files-ignore-unknown=true"
 		]
+	},
+	"dependencies": {
+		"@sinclair/typebox": "^0.34.49"
 	}
 }

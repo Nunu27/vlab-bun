@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: generic constraint */
 import type { Static, TProperties, TSchema } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import type {
@@ -9,12 +10,11 @@ import type {
 } from "../types";
 import type WSContracts from "./contracts";
 
-// biome-ignore lint/suspicious/noExplicitAny: generic constraint
 class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 	// Active cleanup handlers registered statically per event string
 	public disposeHandlers = new Map<
 		string,
-		(executionId: string) => MaybePromise<void>
+		(ctx: { executionId: string; socketId: string }) => MaybePromise<void>
 	>();
 
 	// Global middleware hooks
@@ -98,7 +98,13 @@ class WSServer<TWSContracts extends WSContracts<any, any>, TContext = unknown> {
 			"client2server" | "inter"
 		> &
 			string,
-	>(event: TEvent, cleanup: (executionId: string) => MaybePromise<void>) {
+	>(
+		event: TEvent,
+		cleanup: (ctx: {
+			executionId: string;
+			socketId: string;
+		}) => MaybePromise<void>,
+	) {
 		this.disposeHandlers.set(event as string, cleanup);
 		return this;
 	}

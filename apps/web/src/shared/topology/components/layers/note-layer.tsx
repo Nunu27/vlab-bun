@@ -1,4 +1,5 @@
 import { useShallow } from "zustand/shallow";
+import { TOPOLOGY_ID } from "../../constants";
 import { useTopologyStore } from "../../stores";
 import Note from "../nodes/note";
 
@@ -10,7 +11,7 @@ function NoteLayer() {
 
 	return (
 		<div
-			id="note-layer"
+			id={TOPOLOGY_ID.NOTE_LAYER}
 			className="pointer-events-none absolute overflow-visible"
 		>
 			{notes.map((id) => (

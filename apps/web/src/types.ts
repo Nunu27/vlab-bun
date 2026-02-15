@@ -14,15 +14,10 @@ export type PaginationQuery = PaginationSchemaType<any, any, true>;
 
 export type PaginationEndpoint = {
 	post: BaseApiFunction & {
-		usePagination(options?: {
-			args?: PaginationQuery;
-			[key: string]: unknown;
-		}): UseQueryResult<PaginatedData<any>, any>;
-		useInfiniteQuery(options?: {
-			args?: Omit<PaginationQuery, "page">;
-			getArgs?: (page: number, args: PaginationQuery) => PaginationQuery;
-			[key: string]: unknown;
-		}): UseInfiniteQueryResult<InfiniteData<PaginatedData<any>>, any>;
+		usePagination(options?: any): UseQueryResult<PaginatedData<any>, any>;
+		useInfiniteQuery(
+			options?: any,
+		): UseInfiniteQueryResult<InfiniteData<PaginatedData<any>>, any>;
 	};
 };
 

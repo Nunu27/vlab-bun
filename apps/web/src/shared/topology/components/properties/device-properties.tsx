@@ -62,7 +62,11 @@ function DeviceProperties({ id }: { id: string }) {
 				</form.AppField>
 			</div>
 			<form.AppForm>
-				<form.SubmitButton label="Save" />
+				<form.SubmitButton
+					type="button"
+					label="Save"
+					onClick={form.handleSubmit}
+				/>
 			</form.AppForm>
 		</FieldGroup>
 	);

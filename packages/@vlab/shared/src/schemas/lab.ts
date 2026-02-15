@@ -1,3 +1,4 @@
+import type { TUnknown } from "@sinclair/typebox";
 import { t } from "elysia";
 import { DateRange, NonEmptyString } from "./common";
 import { DeviceTemplateResourcesSchema } from "./device-template";
@@ -51,8 +52,8 @@ export const LabTopologySchema = t.Object({
 });
 
 export const LabCheckConfigSchema = t.Object({
-	id: t.String(),
-	nodeId: t.String(),
+	id: t.String({ format: "uuid" }),
+	nodeId: t.String({ format: "uuid" }),
 	checkId: t.String(),
 	params: t.Record(t.String(), t.Unknown()),
 	weight: t.Number(),
@@ -62,19 +63,17 @@ export type LabCheckConfig = typeof LabCheckConfigSchema.static;
 
 export const LabInstructionSchema = t.Recursive((Self) =>
 	t.Object({
-		id: t.String(),
-		text: t.String(),
+		id: t.String({ format: "uuid" }),
+		text: NonEmptyString(),
 		checks: t.Array(LabCheckConfigSchema),
-		children: t.Array(Self),
+		// Use unknown to avoid deep recursion error
+		children: t.Array(Self as unknown as TUnknown),
 	}),
 );
 
 export type LabInstruction = typeof LabInstructionSchema.static;
-export type LabInstructionForm = Omit<LabInstruction, "children"> & {
-	children: unknown[];
-};
 
-export const LabRequest = t.Object({
+export const LabRequestSchema = t.Object({
 	name: NonEmptyString(),
 	content: NonEmptyString(),
 	cover: t.Optional(t.String()),
@@ -91,6 +90,7 @@ export const LabRequest = t.Object({
 	),
 });
 
+export type LabRequest = typeof LabRequestSchema.static;
 export type LabDeviceNode = typeof LabDeviceNodeSchema.static;
 export type LabGroupNode = typeof LabGroupNodeSchema.static;
 export type LabNoteNode = typeof LabNoteNodeSchema.static;

@@ -11,7 +11,7 @@ type CheckboxFieldProps = Omit<
 
 function CheckboxField(props: CheckboxFieldProps) {
 	const field = useFieldContext<boolean>();
-	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+	const isInvalid = !field.state.meta.isValid;
 
 	return (
 		<CheckboxInput

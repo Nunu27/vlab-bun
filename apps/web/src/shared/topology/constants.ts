@@ -17,3 +17,12 @@ export const DEVICE_HEIGHT = 80;
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 2;
 export const ZOOM_STEP = 1.2;
+
+export const TOPOLOGY_ID = {
+	CANVAS: "topology-canvas",
+	DEVICE_LAYER: "topology-device-layer",
+	EDGE_LAYER: "topology-edge-layer",
+	GROUP_LAYER: "topology-group-layer",
+	NOTE_LAYER: "topology-note-layer",
+	SELECTION_LAYER: "topology-selection-layer",
+};

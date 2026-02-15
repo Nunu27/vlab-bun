@@ -3,7 +3,6 @@
 import type {
 	BaseResponse,
 	FailureResponse,
-	PaginatedData,
 	SuccessResponse,
 } from "@jawit/common";
 import type {
@@ -64,7 +63,10 @@ export type ExtractTreatyParams<TFn> = TFn extends (
 export type ExtractTreatyPaginationData<
 	TEndpoint extends { post: (...args: any[]) => Promise<any> },
 > =
-	ExtractTreatyData<TEndpoint["post"]> extends PaginatedData<infer D>
+	ExtractTreatyData<TEndpoint["post"]> extends {
+		items: (infer D)[];
+		pageInfo: any;
+	}
 		? D
 		: never;
 
@@ -91,13 +93,13 @@ type InfiniteQueryOptions<TData, TError, TArgs> = Omit<
 	 * These are included in the query key so that changing them
 	 * (e.g. changing `search`) triggers a fresh fetch.
 	 */
-	args?: TArgs;
+	args?: Partial<TArgs> | TArgs;
 	/**
 	 * A function that receives the current page number and the static `args`,
 	 * and returns the full request argument for that page.
 	 * Defaults to merging `{ query: { page } }` into args.
 	 */
-	getArgs: (page: number, args: TArgs | undefined) => TArgs;
+	getArgs: (page: number, args: any) => TArgs;
 	queryKey?: unknown[];
 } & Omit<EdenQueryOptions, "prefixKey">;
 
@@ -142,9 +144,10 @@ type QueryHooks<TFn> = {
 		ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
 	>;
 
-	usePagination: ExtractTreatyData<
-		Extract<TFn, (...a: any[]) => any>
-	> extends PaginatedData<any>
+	usePagination: ExtractTreatyData<Extract<TFn, (...a: any[]) => any>> extends {
+		items: any[];
+		pageInfo: any;
+	}
 		? (
 				options?: QueryOptions<
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
@@ -159,7 +162,7 @@ type QueryHooks<TFn> = {
 
 	useInfiniteQuery: ExtractTreatyData<
 		Extract<TFn, (...a: any[]) => any>
-	> extends PaginatedData<any>
+	> extends { items: any[]; pageInfo: any }
 		? (
 				options?: InfiniteQueryOptions<
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
@@ -193,9 +196,10 @@ type MutationHooks<TFn> = {
 		ExtractTreatyParams<TFn>
 	>;
 
-	usePagination: ExtractTreatyData<
-		Extract<TFn, (...a: any[]) => any>
-	> extends PaginatedData<any>
+	usePagination: ExtractTreatyData<Extract<TFn, (...a: any[]) => any>> extends {
+		items: any[];
+		pageInfo: any;
+	}
 		? (
 				options?: QueryOptions<
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
@@ -210,7 +214,7 @@ type MutationHooks<TFn> = {
 
 	useInfiniteQuery: ExtractTreatyData<
 		Extract<TFn, (...a: any[]) => any>
-	> extends PaginatedData<any>
+	> extends { items: any[]; pageInfo: any }
 		? (
 				options?: InfiniteQueryOptions<
 					ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>,
@@ -266,4 +270,6 @@ export type EdenQueryOptions = {
 	prefixKey?: unknown[];
 	onSuccessMessage?: (message: string) => void;
 	onErrorMessage?: (message: string) => void;
+	showSuccessMessage?: boolean;
+	showErrorMessage?: boolean;
 };

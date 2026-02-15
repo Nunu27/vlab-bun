@@ -24,3 +24,5 @@ export const DateRange = t.Object({
 	from: t.Date(),
 	to: t.Date(),
 });
+
+export type DateRange = typeof DateRange.static;

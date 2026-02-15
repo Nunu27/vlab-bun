@@ -7,21 +7,7 @@ export default () => {
 
 	return store(
 		useShallow((state) => {
-			const {
-				selectedDevices,
-				selectedGroups,
-				selectedNotes,
-				selectedEdges: selectedEdge,
-				actions,
-			} = state;
-
-			const selectCount =
-				selectedDevices.size +
-				selectedGroups.size +
-				selectedNotes.size +
-				(selectedEdge ? 1 : 0);
-
-			if (selectCount !== 1) return null;
+			const { selectedDevices, selectedGroups, actions } = state;
 
 			if (selectedDevices.size === 1) {
 				const id = getFirst(selectedDevices);

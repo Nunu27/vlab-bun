@@ -8,7 +8,7 @@ type TextFieldProps = React.ComponentProps<"input"> & {
 
 function TextField(props: TextFieldProps) {
 	const field = useFieldContext<string>();
-	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+	const isInvalid = !field.state.meta.isValid;
 
 	return (
 		<TextInput

@@ -13,6 +13,7 @@ export const useTopologyNodeInteraction = <T extends Element>({
 	elementRef,
 }: UseTopologyNodeInteractionProps<T>) => {
 	const store = useTopologyStore();
+	const sessionId = store.use.sessionId();
 	const { setDragState, onDrag, connectDevice, setEditingNoteId } =
 		store.use.actions();
 
@@ -65,11 +66,17 @@ export const useTopologyNodeInteraction = <T extends Element>({
 		if (handler) handler();
 	};
 
-	useEventListener("mousedown", handleMouseDown, elementRef);
-	useEventListener("mousemove", handleMouseMove, elementRef);
-	useEventListener("mouseup", handleMouseUp, elementRef);
+	useEventListener("mousedown", handleMouseDown, elementRef, {
+		enabled: !sessionId,
+	});
+	useEventListener("mousemove", handleMouseMove, elementRef, {
+		enabled: !sessionId,
+	});
+	useEventListener("mouseup", handleMouseUp, elementRef, {
+		enabled: !sessionId,
+	});
 	useEventListener("click", handleClick, elementRef, {
-		enabled: identifier.type === "device",
+		enabled: !sessionId && identifier.type === "device",
 	});
 	useEventListener("dblclick", handleDoubleClick, elementRef, {
 		enabled: identifier.type in dblClickHandler,

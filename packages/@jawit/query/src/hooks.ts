@@ -24,12 +24,15 @@ async function executeQuery(
 	args: any[],
 	options?: EdenQueryOptions,
 ) {
+	const showErrorMessage = options?.showErrorMessage ?? true;
+	const showSuccessMessage = options?.showSuccessMessage ?? true;
+
 	const result = await fn(...args);
 	if (result?.error) {
 		const errVal = result.error.value ?? result.error;
 		if (errVal && typeof errVal === "object" && "success" in errVal) {
 			if (!errVal.success) {
-				if (errVal.message && options?.onErrorMessage)
+				if (errVal.message && showErrorMessage && options?.onErrorMessage)
 					options.onErrorMessage(errVal.message);
 				throw errVal.errors ?? new Error(errVal.message ?? "API Error");
 			}
@@ -40,11 +43,11 @@ async function executeQuery(
 	const payload = result?.data;
 	if (payload && typeof payload === "object" && "success" in payload) {
 		if (!payload.success) {
-			if (payload.message && options?.onErrorMessage)
+			if (payload.message && showErrorMessage && options?.onErrorMessage)
 				options.onErrorMessage(payload.message);
 			throw payload.errors ?? new Error(payload.message ?? "API Error");
 		}
-		if (payload.message && options?.onSuccessMessage)
+		if (payload.message && showSuccessMessage && options?.onSuccessMessage)
 			options.onSuccessMessage(payload.message);
 		return payload.data ?? null;
 	}
@@ -65,6 +68,8 @@ export function createQueryOptions(
 		args,
 		onSuccessMessage,
 		onErrorMessage,
+		showSuccessMessage,
+		showErrorMessage,
 		...options
 	}: { args?: any } & Record<string, any> = {}) =>
 		({
@@ -74,6 +79,9 @@ export function createQueryOptions(
 				executeQuery(fn, args !== undefined ? [args] : [], {
 					onSuccessMessage: onSuccessMessage ?? clientOptions?.onSuccessMessage,
 					onErrorMessage: onErrorMessage ?? clientOptions?.onErrorMessage,
+					showSuccessMessage:
+						showSuccessMessage ?? clientOptions?.showSuccessMessage,
+					showErrorMessage: showErrorMessage ?? clientOptions?.showErrorMessage,
 				}),
 		}) satisfies UseBaseQueryOptions;
 }
@@ -87,6 +95,8 @@ export function createUseQuery(
 		args,
 		onSuccessMessage,
 		onErrorMessage,
+		showSuccessMessage,
+		showErrorMessage,
 		...options
 	}: { args?: any } & Record<string, any> = {}) =>
 		useQuery({
@@ -96,6 +106,9 @@ export function createUseQuery(
 				executeQuery(fn, args !== undefined ? [args] : [], {
 					onSuccessMessage: onSuccessMessage ?? clientOptions?.onSuccessMessage,
 					onErrorMessage: onErrorMessage ?? clientOptions?.onErrorMessage,
+					showSuccessMessage:
+						showSuccessMessage ?? clientOptions?.showSuccessMessage,
+					showErrorMessage: showErrorMessage ?? clientOptions?.showErrorMessage,
 				}),
 		});
 }
@@ -109,6 +122,8 @@ export function createUseSuspenseQuery(
 		args,
 		onSuccessMessage,
 		onErrorMessage,
+		showSuccessMessage,
+		showErrorMessage,
 		...options
 	}: { args?: any } & Record<string, any> = {}) =>
 		useSuspenseQuery({
@@ -118,6 +133,9 @@ export function createUseSuspenseQuery(
 				executeQuery(fn, args !== undefined ? [args] : [], {
 					onSuccessMessage: onSuccessMessage ?? clientOptions?.onSuccessMessage,
 					onErrorMessage: onErrorMessage ?? clientOptions?.onErrorMessage,
+					showSuccessMessage:
+						showSuccessMessage ?? clientOptions?.showSuccessMessage,
+					showErrorMessage: showErrorMessage ?? clientOptions?.showErrorMessage,
 				}),
 		});
 }
@@ -133,6 +151,8 @@ export function createUseInfiniteQuery(
 			getArgs,
 			onSuccessMessage,
 			onErrorMessage,
+			showSuccessMessage,
+			showErrorMessage,
 			queryKey,
 			...options
 		}: {
@@ -160,6 +180,9 @@ export function createUseInfiniteQuery(
 				executeQuery(fn, [getArgs(pageParam as number, args)], {
 					onSuccessMessage: onSuccessMessage ?? clientOptions?.onSuccessMessage,
 					onErrorMessage: onErrorMessage ?? clientOptions?.onErrorMessage,
+					showSuccessMessage:
+						showSuccessMessage ?? clientOptions?.showSuccessMessage,
+					showErrorMessage: showErrorMessage ?? clientOptions?.showErrorMessage,
 				}),
 		});
 }
@@ -168,10 +191,14 @@ export function createUseMutation(fn: any, clientOptions?: EdenQueryOptions) {
 	return ({
 		onSuccessMessage,
 		onErrorMessage,
+		showSuccessMessage,
+		showErrorMessage,
 		...options
 	}: Omit<UseMutationOptions<any, any, any>, "mutationFn"> & {
 		onSuccessMessage?: (m: string) => void;
 		onErrorMessage?: (m: string) => void;
+		showSuccessMessage?: boolean;
+		showErrorMessage?: boolean;
 	} = {}) =>
 		useMutation({
 			...options,
@@ -181,6 +208,9 @@ export function createUseMutation(fn: any, clientOptions?: EdenQueryOptions) {
 				return executeQuery(fn, args, {
 					onSuccessMessage: onSuccessMessage ?? clientOptions?.onSuccessMessage,
 					onErrorMessage: onErrorMessage ?? clientOptions?.onErrorMessage,
+					showSuccessMessage:
+						showSuccessMessage ?? clientOptions?.showSuccessMessage,
+					showErrorMessage: showErrorMessage ?? clientOptions?.showErrorMessage,
 				});
 			},
 		});

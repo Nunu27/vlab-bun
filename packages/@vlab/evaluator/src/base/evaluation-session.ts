@@ -85,6 +85,31 @@ export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
 			const sourceDef = handler.sources.get(checkDef.source);
 			if (!sourceDef) continue;
 
+			const notify = async (data: unknown) => {
+				const result = await checkDef.handler({
+					nodeId: config.nodeId,
+					params: config.params,
+					data,
+				});
+				this.notifyChange(config.id, result);
+			};
+
+			this.evaluator.on(
+				`${handlerId}.${checkDef.source}`,
+				config.nodeId,
+				config.params,
+				notify,
+			);
+
+			this.cleanups.push(() => {
+				this.evaluator.off(
+					`${handlerId}.${checkDef.source}`,
+					config.nodeId,
+					config.params,
+					notify,
+				);
+			});
+
 			if (sourceDef.listen) {
 				const sourceParams = checkDef.sourceParamsBuilder({
 					nodeId: config.nodeId,
@@ -96,14 +121,7 @@ export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
 					docker: this.docker,
 					nodeId: config.nodeId,
 					params: sourceParams,
-					notify: async (data) => {
-						const result = await checkDef.handler({
-							nodeId: config.nodeId,
-							params: config.params,
-							data,
-						});
-						this.notifyChange(config.id, result);
-					},
+					notify,
 				});
 
 				if (cleanup) {

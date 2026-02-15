@@ -1,4 +1,5 @@
 import { useShallow } from "zustand/shallow";
+import { TOPOLOGY_ID } from "../../constants";
 import { useTopologyStore } from "../../stores";
 import Device from "../nodes/device";
 
@@ -10,7 +11,7 @@ function DeviceLayer() {
 
 	return (
 		<div
-			id="device-layer"
+			id={TOPOLOGY_ID.DEVICE_LAYER}
 			className="pointer-events-none absolute overflow-visible"
 		>
 			{devices.map((id) => (

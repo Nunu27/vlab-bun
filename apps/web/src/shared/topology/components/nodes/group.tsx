@@ -15,7 +15,7 @@ function Group({ id }: { id: string }) {
 	if (!state) return null;
 
 	return (
-		<g className="node" ref={ref}>
+		<g className="node pointer-events-auto cursor-pointer" ref={ref}>
 			<rect
 				x={state.x}
 				y={state.y}

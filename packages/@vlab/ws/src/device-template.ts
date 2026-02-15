@@ -25,7 +25,6 @@ export default new WSContracts<WSMeta>().register({
 	replies: {
 		info: t.String(),
 		warn: t.String(),
-		error: t.String(),
 		token: t.String(),
 	},
 	meta: { private: ["admin"] },

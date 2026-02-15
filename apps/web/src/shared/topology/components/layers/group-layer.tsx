@@ -1,4 +1,5 @@
 import { useShallow } from "zustand/shallow";
+import { TOPOLOGY_ID } from "../../constants";
 import { useTopologyStore } from "../../stores";
 import Group from "../nodes/group";
 
@@ -11,7 +12,7 @@ function GroupLayer() {
 	return (
 		<svg
 			role="presentation"
-			id="group-layer"
+			id={TOPOLOGY_ID.GROUP_LAYER}
 			className="pointer-events-none absolute overflow-visible"
 		>
 			{groups.map((id) => (

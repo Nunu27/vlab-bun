@@ -9,9 +9,9 @@ type DateFieldProps = Omit<
 	required?: boolean;
 };
 
-function DateField({ label, required, ...props }: DateFieldProps) {
+function DateField(props: DateFieldProps) {
 	const field = useFieldContext<Date | undefined>();
-	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+	const isInvalid = !field.state.meta.isValid;
 
 	return (
 		<DateInput
@@ -19,8 +19,6 @@ function DateField({ label, required, ...props }: DateFieldProps) {
 			name={field.name}
 			value={field.state.value}
 			onChange={(val) => field.handleChange(val)}
-			label={label}
-			required={required}
 			isInvalid={isInvalid}
 			errors={field.state.meta.errors}
 		/>

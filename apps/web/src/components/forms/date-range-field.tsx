@@ -10,9 +10,9 @@ type DateRangeFieldProps = Omit<
 	required?: boolean;
 };
 
-function DateRangeField({ label, required, ...props }: DateRangeFieldProps) {
+function DateRangeField(props: DateRangeFieldProps) {
 	const field = useFieldContext<DateRange | undefined>();
-	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+	const isInvalid = !field.state.meta.isValid;
 
 	return (
 		<DateRangeInput
@@ -20,8 +20,6 @@ function DateRangeField({ label, required, ...props }: DateRangeFieldProps) {
 			name={field.name}
 			value={field.state.value}
 			onChange={(val) => field.handleChange(val)}
-			label={label}
-			required={required}
 			isInvalid={isInvalid}
 			errors={field.state.meta.errors}
 		/>

@@ -7,6 +7,8 @@ import type {
 	WSClientHandler,
 } from "../../types";
 
+import { compileEventPath } from "../../utils";
+
 export default class SocketIOClient<
 	// biome-ignore lint/suspicious/noExplicitAny: generic constraint
 	TWSContracts extends WSContracts<any, any>,
@@ -104,10 +106,15 @@ export default class SocketIOClient<
 			throw new Error("SocketIOClient is not attached to a socket.");
 		}
 
-		this.socket.on(event as string, socketHandler);
+		const compiledEvent = compileEventPath(
+			event as string,
+			params as Record<string, unknown> | undefined,
+		);
+
+		this.socket.on(compiledEvent, socketHandler);
 
 		return () => {
-			this.socket?.off(event as string, socketHandler);
+			this.socket?.off(compiledEvent, socketHandler);
 		};
 	}
 

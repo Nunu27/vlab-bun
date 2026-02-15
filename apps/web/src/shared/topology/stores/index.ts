@@ -5,6 +5,7 @@ import type { LabTopology } from "@vlab/shared/schemas/lab";
 import type api from "@web/lib/api";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { TOPOLOGY_ID } from "../constants";
 import type { NodeData } from "../types";
 import {
 	createDeviceSlice,
@@ -145,6 +146,11 @@ const { Provider, useContext } = createScopedStore(() =>
 						deviceNames,
 						...topology,
 					});
+
+					const canvas = document.getElementById(TOPOLOGY_ID.CANVAS);
+					if (!canvas) return;
+
+					a[1]().actions.recenter(canvas.getBoundingClientRect());
 				},
 				toggleMode: (mode) => {
 					const { mode: currentMode, notes, editingNoteId, actions } = a[1]();

@@ -6,8 +6,8 @@ import ws from "@api/services/ws";
 import { waitForEvent } from "@api/utils/events";
 import { sleep } from "bun";
 
-ws.server.onDispose("device-template:test", async (id) => {
-	await clab.destroyLab(id);
+ws.server.onDispose("device-template:test", async ({ executionId }) => {
+	await clab.destroyLab(executionId);
 });
 
 ws.server.on(

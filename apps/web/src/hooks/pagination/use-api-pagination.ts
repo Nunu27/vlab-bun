@@ -16,16 +16,15 @@ type UseApiPaginationOptions<
 		args?: PaginationQuery;
 	} = NonNullable<Parameters<TEndpoint["post"]["usePagination"]>[0]>,
 > = {
-	/** URL key prefix, forwarded to `usePaginationParams` */
 	urlKey?: string;
 	params?: QueryOptions["args"];
 	query?: Omit<QueryOptions, "args">;
 };
 
+import type { ExtractTreatyParams } from "@jawit/query/types";
+
 export type ExtractPaginationQuery<TEndpoint extends PaginationEndpoint> =
-	NonNullable<
-		NonNullable<Parameters<TEndpoint["post"]["usePagination"]>[0]>["args"]
-	>;
+	ExtractTreatyParams<TEndpoint["post"]>;
 
 export type UseApiPaginationReturn<
 	TItem,
@@ -37,22 +36,9 @@ export type UseApiPaginationReturn<
 	error: unknown;
 	refresh: () => void;
 	filters: NonNullable<TQuery["filters"]> | undefined;
-	setFilters: (filters: NonNullable<TQuery["filters"]> | null) => void;
+	setFilters: (filters: NonNullable<PaginationQuery["filters"]> | null) => void;
 };
 
-/**
- * Connects a pagination-capable Eden Treaty endpoint to URL-synced state.
- *
- * Automatically detects that the endpoint returns `PaginatedData<T>` via the
- * `ExtractTreatyPaginationData` type. Page, perPage, search, sort, and filters
- * are read from / written to URL params via `nuqs`.
- *
- * @example
- * ```ts
- * const pagination = useApiPagination(api.department.pagination, { urlKey: 'dept' });
- * // pagination.data, pagination.isLoading, pagination.setPage, ...
- * ```
- */
 export function useApiPagination<TEndpoint extends PaginationEndpoint>(
 	endpoint: TEndpoint,
 	options?: UseApiPaginationOptions<TEndpoint>,

@@ -63,6 +63,6 @@ export async function startServer() {
 	guacamole.init();
 
 	app.listen({ port: env.PORT, ...ws.engine.handler() }, ({ url }) => {
-		logger.info(`Server running on port ${url}`);
+		logger.info(`Server running on ${url}`);
 	});
 }

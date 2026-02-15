@@ -32,16 +32,17 @@ export async function deployLab(sessionId: string, config: LabConfig) {
 		labNodeId,
 		...rest
 	} of config.nodes) {
+		const kebabName = toKebabCase(name);
 		const labels: Record<string, string> = {
 			[LABELS.SESSION_NODE_ID]: id,
 		};
+
 		if (deviceId && labNodeId) {
 			labels[LABELS.DEVICE_TEMPLATE_ID] = deviceId;
 			labels[LABELS.LAB_NODE_ID] = labNodeId;
-		}
 
-		const kebabName = toKebabCase(name);
-		nodeNames[id] = kebabName;
+			nodeNames[labNodeId] = kebabName;
+		}
 
 		nodes[kebabName] = {
 			...rest,

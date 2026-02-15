@@ -1,3 +1,4 @@
+import { TOPOLOGY_ID } from "../../constants";
 import { useTopologyStore } from "../../stores";
 
 function SelectionLayer() {
@@ -12,7 +13,7 @@ function SelectionLayer() {
 	return (
 		<svg
 			role="presentation"
-			id="selection-layer"
+			id={TOPOLOGY_ID.SELECTION_LAYER}
 			className="pointer-events-none absolute overflow-visible"
 		>
 			<rect

@@ -79,7 +79,7 @@ export function useApiInfiniteList<TEndpoint extends PaginationEndpoint>(
 			perPage: 20,
 			...options?.params,
 		},
-		getArgs: (page, args) => ({
+		getArgs: (page: number, args: any) => ({
 			...args,
 			page,
 		}),

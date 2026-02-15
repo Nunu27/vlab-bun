@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "lab_attachments_lab_id_file_index" ON "lab_attachments" USING btree ("lab_id","file");

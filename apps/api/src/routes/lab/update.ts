@@ -6,8 +6,9 @@ import { cache } from "@api/middlewares/caching";
 import { createRouter } from "@api/plugins/system";
 import { failure, success } from "@jawit/common";
 import { RequestWithId } from "@vlab/shared/schemas/common";
-import { LabRequest } from "@vlab/shared/schemas/lab";
+import { LabRequestSchema } from "@vlab/shared/schemas/lab";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { storageCleanUpJob } from "../file/cron";
 
 export default createRouter()
 	.use(auth)
@@ -51,30 +52,42 @@ export default createRouter()
 						.set({ usedBy: sql`${files.usedBy} - 1` })
 						.where(
 							inArray(
-								files.id,
+								files.name,
 								deletedFiles.map(({ file }) => file),
 							),
 						);
 				}
 
 				if (attachments.length) {
-					await tx.insert(labAttachments).values(
-						attachments.map((attachment) => ({
-							...attachment,
-							labId: id,
-						})),
-					);
+					const inserted = await tx
+						.insert(labAttachments)
+						.values(
+							attachments.map((attachment) => ({
+								...attachment,
+								labId: id,
+							})),
+						)
+						.onConflictDoNothing()
+						.returning({ file: labAttachments.file });
 
-					await tx
-						.update(files)
-						.set({ usedBy: sql`${files.usedBy} + 1` })
-						.where(inArray(files.id, attachmentFiles));
+					if (inserted.length) {
+						await tx
+							.update(files)
+							.set({ usedBy: sql`${files.usedBy} + 1` })
+							.where(
+								inArray(
+									files.name,
+									inserted.map(({ file }) => file),
+								),
+							);
+					}
 				}
 
 				return true;
 			});
 
 			if (updated) {
+				storageCleanUpJob.resume();
 				await cache.delete(`${key}:pagination:*`, `${key}:${id}`);
 
 				return success({ message: `${label} updated` });
@@ -83,6 +96,6 @@ export default createRouter()
 		{
 			private: ["instructor"],
 			params: RequestWithId(["labId"]),
-			body: LabRequest,
+			body: LabRequestSchema,
 		},
 	);

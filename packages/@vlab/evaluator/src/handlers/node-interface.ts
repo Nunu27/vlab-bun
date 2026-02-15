@@ -4,7 +4,7 @@ import { EvaluationHandler } from "../base/evaluation-handler";
 export default new EvaluationHandler("node-interface")
 	.addSource("interface-ip", {
 		params: { interface: t.String() },
-		data: t.String(),
+		data: t.Array(t.String()),
 	})
 	.addCheck("check-ip", {
 		name: "Interface IP",
@@ -19,6 +19,6 @@ export default new EvaluationHandler("node-interface")
 		},
 		sourceParamsBuilder: ({ params }) => ({ interface: params.interface }),
 		handler: ({ params, data }) => {
-			return params.ip === data;
+			return data.includes(params.ip);
 		},
 	});

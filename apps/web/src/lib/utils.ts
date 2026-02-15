@@ -1,8 +1,29 @@
 import { type ClassValue, clsx } from "clsx";
+import { format, getYear } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
+}
+
+/**
+ * Formats a date range as a compact string.
+ * When `from` and `to` fall in the same year, only `to` shows the year.
+ * When they span different years, both sides show the year.
+ *
+ * @example
+ * // Same year  → "01 Jan – 28 Feb 25"
+ * // Cross-year → "01 Dec 24 – 28 Feb 25"
+ */
+export function formatDateRange(
+	from: Date | string,
+	to: Date | string,
+): string {
+	const fromDate = from instanceof Date ? from : new Date(from);
+	const toDate = to instanceof Date ? to : new Date(to);
+	const sameYear = getYear(fromDate) === getYear(toDate);
+	const fromFmt = sameYear ? "dd MMM" : "dd MMM yyyy";
+	return `${format(fromDate, fromFmt)} – ${format(toDate, "dd MMM yyyy")}`;
 }
 
 export function getFirst<T>(iter: Iterable<T>) {

@@ -1,3 +1,4 @@
+import type { Role } from "@vlab/shared/enums";
 import {
 	BookOpenIcon,
 	Building2Icon,
@@ -33,7 +34,7 @@ export type MenuSection = {
 	items: MenuItem[];
 };
 
-export const menuByRole: Record<string, MenuSection[]> = {
+export const menuByRole: Record<Role, MenuSection[]> = {
 	student: [
 		{
 			items: [
@@ -50,7 +51,7 @@ export const menuByRole: Record<string, MenuSection[]> = {
 			],
 		},
 	],
-	lecturer: [
+	instructor: [
 		{
 			items: [
 				{
@@ -58,14 +59,9 @@ export const menuByRole: Record<string, MenuSection[]> = {
 					url: "/",
 					icon: HomeIcon,
 				},
-			],
-		},
-		{
-			title: "Main",
-			items: [
 				{
-					title: "Labs",
-					url: "/lab",
+					title: "My Labs",
+					url: "/my-lab",
 					icon: FlaskConicalIcon,
 				},
 			],

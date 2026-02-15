@@ -5,13 +5,13 @@ import { useAuthStore } from "@web/stores/auth-store";
 import { lazy, Suspense } from "react";
 
 const AdminDashboard = lazy(
-	() => import("./(admin)/-module/components/admin-dashboard-page"),
+	() => import("./_admin/-module/components/admin-dashboard-page"),
 );
 const InstructorDashboard = lazy(
-	() => import("./(instructor)/-module/components/instructor-dashboard-page"),
+	() => import("./_instructor/-module/components/instructor-dashboard-page"),
 );
 const StudentDashboard = lazy(
-	() => import("./(student)/-module/components/student-dashboard-page"),
+	() => import("./_student/-module/components/student-dashboard-page"),
 );
 
 export const Route = createFileRoute("/_dashboard/")({

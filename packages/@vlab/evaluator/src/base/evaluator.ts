@@ -88,6 +88,27 @@ export class Evaluator<
 		return this;
 	}
 
+	off<
+		THandlerId extends keyof TRegistry & string,
+		TSourceName extends keyof TRegistry[THandlerId]["sources"] & string,
+		TSources extends BaseSources = TRegistry[THandlerId]["sources"],
+		TStaticSourceParams extends object = Static<
+			TObject<TSources[TSourceName]["params"]>
+		>,
+		TStaticSourceData = Static<TSources[TSourceName]["data"]>,
+	>(
+		event: `${THandlerId}.${TSourceName}`,
+		nodeId: string,
+		params: TStaticSourceParams,
+		listener: (data: TStaticSourceData) => void,
+	): this {
+		this.emitter.removeListener(
+			this.serializeKey(event, nodeId, params),
+			listener,
+		);
+		return this;
+	}
+
 	emit<
 		THandlerId extends keyof TRegistry & string,
 		TSourceName extends keyof TRegistry[THandlerId]["sources"] & string,

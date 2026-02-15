@@ -8,24 +8,85 @@ export default createRouter()
 	.use(caching)
 	.guard(
 		{
+			cached: true,
 			private: ["student", "instructor"],
 			params: RequestWithId(["labId"]),
-			cached: true,
 		},
 		(app) => {
 			return app
-				.resolve(({ params: { labId: id }, entity: { key } }) => ({
-					cacheKey: `${key}:${id}`,
-				}))
+				.resolve(
+					({
+						session: { data: user },
+						cache,
+						params: { labId },
+						entity: { key },
+					}) => {
+						cache.addSuffix(labId);
+						if (user.role === "student") {
+							cache.addPrefix(user.id);
+						}
+
+						return {
+							cacheKey: key,
+						};
+					},
+				)
 				.get(
 					"/:labId",
-					async ({ params: { labId: id }, status, entity: { label } }) => {
+					async ({
+						params: { labId },
+						session: { data: user },
+						status,
+						entity: { label },
+					}) => {
 						const data = await db.query.labs.findFirst({
-							where: (labs, { eq }) => eq(labs.id, id),
+							columns: { instructorId: false },
+							where: (labs, { eq }) => eq(labs.id, labId),
+							with: {
+								instructor: {
+									columns: { nip: true },
+									with: {
+										user: {
+											columns: { id: true, name: true },
+										},
+									},
+								},
+								attachments: {
+									columns: { name: true, file: true },
+								},
+								enrollments:
+									user.role === "student"
+										? {
+												columns: { studentId: true },
+												where: (enrollments, { eq }) =>
+													eq(enrollments.studentId, user.id),
+											}
+										: undefined,
+							},
 						});
 
-						if (data) return success({ data });
-						else return status(404, failure({ message: `${label} not found` }));
+						if (data) {
+							const {
+								instructor: { user, ...instructor },
+								enrollments,
+								startAt,
+								endAt,
+								...lab
+							} = data;
+
+							return success({
+								data: {
+									...lab,
+									date: { from: startAt, to: endAt },
+									enrolled: !!enrollments?.length,
+									instructor: {
+										...user,
+										...instructor,
+									},
+								},
+							});
+						} else
+							return status(404, failure({ message: `${label} not found` }));
 					},
 				);
 		},

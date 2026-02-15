@@ -36,14 +36,14 @@ export type MaybePromise<T> = T | Promise<T>;
 export type WSDataConfig<TContract extends BaseWSContract> = [
 	TContract["data"],
 ] extends [undefined]
-	? Record<string, never>
+	? {}
 	: { data: Static<NonNullable<TContract["data"]>> };
 
 export type WSClientDataConfig<TContract extends BaseWSContract> = [
 	NonNullable<TContract["data"]>,
 ] extends [TSchema]
 	? { data: Static<NonNullable<TContract["data"]>> }
-	: Record<string, never>;
+	: {};
 
 export type WSParamsConfig<TEvent extends string> =
 	keyof EventParams<TEvent> extends never
@@ -85,6 +85,13 @@ export type WSClientEmitConfig<
 	WSClientDataConfig<TContract> &
 		WSParamsConfig<TEvent> &
 		WSClientCallbacksConfig<TContract>
+>;
+
+export type WSServerEmitConfig<
+	TEvent extends string,
+	TContract extends BaseWSContract,
+> = Simplify<
+	{ to?: string | string[] } & WSDataConfig<TContract> & WSParamsConfig<TEvent>
 >;
 
 export type WSServerHandler<

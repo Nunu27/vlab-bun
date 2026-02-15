@@ -2,6 +2,7 @@ import { degreeLevelValues, roleValues } from "@vlab/shared/enums";
 import { integer, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
 import { base } from "./base";
+import { labSessions } from "./lab-session";
 
 export const roleEnum = pgEnum("role", roleValues);
 export const degreeLevelEnum = pgEnum("degree_level", degreeLevelValues);
@@ -66,7 +67,7 @@ export const students = pgTable("student", {
 		.notNull(),
 });
 
-export const studentsRelations = relations(students, ({ one }) => ({
+export const studentsRelations = relations(students, ({ one, many }) => ({
 	user: one(users, {
 		fields: [students.id],
 		references: [users.id],
@@ -75,6 +76,7 @@ export const studentsRelations = relations(students, ({ one }) => ({
 		fields: [students.studyProgramId],
 		references: [studyPrograms.id],
 	}),
+	sessions: many(labSessions),
 }));
 
 export const instructors = pgTable("instructor", {

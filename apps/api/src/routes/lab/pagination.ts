@@ -25,18 +25,27 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.resolve(({ session: { data }, body, entity: { key } }) => {
-					const cacheKey = `${key}:pagination:${md5(body)}`;
+				.resolve(({ session: { data }, body, cache, entity: { key } }) => {
+					cache.addSuffix(md5(body));
 
 					if (data.role === "admin" || body.enrolled) {
-						return { cacheKey: `${cacheKey}:${data.id}` };
-					} else return { cacheKey };
+						cache.addSuffix(data.id);
+					}
+
+					return {
+						cacheKey: `${key}:pagination`,
+					};
 				})
 				.post(
 					"/pagination",
 					async ({ body: { enrolled, ...body }, session }) => {
 						const { items, pageInfo } = await paginate(body, {
-							columns: { topology: false },
+							columns: {
+								content: false,
+								topology: false,
+								instructions: false,
+								instructorId: false,
+							},
 							with: {
 								instructor: {
 									columns: { id: true },
@@ -60,8 +69,14 @@ export default createRouter()
 							data: {
 								pageInfo,
 								items: items.map(
-									({ instructor: { user, ...instructor }, ...item }) => ({
+									({
+										instructor: { user, ...instructor },
+										startAt,
+										endAt,
+										...item
+									}) => ({
 										...item,
+										date: { from: startAt, to: endAt },
 										instructor: {
 											...user,
 											...instructor,

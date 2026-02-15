@@ -1,4 +1,5 @@
 import { useShallow } from "zustand/shallow";
+import { TOPOLOGY_ID } from "../../constants";
 import { useTopologyStore } from "../../stores";
 import Edge from "../nodes/edge";
 
@@ -11,7 +12,7 @@ function EdgeLayer() {
 	return (
 		<svg
 			role="presentation"
-			id="edge-layer"
+			id={TOPOLOGY_ID.EDGE_LAYER}
 			className="pointer-events-none absolute overflow-visible"
 		>
 			{edges.map((id) => (

@@ -1,4 +1,5 @@
 import { type RefObject, useEffect, useRef } from "react";
+import { TOPOLOGY_ID } from "../constants";
 import { useScreenToWorld } from "../hooks/helper/use-screen-to-world";
 import { useTopologyDrop } from "../hooks/helper/use-topology-drop";
 import { useTopologyHotkeys } from "../hooks/helper/use-topology-hotkey";
@@ -58,7 +59,7 @@ function TopologyCanvas() {
 
 	return (
 		<div
-			id="topology-canvas"
+			id={TOPOLOGY_ID.CANVAS}
 			data-sessionid={sessionId}
 			ref={canvasRef}
 			className="relative flex-1 select-none overflow-hidden"

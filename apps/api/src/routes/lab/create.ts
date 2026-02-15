@@ -5,8 +5,9 @@ import auth from "@api/middlewares/auth";
 import { cache } from "@api/middlewares/caching";
 import { createRouter } from "@api/plugins/system";
 import { success } from "@jawit/common";
-import { LabRequest } from "@vlab/shared/schemas/lab";
+import { LabRequestSchema } from "@vlab/shared/schemas/lab";
 import { inArray, sql } from "drizzle-orm";
+import { storageCleanUpJob } from "../file/cron";
 
 export default createRouter()
 	.use(auth)
@@ -47,12 +48,13 @@ export default createRouter()
 
 				return id;
 			});
+			storageCleanUpJob.resume();
 			await cache.delete(`${key}:pagination:*`);
 
 			return success({ message: `${label} created`, data: { id } });
 		},
 		{
 			private: ["instructor"],
-			body: LabRequest,
+			body: LabRequestSchema,
 		},
 	);

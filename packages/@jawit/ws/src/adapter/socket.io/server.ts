@@ -3,6 +3,8 @@
 import type { DefaultEventsMap, Server, Socket } from "socket.io";
 import type WSContracts from "../../base/contracts";
 import WSServer from "../../base/server";
+import type { ExtractWSContracts, WSServerEmitConfig } from "../../types";
+import { compileEventPath } from "../../utils";
 
 export default class SocketIOServer<
 	TWSContracts extends WSContracts<any, any>,
@@ -11,6 +13,45 @@ export default class SocketIOServer<
 	TWSContracts,
 	Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, TSocketData>
 > {
+	public io?: Server<
+		DefaultEventsMap,
+		DefaultEventsMap,
+		DefaultEventsMap,
+		TSocketData
+	>;
+
+	public emit<
+		const TEvent extends keyof ExtractWSContracts<
+			TWSContracts["contracts"],
+			"server2client" | "inter"
+		> &
+			string,
+	>(
+		event: TEvent,
+		config: WSServerEmitConfig<TEvent, TWSContracts["contracts"][TEvent]>,
+	): void {
+		if (!this.io) {
+			throw new Error(
+				"SocketIOServer is not attached to a socket.io instance.",
+			);
+		}
+
+		let builder: any = this.io;
+		if (config.to) {
+			builder = builder.to(config.to);
+		}
+
+		const compiledEvent = compileEventPath(
+			event as string,
+			(config as any).params as Record<string, unknown> | undefined,
+		);
+
+		builder.emit(compiledEvent, {
+			data: (config as any).data,
+			params: (config as any).params,
+		});
+	}
+
 	public attach(
 		io: Server<
 			DefaultEventsMap,
@@ -19,8 +60,9 @@ export default class SocketIOServer<
 			TSocketData
 		>,
 	) {
+		this.io = io;
 		io.of("/").adapter.on("leave-room", (room, id) => {
-			const [eventName, executionId] = room.split("::");
+			const [eventName, executionId] = room.split("::") as [string, string];
 			if (!eventName || !executionId) return;
 
 			const cleanup = this.disposeHandlers.get(eventName);
@@ -29,13 +71,13 @@ export default class SocketIOServer<
 			const isConnected = io.sockets.sockets.has(id);
 
 			if (isConnected) {
-				void cleanup(executionId);
+				void cleanup({ executionId, socketId: id });
 			} else {
 				// Delay cleanup for reconnection check
 				setTimeout(
 					async () => {
 						const sockets = await io.in(room).fetchSockets();
-						if (!sockets.length) void cleanup(executionId);
+						if (!sockets.length) void cleanup({ executionId, socketId: id });
 					},
 					2 * 60 * 1000,
 				);

@@ -85,6 +85,60 @@
 	--sidebar-ring: oklch(0.48 0.18 268);
 }
 
+.dark-editor {
+	--accentBase: var(--background);
+	--accentBgSubtle: var(--muted);
+	--accentBg: var(--muted);
+	--accentBgHover: var(--accent);
+	--accentBgActive: var(--accent);
+	--accentLine: var(--border);
+	--accentBorder: var(--border);
+	--accentBorderHover: var(--ring);
+	--accentSolid: var(--primary);
+	--accentSolidHover: var(--primary);
+	--accentText: var(--primary);
+	--accentTextContrast: var(--foreground);
+
+	--baseBase: var(--background);
+	--baseBgSubtle: var(--muted);
+	--baseBg: var(--muted);
+	--baseBgHover: var(--accent);
+	--baseBgActive: var(--accent);
+	--baseLine: var(--border);
+	--baseBorder: var(--border);
+	--baseBorderHover: var(--muted-foreground);
+	--baseSolid: var(--secondary);
+	--baseSolidHover: var(--secondary);
+	--baseText: var(--muted-foreground);
+	--baseTextContrast: var(--foreground);
+
+	--admonitionTipBg: var(--accent);
+	--admonitionTipBorder: var(--ring);
+
+	--admonitionInfoBg: var(--primary);
+	--admonitionInfoBorder: var(--ring);
+
+	--admonitionCautionBg: var(--secondary);
+	--admonitionCautionBorder: var(--border);
+
+	--admonitionDangerBg: var(--destructive);
+	--admonitionDangerBorder: var(--destructive);
+
+	--admonitionNoteBg: var(--muted);
+	--admonitionNoteBorder: var(--border);
+
+	font-family:
+		system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+		Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+	--font-mono:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+		"Courier New", monospace;
+
+	color: var(--foreground);
+	--basePageBg: var(--background);
+	background: var(--background);
+}
+
 @theme inline {
 	--font-sans: "Inter Variable", sans-serif;
 	--color-sidebar-ring: var(--sidebar-ring);

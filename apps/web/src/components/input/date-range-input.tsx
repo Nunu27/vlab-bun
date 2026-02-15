@@ -47,8 +47,9 @@ function DateRangeInput({
 						disabled={disabled}
 						aria-invalid={isInvalid}
 						className={cn(
-							"w-full justify-start px-3 text-left font-normal",
-							!value && "text-muted-foreground",
+							"w-full justify-start bg-transparent px-2.5 text-left font-normal shadow-xs hover:bg-transparent aria-expanded:bg-transparent dark:bg-input/30 dark:aria-expanded:bg-input/50 dark:hover:bg-input/50",
+							!value &&
+								"text-muted-foreground aria-expanded:text-muted-foreground",
 						)}
 					>
 						<CalendarIcon className="mr-2 size-4 shrink-0 opacity-50" />

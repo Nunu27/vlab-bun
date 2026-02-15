@@ -9,9 +9,9 @@ type ComboboxFieldProps = Omit<
 	required?: boolean;
 };
 
-function ComboboxField({ label, required, ...props }: ComboboxFieldProps) {
+function ComboboxField(props: ComboboxFieldProps) {
 	const field = useFieldContext<string>();
-	const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+	const isInvalid = !field.state.meta.isValid;
 
 	return (
 		<ComboboxInput
@@ -19,8 +19,6 @@ function ComboboxField({ label, required, ...props }: ComboboxFieldProps) {
 			name={field.name}
 			value={field.state.value}
 			onChange={(val) => field.handleChange(val)}
-			label={label}
-			required={required}
 			isInvalid={isInvalid}
 			errors={field.state.meta.errors}
 		/>

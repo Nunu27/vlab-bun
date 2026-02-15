@@ -7,6 +7,7 @@ import { createRouter } from "@api/plugins/system";
 import { failure, success } from "@jawit/common";
 import { RequestWithId } from "@vlab/shared/schemas/common";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { storageCleanUpJob } from "../file/cron";
 
 export default createRouter()
 	.use(auth)
@@ -45,6 +46,7 @@ export default createRouter()
 			});
 
 			if (deleted) {
+				storageCleanUpJob.resume();
 				await cache.delete(
 					`${key}:pagination:*`,
 					`${key}:${id}:*`,
