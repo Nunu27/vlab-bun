@@ -13,7 +13,11 @@ export const Route = createFileRoute("/_dashboard/_instructor/my-lab/$labId/")({
 		],
 	},
 	loader: async ({ params: { labId }, context }) => {
-		const { name } = await api.lab({ labId }).get.ensureQueryData(queryClient);
+		const [{ name }] = await Promise.all([
+			api.lab({ labId }).get.ensureQueryData(queryClient),
+			api["device-template"].list.get.ensureQueryData(queryClient),
+			api.evaluator.list.get.ensureQueryData(queryClient),
+		]);
 		context.breadcrumbData.set("name", name);
 	},
 	component: RouteComponent,

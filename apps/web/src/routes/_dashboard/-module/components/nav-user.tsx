@@ -30,7 +30,7 @@ export function NavUser() {
 						className="flex h-10 w-10 items-center justify-center gap-2 px-0 hover:bg-accent hover:text-accent-foreground sm:w-auto sm:px-3"
 					>
 						<UserCircle className="size-5 text-muted-foreground" />
-						<span className="hidden max-w-[150px] truncate font-medium text-sm leading-tight sm:block">
+						<span className="hidden max-w-37.5 truncate font-medium text-sm leading-tight sm:block">
 							{user.name}
 						</span>
 						<ChevronDown className="hidden size-4 text-muted-foreground sm:block" />

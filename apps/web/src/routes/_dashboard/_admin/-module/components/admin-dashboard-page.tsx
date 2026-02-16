@@ -7,6 +7,7 @@ import {
 	CardTitle,
 } from "@web/components/ui/card";
 import api from "@web/lib/api";
+import { useAuthStore } from "@web/stores/auth-store";
 import {
 	ActivityIcon,
 	BookOpenIcon,
@@ -17,10 +18,11 @@ import {
 	ServerIcon,
 	UsersIcon,
 } from "lucide-react";
-import { StatCard } from "./stat-card";
+import { StatCard } from "../../../-module/components/cards/stat-card";
 
 function AdminDashboardPage() {
 	const { data } = api.dashboard.admin.get.useSuspenseQuery();
+	const user = useAuthStore.use.user();
 
 	const totalUsers =
 		data.users.admin + data.users.instructor + data.users.student;
@@ -28,7 +30,7 @@ function AdminDashboardPage() {
 	return (
 		<div className="flex flex-col gap-4">
 			<PageHeading
-				title="Dashboard Overview"
+				title={`Welcome back, ${user?.name}`}
 				subtitle="Statistics for the virtual lab environment."
 			/>
 
