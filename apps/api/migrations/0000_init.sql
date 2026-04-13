@@ -106,8 +106,10 @@ CREATE TABLE "lab" (
 	"cover" text,
 	"content" text NOT NULL,
 	"max_attempt" integer,
+	"session_duration" integer DEFAULT 180 NOT NULL,
 	"topology" jsonb NOT NULL,
-	"instructions" jsonb NOT NULL,
+	"instructions" text NOT NULL,
+	"checks" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"instructor_id" uuid NOT NULL,
 	"start_at" timestamp with time zone NOT NULL,
 	"end_at" timestamp with time zone NOT NULL,
@@ -115,12 +117,10 @@ CREATE TABLE "lab" (
 );
 --> statement-breakpoint
 CREATE TABLE "lab_session_check" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone,
 	"lab_session_id" uuid NOT NULL,
 	"check_id" uuid NOT NULL,
-	"completed" boolean DEFAULT false NOT NULL
+	"completed" boolean DEFAULT false NOT NULL,
+	CONSTRAINT "lab_session_check_lab_session_id_check_id_pk" PRIMARY KEY("lab_session_id","check_id")
 );
 --> statement-breakpoint
 CREATE TABLE "lab_session_node" (
@@ -145,7 +145,8 @@ CREATE TABLE "lab_session" (
 	"student_id" uuid NOT NULL,
 	"client_id" uuid,
 	"score" numeric DEFAULT '0' NOT NULL,
-	"submitted_at" timestamp with time zone
+	"submitted_at" timestamp with time zone,
+	"due_date" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "instructor" ADD CONSTRAINT "instructor_id_user_id_fk" FOREIGN KEY ("id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -162,4 +163,5 @@ ALTER TABLE "lab_session_node" ADD CONSTRAINT "lab_session_node_lab_session_id_l
 ALTER TABLE "lab_session_node" ADD CONSTRAINT "lab_session_node_device_template_id_device_template_id_fk" FOREIGN KEY ("device_template_id") REFERENCES "public"."device_template"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lab_session" ADD CONSTRAINT "lab_session_lab_id_lab_id_fk" FOREIGN KEY ("lab_id") REFERENCES "public"."lab"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lab_session" ADD CONSTRAINT "lab_session_student_id_student_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."student"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "file_name_index" ON "file" USING btree ("name");
+CREATE UNIQUE INDEX "file_name_index" ON "file" USING btree ("name");--> statement-breakpoint
+CREATE UNIQUE INDEX "lab_attachments_lab_id_file_index" ON "lab_attachments" USING btree ("lab_id","file");

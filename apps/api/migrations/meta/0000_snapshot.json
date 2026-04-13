@@ -1,5 +1,5 @@
 {
-	"id": "e4112885-d724-4f41-85d1-5b8320d3b041",
+	"id": "f401a84a-9c33-43c0-b477-6a536a540f1d",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -558,7 +558,29 @@
 					"notNull": true
 				}
 			},
-			"indexes": {},
+			"indexes": {
+				"lab_attachments_lab_id_file_index": {
+					"name": "lab_attachments_lab_id_file_index",
+					"columns": [
+						{
+							"expression": "lab_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "file",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
 			"foreignKeys": {
 				"lab_attachments_lab_id_lab_id_fk": {
 					"name": "lab_attachments_lab_id_lab_id_fk",
@@ -685,6 +707,13 @@
 					"primaryKey": false,
 					"notNull": false
 				},
+				"session_duration": {
+					"name": "session_duration",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 180
+				},
 				"topology": {
 					"name": "topology",
 					"type": "jsonb",
@@ -693,9 +722,16 @@
 				},
 				"instructions": {
 					"name": "instructions",
-					"type": "jsonb",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
+				},
+				"checks": {
+					"name": "checks",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
 				},
 				"instructor_id": {
 					"name": "instructor_id",
@@ -745,25 +781,6 @@
 			"name": "lab_session_check",
 			"schema": "",
 			"columns": {
-				"id": {
-					"name": "id",
-					"type": "uuid",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				},
-				"updated_at": {
-					"name": "updated_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": false
-				},
 				"lab_session_id": {
 					"name": "lab_session_id",
 					"type": "uuid",
@@ -796,7 +813,12 @@
 					"onUpdate": "no action"
 				}
 			},
-			"compositePrimaryKeys": {},
+			"compositePrimaryKeys": {
+				"lab_session_check_lab_session_id_check_id_pk": {
+					"name": "lab_session_check_lab_session_id_check_id_pk",
+					"columns": ["lab_session_id", "check_id"]
+				}
+			},
 			"uniqueConstraints": {},
 			"policies": {},
 			"checkConstraints": {},
@@ -955,6 +977,12 @@
 					"type": "timestamp with time zone",
 					"primaryKey": false,
 					"notNull": false
+				},
+				"due_date": {
+					"name": "due_date",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
 				}
 			},
 			"indexes": {},

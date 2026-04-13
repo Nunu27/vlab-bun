@@ -3,11 +3,8 @@ import ColorInput from "../input/color-input";
 
 type ColorFieldProps = Omit<
 	React.ComponentProps<typeof ColorInput>,
-	"value" | "onChange" | "name" | "onBlur"
-> & {
-	label: string;
-	required?: boolean;
-};
+	"name" | "value" | "onBlur" | "onChange" | "isInvalid" | "errors"
+>;
 
 function ColorField(props: ColorFieldProps) {
 	const field = useFieldContext<string>();

@@ -18,7 +18,6 @@ import redis from "./redis";
 
 const logger = baseLogger.child({ service: "guacamole" });
 
-// Constants
 const SESSION_TTL_SECONDS = 24 * 60 * 60; // 1 day
 
 const websocketOptions: WSServerOptions = {
@@ -144,7 +143,6 @@ function initGuacamole(server?: Server) {
 		callbacks,
 	);
 
-	// Event handlers
 	guacServer.on("open", (clientConnection) => {
 		logger.debug(
 			`Connection opened: ${clientConnection.connectionId} (Guac ID: ${clientConnection.guacamoleConnectionId})`,

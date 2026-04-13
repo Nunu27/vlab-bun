@@ -1,4 +1,5 @@
 import { Button } from "@web/components/ui/button";
+import { Empty, EmptyDescription } from "@web/components/ui/empty";
 import { Spinner } from "@web/components/ui/spinner";
 import type { UseApiInfiniteListReturn } from "@web/hooks/pagination/use-api-infinite-list";
 import { cn } from "@web/lib/utils";
@@ -63,9 +64,9 @@ function DefaultLoadMore({
 
 function DefaultEmpty() {
 	return (
-		<div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground text-sm">
-			No items found.
-		</div>
+		<Empty className="border-0 py-16">
+			<EmptyDescription>No items found.</EmptyDescription>
+		</Empty>
 	);
 }
 
@@ -124,8 +125,7 @@ export function InfiniteList<TItem>({
 	return (
 		<div className={cn("flex flex-col", className)}>
 			{items.map((item, index) => (
-				// biome-ignore lint/suspicious/noArrayIndexKey: index is stable for infinite list pagination
-				<div key={index} className={itemClassName}>
+				<div key={index.toString()} className={itemClassName}>
 					{renderItem(item, index)}
 				</div>
 			))}

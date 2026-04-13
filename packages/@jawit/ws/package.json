@@ -4,7 +4,8 @@
 	"module": "src/index.ts",
 	"exports": {
 		".": "./src/index.ts",
-		"./react": "./src/react/index.ts"
+		"./react": "./src/react/index.ts",
+		"./react/devtools": "./src/react/devtools/index.ts"
 	},
 	"type": "module",
 	"devDependencies": {

@@ -33,7 +33,7 @@ export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
 		const results: Record<string, boolean> = {};
 
 		for (const config of this.checks) {
-			const [handlerId, checkId] = config.checkerId.split(".");
+			const [handlerId, checkId] = config.checkId.split(".");
 			if (!handlerId || !checkId) continue;
 
 			const handler = this.evaluator.handlers.get(handlerId);
@@ -73,7 +73,7 @@ export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
 		this.isStarted = true;
 
 		for (const config of this.checks) {
-			const [handlerId, checkId] = config.checkerId.split(".");
+			const [handlerId, checkId] = config.checkId.split(".");
 			if (!handlerId || !checkId) continue;
 
 			const handler = this.evaluator.handlers.get(handlerId);
@@ -84,6 +84,11 @@ export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
 
 			const sourceDef = handler.sources.get(checkDef.source);
 			if (!sourceDef) continue;
+
+			const sourceParams = checkDef.sourceParamsBuilder({
+				nodeId: config.nodeId,
+				params: config.params,
+			});
 
 			const notify = async (data: unknown) => {
 				const result = await checkDef.handler({
@@ -97,7 +102,7 @@ export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
 			this.evaluator.on(
 				`${handlerId}.${checkDef.source}`,
 				config.nodeId,
-				config.params,
+				sourceParams,
 				notify,
 			);
 
@@ -105,17 +110,12 @@ export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
 				this.evaluator.off(
 					`${handlerId}.${checkDef.source}`,
 					config.nodeId,
-					config.params,
+					sourceParams,
 					notify,
 				);
 			});
 
 			if (sourceDef.listen) {
-				const sourceParams = checkDef.sourceParamsBuilder({
-					nodeId: config.nodeId,
-					params: config.params,
-				});
-
 				// Initialize the listener and save the cleanup function
 				const cleanup = sourceDef.listen({
 					docker: this.docker,

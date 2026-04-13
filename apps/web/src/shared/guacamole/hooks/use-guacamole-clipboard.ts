@@ -3,12 +3,10 @@ import { type RefObject, useCallback, useEffect } from "react";
 
 interface UseGuacamoleClipboardProps {
 	clientRef: RefObject<Guacamole.Client | null>;
-	isConnected: boolean;
 }
 
 export const useGuacamoleClipboard = ({
 	clientRef,
-	isConnected,
 }: UseGuacamoleClipboardProps) => {
 	const sendClipboardText = useCallback(
 		(text: string) => {
@@ -67,28 +65,10 @@ export const useGuacamoleClipboard = ({
 			}
 		};
 
-		const handleWindowFocus = () => {
-			if (!isConnected || !clientRef.current) return;
-
-			navigator.clipboard
-				.readText()
-				.then((text) => {
-					if (text) {
-						console.log("Syncing clipboard on focus:", text.length, "chars");
-						sendClipboardText(text);
-					}
-				})
-				.catch((err) => {
-					console.debug("Clipboard read failed (focus sync):", err);
-				});
-		};
-
 		window.addEventListener("paste", handlePaste);
-		window.addEventListener("focus", handleWindowFocus);
 
 		return () => {
 			window.removeEventListener("paste", handlePaste);
-			window.removeEventListener("focus", handleWindowFocus);
 		};
-	}, [clientRef, isConnected, sendClipboardText]);
+	}, [sendClipboardText]);
 };

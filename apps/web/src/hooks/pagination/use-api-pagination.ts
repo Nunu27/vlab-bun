@@ -4,6 +4,7 @@ import type { PaginatedData } from "@jawit/common";
 import type {
 	ExtractTreatyError,
 	ExtractTreatyPaginationData,
+	ExtractTreatyParams,
 } from "@jawit/query/types";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { PaginationEndpoint, PaginationQuery } from "@web/types";
@@ -17,14 +18,9 @@ type UseApiPaginationOptions<
 	} = NonNullable<Parameters<TEndpoint["post"]["usePagination"]>[0]>,
 > = {
 	urlKey?: string;
-	params?: QueryOptions["args"];
+	params?: Omit<QueryOptions["args"], "page" | "filters">;
 	query?: Omit<QueryOptions, "args">;
 };
-
-import type { ExtractTreatyParams } from "@jawit/query/types";
-
-export type ExtractPaginationQuery<TEndpoint extends PaginationEndpoint> =
-	ExtractTreatyParams<TEndpoint["post"]>;
 
 export type UseApiPaginationReturn<
 	TItem,
@@ -44,7 +40,7 @@ export function useApiPagination<TEndpoint extends PaginationEndpoint>(
 	options?: UseApiPaginationOptions<TEndpoint>,
 ): UseApiPaginationReturn<
 	ExtractTreatyPaginationData<TEndpoint>,
-	ExtractPaginationQuery<TEndpoint>
+	ExtractTreatyParams<TEndpoint["post"]>
 > {
 	const paginationState = usePaginationParams({ urlKey: options?.urlKey });
 

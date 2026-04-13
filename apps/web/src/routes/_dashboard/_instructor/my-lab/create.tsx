@@ -7,6 +7,7 @@ import { PageHeading } from "@web/components/sections/page-heading";
 import { Button } from "@web/components/ui/button";
 import { useApiForm } from "@web/hooks/form/use-api-form";
 import api from "@web/lib/api";
+import { queryClient } from "@web/lib/query";
 import { TopologyStoreProvider } from "@web/shared/topology/stores";
 import { LabForm } from "./-module/components/forms/lab-form";
 
@@ -24,6 +25,12 @@ export const Route = createFileRoute("/_dashboard/_instructor/my-lab/create")({
 			},
 		],
 	},
+	loader: async () => {
+		await Promise.all([
+			api["device-template"].list.get.ensureQueryData(queryClient),
+			api.evaluator.list.get.ensureQueryData(queryClient),
+		]);
+	},
 	component: RouteComponent,
 });
 
@@ -31,23 +38,32 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
+	const { data: categorizedTemplates } =
+		api["device-template"].list.get.useSuspenseQuery();
+
 	const form = useApiForm(api.lab.post, {
 		defaultValues: {
 			name: "",
 			content: "",
 			isPublished: false,
+			sessionDuration: 180,
 			attachments: [],
-			instructions: [],
+			instructions: "",
+			checks: {},
 			topology: {} as LabTopology,
 			date: {} as DateRange,
 		},
 		validators: { onSubmit: validator },
 		mutation: {
-			onSuccess: () => {
+			onSuccess: ({ id }) => {
 				queryClient.invalidateQueries({
 					queryKey: ["lab", "pagination"],
 				});
-				navigate({ to: "/my-lab", replace: true });
+				navigate({
+					to: "/my-lab/$labId",
+					params: { labId: id },
+					replace: true,
+				});
 			},
 		},
 	});
@@ -67,7 +83,10 @@ function RouteComponent() {
 					back={{ to: "/my-lab" }}
 				/>
 
-				<TopologyStoreProvider>
+				<TopologyStoreProvider
+					isEditor
+					categorizedTemplates={categorizedTemplates}
+				>
 					<LabForm form={form} />
 				</TopologyStoreProvider>
 

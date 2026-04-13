@@ -3,13 +3,22 @@ import type { LabConfig } from "@api/types/clab";
 import { toKebabCase } from "@api/utils/string";
 import { createContainerlabClient } from "@vlab/clab";
 import type { Node } from "@vlab/clab/types";
-import { LABELS } from "@vlab/clab-monitor/constants";
+import type { DeviceKind } from "@vlab/shared/enums";
+import { LABELS } from "./events";
 
 const { client, wrapper } = createContainerlabClient({
 	uri: env.CLAB_URL,
 	username: env.CLAB_USERNAME,
 	password: env.CLAB_PASSWORD,
 });
+
+const startupExecs: Partial<Record<DeviceKind, string[]>> = {
+	linux: [
+		"ip route del default",
+		`ip route add ${env.GUACD_IP} dev eth0`,
+		`sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'`,
+	],
+};
 
 export async function deployLab(sessionId: string, config: LabConfig) {
 	const defaultLabels: Record<string, string> = {
@@ -19,6 +28,10 @@ export async function deployLab(sessionId: string, config: LabConfig) {
 
 	if (config.labId) {
 		defaultLabels[LABELS.LAB_ID] = config.labId;
+	}
+
+	if (config.dueDate) {
+		defaultLabels[LABELS.LAB_DUE] = config.dueDate.toString();
 	}
 
 	const nodeNames: Record<string, string> = {};
@@ -49,6 +62,16 @@ export async function deployLab(sessionId: string, config: LabConfig) {
 			cpu: resources.cpu,
 			memory: resources.memory,
 			labels,
+			"auto-remove": true,
+			stages: {
+				configure: {
+					exec: startupExecs[rest.kind as DeviceKind]?.map((command) => ({
+						command,
+						target: "container",
+						phase: "on-exit",
+					})),
+				},
+			},
 		};
 	}
 

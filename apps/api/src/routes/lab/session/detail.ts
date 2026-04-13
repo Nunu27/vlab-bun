@@ -30,10 +30,14 @@ export default createRouter()
 						entity: { label },
 					}) => {
 						const session = await db.query.labSessions.findFirst({
-							columns: { id: true, score: true, createdAt: true },
-							where: (s, { and, eq }) => {
+							columns: {
+								id: true,
+								dueDate: true,
+							},
+							where: (s, { and, eq, isNull }) => {
 								return and(
 									eq(s.id, id),
+									isNull(s.submittedAt),
 									eq(s.studentId, userId),
 									eq(s.labId, labId),
 								);
@@ -45,6 +49,12 @@ export default createRouter()
 										labNodeId: true,
 										health: true,
 										interfaces: true,
+									},
+								},
+								checks: {
+									columns: {
+										checkId: true,
+										completed: true,
 									},
 								},
 							},
@@ -60,7 +70,18 @@ export default createRouter()
 								nodes[labNodeId] = node;
 							});
 
-							return success({ data: { ...session, nodes } });
+							const checks: Record<string, boolean> = {};
+							session.checks?.forEach((check) => {
+								checks[check.checkId] = check.completed;
+							});
+
+							return success({
+								data: {
+									...session,
+									nodes,
+									checks,
+								},
+							});
 						}
 						return status(404, failure({ message: `${label} not found` }));
 					},

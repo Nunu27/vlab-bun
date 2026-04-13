@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import pkg from "@web/../package.json";
 import { ModeToggle } from "@web/components/buttons/mode-toggle";
 import AppLoadingPage from "@web/components/pages/app-loading-page";
 import { Separator } from "@web/components/ui/separator";
@@ -10,6 +11,7 @@ import {
 import { protectedRoute } from "@web/lib/middlewares";
 import AppBreadcrumb from "./_dashboard/-module/components/app-breadcrumb";
 import { AppSidebar } from "./_dashboard/-module/components/app-sidebar";
+
 import { NavUser } from "./_dashboard/-module/components/nav-user";
 
 export const Route = createFileRoute("/_dashboard")({
@@ -37,6 +39,18 @@ function RouteComponent() {
 				<div className="flex-1 p-4 pt-0">
 					<Outlet />
 				</div>
+				<footer className="mt-auto flex items-center justify-center gap-1 p-4 text-muted-foreground text-xs">
+					&copy; {new Date().getFullYear()}{" "}
+					<a
+						href={pkg.author.url}
+						target="_blank"
+						rel="noreferrer"
+						className="hover:text-foreground hover:underline"
+					>
+						{pkg.author.name}
+					</a>
+					{" • "}v{pkg.version}
+				</footer>
 			</SidebarInset>
 		</SidebarProvider>
 	);

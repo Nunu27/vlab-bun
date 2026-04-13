@@ -28,8 +28,9 @@ function Device({ id }: { id: string }) {
 
 	const template = useTopologyTemplate(state?.deviceId);
 	const health = useWSData("node:[id]:health", {
-		params: { id },
+		params: { id: data?.id ?? "" },
 		default: data?.health ?? null,
+		enabled: !!data?.id,
 	});
 	const healthColor = getHealthColor(health);
 

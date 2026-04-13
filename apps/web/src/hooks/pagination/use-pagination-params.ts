@@ -19,7 +19,6 @@ function withPrefix(prefix: string | undefined, name: string) {
 	return prefix ? `${prefix}_${name}` : name;
 }
 
-// filters is JSON-encoded as a single URL param
 const parseAsFilters = createParser<PaginationFilters | null>({
 	parse: (v) => {
 		try {

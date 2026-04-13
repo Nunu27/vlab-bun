@@ -287,7 +287,7 @@ export interface Node {
 	/** License file path */
 	license?: string;
 	/** Auto-remove container on stop */
-	autoRemove?: boolean;
+	"auto-remove"?: boolean;
 	/** Publish all ports */
 	publish?: string[];
 	/** Extra hosts entries */

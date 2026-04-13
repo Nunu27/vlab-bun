@@ -3,11 +3,8 @@ import CheckboxInput from "../input/checkbox-input";
 
 type CheckboxFieldProps = Omit<
 	React.ComponentProps<typeof CheckboxInput>,
-	"checked" | "onCheckedChange" | "name" | "onBlur"
-> & {
-	label?: string;
-	required?: boolean;
-};
+	"name" | "checked" | "onCheckedChange" | "onBlur" | "isInvalid" | "errors"
+>;
 
 function CheckboxField(props: CheckboxFieldProps) {
 	const field = useFieldContext<boolean>();

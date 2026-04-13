@@ -5,7 +5,7 @@ import type { LabTopology } from "@vlab/shared/schemas/lab";
 import type api from "@web/lib/api";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { TOPOLOGY_ID } from "../constants";
+
 import type { NodeData } from "../types";
 import {
 	createDeviceSlice,
@@ -71,6 +71,8 @@ export interface TopologyState
 	templateCategories: TemplateCategories;
 	templates: Templates;
 
+	isEditor: boolean;
+
 	// Shared states
 	mode: "select" | "connect" | "note";
 }
@@ -90,6 +92,8 @@ const initialState: TopologyState = {
 	templateCategories: new Map(),
 	templates: new Map(),
 
+	isEditor: false,
+
 	// Shared states
 	mode: "select",
 };
@@ -97,6 +101,7 @@ const initialState: TopologyState = {
 export interface TopologyData extends Partial<LabTopology> {
 	sessionId?: string;
 	nodesData?: Record<string, NodeData>;
+	isEditor?: boolean;
 
 	categorizedTemplates: CategorizedTemplates[];
 }
@@ -108,73 +113,70 @@ export interface TopologyActions
 		TopologyEdgeActions,
 		TopologyNoteActions,
 		TopologyViewActions {
-	load: (topology: TopologyData) => void;
 	toggleMode: (mode: TopologyState["mode"]) => void;
 }
 
 export type TopologyStore = Store<TopologyState, TopologyActions>;
 
-const { Provider, useContext } = createScopedStore(() =>
-	create<TopologyStore>()(
-		subscribeWithSelector((...a) => ({
-			...initialState,
-			actions: {
-				load: ({ categorizedTemplates, ...topology }) => {
-					const templateCategories = new Map<string, TemplateCategory>();
-					const templates = new Map<string, TemplateItem>();
-					const deviceNames = new Set<string>();
+const { Provider, useContext } = createScopedStore(
+	({
+		categorizedTemplates,
+		topology,
+		...state
+	}: Omit<TopologyData, keyof LabTopology> & { topology?: LabTopology }) => {
+		const templateCategories = new Map<string, TemplateCategory>();
+		const templates = new Map<string, TemplateItem>();
+		const deviceNames = new Set<string>();
 
-					categorizedTemplates.forEach(
-						({ id: categoryId, templates: categoryTemplates, ...category }) => {
-							templateCategories.set(categoryId, category);
+		categorizedTemplates.forEach(
+			({ id: categoryId, templates: categoryTemplates, ...category }) => {
+				templateCategories.set(categoryId, category);
 
-							categoryTemplates.forEach(({ id, ...template }) => {
-								templates.set(id, { ...template, categoryId });
-							});
-						},
-					);
-
-					if (topology.devices) {
-						Object.values(topology.devices).forEach((device) => {
-							deviceNames.add(device.name);
-						});
-					}
-
-					a[0]({
-						templateCategories,
-						templates,
-						deviceNames,
-						...topology,
-					});
-
-					const canvas = document.getElementById(TOPOLOGY_ID.CANVAS);
-					if (!canvas) return;
-
-					a[1]().actions.recenter(canvas.getBoundingClientRect());
-				},
-				toggleMode: (mode) => {
-					const { mode: currentMode, notes, editingNoteId, actions } = a[1]();
-					actions.clearSelection();
-
-					const newNotes = checkNote(notes, editingNoteId);
-
-					a[0]({
-						mode: currentMode === mode ? "select" : mode,
-						connectDeviceId: null,
-						connectSource: null,
-						notes: newNotes,
-						editingNoteId: null,
-					});
-				},
-				...createNodeSlice(...a),
-				...createDeviceSlice(...a),
-				...createGroupSlice(...a),
-				...createEdgeSlice(...a),
-				...createNoteSlice(...a),
-				...createViewSlice(...a),
+				categoryTemplates.forEach(({ id, ...template }) => {
+					templates.set(id, { ...template, categoryId });
+				});
 			},
-		})),
-	),
+		);
+
+		if (topology?.devices) {
+			Object.values(topology.devices).forEach((device) => {
+				deviceNames.add(device.name);
+			});
+		}
+
+		return create<TopologyStore>()(
+			subscribeWithSelector((...a) => ({
+				...initialState,
+				templateCategories,
+				templates,
+				deviceNames,
+				...topology,
+				...state,
+				actions: {
+					toggleMode: (mode) => {
+						const { mode: currentMode, notes, editingNoteId, actions } = a[1]();
+						actions.clearSelection();
+
+						const newNotes = checkNote(notes, editingNoteId);
+
+						a[0]({
+							mode: currentMode === mode ? "select" : mode,
+							connectDeviceId: null,
+							connectSource: null,
+							notes: newNotes,
+							editingNoteId: null,
+						});
+					},
+					...createNodeSlice(...a),
+					...createDeviceSlice(...a),
+					...createGroupSlice(...a),
+					...createEdgeSlice(...a),
+					...createNoteSlice(...a),
+					...createViewSlice(...a),
+				},
+			})),
+		);
+	},
 );
 
 export const TopologyStoreProvider = Provider;

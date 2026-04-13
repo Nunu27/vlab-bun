@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: intentional loose typing for generic api function */
 
 import type { PaginatedData } from "@jawit/common";
-import type { PaginationSchemaType } from "@jawit/paginator";
+import type { PaginationSchema } from "@jawit/paginator";
 import type {
 	InfiniteData,
 	UseInfiniteQueryResult,
@@ -10,7 +10,7 @@ import type {
 
 export type BaseApiFunction = (...args: any[]) => Promise<any>;
 
-export type PaginationQuery = PaginationSchemaType<any, any, true>;
+export type PaginationQuery = PaginationSchema<any, any, true>["static"];
 
 export type PaginationEndpoint = {
 	post: BaseApiFunction & {

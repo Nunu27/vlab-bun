@@ -24,7 +24,12 @@ export const Route = createFileRoute(
 		],
 	},
 	loader: async ({ params: { labId }, context }) => {
-		const { name } = await api.lab({ labId }).get.ensureQueryData(queryClient);
+		const [{ name }] = await Promise.all([
+			api.lab({ labId }).get.ensureQueryData(queryClient),
+			api["device-template"].list.get.ensureQueryData(queryClient),
+			api.evaluator.list.get.ensureQueryData(queryClient),
+		]);
+
 		context.breadcrumbData.set("name", name);
 	},
 	component: RouteComponent,
@@ -34,6 +39,8 @@ function RouteComponent() {
 	const { labId } = Route.useParams();
 	const navigate = useNavigate();
 	const { data: lab } = api.lab({ labId }).get.useSuspenseQuery();
+	const { data: categorizedTemplates } =
+		api["device-template"].list.get.useSuspenseQuery();
 
 	const client = useQueryClient();
 	const form = useApiForm(api.lab({ labId }).put, {
@@ -42,10 +49,12 @@ function RouteComponent() {
 			content: lab.content,
 			cover: lab.cover ?? undefined,
 			isPublished: lab.isPublished,
+			sessionDuration: lab.sessionDuration,
 			date: lab.date,
 			maxAttempt: lab.maxAttempt ?? undefined,
 			attachments: lab.attachments,
 			instructions: lab.instructions,
+			checks: lab.checks,
 			topology: lab.topology,
 		},
 		validators: { onSubmit: validator },
@@ -78,7 +87,11 @@ function RouteComponent() {
 					back={{ to: "/my-lab" }}
 				/>
 
-				<TopologyStoreProvider>
+				<TopologyStoreProvider
+					isEditor
+					categorizedTemplates={categorizedTemplates}
+					topology={lab.topology}
+				>
 					<LabForm form={form} />
 				</TopologyStoreProvider>
 

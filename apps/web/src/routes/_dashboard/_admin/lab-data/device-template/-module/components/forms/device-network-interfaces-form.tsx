@@ -157,7 +157,7 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
 
 													return (
 														<SortableInterfaceRow
-															key={iface.id || crypto.randomUUID()}
+															key={iface.id}
 															index={index}
 															form={group}
 															fields={{

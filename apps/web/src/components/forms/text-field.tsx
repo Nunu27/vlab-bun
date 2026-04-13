@@ -1,10 +1,10 @@
 import { useFieldContext } from "@web/hooks/form/use-app-form";
 import TextInput from "../input/text-input";
 
-type TextFieldProps = React.ComponentProps<"input"> & {
-	label?: string;
-	required?: boolean;
-};
+type TextFieldProps = Omit<
+	React.ComponentProps<typeof TextInput>,
+	"name" | "value" | "onBlur" | "onChange" | "isInvalid" | "errors"
+>;
 
 function TextField(props: TextFieldProps) {
 	const field = useFieldContext<string>();
@@ -15,7 +15,7 @@ function TextField(props: TextFieldProps) {
 			{...props}
 			id={field.name}
 			name={field.name}
-			value={field.state.value}
+			value={field.state.value ?? ""}
 			onBlur={field.handleBlur}
 			onChange={(e) => field.handleChange(e.target.value)}
 			isInvalid={isInvalid}

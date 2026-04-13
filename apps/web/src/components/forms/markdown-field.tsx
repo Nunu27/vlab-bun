@@ -3,11 +3,8 @@ import MarkdownInput from "../input/markdown-input";
 
 type MarkdownFieldProps = Omit<
 	React.ComponentProps<typeof MarkdownInput>,
-	"value" | "onChange" | "name" | "onBlur"
-> & {
-	label?: string;
-	required?: boolean;
-};
+	"name" | "value" | "onBlur" | "onChange" | "isInvalid" | "errors"
+>;
 
 function MarkdownField(props: MarkdownFieldProps) {
 	const field = useFieldContext<string>();

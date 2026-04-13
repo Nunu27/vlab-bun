@@ -1,21 +1,30 @@
-/** biome-ignore-all lint/complexity/noBannedTypes: for type inference */
 import type { Static, TProperties, TSchema } from "@sinclair/typebox";
 import type WSContracts from "./base/contracts";
 
 export type WSEventType = "client2server" | "server2client" | "inter";
 
-// biome-ignore lint/suspicious/noExplicitAny: generic constraint
-export type BaseWSContract<TMeta extends Record<string, unknown> = any> = {
+// Use Record<string, unknown> instead of any for stricter constraints
+export interface BaseWSContract<
+	TMeta extends Record<string, unknown> = Record<string, unknown>,
+> {
 	event: string;
 	type: WSEventType;
 	data?: TSchema;
 	replies?: TProperties;
 	meta?: TMeta;
-};
+}
 
+export type Simplify<T> = { [K in keyof T]: T[K] } & {};
+
+export type MaybePromise<T> = T | Promise<T>;
+
+/** Extracts the expected meta type out of the WSContracts instance. */
+export type ExtractMeta<T> =
+	T extends WSContracts<infer M, infer _> ? M : never;
+
+/** Utility type to filter mapped contracts by event type (`client2server`, `server2client`, `inter`) */
 export type ExtractWSContracts<
-	// biome-ignore lint/suspicious/noExplicitAny: generic constraint
-	TContracts extends Record<string, BaseWSContract<any>>,
+	TContracts extends Record<string, BaseWSContract<Record<string, unknown>>>,
 	TType extends WSEventType,
 > = {
 	[TEvent in keyof TContracts as TContracts[TEvent]["type"] extends TType
@@ -23,46 +32,35 @@ export type ExtractWSContracts<
 		: never]: TContracts[TEvent];
 };
 
+/** Extracts parameters from a bracketed route notation string e.g., "chat:send:[roomId]" -> { roomId: string } */
 export type EventParams<TEvent extends string> =
-	TEvent extends `${infer _Start}:[${infer Param}]${infer Rest}`
+	TEvent extends `${string}:[${infer Param}]${infer Rest}`
 		? { [K in Param]: string } & EventParams<Rest>
-		: {}; // Return empty object instead of never when no params
+		: Record<never, never>;
 
-// Helper to clean up object types
-export type Simplify<T> = { [K in keyof T]: T[K] } & {};
+/** Validates whether a given TEvent needs a parameters object or not. */
+export type WSParamsConfig<TEvent extends string> =
+	keyof EventParams<TEvent> extends never
+		? Record<never, never>
+		: { params: EventParams<TEvent> };
 
-export type MaybePromise<T> = T | Promise<T>;
+/** Extracts the runtime TypeBox static TS type for the incoming or outgoing payload `data` */
+export type ExtractWSData<TContract extends BaseWSContract> =
+	NonNullable<TContract["data"]> extends TSchema
+		? Static<NonNullable<TContract["data"]>>
+		: undefined;
 
 export type WSDataConfig<TContract extends BaseWSContract> = [
 	TContract["data"],
 ] extends [undefined]
-	? {}
+	? Record<never, never>
 	: { data: Static<NonNullable<TContract["data"]>> };
 
-export type WSClientDataConfig<TContract extends BaseWSContract> = [
-	NonNullable<TContract["data"]>,
-] extends [TSchema]
-	? { data: Static<NonNullable<TContract["data"]>> }
-	: {};
-
-export type WSParamsConfig<TEvent extends string> =
-	keyof EventParams<TEvent> extends never
-		? {}
-		: { params: EventParams<TEvent> };
-
-export type WSServerRepliesConfig<TContract extends BaseWSContract> = [
-	TContract["replies"],
-] extends [undefined]
-	? Record<string, never>
-	: {
-			reply: <
-				TReplies extends NonNullable<TContract["replies"]>,
-				K extends keyof TReplies,
-			>(
-				type: K,
-				data: Static<TReplies[K]>,
-			) => void;
-		};
+/** Specifically for emit on the client */
+export type WSClientDataConfig<TContract extends BaseWSContract> =
+	Static<NonNullable<TContract["data"]>> extends never
+		? Record<never, never>
+		: { data: Static<NonNullable<TContract["data"]>> };
 
 export type WSClientCallbacksConfig<TContract extends BaseWSContract> = [
 	NonNullable<TContract["replies"]>,
@@ -90,9 +88,21 @@ export type WSClientEmitConfig<
 export type WSServerEmitConfig<
 	TEvent extends string,
 	TContract extends BaseWSContract,
-> = Simplify<
-	{ to?: string | string[] } & WSDataConfig<TContract> & WSParamsConfig<TEvent>
->;
+> = Simplify<WSDataConfig<TContract> & WSParamsConfig<TEvent>>;
+
+export type WSServerRepliesConfig<TContract extends BaseWSContract> = [
+	TContract["replies"],
+] extends [undefined]
+	? Record<string, never>
+	: {
+			reply: <
+				TReplies extends NonNullable<TContract["replies"]>,
+				K extends keyof TReplies,
+			>(
+				type: K,
+				data: Static<TReplies[K]>,
+			) => void;
+		};
 
 export type WSServerHandler<
 	TEvent extends string,
@@ -111,14 +121,6 @@ export type WSServerMiddleware<TContext, TMeta> = (
 	next: (err?: Error) => void,
 ) => void | Promise<void>;
 
-export type ExtractWSData<TContract extends BaseWSContract> =
-	NonNullable<TContract["data"]> extends TSchema
-		? Static<NonNullable<TContract["data"]>>
-		: undefined;
-
 export type WSClientHandler<TEventContract extends BaseWSContract> = (
 	data: ExtractWSData<TEventContract>,
 ) => void | Promise<void>;
-
-// biome-ignore lint/suspicious/noExplicitAny: generic constraint
-export type ExtractMeta<T> = T extends WSContracts<infer M, any> ? M : never;

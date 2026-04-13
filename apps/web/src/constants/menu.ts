@@ -8,6 +8,7 @@ import {
 	MonitorIcon,
 	ShieldCheckIcon,
 	TagsIcon,
+	TestTubesIcon,
 	UserCheckIcon,
 } from "lucide-react";
 import type { ElementType } from "react";
@@ -43,10 +44,20 @@ export const menuByRole: Record<Role, MenuSection[]> = {
 					url: "/",
 					icon: HomeIcon,
 				},
+			],
+		},
+		{
+			title: "Labs",
+			items: [
 				{
-					title: "Labs",
-					url: "/lab",
+					title: "Enrolled Labs",
+					url: "/lab/enrolled",
 					icon: FlaskConicalIcon,
+				},
+				{
+					title: "Browse Labs",
+					url: "/lab/browse",
+					icon: TestTubesIcon,
 				},
 			],
 		},

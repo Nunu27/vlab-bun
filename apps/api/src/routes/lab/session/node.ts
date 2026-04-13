@@ -15,9 +15,11 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.resolve(({ params: { id, labId, labSessionId } }) => ({
-					cacheKey: `lab:${labId}:session:${labSessionId}:node:${id}`,
-				}))
+				.resolve(
+					({ params: { id, labId, labSessionId }, entity: { key } }) => ({
+						cacheKey: `lab:${labId}:${key}:${labSessionId}:node:${id}`,
+					}),
+				)
 				.get(
 					"/:labSessionId/node/:id",
 					async ({ params: { id, labId, labSessionId }, status }) => {

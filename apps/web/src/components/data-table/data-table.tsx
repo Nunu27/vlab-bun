@@ -25,7 +25,6 @@ import { calculateTableSizing } from "@web/helper/table";
 import type { UseApiPaginationReturn } from "@web/hooks/pagination/use-api-pagination";
 import { CircleQuestionMarkIcon } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import { useWindowSize } from "usehooks-ts";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "../ui/empty";
 import { DataTableProvider } from "./context";
 import { DataTableColumnHeader } from "./data-table-column-header";
@@ -60,7 +59,6 @@ export function DataTable<TData>({
 	const tableContainerRef = useRef<HTMLDivElement>(null);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const windowDimensions = useWindowSize();
 
 	const { data, isLoading, sortBy, sortOrder } = pagination;
 
@@ -97,7 +95,7 @@ export function DataTable<TData>({
 	});
 
 	const headers = table.getFlatHeaders();
-	// biome-ignore lint/correctness/useExhaustiveDependencies: window resize drives layout recalc
+
 	useLayoutEffect(() => {
 		if (tableContainerRef.current) {
 			const initialColumnSizing = calculateTableSizing(
@@ -106,7 +104,7 @@ export function DataTable<TData>({
 			);
 			table.setColumnSizing(initialColumnSizing);
 		}
-	}, [headers, windowDimensions.width]);
+	}, [headers, table.setColumnSizing]);
 
 	return (
 		<DataTableProvider value={pagination}>

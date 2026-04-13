@@ -2,6 +2,12 @@
 	"name": "@vlab/web",
 	"private": true,
 	"type": "module",
+	"version": "1.3.3",
+	"author": {
+		"name": "Wisnu Agung Pambudi",
+		"email": "wisnu.agung.001@gmail.com",
+		"url": "https://nunu27.eu.org"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -49,6 +55,7 @@
 		"react": "^19.2.0",
 		"react-day-picker": "^9.14.0",
 		"react-dom": "^19.2.0",
+		"react-resizable-panels": "^4.9.0",
 		"shadcn": "^4.0.8",
 		"socket.io-client": "^4.8.3",
 		"socket.io-msgpack-parser": "^3.0.2",

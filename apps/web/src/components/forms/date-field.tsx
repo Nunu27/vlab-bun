@@ -3,11 +3,8 @@ import DateInput from "../input/date-input";
 
 type DateFieldProps = Omit<
 	React.ComponentProps<typeof DateInput>,
-	"value" | "onChange" | "name"
-> & {
-	label: string;
-	required?: boolean;
-};
+	"name" | "value" | "onChange" | "isInvalid" | "errors"
+>;
 
 function DateField(props: DateFieldProps) {
 	const field = useFieldContext<Date | undefined>();

@@ -1,6 +1,6 @@
 import db from "@api/db";
 import { labSessions } from "@api/db/schema";
-import clab from "@api/services/clab";
+import clab, { destroyLab } from "@api/services/clab";
 import { startLabEvaluation, stopLabEvaluation } from "@api/services/evaluator";
 import { clabMonitor } from "@api/services/events";
 import ws from "@api/services/ws";
@@ -8,22 +8,24 @@ import type { LabLink, LabNode } from "@api/types/clab";
 import evaluator from "@vlab/evaluator";
 import { eq } from "drizzle-orm";
 
-// Lab Sessions event
 ws.server.on("lab:[id]:init", async ({ params: { id }, socket, reply }) => {
 	const userId = socket.data.session.id;
 
 	const lab = await db.query.labs.findFirst({
-		columns: { topology: true },
+		columns: {
+			topology: true,
+			maxAttempt: true,
+			sessionDuration: true,
+			endAt: true,
+		},
 		where: (lab, { eq, and }) => and(eq(lab.id, id), eq(lab.isPublished, true)),
 		with: {
 			enrollments: {
 				columns: { labId: true },
-				where: (enrollment, { eq }) => {
-					return eq(enrollment.studentId, userId);
-				},
+				where: (enrollment, { eq }) => eq(enrollment.studentId, userId),
 			},
 			sessions: {
-				columns: { id: true },
+				columns: { id: true, submittedAt: true },
 				where: (session, { eq }) => eq(session.studentId, userId),
 			},
 		},
@@ -31,7 +33,13 @@ ws.server.on("lab:[id]:init", async ({ params: { id }, socket, reply }) => {
 
 	if (!lab) throw new Error("Lab not found");
 	if (!lab.enrollments.length) throw new Error("Not enrolled");
-	if (lab.sessions.length) return reply("id", lab.sessions[0].id);
+
+	const existingSession = lab.sessions.find(({ submittedAt }) => !submittedAt);
+
+	if (existingSession) return reply("id", existingSession.id);
+	else if (lab.maxAttempt && lab.sessions.length >= lab.maxAttempt) {
+		throw new Error("Max attempts reached");
+	}
 
 	reply("info", "Building lab configuration...");
 
@@ -81,11 +89,15 @@ ws.server.on("lab:[id]:init", async ({ params: { id }, socket, reply }) => {
 
 	reply("info", "Provisioning lab...");
 
+	const sessionDurationMs = lab.sessionDuration * 60 * 1000;
+	const dueDate = Math.min(Date.now() + sessionDurationMs, lab.endAt.getTime());
+
 	const { response } = await clab.deployLab(sessionId, {
 		labId: id,
 		ownerId: userId,
 		nodes,
 		links,
+		dueDate,
 	});
 
 	if (!response.ok) {
@@ -100,18 +112,30 @@ ws.server.on(
 	"lab-session:[sessionId]:connect",
 	async ({ params: { sessionId }, data: force, socket, reply }) => {
 		const session = await db.query.labSessions.findFirst({
-			where: (session, { eq }) => eq(session.id, sessionId),
-			with: {
-				lab: true,
-				nodes: true,
+			columns: { clientId: true, labId: true },
+			where: (session, { eq, and, isNull }) => {
+				return and(
+					eq(session.id, sessionId),
+					eq(session.studentId, socket.data.session.id),
+					isNull(session.submittedAt),
+				);
 			},
 		});
 
 		if (!session) throw new Error("Session not found");
-
-		if (!force && session.clientId && session.clientId !== socket.id) {
+		if (
+			!force &&
+			session.clientId &&
+			ws.io.sockets.sockets.has(session.clientId) &&
+			session.clientId !== socket.id
+		) {
 			return reply("conflict", true);
 		}
+
+		ws.server.emit("lab-session:[sessionId]:client-change", {
+			params: { sessionId },
+			data: socket.id,
+		});
 
 		await db
 			.update(labSessions)
@@ -119,10 +143,7 @@ ws.server.on(
 			.where(eq(labSessions.id, sessionId));
 		reply("conflict", false);
 
-		await startLabEvaluation(sessionId, {
-			instructions: session.lab.instructions,
-			nodes: session.nodes,
-		});
+		await startLabEvaluation(sessionId, session.labId);
 	},
 );
 
@@ -134,14 +155,15 @@ ws.server.onDispose("lab-session:[sessionId]:connect", async ({ socketId }) => {
 		.returning({ id: labSessions.id });
 
 	if (data) {
-		ws.server.emit("lab-session:[sessionId]:session-change", {
+		ws.server.emit("lab-session:[sessionId]:client-change", {
 			params: { sessionId: data.id },
+			data: null,
 		});
+
 		stopLabEvaluation(data.id);
 	}
 });
 
-// Node events
 clabMonitor.emitter.on("node-health", ({ id, health }, isTemp) => {
 	if (isTemp) return;
 
@@ -149,19 +171,43 @@ clabMonitor.emitter.on("node-health", ({ id, health }, isTemp) => {
 });
 
 clabMonitor.emitter.on("interface-update", ({ id, interfaces }) => {
-	ws.server.emit("node:[id]:interfaces", {
-		params: { id },
-		data: interfaces,
-	});
-
 	for (const [iface, ips] of Object.entries(interfaces)) {
-		if (ips.length > 0) {
-			evaluator.emit(
-				"node-interface.interface-ip",
-				id,
-				{ interface: iface },
-				ips,
-			);
-		}
+		ws.server.emit("node:[id]:interfaces:[interface]", {
+			params: { id, interface: iface },
+			data: ips,
+		});
+
+		evaluator.emit(
+			"node-interface.interface-ip",
+			id,
+			{ interface: iface },
+			ips,
+		);
 	}
 });
+
+clabMonitor.emitter.on("session-remove", (sessionId) => {
+	ws.server.emit("lab-session:[sessionId]:ended", {
+		params: { sessionId },
+	});
+});
+
+ws.server.on(
+	"lab-session:[sessionId]:submit",
+	async ({ params: { sessionId }, socket }) => {
+		const session = await db.query.labSessions.findFirst({
+			columns: { id: true },
+			where: (session, { eq, and, isNull }) => {
+				return and(
+					eq(session.id, sessionId),
+					eq(session.studentId, socket.data.session.id),
+					isNull(session.submittedAt),
+				);
+			},
+		});
+
+		if (!session) throw new Error("Session not found");
+
+		destroyLab(sessionId);
+	},
+);

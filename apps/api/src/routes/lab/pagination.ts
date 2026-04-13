@@ -1,9 +1,11 @@
 import db from "@api/db";
+import { labEnrollments } from "@api/db/schema/lab";
 import caching from "@api/middlewares/caching";
 import { createRouter } from "@api/plugins/system";
 import { md5 } from "@api/utils/hash";
 import { success } from "@jawit/common";
 import { createPaginator } from "@jawit/paginator";
+import { and, eq, inArray } from "drizzle-orm";
 import { t } from "elysia";
 
 const { paginate, schema } = createPaginator(db, "labs", {
@@ -11,14 +13,13 @@ const { paginate, schema } = createPaginator(db, "labs", {
 	usableColumns: ["name", "createdAt", "updatedAt"],
 });
 
-// TODO: enrolled query
 export default createRouter()
 	.use(caching)
 	.guard(
 		{
 			cached: true,
 			private: ["instructor", "student"],
-			body: t.Intersect([
+			body: t.Composite([
 				schema,
 				t.Object({ enrolled: t.Optional(t.Boolean()) }),
 			]),
@@ -28,7 +29,7 @@ export default createRouter()
 				.resolve(({ session: { data }, body, cache, entity: { key } }) => {
 					cache.addSuffix(md5(body));
 
-					if (data.role === "admin" || body.enrolled) {
+					if (data.role === "instructor" || body.enrolled !== undefined) {
 						cache.addSuffix(data.id);
 					}
 
@@ -41,10 +42,13 @@ export default createRouter()
 					async ({ body: { enrolled, ...body }, session }) => {
 						const { items, pageInfo } = await paginate(body, {
 							columns: {
-								content: false,
-								topology: false,
-								instructions: false,
-								instructorId: false,
+								id: true,
+								name: true,
+								cover: true,
+								startAt: true,
+								endAt: true,
+								createdAt: true,
+								isPublished: true,
 							},
 							with: {
 								instructor: {
@@ -56,9 +60,24 @@ export default createRouter()
 									},
 								},
 							},
-							where: (labs, { eq }) => {
+							where: (labs) => {
 								if (session.data.role === "student") {
-									return eq(labs.isPublished, true);
+									const isPublished = eq(labs.isPublished, true);
+
+									if (enrolled) {
+										return and(
+											isPublished,
+											inArray(
+												labs.id,
+												db
+													.select({ id: labEnrollments.labId })
+													.from(labEnrollments)
+													.where(eq(labEnrollments.studentId, session.data.id)),
+											),
+										);
+									}
+
+									return isPublished;
 								} else {
 									return eq(labs.instructorId, session.data.id);
 								}

@@ -1,6 +1,7 @@
 import type { Static, TSchema } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import type {
+	BaseWSContract,
 	EventParams,
 	ExtractWSContracts,
 	Simplify,
@@ -11,8 +12,35 @@ import type {
 } from "../types";
 import type WSContracts from "./contracts";
 
-// biome-ignore lint/suspicious/noExplicitAny: generic constraint
-abstract class WSClient<TWSContracts extends WSContracts<any, any>> {
+export interface WSMetrics {
+	onLog?: (entry: {
+		type: "incoming" | "outgoing";
+		event: string;
+		args: unknown[];
+	}) => void;
+	onSubscriptionsChanged?: (topics: string[]) => void;
+	onData?: (topic: string, data: unknown) => void;
+}
+
+abstract class WSClient<
+	TWSContracts extends WSContracts<
+		Record<string, unknown>,
+		Record<string, BaseWSContract<Record<string, unknown>>>
+	>,
+> {
+	private _metrics?: WSMetrics;
+
+	public get metrics(): WSMetrics | undefined {
+		return this._metrics;
+	}
+
+	public set metrics(value: WSMetrics | undefined) {
+		this._metrics = value;
+		this.onMetricsChanged?.();
+	}
+
+	protected onMetricsChanged?(): void;
+
 	constructor(protected contracts: TWSContracts) {}
 
 	// Connection State
@@ -60,22 +88,19 @@ abstract class WSClient<TWSContracts extends WSContracts<any, any>> {
 			"server2client" | "inter"
 		> &
 			string,
-	>(
-		event: TEvent,
-		data: unknown,
-	): Static<TWSContracts["contracts"][TEvent]["data"]> {
-		const contract = this.contracts.contracts[event as string] as
-			| { data: TSchema }
-			| undefined;
+		TDataSchema = TWSContracts["contracts"][TEvent]["data"],
+		TData = TDataSchema extends TSchema ? Static<TDataSchema> : unknown,
+	>(event: TEvent, data: unknown): TData {
+		const contract = this.contracts.contracts[event as string];
 		if (!contract) {
 			throw new Error(`Event contract not found for: ${event}`);
 		}
 
-		if (!Value.Check(contract.data, data)) {
+		if (contract.data && !Value.Check(contract.data, data)) {
 			throw new Error(`Data validation failed for event: ${event}`);
 		}
 
-		return data as Static<TWSContracts["contracts"][TEvent]["data"]>;
+		return data as TData;
 	}
 }
 

@@ -1,4 +1,4 @@
-import type { LabInstruction, LabTopology } from "@vlab/shared/schemas/lab";
+import type { LabChecksMap, LabTopology } from "@vlab/shared/schemas/lab";
 import {
 	boolean,
 	integer,
@@ -21,8 +21,10 @@ export const labs = pgTable("lab", {
 	cover: text(),
 	content: text().notNull(),
 	maxAttempt: integer(),
+	sessionDuration: integer().default(180).notNull(),
 	topology: jsonb().$type<LabTopology>().notNull(),
-	instructions: jsonb().$type<LabInstruction[]>().notNull(),
+	instructions: text().notNull(),
+	checks: jsonb().$type<LabChecksMap>().notNull().default({}),
 	instructorId: uuid()
 		.references(() => instructors.id, { onDelete: "restrict" })
 		.notNull(),

@@ -7,6 +7,7 @@ import {
 	InsertTable,
 	InsertThematicBreak,
 	imagePlugin,
+	jsxPlugin,
 	ListsToggle,
 	linkDialogPlugin,
 	linkPlugin,
@@ -20,32 +21,41 @@ import {
 	toolbarPlugin,
 	UndoRedo,
 } from "@mdxeditor/editor";
-import "@mdxeditor/editor/style.css";
 import api from "@web/lib/api";
 import { cn } from "@web/lib/utils";
+import {
+	InsertLabCheck,
+	labCheckEditorDescriptor,
+} from "../mdx-plugins/lab-checks";
 import { useTheme } from "../theme-provider";
 import { Field, FieldError, FieldLabel } from "../ui/field";
+
+import "@mdxeditor/editor/style.css";
 
 type MarkdownInputProps = {
 	name?: string;
 	value?: string;
+	className?: string;
 	onChange: (value: string) => void;
 	onBlur?: () => void;
 	label?: string;
 	required?: boolean;
 	isInvalid?: boolean;
 	errors?: Array<{ message?: string }>;
+	checks?: boolean;
 };
 
 function MarkdownInput({
 	name,
 	value,
+	className,
 	onChange,
 	onBlur,
 	label,
 	required,
 	isInvalid,
 	errors,
+	checks,
 }: MarkdownInputProps) {
 	const { mutateAsync } = api.file.upload.post.useMutation({
 		showSuccessMessage: false,
@@ -69,6 +79,7 @@ function MarkdownInput({
 				className={cn(
 					"max-w-none overflow-hidden rounded-md border bg-transparent dark:bg-input/30",
 					isInvalid && "border-destructive focus-within:ring-destructive",
+					className,
 				)}
 				onBlur={onBlur}
 			>
@@ -76,10 +87,10 @@ function MarkdownInput({
 					className={theme === "dark" ? "dark-theme" : undefined}
 					markdown={value || ""}
 					onChange={onChange}
-					contentEditableClassName="prose dark:prose-invert min-h-56"
+					contentEditableClassName="prose dark:prose-invert max-w-none min-h-56"
 					plugins={[
 						toolbarPlugin({
-							toolbarClassName: "dark-editor",
+							toolbarClassName: "dark-editor !rounded-none border-b",
 							toolbarContents: () => (
 								<>
 									<UndoRedo />
@@ -95,8 +106,13 @@ function MarkdownInput({
 									<Separator />
 									<InsertTable />
 									<InsertThematicBreak />
+									<Separator />
+									{!!checks && <InsertLabCheck />}
 								</>
 							),
+						}),
+						jsxPlugin({
+							jsxComponentDescriptors: [labCheckEditorDescriptor],
 						}),
 						listsPlugin(),
 						quotePlugin(),

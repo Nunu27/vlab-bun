@@ -3,11 +3,8 @@ import IconInput from "../input/icon-input";
 
 type IconFieldProps = Omit<
 	React.ComponentProps<typeof IconInput>,
-	"value" | "onChange" | "name"
-> & {
-	label: string;
-	required?: boolean;
-};
+	"name" | "value" | "onChange" | "isInvalid" | "errors"
+>;
 
 function IconField(props: IconFieldProps) {
 	const field = useFieldContext<string>();

@@ -5,12 +5,12 @@ export default (id: string) => {
 	const store = useTopologyStore();
 
 	return store(
-		useShallow((state) => {
-			const [source, target] = state.edges[id] ?? [];
+		useShallow(({ edges, devices, selectedEdges, nodesData }) => {
+			const [source, target] = edges[id] ?? [];
 			if (!source || !target) throw new Error("Edge not found");
 
-			const sourceDevice = state.devices[source.deviceId];
-			const targetDevice = state.devices[target.deviceId];
+			const sourceDevice = devices[source.deviceId];
+			const targetDevice = devices[target.deviceId];
 
 			if (!sourceDevice || !targetDevice) throw new Error("Edge not found");
 
@@ -24,15 +24,22 @@ export default (id: string) => {
 				parallelCount++;
 			});
 
+			const sourceNode = nodesData?.[source.deviceId];
+			const targetNode = nodesData?.[target.deviceId];
+
 			return {
 				source,
 				sourceDevice,
+				sourceIp: sourceNode?.interfaces[source.interface],
+				sourceNode: sourceNode?.id,
 				target,
 				targetDevice,
+				targetIp: targetNode?.interfaces[target.interface],
+				targetNode: targetNode?.id,
 
 				index,
 				parallelCount,
-				selected: state.selectedEdges.has(id),
+				selected: selectedEdges.has(id),
 			};
 		}),
 	);

@@ -93,9 +93,8 @@ export function formatValidationError(error: Readonly<ValidationError>) {
 
 			const fieldName = err.path
 				.slice(1)
-				.split("/") // split into segments
+				.split("/")
 				.reduce((path, segment, index) => {
-					// Check if the segment is a number (array index)
 					const isIndex = !Number.isNaN(Number(segment));
 
 					if (isIndex) {

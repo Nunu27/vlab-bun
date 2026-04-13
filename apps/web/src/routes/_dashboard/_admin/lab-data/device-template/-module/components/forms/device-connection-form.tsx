@@ -25,13 +25,7 @@ export const DeviceConnectionForm = withFieldGroup({
 
 				<group.AppField name="data.port">
 					{(field) => (
-						<field.TextField
-							label="Port"
-							type="number"
-							min="1"
-							max="65535"
-							required
-						/>
+						<field.NumberField label="Port" min="1" max="65535" required />
 					)}
 				</group.AppField>
 

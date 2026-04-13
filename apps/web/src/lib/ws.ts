@@ -37,4 +37,5 @@ const ws = new SocketIOClient(contracts);
 
 ws.attach(socket);
 
+export { socket };
 export default ws;

@@ -57,7 +57,6 @@ export const createNodeDragSlice: StateCreator<
 			newNotes[id] = { ...note, ...pos };
 		});
 
-		// Update group dimensions
 		groupsToUpdate.forEach((groupId) => {
 			const group = groups[groupId];
 			if (!group) return;

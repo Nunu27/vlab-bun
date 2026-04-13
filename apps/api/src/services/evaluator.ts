@@ -1,121 +1,116 @@
 import db from "@api/db";
-import { labSessionChecks, labSessions } from "@api/db/schema";
+import { labSessionChecks } from "@api/db/schema";
 import docker from "@api/services/docker";
+import baseLogger from "@api/services/logger";
 import ws from "@api/services/ws";
+import Debouncer from "@api/utils/debouncer";
 import evaluator from "@vlab/evaluator";
-import type { LabCheckConfig, LabInstruction } from "@vlab/shared/schemas/lab";
-import { eq } from "drizzle-orm";
+import { clabMonitor } from "./events";
 
-export function extractChecksFromInstructions(instructions: LabInstruction[]) {
-	const results: LabCheckConfig[] = [];
-	const traverse = (items: LabInstruction[]) => {
-		for (const item of items) {
-			results.push(...item.checks);
-			if (item.children?.length) traverse(item.children as LabInstruction[]);
-		}
-	};
-	traverse(instructions);
-	return results;
-}
+const logger = baseLogger.child({ service: "evaluator" });
 
+const debouncer = new Debouncer(30000);
 const activeEvaluations = new Map<
 	string,
-	{ session: ReturnType<typeof evaluator.createSession>; timeout?: Timer }
+	ReturnType<typeof evaluator.createSession>
 >();
 
-export async function startLabEvaluation(
-	sessionId: string,
-	options: {
-		instructions: LabInstruction[];
-		nodes: { id: string; labNodeId: string }[];
+evaluator.setSourceRead(
+	"node-interface",
+	"interface-ip",
+	({ nodeId, params }) => {
+		return clabMonitor.nodeInterfaceMap.get(nodeId)?.[params.interface] || [];
 	},
-) {
-	const active = activeEvaluations.get(sessionId);
-	if (active) {
-		if (active.timeout) clearTimeout(active.timeout);
-		active.timeout = undefined;
-		return active.session;
+);
+
+export async function startLabEvaluation(sessionId: string, labId: string) {
+	const session = activeEvaluations.get(sessionId);
+	if (session) {
+		logger.debug(
+			{ sessionId },
+			"Cancelling evaluation stop, session reconnected",
+		);
+		debouncer.cancel(sessionId);
+		return session;
 	}
 
-	const allChecks = extractChecksFromInstructions(options.instructions);
-	const nodeMapping = new Map(options.nodes.map((n) => [n.labNodeId, n.id]));
+	logger.info({ sessionId, labId }, "Starting lab evaluation");
 
-	const sessionChecks = allChecks
-		.filter((c) => nodeMapping.has(c.nodeId))
-		.map((c) => ({
-			id: c.id,
-			checkerId: c.checkId,
-			nodeId: nodeMapping.get(c.nodeId) || "",
-			params: c.params,
-		}));
+	const lab = await db.query.labs.findFirst({
+		columns: { checks: true },
+		where: (lab, { eq }) => eq(lab.id, labId),
+	});
 
-	const totalWeight = allChecks.reduce((acc, c) => acc + c.weight, 0);
-	const evalSession = evaluator.createSession(
-		docker,
-		// biome-ignore lint/suspicious/noExplicitAny: Internal config bypass
-		sessionChecks as any,
+	if (!lab) throw new Error("Lab not found");
+
+	const nodes = await db.query.labSessionNodes.findMany({
+		columns: { id: true, labNodeId: true },
+		where: (node, { eq }) => eq(node.labSessionId, sessionId),
+	});
+
+	const nodeMap: Record<string, string> = {};
+	nodes.forEach((n) => {
+		nodeMap[n.labNodeId] = n.id;
+	});
+
+	const sessionChecks = Object.entries(lab.checks).map(
+		([id, { checkId, nodeId, params }]) => ({
+			id,
+			checkId,
+			nodeId: nodeMap[nodeId],
+			params,
+		}),
 	);
 
-	evalSession.onChange(async (checkId, value) => {
-		if (!value) return;
+	// biome-ignore lint/suspicious/noExplicitAny: evaluator types are too complex
+	const evalSession = evaluator.createSession(docker, sessionChecks as any);
 
-		const existing = await db.query.labSessionChecks.findFirst({
-			where: (c, { eq, and }) =>
-				and(eq(c.labSessionId, sessionId), eq(c.checkId, checkId)),
-		});
-
-		if (existing) {
-			if (existing.completed) return;
-			await db
-				.update(labSessionChecks)
-				.set({ completed: true })
-				.where(eq(labSessionChecks.id, existing.id));
-		} else {
-			await db.insert(labSessionChecks).values({
-				labSessionId: sessionId,
-				checkId,
-				completed: true,
-			});
-		}
-
-		const completedChecks = await db.query.labSessionChecks.findMany({
-			where: (c, { eq, and }) =>
-				and(eq(c.labSessionId, sessionId), eq(c.completed, true)),
-		});
-
-		const completedWeights = completedChecks.reduce((score, c) => {
-			const config = allChecks.find((ch) => ch.id === c.checkId);
-			return score + (config?.weight || 0);
-		}, 0);
-
-		const newScore =
-			totalWeight > 0
-				? ((completedWeights / totalWeight) * 100).toFixed(2)
-				: "0";
+	evalSession.onChange(async (id, value) => {
+		logger.debug({ sessionId, checkId: id, value }, "Lab node check changed");
 
 		await db
-			.update(labSessions)
-			.set({ score: newScore })
-			.where(eq(labSessions.id, sessionId));
+			.insert(labSessionChecks)
+			.values({
+				labSessionId: sessionId,
+				checkId: id,
+				completed: value,
+			})
+			.onConflictDoUpdate({
+				target: [labSessionChecks.labSessionId, labSessionChecks.checkId],
+				set: {
+					completed: value,
+				},
+			});
 
-		ws.server.emit("lab-session:[sessionId]:session-change", {
+		ws.server.emit("lab-session:[sessionId]:checks", {
 			params: { sessionId },
+			data: { id, completed: value },
 		});
 	});
 
 	await evalSession.start();
 	evalSession.check();
-	activeEvaluations.set(sessionId, { session: evalSession });
+	activeEvaluations.set(sessionId, evalSession);
 
 	return evalSession;
 }
 
 export function stopLabEvaluation(sessionId: string) {
-	const active = activeEvaluations.get(sessionId);
-	if (active) {
-		active.timeout = setTimeout(() => {
-			active.session.stop();
+	if (!activeEvaluations.has(sessionId)) return;
+
+	logger.debug({ sessionId }, "Scheduling lab evaluation stop");
+
+	debouncer
+		.run(sessionId, () => {
+			const session = activeEvaluations.get(sessionId);
+			if (!session) return;
+
+			session.stop();
 			activeEvaluations.delete(sessionId);
-		}, 30000); // 30 seconds reconnect window
-	}
+
+			logger.info({ sessionId }, "Stopped lab evaluation");
+		})
+		.catch(() => {
+			logger.debug({ sessionId }, "Lab evaluation stop cancelled");
+		});
 }

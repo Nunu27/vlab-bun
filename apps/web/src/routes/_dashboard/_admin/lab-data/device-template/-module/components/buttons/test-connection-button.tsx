@@ -1,6 +1,7 @@
 import { Compile } from "@sinclair/typemap";
 import type { UpdateDeviceTemplateRequest } from "@vlab/shared/schemas";
 import { TestDeviceTemplateRequest } from "@vlab/ws/device-template";
+import { LogViewer } from "@web/components/log-viewer";
 import { Button } from "@web/components/ui/button";
 import {
 	Dialog,
@@ -23,7 +24,6 @@ import { GuacamoleConnectionProvider } from "@web/shared/guacamole/stores/guacam
 import { Monitor, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import { useTestDeviceStore } from "../../stores/test-device-store";
-import { LogViewer } from "../log-viewer";
 
 const validator = Compile(TestDeviceTemplateRequest);
 type FieldKeys = keyof typeof TestDeviceTemplateRequest.static;

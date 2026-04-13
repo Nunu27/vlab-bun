@@ -2,30 +2,43 @@ import EventEmitter from "node:events";
 import type { DeviceKind, NodeHealth } from "@vlab/shared/enums";
 import type { MaybePromise } from "bun";
 import type { ContainerInspectInfo } from "dockerode";
-import { LABELS } from "./constants";
 import containerHandler from "./container-handler";
 import networkMonitor from "./network-monitor";
 import type {
 	ContainerEvent,
 	Context,
 	Events,
+	FullMappingConstraint,
 	NodeData,
 	NodeInfo,
 	Options,
+	ResolvedMapping,
 	SessionData,
 } from "./types";
-import { extractManagementIp, healthyStatus, isKey } from "./utils";
+import {
+	buildResolvedData,
+	extractManagementIp,
+	healthyStatus,
+	isKey,
+} from "./utils";
 
-async function handleDockerEvent(ctx: Context, event: ContainerEvent) {
+async function handleDockerEvent<TFullMapping extends FullMappingConstraint>(
+	ctx: Context<TFullMapping>,
+	event: ContainerEvent,
+) {
 	const { logger } = ctx;
 
 	const key = event.Action.startsWith("health_status:")
 		? "health_status"
 		: event.Action;
+
+	logger.debug("Received docker event: %s", event.Action);
 	if (!isKey(key, containerHandler)) return;
 
-	const shouldHandle = event.Actor.Attributes[LABELS.SESSION_ID];
-	if (!shouldHandle) return;
+	const resolved = buildResolvedData(ctx.mapping, event.Actor.Attributes);
+	if (!resolved) return;
+
+	if (ctx.filter && !ctx.filter(resolved)) return;
 
 	try {
 		logger.debug("Handling docker event: %s", event.Action);
@@ -35,38 +48,32 @@ async function handleDockerEvent(ctx: Context, event: ContainerEvent) {
 	}
 }
 
-async function emitInitialState(ctx: Context) {
+async function emitInitialState<TFullMapping extends FullMappingConstraint>(
+	ctx: Context<TFullMapping>,
+) {
 	const { docker, logger, eventEmitter, sessionIds } = ctx;
 
 	logger.debug("Retrieving initial state...");
 
 	const containers = await docker.listContainers();
-	const sessions: SessionData[] = [];
-	const nodes: NodeData[] = [];
+	const sessions: SessionData<TFullMapping>[] = [];
+	const nodes: NodeData<TFullMapping>[] = [];
 	const staleSessions = new Set<string>();
 
 	for (const container of containers) {
-		const {
-			[LABELS.SESSION_ID]: labSessionId,
-			[LABELS.LAB_ID]: labId,
-			[LABELS.OWNER_ID]: ownerId,
-			[LABELS.LAB_NODE_ID]: id,
-			[LABELS.CLAB_NODE_NAME]: name,
-			[LABELS.CLAB_NODE_KIND]: deviceKind,
-			[LABELS.DEVICE_TEMPLATE_ID]: deviceId,
-		} = container.Labels;
+		const resolved = buildResolvedData(ctx.mapping, container.Labels);
+		if (!resolved) continue;
 
-		// Not a vlab container
-		if (!labSessionId || !id || !name || !deviceKind || !ownerId) continue;
+		if (ctx.filter && !ctx.filter(resolved)) continue;
 
-		if (!deviceId || !labId) {
-			if (!staleSessions.has(labSessionId)) {
-				staleSessions.add(labSessionId);
+		if (ctx.isTemp?.(resolved) || ctx.isStale?.(resolved)) {
+			if (!staleSessions.has(resolved.sessionId)) {
+				staleSessions.add(resolved.sessionId);
 				logger.warn(
-					{ labSessionId },
+					{ sessionId: resolved.sessionId },
 					"Detected stale session during hydration, will destroy",
 				);
-				eventEmitter.emit("stale-session", labSessionId);
+				eventEmitter.emit("stale-session", resolved.sessionId);
 			}
 			continue;
 		}
@@ -84,21 +91,30 @@ async function emitInitialState(ctx: Context) {
 		const ip = extractManagementIp(container.NetworkSettings);
 		if (!ip) continue;
 
+		const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
+
 		const nodeInfo: NodeInfo = {
-			id,
+			id: resolved.nodeId,
 			health,
-			labSessionId,
-			deviceKind: deviceKind as DeviceKind,
+			labSessionId: resolved.sessionId,
+			deviceKind: resolved.deviceKind as DeviceKind,
 			ip,
-			isTemp: !labId,
+			isTemp,
 		};
 
-		const nodeData: NodeData = {
-			id,
+		const {
+			sessionId,
+			nodeId,
 			name,
+			deviceKind: _dk,
+			...userResolved
+		} = resolved;
+		const nodeData: NodeData<TFullMapping> = {
+			...(userResolved as unknown as ResolvedMapping<TFullMapping>),
+			id: resolved.nodeId,
+			name: resolved.name,
 			health,
-			labSessionId,
-			deviceTemplateId: deviceId,
+			labSessionId: resolved.sessionId,
 			containerId: container.Id,
 			ip,
 			interfaces: await networkMonitor.extractInterfaces(
@@ -110,13 +126,19 @@ async function emitInitialState(ctx: Context) {
 
 		nodes.push(nodeData);
 
-		if (!sessionIds.has(labSessionId)) {
-			sessionIds.add(labSessionId);
+		if (!isTemp && !sessionIds.has(resolved.sessionId)) {
+			sessionIds.add(resolved.sessionId);
 
+			const {
+				sessionId: _si,
+				nodeId: _ni,
+				name: _n,
+				deviceKind: _dkk,
+				...sessionUserResolved
+			} = resolved;
 			sessions.push({
-				id: labSessionId,
-				labId,
-				ownerId,
+				...(sessionUserResolved as unknown as ResolvedMapping<TFullMapping>),
+				id: resolved.sessionId,
 			});
 		}
 
@@ -126,7 +148,11 @@ async function emitInitialState(ctx: Context) {
 	eventEmitter.emit("snapshot", { sessions, nodes });
 }
 
-async function initMonitoring(emitter: EventEmitter<Events>, options: Options) {
+async function initMonitoring<TFullMapping extends FullMappingConstraint>(
+	emitter: EventEmitter<Events<TFullMapping>>,
+	nodeInterfaceMap: Map<string, Record<string, string[]>>,
+	options: Options<TFullMapping>,
+) {
 	const { docker, logger } = options;
 	const sessionIds = new Set<string>();
 	const nodeHealths = new Map<string, NodeHealth | null>();
@@ -161,7 +187,16 @@ async function initMonitoring(emitter: EventEmitter<Events>, options: Options) {
 	const ctx = {
 		...options,
 		sessionIds,
+		nodeInterfaceMap,
 		eventEmitter: emitter,
+		emitInterfaceUpdate: (
+			data: {
+				id: string;
+				labSessionId: string;
+				interfaces: Record<string, string[]>;
+			},
+			isTemp: boolean,
+		) => emitter.emit("interface-update", data, isTemp),
 		waitForHealth: (
 			id: string,
 			callback: () => MaybePromise<void>,
@@ -205,11 +240,11 @@ async function initMonitoring(emitter: EventEmitter<Events>, options: Options) {
 				isRestart ? "Restarting monitor..." : "Initializing monitor...",
 			);
 
-			await emitInitialState(ctx);
+			await emitInitialState(ctx as Context<TFullMapping>);
 			const stream = await docker.getEvents({
 				filters: {
 					type: ["container"],
-					event: ["create", "destroy", "health_status"],
+					event: ["create", "die", "health_status"],
 				},
 			});
 
@@ -218,7 +253,7 @@ async function initMonitoring(emitter: EventEmitter<Events>, options: Options) {
 					const str = chunk.toString();
 					const lines = str.split("\n").filter((l) => l.trim());
 					for (const line of lines) {
-						handleDockerEvent(ctx, JSON.parse(line));
+						handleDockerEvent(ctx as Context<TFullMapping>, JSON.parse(line));
 					}
 				} catch (error) {
 					logger.error({ error }, "Error parsing docker event");
@@ -246,8 +281,15 @@ async function initMonitoring(emitter: EventEmitter<Events>, options: Options) {
 	return emitter;
 }
 
-export function createMonitor(options: Options) {
-	const emitter = new EventEmitter<Events>();
+export function createMonitor<TFullMapping extends FullMappingConstraint>(
+	options: Options<TFullMapping>,
+) {
+	const emitter = new EventEmitter<Events<TFullMapping>>();
+	const nodeInterfaceMap = new Map<string, Record<string, string[]>>();
 
-	return { emitter, init: () => initMonitoring(emitter, options) };
+	return {
+		emitter,
+		nodeInterfaceMap,
+		init: () => initMonitoring(emitter, nodeInterfaceMap, options),
+	};
 }

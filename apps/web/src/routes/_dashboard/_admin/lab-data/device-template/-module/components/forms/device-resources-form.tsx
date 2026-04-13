@@ -7,9 +7,7 @@ export const DeviceResourcesForm = withFieldGroup({
 		return (
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 				<group.AppField name="cpu">
-					{(field) => (
-						<field.TextField label="CPU Cores" type="number" min="1" />
-					)}
+					{(field) => <field.NumberField label="CPU Cores" min="1" />}
 				</group.AppField>
 
 				<group.AppField name="memory">

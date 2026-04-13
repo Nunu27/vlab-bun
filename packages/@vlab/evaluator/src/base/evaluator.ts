@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: For loose typing */
 import { EventEmitter } from "node:events";
 import { Type as t } from "@sinclair/typebox";
 import type { Static, TObject, TProperties } from "@sinclair/typebox/type";
@@ -6,6 +5,7 @@ import type Docker from "dockerode";
 import type {
 	BaseChecks,
 	BaseSources,
+	MaybePromise,
 	RegistryItem,
 	SessionCheckConfig,
 } from "../types";
@@ -30,14 +30,12 @@ export class Evaluator<
 			TId,
 			{ sources: TSources; checks: TChecks }
 		>,
-	>(
-		handler: EvaluationHandler<TId, TSources, TChecks>,
-	): TRegistry extends Record<string, never>
-		? Evaluator<TAddition>
-		: Evaluator<TRegistry & TAddition> {
-		this.handlers.set(handler.id, handler as any);
+	>(handler: EvaluationHandler<TId, TSources, TChecks>) {
+		this.handlers.set(handler.id, handler);
 
-		return this as any;
+		return this as unknown as TRegistry extends Record<string, never>
+			? Evaluator<TAddition>
+			: Evaluator<TRegistry & TAddition>;
 	}
 
 	createSession(docker: Docker, checks: SessionCheckConfig<TRegistry>[]) {
@@ -59,7 +57,9 @@ export class Evaluator<
 			for (const [checkId, checkConfig] of handler.checks.entries()) {
 				checks[`${handlerId}.${checkId}`] = {
 					name: checkConfig.name,
-					params: t.Object(checkConfig.params as TProperties),
+					params: t.Object(checkConfig.params, {
+						title: checkConfig.text,
+					}),
 				};
 			}
 		}
@@ -68,6 +68,33 @@ export class Evaluator<
 
 	private serializeKey(event: string, nodeId: string, params: object): string {
 		return `${event}::${nodeId}::${JSON.stringify(params, Object.keys(params).sort())}`;
+	}
+
+	setSourceRead<
+		THandlerId extends keyof TRegistry & string,
+		TSourceName extends keyof TRegistry[THandlerId]["sources"] & string,
+		TSources extends BaseSources = TRegistry[THandlerId]["sources"],
+		TStaticSourceParams extends object = Static<
+			TObject<TSources[TSourceName]["params"]>
+		>,
+		TStaticSourceData = Static<TSources[TSourceName]["data"]>,
+	>(
+		handlerId: THandlerId,
+		sourceName: TSourceName,
+		readFn: (args: {
+			docker: Docker;
+			nodeId: string;
+			params: TStaticSourceParams;
+		}) => MaybePromise<TStaticSourceData>,
+	): this {
+		const handler = this.handlers.get(handlerId);
+		if (handler) {
+			const source = handler.sources.get(sourceName);
+			if (source) {
+				source.read = readFn as any;
+			}
+		}
+		return this;
 	}
 
 	on<

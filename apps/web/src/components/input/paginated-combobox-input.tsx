@@ -1,8 +1,8 @@
-import {
-	type ExtractEndpointQuery,
-	type InfiniteEndpointItem,
-	useApiInfiniteList,
-} from "@web/hooks/pagination/use-api-infinite-list";
+import type {
+	ExtractTreatyPaginationData,
+	ExtractTreatyParams,
+} from "@jawit/query/types";
+import { useApiInfiniteList } from "@web/hooks/pagination/use-api-infinite-list";
 import { cn } from "@web/lib/utils";
 import type { PaginationEndpoint } from "@web/types";
 import { ChevronDownIcon, Loader2Icon } from "lucide-react";
@@ -27,9 +27,9 @@ type PaginatedComboboxInputProps<TEndpoint extends PaginationEndpoint> = {
 	errors?: Array<{ message?: string }>;
 	name?: string;
 	endpoint: TEndpoint;
-	params?: Omit<ExtractEndpointQuery<TEndpoint>, "page" | "search">;
-	getLabel: (item: InfiniteEndpointItem<TEndpoint>) => string;
-	getValue: (item: InfiniteEndpointItem<TEndpoint>) => string;
+	params?: Omit<ExtractTreatyParams<TEndpoint["post"]>, "page" | "search">;
+	getLabel: (item: ExtractTreatyPaginationData<TEndpoint>) => string;
+	getValue: (item: ExtractTreatyPaginationData<TEndpoint>) => string;
 	placeholder?: string;
 	emptyText?: string;
 	value?: string;
@@ -72,7 +72,7 @@ export function PaginatedComboboxInput<TEndpoint extends PaginationEndpoint>({
 		params: {
 			...(params ?? {}),
 			search: search || undefined,
-		} as Omit<ExtractEndpointQuery<TEndpoint>, "page">,
+		} as NonNullable<Parameters<TEndpoint["post"]["usePagination"]>[0]>,
 	});
 
 	const onOpenChange = (open: boolean) => {

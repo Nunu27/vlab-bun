@@ -3,9 +3,9 @@ import { createRouter } from "@api/plugins/system";
 import create from "./create";
 import _delete from "./delete";
 import detail from "./detail";
-import enrollmentPagination from "./enrollment/pagination";
+import labEnrollmentRoutes from "./enrollment";
 import pagination from "./pagination";
-import session from "./session";
+import labSessionRoutes from "./session";
 import update from "./update";
 
 const labRoutes = createRouter({
@@ -17,7 +17,7 @@ const labRoutes = createRouter({
 	.use(update)
 	.use(_delete)
 	.use(pagination)
-	.use(enrollmentPagination)
-	.use(session);
+	.use(labEnrollmentRoutes)
+	.use(labSessionRoutes);
 
 export default labRoutes;

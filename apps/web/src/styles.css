@@ -67,8 +67,8 @@
 	--accent: oklch(0.25 0.05 268);
 	--accent-foreground: oklch(0.98 0.005 260);
 	--destructive: oklch(0.6356 0.2082 25.3782);
-	--border: oklch(0.25 0.05 268);
-	--input: oklch(0.25 0.05 268);
+	--border: oklch(0.28 0.05 268);
+	--input: oklch(0.28 0.05 268);
 	--ring: oklch(0.48 0.18 268);
 	--chart-1: oklch(0.48 0.18 268);
 	--chart-2: oklch(0.817 0.0516 264.2344);
@@ -81,11 +81,12 @@
 	--sidebar-primary-foreground: oklch(1 0 0);
 	--sidebar-accent: oklch(0.25 0.05 268);
 	--sidebar-accent-foreground: oklch(0.98 0.005 260);
-	--sidebar-border: oklch(0.25 0.05 268);
+	--sidebar-border: oklch(0.28 0.05 268);
 	--sidebar-ring: oklch(0.48 0.18 268);
 }
 
-.dark-editor {
+.dark-editor,
+.mdxeditor-popup-container.dark-theme {
 	--accentBase: var(--background);
 	--accentBgSubtle: var(--muted);
 	--accentBg: var(--muted);
@@ -99,14 +100,14 @@
 	--accentText: var(--primary);
 	--accentTextContrast: var(--foreground);
 
-	--baseBase: var(--background);
+	--baseBase: var(--border);
 	--baseBgSubtle: var(--muted);
-	--baseBg: var(--muted);
+	--baseBg: var(--secondary);
 	--baseBgHover: var(--accent);
 	--baseBgActive: var(--accent);
 	--baseLine: var(--border);
 	--baseBorder: var(--border);
-	--baseBorderHover: var(--muted-foreground);
+	--baseBorderHover: var(--muted-foreground / 20);
 	--baseSolid: var(--secondary);
 	--baseSolidHover: var(--secondary);
 	--baseText: var(--muted-foreground);
@@ -190,5 +191,27 @@
 	}
 	html {
 		@apply font-sans;
+	}
+}
+
+#topology-canvas {
+	&[data-mode="note"] {
+		@apply cursor-text;
+	}
+
+	&[data-mode="connect"] #device-layer .node {
+		@apply cursor-pointer hover:ring-2 hover:ring-green-400;
+	}
+
+	&[data-sessionid] .node {
+		@apply cursor-pointer hover:ring-2 hover:ring-blue-400;
+	}
+
+	&[data-sessionid] .edge-label {
+		@apply pointer-events-auto;
+	}
+
+	&[data-mode="select"]:not([data-sessionid]) .node {
+		@apply pointer-events-auto cursor-move;
 	}
 }

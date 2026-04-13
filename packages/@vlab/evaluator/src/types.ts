@@ -40,6 +40,7 @@ export type CheckConfig<
 	TStaticSourceData = Static<TSourceData>,
 > = {
 	name: string;
+	text: string;
 	source: TSource;
 	params: TParams;
 	sourceParamsBuilder: (args: {
@@ -69,7 +70,7 @@ export type SessionCheckConfig<TRegistry extends Record<string, RegistryItem>> =
 		[THandlerId in keyof TRegistry & string]: {
 			[TCheckId in keyof TRegistry[THandlerId]["checks"] & string]: {
 				id: string;
-				checkerId: `${THandlerId}.${TCheckId}`;
+				checkId: `${THandlerId}.${TCheckId}`;
 				nodeId: string;
 				params: Static<
 					TObject<TRegistry[THandlerId]["checks"][TCheckId]["params"]>

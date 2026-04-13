@@ -3,18 +3,44 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@web/components/ui/tooltip";
+import { useWSData } from "@web/hooks/ws";
 import { cn } from "@web/lib/utils";
 import { memo } from "react";
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from "../../constants";
 import useTopologyEdge from "../../hooks/store/use-topology-edge";
 
 interface InterfaceLabelProps {
+	nodeId?: string;
+	ip?: string[];
 	interface: string;
 	x: number;
 	y: number;
 }
 
+function InterfaceTooltip({
+	nodeId,
+	ip,
+	interface: interfaceName,
+}: {
+	nodeId: string;
+	ip?: string[];
+	interface: string;
+}) {
+	const ips = useWSData("node:[id]:interfaces:[interface]", {
+		params: { id: nodeId, interface: interfaceName },
+		default: ip,
+	});
+
+	return (
+		<TooltipContent className="whitespace-pre px-2 py-1 text-xs">
+			{ips?.join("\n") || "Not Configured"}
+		</TooltipContent>
+	);
+}
+
 function InterfaceLabel({
+	nodeId,
+	ip,
 	interface: interfaceName,
 	x,
 	y,
@@ -24,7 +50,7 @@ function InterfaceLabel({
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
-				<g className="edge-label" transform={`translate(${x}, ${y})`}>
+				<g className="pointer-events-auto" transform={`translate(${x}, ${y})`}>
 					<rect
 						x={-width / 2}
 						y="-8"
@@ -42,9 +68,9 @@ function InterfaceLabel({
 					</text>
 				</g>
 			</TooltipTrigger>
-			<TooltipContent className="whitespace-pre px-2 py-1 text-xs">
-				testing
-			</TooltipContent>
+			{nodeId && (
+				<InterfaceTooltip nodeId={nodeId} interface={interfaceName} ip={ip} />
+			)}
 		</Tooltip>
 	);
 }
@@ -53,8 +79,12 @@ function Edge({ id }: { id: string }) {
 	const {
 		source,
 		sourceDevice,
+		sourceIp,
+		sourceNode,
 		target,
 		targetDevice,
+		targetIp,
+		targetNode,
 		index,
 		parallelCount,
 		selected,
@@ -136,8 +166,20 @@ function Edge({ id }: { id: string }) {
 				)}
 			/>
 
-			<InterfaceLabel {...source} x={sLabelX} y={sLabelY} />
-			<InterfaceLabel {...target} x={tLabelX} y={tLabelY} />
+			<InterfaceLabel
+				{...source}
+				nodeId={sourceNode}
+				ip={sourceIp}
+				x={sLabelX}
+				y={sLabelY}
+			/>
+			<InterfaceLabel
+				{...target}
+				nodeId={targetNode}
+				ip={targetIp}
+				x={tLabelX}
+				y={tLabelY}
+			/>
 		</g>
 	);
 }

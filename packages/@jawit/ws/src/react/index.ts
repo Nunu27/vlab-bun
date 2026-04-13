@@ -84,14 +84,21 @@ export function createWSHooks<
 		TRequired extends boolean = false,
 	> = keyof EventParams<TEvent> extends never
 		? TRequired extends true
-			? [options: { default: WSDataValue<TEvent> }]
-			: [options?: { default?: WSDataValue<TEvent> }]
+			? [options: { default: WSDataValue<TEvent>; enabled?: boolean }]
+			: [options?: { default?: WSDataValue<TEvent>; enabled?: boolean }]
 		: TRequired extends true
-			? [options: { params: EventParams<TEvent>; default: WSDataValue<TEvent> }]
+			? [
+					options: {
+						params: EventParams<TEvent>;
+						default: WSDataValue<TEvent>;
+						enabled?: boolean;
+					},
+				]
 			: [
 					options: {
 						params: EventParams<TEvent>;
 						default?: WSDataValue<TEvent>;
+						enabled?: boolean;
 					},
 				];
 
@@ -112,6 +119,7 @@ export function createWSHooks<
 		const options = args[0] ?? {};
 		const params = "params" in options ? options.params : undefined;
 		const defaultValue = options?.default;
+		const enabled = options?.enabled ?? true;
 
 		const memoizedParams = useDeepCompareMemoize(params);
 		const isConnected = useWSConnectionState();
@@ -121,7 +129,7 @@ export function createWSHooks<
 		);
 
 		useEffect(() => {
-			if (!isConnected) return;
+			if (!isConnected || !enabled) return;
 
 			let unsubscribe: () => void;
 			const handler = (newData: WSDataValue<TEvent>) => {
@@ -137,18 +145,24 @@ export function createWSHooks<
 			}
 
 			return () => unsubscribe();
-		}, [event, memoizedParams, isConnected]);
+		}, [event, memoizedParams, isConnected, enabled]);
 
 		return data;
 	}
 
 	type UseWSEventArgs<TEvent extends ServerClientInterEvents> =
 		keyof EventParams<TEvent> extends never
-			? [options: { handler: WSClientHandler<TContracts["contracts"][TEvent]> }]
+			? [
+					options: {
+						handler: WSClientHandler<TContracts["contracts"][TEvent]>;
+						enabled?: boolean;
+					},
+				]
 			: [
 					options: {
 						params: EventParams<TEvent>;
 						handler: WSClientHandler<TContracts["contracts"][TEvent]>;
+						enabled?: boolean;
 					},
 				];
 
@@ -159,6 +173,7 @@ export function createWSHooks<
 		const options = args[0];
 		const params = "params" in options ? options.params : undefined;
 		const handler = options.handler;
+		const enabled = options.enabled ?? true;
 
 		const memoizedParams = useDeepCompareMemoize(params);
 		const isConnected = useWSConnectionState();
@@ -170,7 +185,7 @@ export function createWSHooks<
 		}, [handler]);
 
 		useEffect(() => {
-			if (!isConnected) return;
+			if (!isConnected || !enabled) return;
 
 			let unsubscribe: () => void;
 
@@ -187,7 +202,7 @@ export function createWSHooks<
 			}
 
 			return () => unsubscribe();
-		}, [event, memoizedParams, isConnected]);
+		}, [event, memoizedParams, isConnected, enabled]);
 	}
 
 	return {

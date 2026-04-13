@@ -61,10 +61,11 @@ export const createNoteSlice: StateCreator<
 		});
 	},
 	setEditingNoteId: (id) => {
-		const { mode } = get();
+		const { mode, notes, editingNoteId } = get();
 		if (mode !== "note") return;
 
 		set({
+			notes: checkNote({ ...notes }, editingNoteId),
 			editingNoteId: id,
 			selectedNotes: id ? new Set([id]) : new Set(),
 		});

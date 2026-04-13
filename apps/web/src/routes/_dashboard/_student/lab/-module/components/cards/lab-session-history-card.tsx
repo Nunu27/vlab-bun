@@ -1,0 +1,89 @@
+import type { ExtractTreatyData } from "@jawit/query/types";
+import { Link } from "@tanstack/react-router";
+import { Badge } from "@web/components/ui/badge";
+import { Button } from "@web/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@web/components/ui/card";
+import { Empty, EmptyDescription, EmptyMedia } from "@web/components/ui/empty";
+import type api from "@web/lib/api";
+import { ClockIcon, PlayCircleIcon } from "lucide-react";
+import { StartLabSessionButton } from "../buttons/start-lab-session-button";
+import { LabSessionHistoryItem } from "./lab-session-history-item";
+
+interface LabSessionHistoryCardProps {
+	maxAttempt?: number | null;
+	sessions: ExtractTreatyData<ReturnType<typeof api.lab>["session"]["get"]>;
+	labId: string;
+}
+
+export function LabSessionHistoryCard({
+	maxAttempt,
+	sessions,
+	labId,
+}: LabSessionHistoryCardProps) {
+	const attemptCount = sessions.length;
+	const isUnlimited = !maxAttempt;
+	const activeSession = sessions.find((s) => !s.submittedAt);
+
+	return (
+		<Card>
+			<CardHeader className="flex flex-row items-center justify-between space-y-0">
+				<CardTitle>Session History</CardTitle>
+				<div className="flex items-center gap-3">
+					<Badge
+						variant={
+							isUnlimited || attemptCount < maxAttempt
+								? "secondary"
+								: "destructive"
+						}
+					>
+						{attemptCount} / {isUnlimited ? "Unlimited" : maxAttempt} Attempts
+					</Badge>
+					{activeSession ? (
+						<Button asChild className="gap-2">
+							<Link
+								to="/lab/$labId/session/$labSessionId"
+								params={{ labId, labSessionId: activeSession.id }}
+							>
+								<PlayCircleIcon className="h-4 w-4" />
+								Resume Session
+							</Link>
+						</Button>
+					) : (
+						<StartLabSessionButton
+							labId={labId}
+							maxAttempt={maxAttempt || null}
+							attemptCount={attemptCount}
+						/>
+					)}
+				</div>
+			</CardHeader>
+			<CardContent>
+				{sessions.length === 0 ? (
+					<Empty className="border-0 p-6">
+						<EmptyMedia>
+							<ClockIcon className="h-8 w-8 opacity-20" />
+						</EmptyMedia>
+						<EmptyDescription>No sessions started yet.</EmptyDescription>
+					</Empty>
+				) : (
+					<div className="space-y-4">
+						{sessions.map((session) => {
+							return (
+								<LabSessionHistoryItem
+									key={session.id}
+									session={session}
+									labId={labId}
+								/>
+							);
+						})}
+					</div>
+				)}
+			</CardContent>
+		</Card>
+	);
+}

@@ -1,9 +1,7 @@
 import { createScopedStore } from "@jawit/zustand-helper/react";
 import type { Store } from "@jawit/zustand-helper/types";
+import type { LogEntry, LogLevel } from "@web/components/log-viewer";
 import { create } from "zustand";
-
-export type LogLevel = "info" | "warn" | "error";
-export type LogEntry = { type: LogLevel; message: string };
 
 interface TestDeviceState {
 	open: boolean;

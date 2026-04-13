@@ -38,7 +38,7 @@ export default class Debouncer<TReturn = void> {
 		const entry = this.map.get(id);
 
 		if (entry) {
-			entry.reject();
+			entry.reject(new Error("Debounce cancelled"));
 			clearTimeout(entry.timeout);
 			this.map.delete(id);
 		}

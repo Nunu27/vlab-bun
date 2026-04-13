@@ -1,13 +1,19 @@
 import { type Duplex, PassThrough } from "node:stream";
+import { sleep } from "bun";
 import type { NetworkMonitor } from "../types";
 import { removeItemFromArray } from "../utils";
 
 const monitors = new Map<string, Duplex>();
-const nodeInterfaceMap = new Map<string, Record<string, string[]>>();
 
 export default {
 	async start(ctx, container, node) {
-		const { docker, logger, eventEmitter } = ctx;
+		const {
+			docker,
+			logger,
+			emitInterfaceUpdate,
+			nodeInterfaceMap,
+			sessionIds,
+		} = ctx;
 		const { id, labSessionId, isTemp } = node;
 
 		if (monitors.has(id)) return;
@@ -27,7 +33,7 @@ export default {
 			docker.modem.demuxStream(rawStream, stream, process.stderr);
 			monitors.set(id, rawStream);
 
-			stream.on("data", (chunk: Buffer) => {
+			stream.on("data", async (chunk: Buffer) => {
 				const text = chunk.toString();
 				if (!text.trim()) return;
 				if (text.includes("OCI runtime exec failed")) {
@@ -40,19 +46,21 @@ export default {
 				if (!iface || !type || !ip) return;
 
 				const interfaces = nodeInterfaceMap.get(id) || {};
-				if (type !== "inet" || !(iface in interfaces)) return;
+
+				if (type !== "inet") return;
+				if (!interfaces[iface]) interfaces[iface] = [];
 
 				if (info?.startsWith("Deleted")) {
+					// Event might come from node being destroyed
+					await sleep(500);
+
+					if (!sessionIds.has(labSessionId)) return;
 					removeItemFromArray(interfaces[iface] ?? [], ip);
 				} else {
 					interfaces[iface]?.push(ip);
 				}
 
-				eventEmitter.emit(
-					"interface-update",
-					{ id, labSessionId, interfaces },
-					isTemp,
-				);
+				emitInterfaceUpdate({ id, labSessionId, interfaces }, isTemp);
 			});
 
 			rawStream.on("end", () => {
@@ -81,7 +89,8 @@ export default {
 			monitors.delete(id);
 		}
 	},
-	async extractInterfaces({ docker, logger }, container, { id }) {
+	async extractInterfaces(ctx, container, { id }) {
+		const { docker, logger, nodeInterfaceMap } = ctx;
 		const interfaces = nodeInterfaceMap.get(id) || {};
 		if (nodeInterfaceMap.has(id)) return interfaces;
 

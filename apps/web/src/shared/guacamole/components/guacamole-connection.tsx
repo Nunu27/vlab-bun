@@ -27,7 +27,6 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 	const errorMessage = store.use.errorMessage();
 	const isConnected = store.use.isConnected();
 
-	// Initialize Guacamole client
 	const { clientRef, displayElementRef } = useGuacamoleClient({
 		token,
 		displayContainerRef: containerRef,
@@ -36,14 +35,12 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 		onError,
 	});
 
-	// Setup resize handling
 	useGuacamoleResize({
 		clientRef,
 		containerRef,
 		isConnected,
 	});
 
-	// Setup mouse handling
 	useGuacamoleMouse({
 		clientRef,
 		displayElementRef,
@@ -51,11 +48,9 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 		isConnected,
 	});
 
-	// Setup keyboard handling
 	useGuacamoleKeyboard({ clientRef, isConnected });
 
-	// Setup clipboard handling
-	useGuacamoleClipboard({ clientRef, isConnected });
+	useGuacamoleClipboard({ clientRef });
 
 	return (
 		<div className="relative h-full w-full overflow-hidden bg-gray-900 outline-none focus:outline-none focus-visible:outline-none">

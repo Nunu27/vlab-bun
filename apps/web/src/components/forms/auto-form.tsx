@@ -39,7 +39,7 @@ export const AutoForm = withFieldGroup({
 					if (!Field) return null;
 
 					return (
-						<group.AppField key={value.$id} name={key}>
+						<group.AppField key={key} name={key}>
 							{() => <Field parent={schema} schema={value} />}
 						</group.AppField>
 					);

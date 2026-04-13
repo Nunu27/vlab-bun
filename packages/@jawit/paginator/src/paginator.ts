@@ -17,19 +17,24 @@ import type { PgDatabase, PgTable } from "drizzle-orm/pg-core";
 import type { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query";
 import { buildFilterConditions, buildSearchConditions } from "./query";
 import { createPaginationSchema } from "./schema";
-import type { SearchableColumnKeys } from "./types";
+import type {
+	HasItems,
+	PaginationRequest,
+	SearchableColumnKeys,
+} from "./types";
 
 export const createPaginator = <
 	TFullSchema extends Record<string, unknown>,
 	TRelationalSchema extends ExtractTablesWithRelations<TFullSchema>,
 	TEntity extends keyof ExtractTablesWithRelations<TFullSchema>,
-	TUsableColumns extends
-		keyof TRelationalSchema[TEntity]["columns"] = keyof TRelationalSchema[TEntity]["columns"],
+	TUsableColumns extends Array<
+		keyof TRelationalSchema[TEntity]["columns"]
+	> = [],
 >(
 	db: PgDatabase<NodePgQueryResultHKT, TFullSchema>,
 	entity: TEntity,
 	config?: {
-		usableColumns?: TUsableColumns[];
+		usableColumns?: TUsableColumns;
 		searchableColumns?: TFullSchema[TEntity] extends PgTable
 			? SearchableColumnKeys<TFullSchema[TEntity]>[]
 			: never;
@@ -43,17 +48,16 @@ export const createPaginator = <
 	const columns = getTableColumns(table);
 
 	type TTable = typeof table;
-	type TColumns = Extract<TUsableColumns, string>;
+	type TColumns = Extract<TUsableColumns[number], string>;
 
 	const usableColumnNames = config?.usableColumns as TColumns[] | undefined;
 	const searchableColumnNames = config?.searchableColumns || [];
-	const hasSearchable = searchableColumnNames.length > 0;
 
-	const schema = createPaginationSchema<TTable, TColumns, typeof hasSearchable>(
-		table,
-		usableColumnNames,
-		searchableColumnNames,
-	);
+	const schema = createPaginationSchema<
+		TTable,
+		TColumns,
+		HasItems<Readonly<TUsableColumns>>
+	>(table, usableColumnNames, config?.searchableColumns || []);
 
 	type TTableConfig = TRelationalSchema[TEntity];
 	type TBaseOptions = DBQueryConfig<
@@ -69,7 +73,11 @@ export const createPaginator = <
 			index: number;
 		},
 	>(
-		request: typeof schema.static,
+		request: PaginationRequest<
+			TTable,
+			TColumns,
+			HasItems<Readonly<TUsableColumns>>
+		>,
 		options?: TOptions,
 	): Promise<PaginatedData<Item>> => {
 		const { page, perPage, sortBy, sortOrder, filters } = request;

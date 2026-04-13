@@ -2,8 +2,10 @@
 import { ilike, or, type SQL } from "drizzle-orm";
 import { type FilterOp, filterMap } from "./constants";
 
-export const buildFilterConditions = (
-	filters: { field: string; op: FilterOp; value: any }[],
+export const buildFilterConditions = <
+	TFilters extends { field: string; op: FilterOp; value: any }[],
+>(
+	filters: TFilters,
 	columns: Record<string, any>,
 ): SQL[] => {
 	return filters.flatMap(({ field, op, value }) => {

@@ -1,4 +1,3 @@
-import type { TUnknown } from "@sinclair/typebox";
 import { t } from "elysia";
 import { DateRange, NonEmptyString } from "./common";
 import { DeviceTemplateResourcesSchema } from "./device-template";
@@ -52,26 +51,19 @@ export const LabTopologySchema = t.Object({
 });
 
 export const LabCheckConfigSchema = t.Object({
-	id: t.String({ format: "uuid" }),
 	nodeId: t.String({ format: "uuid" }),
 	checkId: t.String(),
 	params: t.Record(t.String(), t.Unknown()),
 	weight: t.Number(),
 });
 
-export type LabCheckConfig = typeof LabCheckConfigSchema.static;
-
-export const LabInstructionSchema = t.Recursive((Self) =>
-	t.Object({
-		id: t.String({ format: "uuid" }),
-		text: NonEmptyString(),
-		checks: t.Array(LabCheckConfigSchema),
-		// Use unknown to avoid deep recursion error
-		children: t.Array(Self as unknown as TUnknown),
-	}),
+export const LabChecksMapSchema = t.Record(
+	t.String({ format: "uuid" }),
+	LabCheckConfigSchema,
 );
 
-export type LabInstruction = typeof LabInstructionSchema.static;
+export type LabCheckConfig = typeof LabCheckConfigSchema.static;
+export type LabChecksMap = typeof LabChecksMapSchema.static;
 
 export const LabRequestSchema = t.Object({
 	name: NonEmptyString(),
@@ -79,9 +71,11 @@ export const LabRequestSchema = t.Object({
 	cover: t.Optional(t.String()),
 	isPublished: t.Boolean(),
 	date: DateRange,
+	sessionDuration: t.Integer({ min: 1, default: 180 }),
 	maxAttempt: t.Optional(t.Integer({ min: 1 })),
 	topology: LabTopologySchema,
-	instructions: t.Array(LabInstructionSchema),
+	instructions: NonEmptyString(),
+	checks: LabChecksMapSchema,
 	attachments: t.Array(
 		t.Object({
 			name: NonEmptyString(),

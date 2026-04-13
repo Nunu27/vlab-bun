@@ -8,6 +8,7 @@ export default new EvaluationHandler("node-interface")
 	})
 	.addCheck("check-ip", {
 		name: "Interface IP",
+		text: "{interface} should have IP address {ip}",
 		source: "interface-ip",
 		params: {
 			interface: t.String({

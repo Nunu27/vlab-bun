@@ -6,15 +6,6 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-/**
- * Formats a date range as a compact string.
- * When `from` and `to` fall in the same year, only `to` shows the year.
- * When they span different years, both sides show the year.
- *
- * @example
- * // Same year  → "01 Jan – 28 Feb 25"
- * // Cross-year → "01 Dec 24 – 28 Feb 25"
- */
 export function formatDateRange(
 	from: Date | string,
 	to: Date | string,
@@ -67,4 +58,14 @@ export function mouseButtonPressed(
 
 	const button = 2 ** buttons;
 	return Boolean(state & (1 << button));
+}
+
+export function formatDuration(seconds: number) {
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = seconds % 60;
+
+	if (h > 0)
+		return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+	return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }

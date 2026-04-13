@@ -9,14 +9,21 @@ import type { StoreApi, UseBoundStore } from "zustand";
 import { createModalStore, createSelectors } from "./index";
 import type { ModalConfigItem, WithSelectors } from "./types";
 
-export const createScopedStore = <S extends UseBoundStore<StoreApi<object>>>(
-	factory: () => S,
+export const createScopedStore = <
+	S extends UseBoundStore<StoreApi<object>>,
+	// biome-ignore lint/complexity/noBannedTypes: empty props
+	P extends object = {},
+>(
+	factory: (props: P) => S,
 ) => {
 	const StoreContext = createContext<WithSelectors<S> | null>(null);
 
 	return {
-		Provider: ({ children }: { children: ReactNode }) => {
-			const [store] = useState(() => createSelectors(factory()));
+		Provider: (props: { children: ReactNode } & P) => {
+			const { children, ...factoryProps } = props;
+			const [store] = useState(() =>
+				createSelectors(factory(factoryProps as unknown as P)),
+			);
 
 			return createElement(StoreContext.Provider, { value: store }, children);
 		},

@@ -28,21 +28,33 @@ export default new WSContracts<WSMeta>()
 		meta: { private: ["student"] },
 	})
 	.register({
-		event: "lab-session:[sessionId]:session-change",
+		event: "lab-session:[sessionId]:client-change",
+		type: "server2client",
+		data: t.Union([t.String(), t.Null()]),
+	})
+	.register({
+		event: "lab-session:[sessionId]:ended",
 		type: "server2client",
 	})
 	.register({
-		event: "lab-session:[sessionId]:checks:[checkId]",
+		event: "lab-session:[sessionId]:checks",
 		type: "server2client",
-		data: t.Boolean(),
+		data: t.Object({
+			id: t.String(),
+			completed: t.Boolean(),
+		}),
 	})
 	.register({
 		event: "node:[id]:health",
 		type: "server2client",
-		data: t.Union([t.Null(), ...nodeHealthValues.map((v) => t.Literal(v))]),
+		data: t.Union([
+			t.Null(),
+			t.Literal("deleted"),
+			...nodeHealthValues.map((v) => t.Literal(v)),
+		]),
 	})
 	.register({
-		event: "node:[id]:interfaces",
+		event: "node:[id]:interfaces:[interface]",
 		type: "server2client",
-		data: t.Record(t.String(), t.Array(t.String())),
+		data: t.Array(t.String()),
 	});

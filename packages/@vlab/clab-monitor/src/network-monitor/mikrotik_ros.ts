@@ -8,7 +8,6 @@ const connections = new Map<
 	string,
 	{ client: RouterOSClient; api: RosApiMenu }
 >();
-const nodeInterfaceMap = new Map<string, Record<string, string[]>>();
 const nodeInterfaceIdMapping = new Map<
 	string,
 	Record<string, { iface: string; address: string }>
@@ -37,7 +36,24 @@ const getApi = async (
 
 		client.on("stop", cleanup);
 		client.on("error", (error) => {
-			logger.error({ error, id }, "MikroTik ROS client error for node %s", id);
+			const errMessage = error instanceof Error ? error.message : String(error);
+			if (
+				errMessage.includes("Timed out") ||
+				errMessage.includes("ECONNRESET") ||
+				errMessage.includes("socket hung up")
+			) {
+				logger.debug(
+					{ id },
+					"MikroTik ROS client disconnected for node %s",
+					id,
+				);
+			} else {
+				logger.error(
+					{ error, id },
+					"MikroTik ROS client error for node %s",
+					id,
+				);
+			}
 			cleanup();
 		});
 
@@ -67,7 +83,7 @@ export default {
 		}
 	},
 	async start(ctx, container, node) {
-		const { logger, eventEmitter } = ctx;
+		const { logger, emitInterfaceUpdate, nodeInterfaceMap } = ctx;
 		const { id, ip, labSessionId, isTemp } = node;
 
 		if (!ip) {
@@ -79,15 +95,7 @@ export default {
 
 			if (!nodeInterfaceMap.has(id)) {
 				const interfaces = await this.extractInterfaces(ctx, container, node);
-				eventEmitter.emit(
-					"interface-update",
-					{
-						id,
-						interfaces,
-						labSessionId,
-					},
-					isTemp,
-				);
+				emitInterfaceUpdate({ id, interfaces, labSessionId }, isTemp);
 			}
 
 			const api = await getApi(id, {
@@ -133,11 +141,7 @@ export default {
 					}
 				}
 
-				eventEmitter.emit(
-					"interface-update",
-					{ id, labSessionId, interfaces },
-					isTemp,
-				);
+				emitInterfaceUpdate({ id, labSessionId, interfaces }, isTemp);
 			});
 			listener.on("stop", () => {
 				logger.debug("Network monitor for node %s ended", id);
@@ -157,16 +161,66 @@ export default {
 			);
 		}
 	},
-	async stop(_, { id }) {
+	async stop({ logger, nodeInterfaceMap }, { id }) {
 		const client = connections.get(id)?.client;
 		const monitor = monitors.get(id);
 
 		if (client || monitor) {
-			await monitor?.stop();
-			await client?.disconnect();
+			try {
+				if (monitor) await monitor.stop();
+				if (client) {
+					// Fire and forget disconnect to prevent 10s hang on container death
+					client.disconnect().catch((error) => {
+						const errMessage =
+							error instanceof Error ? error.message : String(error);
+						if (
+							errMessage.includes("Timed out") ||
+							errMessage.includes("ECONNRESET") ||
+							errMessage.includes("socket hung up")
+						) {
+							logger.debug(
+								{ id },
+								"MikroTik ROS monitor background disconnect with timeout/reset for node %s",
+								id,
+							);
+						} else {
+							logger.error(
+								{ error, id },
+								"Error stopping MikroTik ROS monitor for node %s",
+								id,
+							);
+						}
+					});
+				}
+			} catch (error) {
+				const errMessage =
+					error instanceof Error ? error.message : String(error);
+				if (
+					errMessage.includes("Timed out") ||
+					errMessage.includes("ECONNRESET") ||
+					errMessage.includes("socket hung up")
+				) {
+					logger.debug(
+						{ id },
+						"MikroTik ROS monitor stopped with timeout/reset for node %s",
+						id,
+					);
+				} else {
+					logger.error(
+						{ error, id },
+						"Error stopping MikroTik ROS monitor for node %s",
+						id,
+					);
+				}
+			} finally {
+				connections.delete(id);
+				monitors.delete(id);
+				nodeInterfaceIdMapping.delete(id);
+				nodeInterfaceMap.delete(id);
+			}
 		}
 	},
-	async extractInterfaces({ logger }, _, { id, ip }) {
+	async extractInterfaces({ logger, nodeInterfaceMap }, _, { id, ip }) {
 		const existingInterfaces = nodeInterfaceMap.get(id);
 		if (existingInterfaces) return existingInterfaces;
 

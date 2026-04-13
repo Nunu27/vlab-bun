@@ -3,7 +3,7 @@ import SwitchInput from "../input/switch-input";
 
 type SwitchFieldProps = Omit<
 	React.ComponentProps<typeof SwitchInput>,
-	"checked" | "onCheckedChange" | "name" | "onBlur" | "isInvalid" | "errors"
+	"name" | "checked" | "onCheckedChange" | "onBlur" | "isInvalid" | "errors"
 >;
 
 function SwitchField(props: SwitchFieldProps) {

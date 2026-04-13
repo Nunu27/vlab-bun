@@ -5,6 +5,7 @@ import {
 	numeric,
 	pgEnum,
 	pgTable,
+	primaryKey,
 	text,
 	timestamp,
 	uuid,
@@ -25,9 +26,10 @@ export const labSessions = pgTable("lab_session", {
 	studentId: uuid()
 		.notNull()
 		.references(() => students.id, { onDelete: "restrict" }),
-	clientId: uuid(),
+	clientId: text(),
 	score: numeric().notNull().default("0"),
 	submittedAt: timestamp({ withTimezone: true }),
+	dueDate: timestamp({ withTimezone: true }).notNull(),
 });
 
 export const labSessionsRelations = relations(labSessions, ({ one, many }) => ({
@@ -43,14 +45,17 @@ export const labSessionsRelations = relations(labSessions, ({ one, many }) => ({
 	nodes: many(labSessionNodes),
 }));
 
-export const labSessionChecks = pgTable("lab_session_check", {
-	...base,
-	labSessionId: uuid()
-		.notNull()
-		.references(() => labSessions.id, { onDelete: "cascade" }),
-	checkId: uuid().notNull(),
-	completed: boolean().notNull().default(false),
-});
+export const labSessionChecks = pgTable(
+	"lab_session_check",
+	{
+		labSessionId: uuid()
+			.notNull()
+			.references(() => labSessions.id, { onDelete: "cascade" }),
+		checkId: uuid().notNull(),
+		completed: boolean().notNull().default(false),
+	},
+	(table) => [primaryKey({ columns: [table.labSessionId, table.checkId] })],
+);
 
 export const labSessionChecksRelations = relations(
 	labSessionChecks,

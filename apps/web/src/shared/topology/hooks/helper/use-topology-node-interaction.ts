@@ -13,7 +13,7 @@ export const useTopologyNodeInteraction = <T extends Element>({
 	elementRef,
 }: UseTopologyNodeInteractionProps<T>) => {
 	const store = useTopologyStore();
-	const sessionId = store.use.sessionId();
+	const isEditor = store.use.isEditor();
 	const { setDragState, onDrag, connectDevice, setEditingNoteId } =
 		store.use.actions();
 
@@ -46,7 +46,7 @@ export const useTopologyNodeInteraction = <T extends Element>({
 			const left = (window.screen.width - width) / 2;
 			const top = (window.screen.height - height) / 2;
 
-			const url = `/session/${sessionId}/node/${node.id}/display`;
+			const url = `${window.location.pathname}/node/${node.id}`;
 			const name = `vlab-session-${node.id}`;
 			const features = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,location=no,toolbar=no,menubar=no`;
 
@@ -67,16 +67,16 @@ export const useTopologyNodeInteraction = <T extends Element>({
 	};
 
 	useEventListener("mousedown", handleMouseDown, elementRef, {
-		enabled: !sessionId,
+		enabled: isEditor,
 	});
 	useEventListener("mousemove", handleMouseMove, elementRef, {
-		enabled: !sessionId,
+		enabled: isEditor,
 	});
 	useEventListener("mouseup", handleMouseUp, elementRef, {
-		enabled: !sessionId,
+		enabled: isEditor,
 	});
 	useEventListener("click", handleClick, elementRef, {
-		enabled: !sessionId && identifier.type === "device",
+		enabled: isEditor && identifier.type === "device",
 	});
 	useEventListener("dblclick", handleDoubleClick, elementRef, {
 		enabled: identifier.type in dblClickHandler,

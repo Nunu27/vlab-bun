@@ -4,7 +4,7 @@ import PaginatedComboboxInput from "../input/paginated-combobox-input";
 
 type PaginatedComboboxFieldProps<TEndpoint extends PaginationEndpoint> = Omit<
 	React.ComponentProps<typeof PaginatedComboboxInput<TEndpoint>>,
-	"value" | "onChange" | "name"
+	"name" | "value" | "onChange" | "isInvalid" | "errors"
 > & {
 	label: string;
 	required?: boolean;

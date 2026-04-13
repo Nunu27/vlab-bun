@@ -1,3 +1,4 @@
+import { JawitWSDevtoolsPanel } from "@jawit/ws/react/devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { formDevtoolsPlugin } from "@tanstack/react-form-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
@@ -16,11 +17,10 @@ import { useRouterPendingAttribute } from "@web/hooks/state/use-router-pending-a
 import api from "@web/lib/api";
 import { queryClient } from "@web/lib/query";
 import type { RouterContext } from "@web/lib/router";
+import wsClient from "@web/lib/ws";
 import { useAuthStore } from "@web/stores/auth-store";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import { toast } from "sonner";
-
-import "@web/lib/ws";
 
 export const Route = createRootRouteWithContext<RouterContext>()({
 	beforeLoad: async () => {
@@ -90,6 +90,10 @@ function RouteComponent() {
 								render: <ReactQueryDevtoolsPanel />,
 							},
 							formDevtoolsPlugin(),
+							{
+								name: "Jawit WS",
+								render: <JawitWSDevtoolsPanel client={wsClient} />,
+							},
 						]}
 					/>
 				</TooltipProvider>

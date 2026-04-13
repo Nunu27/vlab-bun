@@ -3,11 +3,8 @@ import ComboboxInput from "../input/combobox-input";
 
 type ComboboxFieldProps = Omit<
 	React.ComponentProps<typeof ComboboxInput>,
-	"value" | "onChange" | "name"
-> & {
-	label: string;
-	required?: boolean;
-};
+	"name" | "value" | "onChange" | "isInvalid" | "errors"
+>;
 
 function ComboboxField(props: ComboboxFieldProps) {
 	const field = useFieldContext<string>();

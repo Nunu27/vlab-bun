@@ -57,11 +57,27 @@ export const createModalStore = <TData>() => {
 					actionMethods[key] = {
 						open: () => set({ [key]: true } as Partial<StoreType>),
 						close: () => set({ [key]: false } as Partial<StoreType>),
+						toggle: () =>
+							set(
+								(state) =>
+									({
+										[key]: !state[key as keyof typeof state],
+									}) as Partial<StoreType>,
+							),
 					};
 				} else {
 					actionMethods[key] = {
 						open: (data: unknown) => set({ [key]: data } as Partial<StoreType>),
 						close: () => set({ [key]: null } as Partial<StoreType>),
+						toggle: (data?: unknown) =>
+							set(
+								(state) =>
+									({
+										[key]: state[key as keyof typeof state]
+											? null
+											: (data ?? null),
+									}) as Partial<StoreType>,
+							),
 					};
 				}
 			});

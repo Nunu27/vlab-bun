@@ -9,7 +9,7 @@ import {
 	type RangeOp,
 	sortOrder,
 } from "./constants";
-import type { ColumnKeys, PaginationSchemaType } from "./types";
+import type { ColumnKeys, PaginationSchema } from "./types";
 
 const getDataTypeFilterOps = <T extends string>(dataType: T) => {
 	if (dataType in COLUMN_FILTER_OPS) {
@@ -113,17 +113,15 @@ export const buildPaginationSchema = <TTable extends PgTable>(
 export const createPaginationSchema = <
 	TTable extends PgTable,
 	TColumns extends ColumnKeys<TTable> = ColumnKeys<TTable>,
-	TSearchable extends boolean = boolean,
+	const TSearchable extends boolean = true,
 >(
 	table: TTable,
-	usableColumns?: TColumns[],
+	usableColumns?: Array<TColumns>,
 	searchableColumns?: string[],
 ) => {
 	return buildPaginationSchema(
 		table,
 		usableColumns,
 		searchableColumns,
-	) as TSchema & {
-		static: PaginationSchemaType<TTable, TColumns, TSearchable>;
-	};
+	) as unknown as PaginationSchema<TTable, TColumns, TSearchable>;
 };

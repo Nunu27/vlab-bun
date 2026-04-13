@@ -1,4 +1,10 @@
 import type { ContainerInfo } from "dockerode";
+import {
+	CLAB_BUILT_IN_LABELS,
+	type FullMappingConstraint,
+	type ResolvedData,
+	type ResolvedMapping,
+} from "./types";
 
 export const healthyStatus = new Set([null, "healthy"]);
 
@@ -45,4 +51,42 @@ export function removeItemFromArrayByIndex<T>(arr: T[], index: number) {
 
 	arr[index] = lastItem;
 	arr.pop();
+}
+
+export function buildResolvedData<TFullMapping extends FullMappingConstraint>(
+	mapping: TFullMapping,
+	labels: Record<string, string | undefined>,
+): ResolvedData<TFullMapping> | null {
+	const sessionId = labels[mapping.sessionId];
+	const nodeId = labels[mapping.nodeId];
+	const name = labels[CLAB_BUILT_IN_LABELS.name];
+	const deviceKind = labels[CLAB_BUILT_IN_LABELS.deviceKind];
+
+	if (!sessionId || !nodeId || !name || !deviceKind) return null;
+
+	const userResolved = {} as ResolvedMapping<TFullMapping>;
+	for (const _key of Object.keys(mapping)) {
+		if (_key === "sessionId" || _key === "nodeId") continue;
+
+		const entry = mapping[_key as keyof TFullMapping];
+		if (!entry) continue;
+
+		if (typeof entry === "string") {
+			(userResolved as Record<string, string | undefined>)[_key] =
+				labels[entry];
+		} else {
+			const value = labels[entry.label];
+			if (entry.required && !value) return null;
+
+			(userResolved as Record<string, string | undefined>)[_key] = value;
+		}
+	}
+
+	return {
+		sessionId,
+		nodeId,
+		name,
+		deviceKind,
+		...userResolved,
+	} as ResolvedData<TFullMapping>;
 }

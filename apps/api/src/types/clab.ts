@@ -22,6 +22,7 @@ export interface LabLink {
 }
 
 export interface LabConfig {
+	dueDate?: number;
 	labId?: string;
 	ownerId: string;
 	nodes: LabNode[];

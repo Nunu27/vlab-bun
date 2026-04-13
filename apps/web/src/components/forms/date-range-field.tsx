@@ -4,11 +4,8 @@ import DateRangeInput from "../input/date-range-input";
 
 type DateRangeFieldProps = Omit<
 	React.ComponentProps<typeof DateRangeInput>,
-	"value" | "onChange" | "name"
-> & {
-	label: string;
-	required?: boolean;
-};
+	"name" | "value" | "onChange" | "isInvalid" | "errors"
+>;
 
 function DateRangeField(props: DateRangeFieldProps) {
 	const field = useFieldContext<DateRange | undefined>();

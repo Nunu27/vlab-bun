@@ -3,11 +3,8 @@ import TextareaInput from "../input/textarea-input";
 
 type TextareaFieldProps = Omit<
 	React.ComponentProps<typeof TextareaInput>,
-	"value" | "onChange" | "name" | "onBlur"
-> & {
-	label?: string;
-	required?: boolean;
-};
+	"name" | "value" | "onBlur" | "onChange" | "isInvalid" | "errors"
+>;
 
 function TextareaField(props: TextareaFieldProps) {
 	const field = useFieldContext<string>();

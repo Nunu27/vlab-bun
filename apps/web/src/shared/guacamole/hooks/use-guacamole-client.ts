@@ -50,13 +50,11 @@ export const useGuacamoleClient = ({
 			return;
 		}
 
-		// Clear and append display element
 		displayContainer.innerHTML = "";
 		displayContainer.appendChild(displayElement);
 		displayElement.style.outline = "none";
 		displayElement.style.zIndex = "10";
 
-		// State change handler
 		client.onstatechange = (state) => {
 			const ClientState = Guacamole.Client.State;
 
@@ -95,7 +93,6 @@ export const useGuacamoleClient = ({
 			}
 		};
 
-		// Error handler
 		client.onerror = (error) => {
 			console.error("Guacamole client error:", error);
 			const message = getGuacamoleErrorMessage(error);
@@ -105,7 +102,6 @@ export const useGuacamoleClient = ({
 			client.disconnect();
 		};
 
-		// Connect
 		try {
 			client.connect(`token=${token}`);
 		} catch (e) {
@@ -114,7 +110,6 @@ export const useGuacamoleClient = ({
 			return;
 		}
 
-		// Cleanup
 		return () => {
 			if (client) {
 				client.onstatechange = null;

@@ -14,8 +14,6 @@ import {
 	TabsTrigger,
 } from "@web/components/ui/tabs";
 import { withForm } from "@web/hooks/form/use-app-form";
-import api from "@web/lib/api";
-import InterfaceSelectModal from "@web/shared/topology/components/modals/interface-select-modal";
 import { useTopologyStore } from "@web/shared/topology/stores";
 import { useEffect } from "react";
 import { useDebounceCallback } from "usehooks-ts";
@@ -29,19 +27,20 @@ const BASIC_FIELDS = [
 	"cover",
 	"isPublished",
 	"date",
+	"sessionDuration",
 	"maxAttempt",
 	"attachments",
 ];
 
-function hasErrorsForPrefixes(
-	fieldMeta: Record<string, { errors: unknown[] }>,
+function hasErrorsForPrefixes<TKeys extends string>(
+	fieldMeta: Partial<Record<TKeys, { errors: unknown[] }>>,
 	prefixes: string[],
 ) {
 	return Object.entries(fieldMeta).some(
 		([key, meta]) =>
 			prefixes.some(
 				(p) => key === p || key.startsWith(`${p}.`) || key.startsWith(`${p}[`),
-			) && meta.errors.length > 0,
+			) && (meta as { errors: unknown[] }).errors.length > 0,
 	);
 }
 
@@ -55,11 +54,6 @@ export const LabForm = withForm({
 	defaultValues: {} as typeof LabRequestSchema.static,
 	render: ({ form }) => {
 		const store = useTopologyStore();
-		const { load } = store.use.actions();
-
-		void api.evaluator.list.get.useSuspenseQuery();
-		const { data: categories } =
-			api["device-template"].list.get.useSuspenseQuery();
 
 		const updateTopology = useDebounceCallback(() => {
 			const { deviceCounts, devices, groups, notes, edges } = store.getState();
@@ -79,33 +73,16 @@ export const LabForm = withForm({
 			});
 		}, [store.subscribe, updateTopology]);
 
-		// biome-ignore lint/correctness/useExhaustiveDependencies: prevent infinite loop
-		useEffect(() => {
-			load({
-				categorizedTemplates: categories,
-				...form.getFieldValue("topology"),
-			});
-		}, [categories, load]);
-
 		const hasBasicErrors = useStore(form.store, (state) =>
-			hasErrorsForPrefixes(
-				state.fieldMeta as Record<string, { errors: unknown[] }>,
-				BASIC_FIELDS,
-			),
+			hasErrorsForPrefixes(state.fieldMeta, BASIC_FIELDS),
 		);
 
 		const hasInstructionErrors = useStore(form.store, (state) =>
-			hasErrorsForPrefixes(
-				state.fieldMeta as Record<string, { errors: unknown[] }>,
-				["instructions"],
-			),
+			hasErrorsForPrefixes(state.fieldMeta, ["instructions", "checks"]),
 		);
 
 		const hasTopologyErrors = useStore(form.store, (state) =>
-			hasErrorsForPrefixes(
-				state.fieldMeta as Record<string, { errors: unknown[] }>,
-				["topology"],
-			),
+			hasErrorsForPrefixes(state.fieldMeta, ["topology"]),
 		);
 
 		const revalidateForm = () => {
@@ -115,82 +92,81 @@ export const LabForm = withForm({
 		};
 
 		return (
-			<>
-				<Tabs
-					defaultValue="basic"
-					className="space-y-4"
-					onValueChange={revalidateForm}
-				>
-					<TabsList className="grid w-full grid-cols-3">
-						<TabsTrigger value="basic">
-							Basic Information
-							{hasBasicErrors && <TabErrorDot />}
-						</TabsTrigger>
-						<TabsTrigger value="topology">
-							Topology
-							{hasTopologyErrors && <TabErrorDot />}
-						</TabsTrigger>
-						<TabsTrigger value="instructions">
-							Instructions
-							{hasInstructionErrors && <TabErrorDot />}
-						</TabsTrigger>
-					</TabsList>
+			<Tabs
+				defaultValue="basic"
+				className="space-y-4"
+				onValueChange={revalidateForm}
+			>
+				<TabsList className="grid w-full grid-cols-3">
+					<TabsTrigger value="basic">
+						Basic Information
+						{hasBasicErrors && <TabErrorDot />}
+					</TabsTrigger>
+					<TabsTrigger value="topology">
+						Topology
+						{hasTopologyErrors && <TabErrorDot />}
+					</TabsTrigger>
+					<TabsTrigger value="instructions">
+						Instructions
+						{hasInstructionErrors && <TabErrorDot />}
+					</TabsTrigger>
+				</TabsList>
 
-					{/* Basic Information Tab */}
-					<TabsContent value="basic">
-						<Card>
-							<CardHeader className="border-b">
-								<CardTitle>Basic Information</CardTitle>
-								<CardDescription>
-									Configure the lab name, schedule, description, and attachments
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<LabBasicInfoForm
-									form={form}
-									fields={{
-										name: "name",
-										content: "content",
-										cover: "cover",
-										isPublished: "isPublished",
-										date: "date",
-										maxAttempt: "maxAttempt",
-										attachments: "attachments",
-									}}
-								/>
-							</CardContent>
-						</Card>
-					</TabsContent>
+				{/* Basic Information Tab */}
+				<TabsContent value="basic">
+					<Card>
+						<CardHeader className="border-b">
+							<CardTitle>Basic Information</CardTitle>
+							<CardDescription>
+								Configure the lab name, schedule, description, and attachments
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<LabBasicInfoForm
+								form={form}
+								fields={{
+									name: "name",
+									content: "content",
+									cover: "cover",
+									isPublished: "isPublished",
+									date: "date",
+									sessionDuration: "sessionDuration",
+									maxAttempt: "maxAttempt",
+									attachments: "attachments",
+								}}
+							/>
+						</CardContent>
+					</Card>
+				</TabsContent>
 
-					{/* Topology Tab */}
-					<TabsContent value="topology">
-						<LabTopologyForm />
-					</TabsContent>
+				{/* Topology Tab */}
+				<TabsContent value="topology">
+					<LabTopologyForm />
+				</TabsContent>
 
-					{/* Instructions Tab */}
-					<TabsContent value="instructions">
-						<Card>
-							<CardHeader className="border-b">
-								<CardTitle>Instructions</CardTitle>
-								<CardDescription>
-									Define step-by-step instructions with evaluation checks for
-									students
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<LabInstructionForm
-									form={form}
-									fields={{
-										instructions: "instructions",
-									}}
-								/>
-							</CardContent>
-						</Card>
-					</TabsContent>
-				</Tabs>
-
-				<InterfaceSelectModal />
-			</>
+				{/* Instructions Tab */}
+				<TabsContent value="instructions">
+					<Card className="gap-0 pb-0">
+						<CardHeader className="border-b">
+							<CardTitle>Instructions</CardTitle>
+							<CardDescription>
+								Define step-by-step instructions with evaluation checks for
+								students
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="p-0">
+							<LabInstructionForm
+								form={form}
+								fields={{
+									devices: "topology.devices",
+									content: "instructions",
+									checks: "checks",
+								}}
+							/>
+						</CardContent>
+					</Card>
+				</TabsContent>
+			</Tabs>
 		);
 	},
 });

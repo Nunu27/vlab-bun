@@ -1,42 +1,38 @@
 import type { DeviceKind, NodeHealth } from "@vlab/shared/enums";
-import { LABELS } from "./constants";
 import networkMonitor from "./network-monitor";
-import type { ContainerEvent, Context, NodeData, NodeInfo } from "./types";
-import { extractManagementIp } from "./utils";
+import type {
+	ContainerEvent,
+	Context,
+	FullMappingConstraint,
+	NodeData,
+	NodeInfo,
+	ResolvedMapping,
+} from "./types";
+import { buildResolvedData, extractManagementIp } from "./utils";
 
-async function onContainerCreate(ctx: Context, event: ContainerEvent) {
+async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
+	ctx: Context<TFullMapping>,
+	event: ContainerEvent,
+) {
 	const { logger, docker, sessionIds, eventEmitter } = ctx;
 	logger.debug("Container created: %s", event.Actor.ID);
 	const { ID, Attributes } = event.Actor;
 
-	const {
-		[LABELS.SESSION_ID]: labSessionId,
-		[LABELS.LAB_ID]: labId,
-		[LABELS.OWNER_ID]: ownerId,
-	} = Attributes;
+	const resolved = buildResolvedData(ctx.mapping, Attributes);
+	if (!resolved) return;
 
-	// Non lab container
-	if (!labSessionId || !ownerId) return;
+	if (ctx.filter && !ctx.filter(resolved)) return;
 
-	if (!sessionIds.has(labSessionId) && labId) {
+	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
+
+	if (!isTemp && !sessionIds.has(resolved.sessionId)) {
+		const { sessionId, nodeId, name, deviceKind, ...userResolved } = resolved;
 		eventEmitter.emit("session-create", {
-			id: labSessionId,
-			labId,
-			ownerId,
+			...(userResolved as unknown as ResolvedMapping<TFullMapping>),
+			id: resolved.sessionId,
 		});
-		sessionIds.add(labSessionId);
+		sessionIds.add(resolved.sessionId);
 	}
-
-	const {
-		[LABELS.SESSION_NODE_ID]: id,
-		[LABELS.CLAB_NODE_NAME]: name,
-		[LABELS.LAB_NODE_ID]: labNodeId,
-		[LABELS.DEVICE_TEMPLATE_ID]: deviceTemplateId,
-		[LABELS.CLAB_NODE_KIND]: deviceKind,
-	} = Attributes;
-
-	// Non lab container
-	if (!id || !name || !deviceKind) return;
 
 	const container = docker.getContainer(ID);
 	const info = await container.inspect();
@@ -46,85 +42,84 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 	if (!ip) return;
 
 	const nodeInfo: NodeInfo = {
-		id,
+		id: resolved.nodeId,
 		health,
-		labSessionId,
-		deviceKind: deviceKind as DeviceKind,
+		labSessionId: resolved.sessionId,
+		deviceKind: resolved.deviceKind as DeviceKind,
 		ip,
-		isTemp: !labNodeId,
+		isTemp,
 	};
 
-	const nodeData = {
-		id,
-		name,
-		labNodeId,
-		deviceTemplateId,
+	const { sessionId, nodeId, name, deviceKind, ...userResolved } = resolved;
+	const nodeData: NodeData<TFullMapping> = {
+		...(userResolved as unknown as ResolvedMapping<TFullMapping>),
+		id: resolved.nodeId,
+		name: resolved.name,
 		containerId: ID,
 		health,
-		labSessionId,
+		labSessionId: resolved.sessionId,
 		ip,
 		interfaces: await networkMonitor.extractInterfaces(
 			ctx,
 			container,
 			nodeInfo,
 		),
-	} satisfies NodeData;
+	};
 
 	eventEmitter.emit("node-create", nodeData);
 	networkMonitor.start(ctx, container, nodeInfo);
 }
 
-async function onContainerRemove(ctx: Context, event: ContainerEvent) {
+async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
+	ctx: Context<TFullMapping>,
+	event: ContainerEvent,
+) {
 	const { logger, sessionIds, eventEmitter } = ctx;
 	logger.debug("Container removed: %s", event.Actor.ID);
 
-	const {
-		[LABELS.SESSION_ID]: labSessionId,
-		[LABELS.SESSION_NODE_ID]: id,
-		[LABELS.CLAB_NODE_KIND]: deviceKind,
-		[LABELS.LAB_NODE_ID]: labNodeId,
-	} = event.Actor.Attributes;
+	const resolved = buildResolvedData(ctx.mapping, event.Actor.Attributes);
+	if (!resolved) return;
 
-	if (!id || !labSessionId || !deviceKind) return;
+	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
 
-	networkMonitor.stop(ctx, { id, labSessionId, deviceKind } as NodeInfo);
-	eventEmitter.emit("node-remove", id, !labNodeId);
+	if (!isTemp && sessionIds.has(resolved.sessionId)) {
+		eventEmitter.emit("session-remove", resolved.sessionId);
+		sessionIds.delete(resolved.sessionId);
+	}
 
-	if (!sessionIds.has(labSessionId)) return;
-
-	eventEmitter.emit("session-remove", labSessionId);
-	sessionIds.delete(labSessionId);
+	networkMonitor.stop(ctx, {
+		id: resolved.nodeId,
+		labSessionId: resolved.sessionId,
+		deviceKind: resolved.deviceKind as DeviceKind,
+		health: null,
+		ip: "",
+		isTemp,
+	});
+	eventEmitter.emit("node-remove", resolved.nodeId, isTemp);
 }
 
-async function onContainerHealthStatus(
-	{ logger, eventEmitter }: Context,
-	event: ContainerEvent,
-) {
+async function onContainerHealthStatus<
+	TFullMapping extends FullMappingConstraint,
+>(ctx: Context<TFullMapping>, event: ContainerEvent) {
+	const { logger, eventEmitter } = ctx;
 	const { Action, Actor } = event;
-	const {
-		[LABELS.SESSION_NODE_ID]: id,
-		[LABELS.SESSION_ID]: labSessionId,
-		[LABELS.LAB_NODE_ID]: labNodeId,
-	} = Actor.Attributes;
 
-	if (!id || !labSessionId) return;
+	const resolved = buildResolvedData(ctx.mapping, Actor.Attributes);
+	if (!resolved) return;
 
 	const health = Action.split(": ")[1] as NodeHealth;
+	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
 
 	logger.debug("Container health status: %s, %s", Actor.ID, health);
 	eventEmitter.emit(
 		"node-health",
-		{
-			id,
-			labSessionId,
-			health,
-		},
-		!labNodeId,
+		{ id: resolved.nodeId, labSessionId: resolved.sessionId, health },
+		isTemp,
 	);
 }
 
 export default {
 	create: onContainerCreate,
-	destroy: onContainerRemove,
+	die: onContainerRemove,
 	health_status: onContainerHealthStatus,
 };

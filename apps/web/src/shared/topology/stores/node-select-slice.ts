@@ -50,7 +50,15 @@ export const createNodeSelectSlice: StateCreator<
 	TopologyNodeSelectActions
 > = (set, get) => ({
 	setSelectState: (start) => {
-		const { mode, selectState, devices, groups, notes, actions } = get();
+		const {
+			mode,
+			selectState,
+			editingNoteId,
+			devices,
+			groups,
+			notes,
+			actions,
+		} = get();
 		if (mode !== "select") return;
 		if (!!selectState === !!start) return;
 
@@ -115,6 +123,8 @@ export const createNodeSelectSlice: StateCreator<
 				selectedGroups,
 				selectedNotes,
 				selectedEdges: new Set(),
+
+				notes: checkNote(notes, editingNoteId),
 			});
 		}
 	},
@@ -226,12 +236,15 @@ export const createNodeSelectSlice: StateCreator<
 	},
 	clearSelection: () => {
 		const { notes, editingNoteId } = get();
+
 		set({
 			selectedDevices: new Set(),
 			selectedGroups: new Set(),
 			selectedNotes: new Set(),
 			selectedEdges: new Set(),
+
 			notes: checkNote(notes, editingNoteId),
+
 			editingNoteId: null,
 			selectState: null,
 		});

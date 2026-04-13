@@ -8,6 +8,7 @@ export const LabBasicInfoForm = withFieldGroup({
 		content: "",
 		isPublished: false,
 		date: { from: new Date(), to: new Date() },
+		sessionDuration: 180,
 		maxAttempt: undefined as number | undefined,
 		attachments: [] as { name: string; file: string }[],
 	},
@@ -33,10 +34,22 @@ export const LabBasicInfoForm = withFieldGroup({
 							)}
 						</group.AppField>
 
-						<div className="grid grid-cols-[2fr_1fr] items-end gap-4">
+						<div className="grid grid-cols-[2fr_1fr_1fr] items-end gap-4">
 							<group.AppField name="date">
 								{(field) => (
 									<field.DateRangeField label="Date Range" required />
+								)}
+							</group.AppField>
+
+							<group.AppField name="sessionDuration">
+								{(field) => (
+									<field.TextField
+										label="Duration (min)"
+										type="number"
+										placeholder="e.g., 180"
+										min={1}
+										required
+									/>
 								)}
 							</group.AppField>
 
@@ -47,7 +60,6 @@ export const LabBasicInfoForm = withFieldGroup({
 										type="number"
 										placeholder="e.g., 3"
 										min={1}
-										required
 									/>
 								)}
 							</group.AppField>

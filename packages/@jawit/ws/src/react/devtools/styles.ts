@@ -1,0 +1,105 @@
+const SYSTEM_FONT =
+	"-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+export const styles = {
+	root: {
+		display: "flex",
+		flexDirection: "column" as const,
+		alignSelf: "stretch" as const,
+		height: "100%",
+		width: "100%",
+		fontFamily: SYSTEM_FONT,
+		backgroundColor: "#1f1f1f",
+		color: "#e5e5e5",
+		fontSize: "13px",
+	},
+	toolbar: {
+		display: "flex",
+		height: "auto",
+		alignItems: "center",
+		justifyContent: "space-between",
+		padding: "8px 12px",
+		borderBottom: "1px solid #333",
+		backgroundColor: "#181818",
+	},
+	toolbarLeft: { display: "flex", gap: "16px", alignItems: "center" },
+	statusLabel: {
+		fontWeight: 600,
+		display: "flex",
+		alignItems: "center",
+		gap: "6px",
+	},
+	tabBar: { display: "flex", gap: "8px" },
+	clearBtn: {
+		background: "transparent",
+		border: "1px solid #444",
+		color: "#ccc",
+		cursor: "pointer",
+		padding: "4px 8px",
+		borderRadius: "4px",
+		fontFamily: SYSTEM_FONT,
+		fontSize: "13px",
+	},
+	content: {
+		flex: 1,
+		minHeight: 0,
+		overflow: "auto",
+		display: "flex",
+		flexDirection: "column" as const,
+	},
+	filterBar: {
+		display: "flex",
+		gap: "8px",
+		padding: "8px 12px",
+		borderBottom: "1px solid #333",
+	},
+	filterSelect: {
+		background: "#222",
+		color: "#fff",
+		border: "1px solid #444",
+		padding: "2px 6px",
+		borderRadius: "4px",
+		fontFamily: SYSTEM_FONT,
+		fontSize: "13px",
+	},
+	logList: { flex: 1, overflowY: "auto" as const },
+	emptyState: { padding: "24px", textAlign: "center" as const, color: "#666" },
+	subscriptionPanel: {
+		padding: "12px",
+		display: "flex",
+		flexDirection: "column" as const,
+		gap: "8px",
+	},
+	subscriptionTitle: {
+		margin: "0 0 8px 0",
+		color: "#fff",
+		fontSize: "14px",
+	},
+	subscriptionItem: {
+		padding: "8px",
+		backgroundColor: "#222",
+		border: "1px solid #333",
+		borderRadius: "4px",
+		fontFamily: "monospace",
+	},
+} satisfies Record<string, React.CSSProperties>;
+
+export const styleFactories = {
+	statusDot: (isConnected: boolean): React.CSSProperties => ({
+		width: 8,
+		height: 8,
+		borderRadius: "50%",
+		backgroundColor: isConnected ? "#10b981" : "#ef4444",
+	}),
+	tab: (active: boolean): React.CSSProperties => ({
+		padding: "4px 8px",
+		cursor: "pointer",
+		borderRadius: "4px",
+		textTransform: "capitalize",
+		backgroundColor: active ? "#333" : "transparent",
+		color: active ? "#fff" : "#aaa",
+		border: "none",
+		fontFamily: SYSTEM_FONT,
+		fontSize: "13px",
+	}),
+};

@@ -3,8 +3,52 @@
 import type { DefaultEventsMap, Server, Socket } from "socket.io";
 import type WSContracts from "../../base/contracts";
 import WSServer from "../../base/server";
-import type { ExtractWSContracts, WSServerEmitConfig } from "../../types";
+import type {
+	ExtractWSContracts,
+	MaybePromise,
+	WSServerEmitConfig,
+	WSServerMiddleware,
+} from "../../types";
 import { compileEventPath } from "../../utils";
+
+/**
+ * Runs the middleware chain sequentially.
+ * Returns a rejected promise if any middleware calls `next(err)` or throws.
+ */
+async function runMiddlewares<TContext, TMeta>(
+	middlewares: WSServerMiddleware<TContext, TMeta>[],
+	context: Parameters<WSServerMiddleware<TContext, TMeta>>[0],
+): Promise<void> {
+	for (const middleware of middlewares) {
+		await new Promise<void>((resolve, reject) => {
+			let settled = false;
+
+			const next = (err?: Error) => {
+				if (settled) return;
+				settled = true;
+				if (err) reject(err);
+				else resolve();
+			};
+
+			try {
+				const result = middleware(context, next);
+				if (result instanceof Promise) {
+					result.catch((err: unknown) => {
+						if (!settled) {
+							settled = true;
+							reject(err);
+						}
+					});
+				}
+			} catch (err) {
+				if (!settled) {
+					settled = true;
+					reject(err);
+				}
+			}
+		});
+	}
+}
 
 export default class SocketIOServer<
 	TWSContracts extends WSContracts<any, any>,
@@ -36,17 +80,12 @@ export default class SocketIOServer<
 			);
 		}
 
-		let builder: any = this.io;
-		if (config.to) {
-			builder = builder.to(config.to);
-		}
-
 		const compiledEvent = compileEventPath(
 			event as string,
 			(config as any).params as Record<string, unknown> | undefined,
 		);
 
-		builder.emit(compiledEvent, {
+		this.io.to(compiledEvent).emit(compiledEvent, {
 			data: (config as any).data,
 			params: (config as any).params,
 		});
@@ -61,23 +100,29 @@ export default class SocketIOServer<
 		>,
 	) {
 		this.io = io;
-		io.of("/").adapter.on("leave-room", (room, id) => {
-			const [eventName, executionId] = room.split("::") as [string, string];
+
+		// When a socket leaves a room, check if the room's executionId cleanup should run.
+		io.of("/").adapter.on("leave-room", (room, socketId) => {
+			const separatorIndex = room.indexOf("::");
+			if (separatorIndex === -1) return;
+
+			const eventName = room.slice(0, separatorIndex);
+			const executionId = room.slice(separatorIndex + 2);
 			if (!eventName || !executionId) return;
 
 			const cleanup = this.disposeHandlers.get(eventName);
 			if (!cleanup) return;
 
-			const isConnected = io.sockets.sockets.has(id);
+			const isStillConnected = io.sockets.sockets.has(socketId);
 
-			if (isConnected) {
-				void cleanup({ executionId, socketId: id });
+			if (isStillConnected) {
+				void cleanup({ executionId, socketId });
 			} else {
-				// Delay cleanup for reconnection check
+				// Delay cleanup to allow reconnection within a window.
 				setTimeout(
 					async () => {
 						const sockets = await io.in(room).fetchSockets();
-						if (!sockets.length) void cleanup({ executionId, socketId: id });
+						if (!sockets.length) void cleanup({ executionId, socketId });
 					},
 					2 * 60 * 1000,
 				);
@@ -98,6 +143,14 @@ export default class SocketIOServer<
 					socket.leave(roomName);
 				});
 
+				socket.on("_jawit:subscribe", (roomName: string) => {
+					socket.join(roomName);
+				});
+
+				socket.on("_jawit:unsubscribe", (roomName: string) => {
+					socket.leave(roomName);
+				});
+
 				for (const [event, handler] of this.handlers.entries()) {
 					socket.on(
 						event,
@@ -106,62 +159,55 @@ export default class SocketIOServer<
 							params?: Record<string, unknown>;
 							requestId?: string;
 						}) => {
-							try {
-								// 1. Run all inherited WSServer Middlewares
-								const meta = this.contracts.contracts[event]?.meta;
-								for (const middleware of this.middlewares) {
-									await new Promise<void>((resolve, reject) => {
-										try {
-											const res = middleware({ socket, meta }, (err) => {
-												if (err) return reject(err);
-												resolve();
-											});
-											if (res instanceof Promise) {
-												res.catch(reject);
-											}
-										} catch (err) {
-											reject(err);
-										}
+							const replyOrError = (type: string, data: unknown) => {
+								if (payload.requestId) {
+									socket.emit(`${event}:reply:${payload.requestId}`, {
+										type,
+										data,
 									});
 								}
+							};
 
-								// 2. Schema Runtime Validation
+							try {
+								// 1. Run the middleware pipeline
+								const meta = this.contracts.contracts[event]?.meta;
+								await runMiddlewares(this.middlewares, { socket, meta });
+
+								// 2. Schema runtime validation
 								const validatedData = this.validateIncomingData(
 									event as Parameters<typeof this.validateIncomingData>[0],
 									payload.data,
 								);
 
-								const replyFn = payload.requestId
-									? (type: string, data: unknown) => {
-											socket.emit(`${event}:reply:${payload.requestId}`, {
-												type,
-												data,
-											});
-										}
-									: undefined;
+								// 3. Join the execution room (enables targeted server-push replies)
+								if (payload.requestId) {
+									socket.join(`${event}::${payload.requestId}`);
+								}
 
-								const config = {
+								await handler({
 									socket,
 									data: validatedData,
 									...(payload.params ? { params: payload.params } : {}),
-									...(replyFn ? { reply: replyFn } : {}),
 									...(payload.requestId
-										? { executionId: payload.requestId }
+										? {
+												executionId: payload.requestId,
+												reply: (type: string, data: unknown) =>
+													replyOrError(type, data),
+											}
 										: {}),
-								};
-
-								const roomName = `${event}::${payload.requestId}`;
-								if (payload.requestId) {
-									socket.join(roomName);
-								}
-
-								await handler(config as Parameters<typeof handler>[0]);
+								} as Parameters<typeof handler>[0]);
 							} catch (err) {
+								const message =
+									err instanceof Error ? err.message : String(err);
+
 								if (payload.requestId) {
-									socket.emit(`${event}:reply:${payload.requestId}`, {
-										type: "__error",
-										data: err instanceof Error ? err.message : String(err),
-									});
+									replyOrError("__error", message);
+								} else {
+									// No requestId — surface the error so it's never silently dropped.
+									console.error(
+										`[jawit/ws] Unhandled error for event "${event}":`,
+										err,
+									);
 								}
 							}
 						},
@@ -171,3 +217,5 @@ export default class SocketIOServer<
 		);
 	}
 }
+
+export type { MaybePromise };

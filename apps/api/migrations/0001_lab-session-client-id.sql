@@ -1,0 +1,1 @@
+ALTER TABLE "lab_session" ALTER COLUMN "client_id" SET DATA TYPE text;

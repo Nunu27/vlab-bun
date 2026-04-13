@@ -21,8 +21,8 @@ function TopologyCanvas() {
 
 	const store = useTopologyStore();
 	const sessionId = store.use.sessionId();
+	const isEditor = store.use.isEditor();
 	const screenToWorld = useScreenToWorld({ worldRef: canvasRef });
-	const isEditor = !sessionId;
 
 	useTopologyWheel({ elementRef: canvasRef });
 	useTopologyPanAndDrag({ backgroundRef, foregroundRef: canvasRef });
@@ -55,6 +55,14 @@ function TopologyCanvas() {
 				canvasRef.current.dataset.mode = mode;
 			},
 		);
+	}, [store]);
+
+	useEffect(() => {
+		if (canvasRef.current) {
+			store
+				.getState()
+				.actions.recenter(canvasRef.current.getBoundingClientRect());
+		}
 	}, [store]);
 
 	return (

@@ -28,6 +28,9 @@ export type ModalStore<TSchema> = {
 				? () => void
 				: (value: TSchema[K]) => void;
 			close: () => void;
+			toggle: TSchema[K] extends boolean
+				? () => void
+				: (value?: TSchema[K]) => void;
 		};
 	};
 };

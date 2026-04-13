@@ -1,6 +1,8 @@
 import {
 	headingsPlugin,
 	imagePlugin,
+	type JsxComponentDescriptor,
+	jsxPlugin,
 	linkPlugin,
 	listsPlugin,
 	MDXEditor,
@@ -16,9 +18,14 @@ import { useTheme } from "./theme-provider";
 type MarkdownViewerProps = {
 	value?: string;
 	className?: string;
+	jsxComponentDescriptors?: JsxComponentDescriptor[];
 };
 
-export function MarkdownViewer({ value, className }: MarkdownViewerProps) {
+export function MarkdownViewer({
+	value,
+	className,
+	jsxComponentDescriptors = [],
+}: MarkdownViewerProps) {
 	const { theme } = useTheme();
 
 	return (
@@ -27,8 +34,9 @@ export function MarkdownViewer({ value, className }: MarkdownViewerProps) {
 				readOnly={true}
 				className={theme === "dark" ? "dark-theme" : undefined}
 				markdown={value || ""}
-				contentEditableClassName="prose dark:prose-invert min-h-0"
+				contentEditableClassName="prose dark:prose-invert max-w-none min-h-0"
 				plugins={[
+					jsxPlugin({ jsxComponentDescriptors }),
 					listsPlugin(),
 					quotePlugin(),
 					headingsPlugin({ allowedHeadingLevels: [1, 2, 3] }),

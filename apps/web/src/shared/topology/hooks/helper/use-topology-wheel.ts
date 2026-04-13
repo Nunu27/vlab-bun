@@ -36,10 +36,8 @@ export const useTopologyWheel = ({ elementRef }: UseTopologyWheelProps) => {
 				y: e.clientY - rect.top,
 			});
 		} else if (e.shiftKey) {
-			// Pan horizontally when holding Shift
 			setView((v) => ({ x: v.x - e.deltaY }));
 		} else {
-			// Pan all direction otherwise
 			setView((v) => ({ x: v.x - e.deltaX, y: v.y - e.deltaY }));
 		}
 	};
