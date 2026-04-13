@@ -312,7 +312,6 @@ export async function writeEnvFile(
 	envContent += `GUACD_HOST=${guacdContainer}\n`;
 	envContent += `GUACD_PORT=4822\n`;
 	envContent += `GUACD_SECRET=${guacdSecret}\n`;
-	envContent += `CONTAINERLAB_API_URL=http://${clabContainer}:8080\n`;
 
 	if (config.s3AccessKey) {
 		envContent += `S3_ACCESS_KEY=${config.s3AccessKey}\n`;
@@ -324,7 +323,7 @@ export async function writeEnvFile(
 		envContent += `S3_ENDPOINT=\n`;
 	}
 
-	envContent += `\nCLAB_HOST=${clabContainer}\n`;
+	envContent += `\nCLAB_URL=http://${clabContainer}:8080\n`;
 	envContent += `CLAB_USERNAME=admin\n`;
 	envContent += `CLAB_PASSWORD=admin\n`;
 
