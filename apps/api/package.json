@@ -17,6 +17,7 @@
 	"dependencies": {
 		"@bogeychan/elysia-logger": "^0.1.10",
 		"@elysiajs/openapi": "^1.4.14",
+		"@elysiajs/static": "^1.4.9",
 		"@jawit/common": "workspace:*",
 		"@jawit/elysia-caching": "workspace:*",
 		"@jawit/paginator": "workspace:*",

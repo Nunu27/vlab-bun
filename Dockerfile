@@ -4,7 +4,7 @@
 FROM oven/bun:1 AS base
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y python3 make g++ libpq-dev \
+RUN apt-get update && apt-get install -y python3 python3-setuptools pkg-config make g++ libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Dependencies ---

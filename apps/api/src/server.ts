@@ -2,6 +2,7 @@ import db, { checkAndRunMigration } from "@api/db";
 import env, { inProduction } from "@api/env";
 import { initClabSync } from "@api/services/clab-sync";
 import baseLogger from "@api/services/logger";
+import staticPlugin from "@elysiajs/static";
 import type { WebSocketData } from "@socket.io/bun-engine";
 import type { Server } from "bun";
 import { Elysia } from "elysia";
@@ -27,6 +28,14 @@ const app = new Elysia({
 	.use(errorHandler)
 	.use(fallback)
 	.use(routes)
+	.use(
+		inProduction
+			? staticPlugin({
+					prefix: "/assets",
+					assets: "public/assets",
+				})
+			: undefined,
+	)
 	.all(
 		"/ws",
 		async ({ request, server }) => {
