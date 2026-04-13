@@ -3,6 +3,7 @@ import logger from "../common/logger";
 import { execute } from "../common/shell";
 
 export interface EnvConfig {
+	repoName: string;
 	deployPath: string;
 	networks: string[];
 	dbUrl: string;
@@ -224,6 +225,14 @@ export async function gatherAndSetupEnvironment(
 	let useLetsencrypt = false;
 	let letsencryptEmail = "";
 
+	logger.section("GitHub Settings");
+	const repoName = await ask(
+		"GitHub repository name for ghcr.io (e.g. owner/vlab-bun)",
+		useExisting
+			? parseEnv("GITHUB_REPO") || "owner/vlab-bun"
+			: "owner/vlab-bun",
+	);
+
 	if (useNginxProxy) {
 		const defaultVhost = baseUrl.replace(/^https?:\/\//, "");
 		virtualHost = await ask(
@@ -244,6 +253,7 @@ export async function gatherAndSetupEnvironment(
 	}
 
 	return {
+		repoName,
 		deployPath,
 		networks,
 		dbUrl: databaseUrl,
@@ -326,6 +336,8 @@ export async function writeEnvFile(
 		}
 	}
 
+	envContent += `\nGITHUB_REPO=${config.repoName}\n`;
+
 	// Wait, the bash script creates a local file directly using cat > $DEPLOY_PATH/.env. We will use execute to write.
 	// Since envContent can be large, we can echo it into a file using EOF trick
 	await execute(`cat > "${config.deployPath}/.env" << 'EOF'
@@ -333,4 +345,32 @@ ${envContent}
 EOF`);
 
 	logger.success(".env created");
+
+	logger.section("Creating docker-compose.yml");
+	const composeContent = `services:
+  vlab-app:
+    image: ghcr.io/${config.repoName.toLowerCase()}:main
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - vlab
+      - clab
+
+networks:
+  vlab:
+    external: true
+    name: ${config.vlabNetwork || "vlab"}
+  clab:
+    external: true
+    name: clab
+`;
+
+	await execute(`cat > "${config.deployPath}/docker-compose.yml" << 'EOF'
+${composeContent}
+EOF`);
+
+	logger.success("docker-compose.yml created");
 }

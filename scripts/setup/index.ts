@@ -1,6 +1,6 @@
 import { ask, askPassword, confirm } from "../common/input";
 import logger from "../common/logger";
-import { execute, initShell, isRemote } from "../common/shell";
+import { execute, getConfig, initShell, isRemote } from "../common/shell";
 import { detectArchitecture } from "../common/utils";
 import { deployClab } from "./clab";
 import { setupClabUser } from "./clab/auth";
@@ -49,12 +49,13 @@ async function main() {
 		logger.success("Deployment directory ready");
 	}
 
-	let config = null;
-	let vlabNetwork = "vlab";
+	const config = isRemote()
+		? await gatherAndSetupEnvironment(deployPath)
+		: null;
+	const vlabNetwork = config?.vlabNetwork ?? "vlab";
 
-	if (isRemote()) {
-		config = await gatherAndSetupEnvironment(deployPath);
-		vlabNetwork = config.vlabNetwork;
+	if (config) {
+		await writeEnvFile(config, "guacd", "clab-api-server");
 	} else {
 		// Just ensure local vlab network exists
 		const netCheck = await execute(
@@ -105,18 +106,12 @@ async function main() {
 		network: vlabNetwork,
 	});
 
-	if (config) {
-		await writeEnvFile(config, "guacd", "clab-api-server");
-	}
-
 	let privKey = "";
-	let sshPort = "22";
-	let vpsIp = "unknown";
 
 	if (isRemote()) {
 		logger.section("CI/CD Setup");
 
-		const sshKeyPath = "~/.ssh/vlab_deploy";
+		const sshKeyPath = "$HOME/.ssh/vlab_deploy";
 		const keyExists = await execute(
 			`test -f "${sshKeyPath}" && echo yes || echo no`,
 		);
@@ -131,41 +126,34 @@ async function main() {
 		}
 
 		logger.info("Adding to authorized_keys...");
-		await execute(`mkdir -p ~/.ssh && chmod 700 ~/.ssh`);
-		await execute(`cat "${sshKeyPath}.pub" >> ~/.ssh/authorized_keys`);
-		await execute(`chmod 600 ~/.ssh/authorized_keys`);
+		await execute(`mkdir -p $HOME/.ssh && chmod 700 $HOME/.ssh`);
+		await execute(
+			`grep -qsFf "${sshKeyPath}.pub" $HOME/.ssh/authorized_keys || cat "${sshKeyPath}.pub" >> $HOME/.ssh/authorized_keys`,
+		);
+		await execute(`chmod 600 $HOME/.ssh/authorized_keys`);
 		logger.success("SSH key ready");
 
 		const privKeyRes = await execute(`cat "${sshKeyPath}"`);
 		privKey = privKeyRes.stdout.toString().trim();
-
-		const vpsIpRes = await execute(
-			"hostname -I 2>/dev/null | awk '{print $1}' || curl -s ifconfig.me",
-		);
-		vpsIp = vpsIpRes.stdout.toString().trim();
-		const sshPortRes = await execute(
-			"grep '^Port' /etc/ssh/sshd_config 2>/dev/null | awk '{print $2}' || echo '22'",
-		);
-		sshPort = sshPortRes.stdout.toString().trim() || "22";
 	}
 
 	logger.success("Setup Complete! 🎉");
 
 	const { raw: arch, platform } = await detectArchitecture();
 
-	if (isRemote()) {
+	const shellConfig = getConfig();
+	if (isRemote() && shellConfig) {
 		logger.section("📋 GitHub Secrets");
 		logger.info("Settings → Secrets and variables → Actions\n");
 
 		logger.log(`VPS_HOST`);
-		logger.log(`  ${vpsIp}\n`);
+		logger.log(`  ${shellConfig.host}\n`);
 		logger.log(`VPS_USERNAME`);
 		logger.log(`  ${currentUser}\n`);
 		logger.log(`VPS_SSH_KEY`);
-		logger.log(`  (Private key for SSH access to VPS)`);
 		logger.log(privKey);
 		logger.log(`\nVPS_PORT`);
-		logger.log(`  ${sshPort}\n`);
+		logger.log(`  ${shellConfig.port}\n`);
 		logger.log(`VPS_DEPLOY_PATH`);
 		logger.log(`  ${deployPath}\n`);
 

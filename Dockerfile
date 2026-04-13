@@ -25,7 +25,7 @@ COPY apps/web/ ./apps/web/
 RUN cd apps/web && bun run build
 
 # --- Runner ---
-FROM gcr.io/distroless/cc-debian12
+FROM gcr.io/distroless/cc:nonroot
 WORKDIR /app
 ENV NODE_ENV=production
 

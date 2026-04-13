@@ -129,9 +129,9 @@ export async function execute(command: string, options = { quiet: true }) {
 	}
 
 	if (options.quiet) {
-		return await result.quiet();
+		return await result.quiet().nothrow();
 	}
-	return await result;
+	return await result.nothrow();
 }
 
 export function resetShell(): void {
@@ -142,9 +142,14 @@ export function isRemote(): boolean {
 	return config?.remote ?? false;
 }
 
+export function getConfig() {
+	return config;
+}
+
 export default {
 	initShell,
 	execute,
 	resetShell,
 	isRemote,
+	getConfig,
 };
