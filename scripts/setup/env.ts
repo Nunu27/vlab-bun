@@ -1,3 +1,5 @@
+import type { Compose } from "compose-spec-schema";
+import yaml from "yaml";
 import { ask, confirm } from "../common/input";
 import logger from "../common/logger";
 import { execute } from "../common/shell";
@@ -346,26 +348,38 @@ EOF`);
 	logger.success(".env created");
 
 	logger.section("Creating docker-compose.yml");
-	const composeContent = `services:
-  vlab-app:
-    image: ghcr.io/${config.repoName.toLowerCase()}:main
-    restart: always
-    env_file:
-      - .env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - vlab
-      - clab
 
-networks:
-  vlab:
-    external: true
-    name: ${config.vlabNetwork || "vlab"}
-  clab:
-    external: true
-    name: clab
-`;
+	const composeObj: Compose = {
+		services: {
+			"vlab-app": {
+				image: `ghcr.io/${config.repoName.toLowerCase()}:main`,
+				restart: "always",
+				env_file: [".env"],
+				volumes: ["/var/run/docker.sock:/var/run/docker.sock"],
+				networks: ["vlab", "clab", ...config.networks],
+			},
+		},
+		networks: {
+			vlab: {
+				external: true,
+				name: config.vlabNetwork || "vlab",
+			},
+			clab: {
+				external: true,
+				name: "clab",
+			},
+		},
+	};
+
+	for (const net of config.networks) {
+		// biome-ignore lint/style/noNonNullAssertion: false positive
+		composeObj.networks![net] = {
+			external: true,
+			name: net,
+		};
+	}
+
+	const composeContent = yaml.stringify(composeObj);
 
 	await execute(`cat > "${config.deployPath}/docker-compose.yml" << 'EOF'
 ${composeContent}
