@@ -1,5 +1,6 @@
 import db from "@api/db";
 import { destroyLab } from "@api/services/clab";
+import { clabMonitor } from "@api/services/events";
 import baseLogger from "@api/services/logger";
 import { Cron } from "croner";
 
@@ -11,7 +12,7 @@ export const staleSessionCleanUpJob = new Cron(
 		catch: (error) =>
 			logger.error({ error }, "Error in stale session cron job"),
 	},
-	async () => {
+	async (cron) => {
 		const now = new Date();
 
 		const expiredSessions = await db.query.labSessions.findMany({
@@ -28,10 +29,12 @@ export const staleSessionCleanUpJob = new Cron(
 			expiredSessions.length,
 		);
 
+		let destroyed = 0;
 		for (const { id } of expiredSessions) {
 			try {
 				logger.debug({ sessionId: id }, "Destroying expired session");
 				await destroyLab(id);
+				destroyed++;
 			} catch (error) {
 				logger.error(
 					{ error, sessionId: id },
@@ -39,5 +42,13 @@ export const staleSessionCleanUpJob = new Cron(
 				);
 			}
 		}
+
+		if (destroyed === expiredSessions.length) {
+			cron.pause();
+		}
 	},
 );
+
+clabMonitor.emitter.on("session-create", () => {
+	staleSessionCleanUpJob.resume();
+});
