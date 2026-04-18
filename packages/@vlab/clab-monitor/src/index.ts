@@ -150,13 +150,14 @@ async function emitInitialState<TFullMapping extends FullMappingConstraint>(
 
 async function initMonitoring<TFullMapping extends FullMappingConstraint>(
 	emitter: EventEmitter<Events<TFullMapping>>,
+	healthEmitter: EventEmitter,
+	nodeHealths: Map<string, NodeHealth | null>,
 	nodeInterfaceMap: Map<string, Record<string, string[]>>,
+	waitForHealth: Context<TFullMapping>["waitForHealth"],
 	options: Options<TFullMapping>,
 ) {
 	const { docker, logger } = options;
 	const sessionIds = new Set<string>();
-	const nodeHealths = new Map<string, NodeHealth | null>();
-	const healthEmitter = new EventEmitter();
 
 	emitter.on("snapshot", (data) => {
 		for (const node of data.nodes) {
@@ -189,6 +190,7 @@ async function initMonitoring<TFullMapping extends FullMappingConstraint>(
 		sessionIds,
 		nodeInterfaceMap,
 		eventEmitter: emitter,
+		waitForHealth,
 		emitInterfaceUpdate: (
 			data: {
 				id: string;
@@ -197,41 +199,6 @@ async function initMonitoring<TFullMapping extends FullMappingConstraint>(
 			},
 			isTemp: boolean,
 		) => emitter.emit("interface-update", data, isTemp),
-		waitForHealth: (
-			id: string,
-			callback: () => MaybePromise<void>,
-			timeoutMs: number = 120000,
-		) => {
-			if (
-				nodeHealths.has(id) &&
-				healthyStatus.has(nodeHealths.get(id) || null)
-			) {
-				callback();
-				return () => {};
-			}
-
-			logger.debug("Waiting for node %s to become healthy...", id);
-
-			const timer = setTimeout(() => {
-				healthEmitter.off(id, handler);
-				logger.warn("Timeout waiting for node %s to become healthy", id);
-			}, timeoutMs);
-
-			const handler = () => {
-				clearTimeout(timer);
-				healthEmitter.off(id, handler);
-				logger.debug("Node %s is now healthy", id);
-				callback();
-			};
-
-			healthEmitter.on(id, handler);
-
-			return () => {
-				logger.debug("Cancelling wait for node %s to become healthy", id);
-				clearTimeout(timer);
-				healthEmitter.off(id, handler);
-			};
-		},
 	};
 
 	const startStream = async (isRestart = false) => {
@@ -286,10 +253,57 @@ export function createMonitor<TFullMapping extends FullMappingConstraint>(
 ) {
 	const emitter = new EventEmitter<Events<TFullMapping>>();
 	const nodeInterfaceMap = new Map<string, Record<string, string[]>>();
+	const nodeHealths = new Map<string, NodeHealth | null>();
+	const healthEmitter = new EventEmitter();
+
+	const waitForHealth = (
+		id: string,
+		callback: () => MaybePromise<void>,
+		timeoutMs: number = 120000,
+	) => {
+		if (nodeHealths.has(id) && healthyStatus.has(nodeHealths.get(id) || null)) {
+			callback();
+			return () => {};
+		}
+
+		options.logger.debug("Waiting for node %s to become healthy...", id);
+
+		const timer = setTimeout(() => {
+			healthEmitter.off(id, handler);
+			options.logger.warn("Timeout waiting for node %s to become healthy", id);
+		}, timeoutMs);
+
+		const handler = () => {
+			clearTimeout(timer);
+			healthEmitter.off(id, handler);
+			options.logger.debug("Node %s is now healthy", id);
+			callback();
+		};
+
+		healthEmitter.on(id, handler);
+
+		return () => {
+			options.logger.debug("Cancelling wait for node %s to become healthy", id);
+			clearTimeout(timer);
+			healthEmitter.off(id, handler);
+		};
+	};
 
 	return {
 		emitter,
 		nodeInterfaceMap,
-		init: () => initMonitoring(emitter, nodeInterfaceMap, options),
+		isNodeHealthy: (id: string) => {
+			return nodeHealths.get(id) === "healthy";
+		},
+		waitForHealth,
+		init: () =>
+			initMonitoring(
+				emitter,
+				healthEmitter,
+				nodeHealths,
+				nodeInterfaceMap,
+				waitForHealth,
+				options,
+			),
 	};
 }

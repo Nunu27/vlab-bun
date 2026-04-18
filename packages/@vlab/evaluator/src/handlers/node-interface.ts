@@ -21,13 +21,6 @@ export default new EvaluationHandler("node-interface")
 			}),
 		},
 		handler: (_, params, data) => {
-			console.log("Checking node interface IP", {
-				interface: params.interface,
-				ip: params.ip,
-				interfaces: data[params.interface],
-				value: data[params.interface]?.includes(params.ip) ?? false,
-			});
-
 			return data[params.interface]?.includes(params.ip) ?? false;
 		},
 	});

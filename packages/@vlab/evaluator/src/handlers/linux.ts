@@ -175,47 +175,61 @@ const RouteEntrySchema = t.Object({
 const IpRouteSchema = t.Array(RouteEntrySchema);
 
 async function getRoutes(container: Container) {
-	const exec = await container.exec({
-		Cmd: ["ip", "-j", "route"],
-		AttachStdout: true,
-		AttachStderr: true,
-		Tty: false,
-	});
+	try {
+		const exec = await container.exec({
+			Cmd: ["ip", "-j", "route"],
+			AttachStdout: true,
+			AttachStderr: true,
+			Tty: false,
+		});
 
-	return new Promise<typeof IpRouteSchema.static>((resolve, reject) => {
-		exec.start(
-			{ Detach: false, Tty: false },
-			(err: Error | null, stream?: NodeJS.ReadableStream) => {
-				if (err) return reject(err);
-				if (!stream)
-					return reject(new Error("No stream returned from exec.start"));
+		return new Promise<typeof IpRouteSchema.static>((resolve, reject) => {
+			exec.start(
+				{ Detach: false, Tty: false },
+				(err: Error | null, stream?: NodeJS.ReadableStream) => {
+					if (err) return reject(err);
+					if (!stream)
+						return reject(new Error("No stream returned from exec.start"));
 
-				let output = "";
+					let output = "";
 
-				container.modem.demuxStream(
-					stream,
-					{
-						write: (data) => {
-							output += data.toString();
-						},
-					} as NodeJS.WritableStream,
-					{
-						write: (errData) => {
-							console.error("Container Error:", errData.toString());
-						},
-					} as NodeJS.WritableStream,
-				);
+					container.modem.demuxStream(
+						stream,
+						{
+							write: (data) => {
+								output += data.toString();
+							},
+						} as NodeJS.WritableStream,
+						{
+							write: (errData) => {
+								console.error("Container Error:", errData.toString());
+							},
+						} as NodeJS.WritableStream,
+					);
 
-				stream.on("end", () => {
-					try {
-						resolve(JSON.parse(output));
-					} catch (parseError) {
-						reject(new Error(`Failed to parse ip route output: ${parseError}`));
-					}
-				});
-			},
-		);
-	});
+					stream.on("end", () => {
+						try {
+							resolve(JSON.parse(output));
+						} catch (parseError) {
+							reject(
+								new Error(`Failed to parse ip route output: ${parseError}`),
+							);
+						}
+					});
+				},
+			);
+		});
+	} catch (error) {
+		if (
+			error instanceof Error &&
+			"statusCode" in error &&
+			typeof error.statusCode === "number" &&
+			[404, 409].includes(error.statusCode)
+		) {
+			return [];
+		}
+		throw error;
+	}
 }
 
 export default new EvaluationHandler("linux")
@@ -229,36 +243,52 @@ export default new EvaluationHandler("linux")
 		data: IpRouteSchema,
 		listen: async ({ container, docker }, notify) => {
 			const doUpdate = debounce(async () => {
-				const data = await getRoutes(container);
-				notify(data);
+				try {
+					const data = await getRoutes(container);
+					notify(data);
+				} catch (error) {
+					console.error("Failed to update routes:", error);
+				}
 			}, 500);
 
-			const exec = await container.exec({
-				Cmd: ["ip", "-o", "monitor", "route"],
-				AttachStdout: true,
-				AttachStderr: false,
-				Tty: false,
-			});
+			try {
+				const exec = await container.exec({
+					Cmd: ["ip", "-o", "monitor", "route"],
+					AttachStdout: true,
+					AttachStderr: false,
+					Tty: false,
+				});
 
-			const stream = new PassThrough();
-			const rawStream = await exec.start({ Detach: false, Tty: false });
-			docker.modem.demuxStream(rawStream, stream, process.stderr);
+				const stream = new PassThrough();
+				const rawStream = await exec.start({ Detach: false, Tty: false });
+				docker.modem.demuxStream(rawStream, stream, process.stderr);
 
-			const cleanup = () => {
-				rawStream.destroy();
-			};
+				const cleanup = () => {
+					rawStream.destroy();
+				};
 
-			stream.on("data", async (chunk: Buffer) => {
-				const text = chunk.toString();
-				if (!text.trim()) return;
-				if (text.includes("OCI runtime exec failed")) {
-					return cleanup();
+				stream.on("data", async (chunk: Buffer) => {
+					const text = chunk.toString();
+					if (!text.trim()) return;
+					if (text.includes("OCI runtime exec failed")) {
+						return cleanup();
+					}
+
+					await doUpdate();
+				});
+
+				return cleanup;
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					"statusCode" in error &&
+					typeof error.statusCode === "number" &&
+					[404, 409].includes(error.statusCode)
+				) {
+					return () => {};
 				}
-
-				await doUpdate();
-			});
-
-			return cleanup;
+				throw error;
+			}
 		},
 		read: async ({ container }) => {
 			return await getRoutes(container);

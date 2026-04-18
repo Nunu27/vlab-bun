@@ -75,7 +75,8 @@ export default {
 			if (
 				error instanceof Error &&
 				"statusCode" in error &&
-				error.statusCode !== 409
+				typeof error.statusCode === "number" &&
+				![409, 404].includes(error.statusCode)
 			) {
 				logger.error({ error, id }, "Failed to start network monitor");
 			}

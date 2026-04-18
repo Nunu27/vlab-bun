@@ -130,13 +130,6 @@ export default new EvaluationHandler("mikrotik")
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag.split(""));
 
-			console.log("Current routing table", data);
-			console.log("Checking route existence with params", {
-				dst: params.dst,
-				gateway: params.gateway,
-				flag: params.flag,
-			});
-
 			const compareFlag = (
 				flagChar: string,
 				routeValue: string | undefined,

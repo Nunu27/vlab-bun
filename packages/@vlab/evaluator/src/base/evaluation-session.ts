@@ -33,6 +33,10 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		private docker: Dockerode,
 		private nodeMapping: Record<string, import("../types").NodeInfo>,
 		checks: SessionCheckPayload<THandlers>[],
+		private healthHooks?: {
+			isNodeHealthy: (nodeId: string) => boolean;
+			waitForHealth: (nodeId: string, onHealthy: () => void) => () => void;
+		},
 	) {
 		this.checkDefinitions = checks;
 		this.mapDependencies();
@@ -101,6 +105,19 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		return extendedCtx;
 	}
 
+	private async waitNodeHealth(nodeId: string) {
+		if (!this.healthHooks) return;
+		if (this.healthHooks.isNodeHealthy(nodeId)) return;
+
+		return new Promise<void>((resolve) => {
+			const cancel = this.healthHooks?.waitForHealth(nodeId, resolve);
+			this.cleanups.set(`health-wait::${nodeId}`, () => {
+				cancel?.();
+				resolve();
+			});
+		});
+	}
+
 	onChange(cb: (checkId: string, result: boolean) => void) {
 		this.onChangeCallbacks.push(cb);
 	}
@@ -118,6 +135,8 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 
 		const sourceDef = handler._sources[sId];
 		if (!sourceDef) return;
+
+		await this.waitNodeHealth(nodeId);
 
 		let ctx: any;
 		try {
@@ -225,12 +244,25 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 	async start() {
 		// Start listeners only for sources that are actively used by our checks
 		// This will recursively start dependent sources via startSource and subscribe
+		const promises = [];
+
 		for (const sourceKey of this.sourceToCheckMap.keys()) {
 			const [sourceId, nodeId] = sourceKey.split("::");
 			if (!sourceId || !nodeId) continue;
 
-			await this.startSource(nodeId, sourceId);
+			if (this.healthHooks && !this.healthHooks.isNodeHealthy(nodeId)) {
+				this.startSource(nodeId, sourceId).catch((err) =>
+					console.error(
+						`Error starting source ${sourceKey} in background:`,
+						err,
+					),
+				);
+			} else {
+				promises.push(this.startSource(nodeId, sourceId));
+			}
 		}
+
+		await Promise.all(promises);
 	}
 
 	async check() {
@@ -240,6 +272,8 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		for (const [sourceKey, activeChecks] of this.sourceToCheckMap.entries()) {
 			const [sourceId, nodeId] = sourceKey.split("::");
 			if (!sourceId || !nodeId) continue;
+
+			if (this.healthHooks && !this.healthHooks.isNodeHealthy(nodeId)) continue;
 
 			const [hId, sId] = sourceId.split(".");
 			if (!hId || !sId) continue;

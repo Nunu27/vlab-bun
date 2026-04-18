@@ -16,13 +16,10 @@ const activeEvaluations = new Map<
 	ReturnType<typeof evaluator.createSession>
 >();
 
-evaluator.setSourceRead("node-interface.interfaces-ip", ({ node }) => {
-	console.log("Reading node interfaces for node", {
-		nodeId: node.id,
-		interfaces: clabMonitor.nodeInterfaceMap.get(node.id),
-	});
-	return clabMonitor.nodeInterfaceMap.get(node.id) || {};
-});
+evaluator.setSourceRead(
+	"node-interface.interfaces-ip",
+	({ node }) => clabMonitor.nodeInterfaceMap.get(node.id) || {},
+);
 
 export async function startLabEvaluation(sessionId: string, labId: string) {
 	const session = activeEvaluations.get(sessionId);
@@ -67,7 +64,10 @@ export async function startLabEvaluation(sessionId: string, labId: string) {
 		}),
 	);
 
-	const evalSession = evaluator.createSession(docker, nodeMap, sessionChecks);
+	const evalSession = evaluator.createSession(docker, nodeMap, sessionChecks, {
+		isNodeHealthy: clabMonitor.isNodeHealthy,
+		waitForHealth: clabMonitor.waitForHealth,
+	});
 
 	evalSession.onChange(async (id, value) => {
 		logger.debug({ sessionId, checkId: id, value }, "Lab node check changed");

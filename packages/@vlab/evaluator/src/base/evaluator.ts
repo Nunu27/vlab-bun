@@ -82,7 +82,17 @@ export class Evaluator<THandlers extends Record<string, AnyHandler> = {}> {
 		docker: Dockerode,
 		nodeMapping: Record<string, import("../types").NodeInfo>,
 		checks: SessionCheckPayload<THandlers>[],
+		healthHooks?: {
+			isNodeHealthy: (nodeId: string) => boolean;
+			waitForHealth: (nodeId: string, onHealthy: () => void) => () => void;
+		},
 	) {
-		return new EvaluationSession(this, docker, nodeMapping, checks);
+		return new EvaluationSession(
+			this,
+			docker,
+			nodeMapping,
+			checks,
+			healthHooks,
+		);
 	}
 }
