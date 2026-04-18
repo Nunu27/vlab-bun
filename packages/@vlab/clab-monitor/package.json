@@ -14,7 +14,7 @@
 	},
 	"peerDependencies": {
 		"dockerode": "^4.0.9",
-		"routeros-client": "^1.1.2",
+		"mikro-routeros": "workspace:*",
 		"typescript": "^5"
 	},
 	"dependencies": {

@@ -5,6 +5,7 @@ import baseLogger from "@api/services/logger";
 import ws from "@api/services/ws";
 import Debouncer from "@api/utils/debouncer";
 import evaluator from "@vlab/evaluator";
+import type { NodeInfo } from "@vlab/evaluator/types";
 import { clabMonitor } from "./events";
 
 const logger = baseLogger.child({ service: "evaluator" });
@@ -15,13 +16,13 @@ const activeEvaluations = new Map<
 	ReturnType<typeof evaluator.createSession>
 >();
 
-evaluator.setSourceRead(
-	"node-interface",
-	"interface-ip",
-	({ nodeId, params }) => {
-		return clabMonitor.nodeInterfaceMap.get(nodeId)?.[params.interface] || [];
-	},
-);
+evaluator.setSourceRead("node-interface.interfaces-ip", ({ node }) => {
+	console.log("Reading node interfaces for node", {
+		nodeId: node.id,
+		interfaces: clabMonitor.nodeInterfaceMap.get(node.id),
+	});
+	return clabMonitor.nodeInterfaceMap.get(node.id) || {};
+});
 
 export async function startLabEvaluation(sessionId: string, labId: string) {
 	const session = activeEvaluations.get(sessionId);
@@ -44,26 +45,29 @@ export async function startLabEvaluation(sessionId: string, labId: string) {
 	if (!lab) throw new Error("Lab not found");
 
 	const nodes = await db.query.labSessionNodes.findMany({
-		columns: { id: true, labNodeId: true },
+		columns: { id: true, ip: true, containerId: true, labNodeId: true },
 		where: (node, { eq }) => eq(node.labSessionId, sessionId),
 	});
 
-	const nodeMap: Record<string, string> = {};
+	const nodeMap: Record<string, NodeInfo> = {};
+	const nodeIdMap: Record<string, string> = {};
+
 	nodes.forEach((n) => {
-		nodeMap[n.labNodeId] = n.id;
+		nodeIdMap[n.labNodeId] = n.id;
+		nodeMap[n.id] = n;
 	});
 
-	const sessionChecks = Object.entries(lab.checks).map(
+	// biome-ignore lint/suspicious/noExplicitAny: loose typing for db results
+	const sessionChecks: any = Object.entries(lab.checks).map(
 		([id, { checkId, nodeId, params }]) => ({
 			id,
-			checkId,
-			nodeId: nodeMap[nodeId],
-			params,
+			checkId: checkId as `${string}.${string}`,
+			nodeId: nodeIdMap[nodeId],
+			params: params as Record<string, never>,
 		}),
 	);
 
-	// biome-ignore lint/suspicious/noExplicitAny: evaluator types are too complex
-	const evalSession = evaluator.createSession(docker, sessionChecks as any);
+	const evalSession = evaluator.createSession(docker, nodeMap, sessionChecks);
 
 	evalSession.onChange(async (id, value) => {
 		logger.debug({ sessionId, checkId: id, value }, "Lab node check changed");

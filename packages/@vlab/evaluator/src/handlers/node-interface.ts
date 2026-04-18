@@ -2,14 +2,16 @@ import { Type as t } from "@sinclair/typebox";
 import { EvaluationHandler } from "../base/evaluation-handler";
 
 export default new EvaluationHandler("node-interface")
-	.addSource("interface-ip", {
-		params: { interface: t.String() },
-		data: t.Array(t.String()),
+	.kinds(["node-interface"])
+	.addSource({
+		id: "interfaces-ip",
+		data: t.Record(t.String(), t.Array(t.String())),
 	})
-	.addCheck("check-ip", {
+	.addCheck({
+		id: "check-ip",
 		name: "Interface IP",
 		text: "{interface} should have IP address {ip}",
-		source: "interface-ip",
+		source: "interfaces-ip",
 		params: {
 			interface: t.String({
 				title: "Interface",
@@ -18,8 +20,14 @@ export default new EvaluationHandler("node-interface")
 				title: "IP Address",
 			}),
 		},
-		sourceParamsBuilder: ({ params }) => ({ interface: params.interface }),
-		handler: ({ params, data }) => {
-			return data.includes(params.ip);
+		handler: (_, params, data) => {
+			console.log("Checking node interface IP", {
+				interface: params.interface,
+				ip: params.ip,
+				interfaces: data[params.interface],
+				value: data[params.interface]?.includes(params.ip) ?? false,
+			});
+
+			return data[params.interface]?.includes(params.ip) ?? false;
 		},
 	});

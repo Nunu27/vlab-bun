@@ -1,83 +1,95 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: For loose typing */
-import type { TProperties, TSchema } from "@sinclair/typebox";
-import type {
-	BaseChecks,
-	BaseSources,
-	CheckConfig,
-	SourceConfig,
-} from "../types";
+/** biome-ignore-all lint/suspicious/noExplicitAny: loose typing */
+/** biome-ignore-all lint/complexity/noBannedTypes: default generics */
+import type { Static, TObject, TProperties, TSchema } from "@sinclair/typebox";
+import type { BaseContext } from "../types";
 
 export class EvaluationHandler<
-	TId extends string = string,
-	TSources extends BaseSources = Record<string, never>,
-	TChecks extends BaseChecks = Record<string, never>,
+	TId extends string,
+	TContext extends Record<string, any> = {},
+	TSources extends Record<string, TSchema> = {},
+	TChecks extends Record<string, TProperties> = {},
 > {
-	public readonly sources = new Map<
-		string,
-		SourceConfig<TProperties, TSchema>
-	>();
-	public readonly checks = new Map<
-		string,
-		CheckConfig<string, TProperties, TProperties, TSchema>
-	>();
-	public readonly kinds: string[];
+	// Internal state
+	public _kinds: string[] = [];
+	public _contextBuilder?: (ctx: BaseContext) => TContext | Promise<TContext>;
+	public _contextCleanup?: (
+		ctx: BaseContext & TContext,
+	) => void | Promise<void>;
+	public _sources: Record<string, any> = {};
+	public _checks: Record<string, any> = {};
 
-	constructor(
-		public id: TId,
-		config?: { kinds?: string[] },
-	) {
-		this.kinds = config?.kinds || [];
+	// Phantom types for generics extraction
+	declare readonly __context: TContext;
+	declare readonly __sources: TSources;
+	declare readonly __checks: TChecks;
+
+	constructor(public readonly id: TId) {}
+
+	kinds(kinds: string[]): this {
+		this._kinds = kinds;
+		return this;
 	}
 
-	addSource<
-		TName extends string,
-		TParams extends TProperties,
-		TData extends TSchema,
-		TSource extends BaseSources = Record<
-			TName,
-			{ params: TParams; data: TData }
-		>,
-	>(
-		name: TName,
-		config: SourceConfig<TParams, TData>,
-	): EvaluationHandler<
-		TId,
-		TSources extends Record<string, never> ? TSource : TSources & TSource,
-		TChecks
-	> {
-		if (this.sources.has(name)) {
-			throw new Error(`Source '${name}' is already registered.`);
-		}
+	withContext<C extends Record<string, any>>(
+		builder: (ctx: BaseContext) => C | Promise<C>,
+		cleanup?: (ctx: BaseContext & C) => void | Promise<void>,
+	): EvaluationHandler<TId, C, TSources, TChecks> {
+		this._contextBuilder = builder as any;
+		this._contextCleanup = cleanup as any;
+		return this as unknown as EvaluationHandler<TId, C, TSources, TChecks>;
+	}
 
-		this.sources.set(name, config as any);
-		return this as any;
+	addSource<SId extends string, SData extends TSchema>(source: {
+		id: SId;
+		data: SData;
+		read?: (
+			ctx: BaseContext & TContext,
+		) => Static<SData> | Promise<Static<SData>>;
+		listen?: (
+			ctx: BaseContext & TContext,
+			notify: (data: Static<SData>) => void | Promise<void>,
+			subscribe: <ReqSId extends keyof TSources & string>(
+				sourceId: ReqSId,
+				callback: (data: Static<TSources[ReqSId]>) => void | Promise<void>,
+			) => Promise<() => void>,
+		) => (() => void) | Promise<() => void>;
+	}): EvaluationHandler<TId, TContext, TSources & Record<SId, SData>, TChecks> {
+		this._sources[source.id] = source;
+		return this as unknown as EvaluationHandler<
+			TId,
+			TContext,
+			TSources & Record<SId, SData>,
+			TChecks
+		>;
 	}
 
 	addCheck<
-		TCheckName extends string,
-		TSourceName extends string & keyof TSources,
-		TCheckParams extends TProperties,
-		TCheck extends BaseChecks = Record<TCheckName, { params: TCheckParams }>,
-	>(
-		name: TCheckName,
-		config: CheckConfig<
-			TSourceName,
-			TCheckParams,
-			TSources[TSourceName]["params"],
-			TSources[TSourceName]["data"]
-		>,
-	): EvaluationHandler<
+		CId extends string,
+		SId extends keyof TSources,
+		CParams extends TProperties,
+	>(check: {
+		id: CId;
+		name: string;
+		text: string;
+		source: SId;
+		params: CParams;
+		handler: (
+			ctx: BaseContext & TContext,
+			params: Static<TObject<CParams>>,
+			data: Static<TSources[SId]>,
+		) => boolean | Promise<boolean>;
+	}): EvaluationHandler<
 		TId,
+		TContext,
 		TSources,
-		TChecks extends Record<string, never> ? TCheck : TChecks & TCheck
+		TChecks & Record<CId, CParams>
 	> {
-		if (!this.sources.has(config.source)) {
-			throw new Error(`Source '${config.source}' is not registered.`);
-		} else if (this.checks.has(name)) {
-			throw new Error(`Check '${name}' is already registered.`);
-		}
-
-		this.checks.set(name, config as any);
-		return this as any;
+		this._checks[check.id] = check;
+		return this as unknown as EvaluationHandler<
+			TId,
+			TContext,
+			TSources,
+			TChecks & Record<CId, CParams>
+		>;
 	}
 }

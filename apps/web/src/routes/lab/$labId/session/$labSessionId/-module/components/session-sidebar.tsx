@@ -6,8 +6,9 @@ export function SessionSidebar({ instructions }: { instructions: string }) {
 	return (
 		<div className="flex h-full flex-col overflow-hidden border-l bg-background">
 			<div className="flex h-full flex-col">
-				<ScrollArea className="flex-1 overflow-auto p-4">
+				<ScrollArea className="flex-1 overflow-auto">
 					<MarkdownViewer
+						className="p-4"
 						value={instructions}
 						jsxComponentDescriptors={[labCheckViewerDescriptor]}
 					/>

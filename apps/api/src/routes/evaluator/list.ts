@@ -8,5 +8,5 @@ export default createRouter()
 	.guard({ cached: true, protected: true }, (app) => {
 		return app
 			.resolve(({ entity: { key } }) => ({ cacheKey: `${key}:list` }))
-			.get("/list", () => success({ data: evaluator.getRegisteredChecks() }));
+			.get("/list", () => success({ data: evaluator.getChecks() }));
 	});

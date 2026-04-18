@@ -22,7 +22,7 @@ export default {
 			logger.debug("Starting Linux interface monitor for node %s", id);
 
 			const exec = await container.exec({
-				Cmd: ["ip", "-o", "monitor", "address", "link"],
+				Cmd: ["ip", "-o", "monitor", "address"],
 				AttachStdout: true,
 				AttachStderr: false,
 				Tty: false,
@@ -96,7 +96,7 @@ export default {
 
 		try {
 			const exec = await container.exec({
-				Cmd: ["ip", "-j", "addr", "show"],
+				Cmd: ["ip", "-j", "addr"],
 				AttachStdout: true,
 				AttachStderr: false,
 				Tty: false,

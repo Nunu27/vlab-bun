@@ -1,13 +1,10 @@
+import { RouterOSClient, type RouterOSStream } from "mikro-routeros";
 import type { Logger } from "pino";
-import { type RosApiMenu, RouterOSClient, type RStream } from "routeros-client";
 import type { NetworkMonitor } from "../types";
 import { removeItemFromArray } from "../utils";
 
-const monitors = new Map<string, RStream>();
-const connections = new Map<
-	string,
-	{ client: RouterOSClient; api: RosApiMenu }
->();
+const monitors = new Map<string, RouterOSStream>();
+const connections = new Map<string, RouterOSClient>();
 const nodeInterfaceIdMapping = new Map<
 	string,
 	Record<string, { iface: string; address: string }>
@@ -17,49 +14,18 @@ const getApi = async (
 	id: string,
 	{ logger, ...options }: { host: string; port: number; logger: Logger },
 ) => {
-	const connection = connections.get(id);
+	const client = connections.get(id);
 
-	if (!connection) {
-		const client = new RouterOSClient({
-			...options,
-			user: "admin",
-			password: "admin",
-			keepalive: true,
-		});
-		const api = await client.connect();
+	if (!client) {
+		const client = new RouterOSClient(options.host, options.port);
 
-		const cleanup = () => {
-			connections.delete(id);
-			monitors.delete(id);
-			nodeInterfaceIdMapping.delete(id);
-		};
+		await client.connect();
+		await client.login("admin", "admin");
 
-		client.on("stop", cleanup);
-		client.on("error", (error) => {
-			const errMessage = error instanceof Error ? error.message : String(error);
-			if (
-				errMessage.includes("Timed out") ||
-				errMessage.includes("ECONNRESET") ||
-				errMessage.includes("socket hung up")
-			) {
-				logger.debug(
-					{ id },
-					"MikroTik ROS client disconnected for node %s",
-					id,
-				);
-			} else {
-				logger.error(
-					{ error, id },
-					"MikroTik ROS client error for node %s",
-					id,
-				);
-			}
-			cleanup();
-		});
+		connections.set(id, client);
 
-		connections.set(id, { client, api });
-		return api;
-	} else return connection.api;
+		return client;
+	} else return client;
 };
 
 export default {
@@ -104,11 +70,9 @@ export default {
 				logger,
 			});
 
-			const listener = api.menu("/ip address").stream("listen");
+			const listener = await api.stream("/ip/address/listen");
 
 			listener.on("data", (data) => {
-				if (!data || Array.isArray(data)) return;
-
 				const idMap = nodeInterfaceIdMapping.get(id);
 				const interfaces = nodeInterfaceMap.get(id) || {};
 
@@ -120,6 +84,8 @@ export default {
 					if (!idMap[ifaceId]) return;
 
 					const { iface, address } = idMap[ifaceId];
+					delete idMap[ifaceId];
+
 					if (!interfaces[iface]) return;
 
 					removeItemFromArray(interfaces[iface], address);
@@ -162,56 +128,19 @@ export default {
 		}
 	},
 	async stop({ logger, nodeInterfaceMap }, { id }) {
-		const client = connections.get(id)?.client;
+		const client = connections.get(id);
 		const monitor = monitors.get(id);
 
 		if (client || monitor) {
 			try {
-				if (monitor) await monitor.stop();
-				if (client) {
-					// Fire and forget disconnect to prevent 10s hang on container death
-					client.disconnect().catch((error) => {
-						const errMessage =
-							error instanceof Error ? error.message : String(error);
-						if (
-							errMessage.includes("Timed out") ||
-							errMessage.includes("ECONNRESET") ||
-							errMessage.includes("socket hung up")
-						) {
-							logger.debug(
-								{ id },
-								"MikroTik ROS monitor background disconnect with timeout/reset for node %s",
-								id,
-							);
-						} else {
-							logger.error(
-								{ error, id },
-								"Error stopping MikroTik ROS monitor for node %s",
-								id,
-							);
-						}
-					});
-				}
+				if (monitor) await monitor.cancel();
+				if (client) client.close();
 			} catch (error) {
-				const errMessage =
-					error instanceof Error ? error.message : String(error);
-				if (
-					errMessage.includes("Timed out") ||
-					errMessage.includes("ECONNRESET") ||
-					errMessage.includes("socket hung up")
-				) {
-					logger.debug(
-						{ id },
-						"MikroTik ROS monitor stopped with timeout/reset for node %s",
-						id,
-					);
-				} else {
-					logger.error(
-						{ error, id },
-						"Error stopping MikroTik ROS monitor for node %s",
-						id,
-					);
-				}
+				logger.error(
+					{ error, id },
+					"Error stopping MikroTik ROS monitor for node %s",
+					id,
+				);
 			} finally {
 				connections.delete(id);
 				monitors.delete(id);
@@ -236,11 +165,11 @@ export default {
 				logger,
 			});
 
-			const data: { id: string; interface: string; address: string }[] =
-				await api.menu("/ip address").print();
+			const data: { ".id": string; interface: string; address: string }[] =
+				await api.runQuery("/ip/address/print");
 			const idMap: Record<string, { iface: string; address: string }> = {};
 			const interfaces = data.reduce(
-				(acc, { id, interface: iface, address }) => {
+				(acc, { ".id": id, interface: iface, address }) => {
 					if (acc[iface]) acc[iface].push(address);
 					else acc[iface] = [address];
 

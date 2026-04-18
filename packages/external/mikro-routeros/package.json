@@ -1,0 +1,54 @@
+{
+	"name": "mikro-routeros",
+	"version": "1.0.6",
+	"author": "MD. Shimul <mdshemul480@gmail.com>",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mdshemul48/mikro-routeros.git"
+	},
+	"main": "index.js",
+	"bugs": {
+		"url": "https://github.com/mdshemul48/mikro-routeros/issues"
+	},
+	"description": "MikroTik API (RouterOS) client for Node.js with auto-parameter detection and response parsing. Works with PPPoE, Hotspot, and more.",
+	"engines": {
+		"node": ">=12.0.0"
+	},
+	"files": [
+		"index.js",
+		"index.d.ts",
+		"README.md"
+	],
+	"homepage": "https://github.com/mdshemul48/mikro-routeros#readme",
+	"keywords": [
+		"mikrotik",
+		"mikrotik api",
+		"routeros",
+		"routeros api",
+		"routeros-client",
+		"mikrotik-routeros",
+		"node",
+		"nodejs",
+		"node.js",
+		"api client",
+		"networking",
+		"ppp",
+		"pppoe",
+		"hotspot",
+		"capsman",
+		"wireless",
+		"firewall",
+		"network automation"
+	],
+	"license": "ISC",
+	"scripts": {
+		"test": "node test.js",
+		"start": "node test.js"
+	},
+	"sideEffects": false,
+	"type": "commonjs",
+	"types": "index.d.ts",
+	"devDependencies": {
+		"dotenv": "^17.4.2"
+	}
+}

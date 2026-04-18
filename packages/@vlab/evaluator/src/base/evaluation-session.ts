@@ -1,143 +1,317 @@
-import type Docker from "dockerode";
-import type { RegistryItem, SessionCheckConfig, VoidCallback } from "../types";
+/** biome-ignore-all lint/suspicious/noExplicitAny: loose typing */
+import type Dockerode from "dockerode";
+import type { AnyHandler, BaseContext, SessionCheckPayload } from "../types";
 import type { Evaluator } from "./evaluator";
 
-export class EvaluationSession<TRegistry extends Record<string, RegistryItem>> {
-	private cleanups: Array<VoidCallback> = [];
-	private latestValues = new Map<string, boolean>();
-	private changeListeners: Array<(id: string, value: boolean) => void> = [];
-	private isStarted = false;
+export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
+	private checkDefinitions: SessionCheckPayload<THandlers>[];
+
+	// State maps
+	private contexts = new Map<string, any>();
+	private cleanups = new Map<string, () => void | Promise<void>>();
+	private listeners = new Map<string, () => void | Promise<void>>(); // Cleanups for sources
+	private checkResults = new Map<string, boolean>();
+	private onChangeCallbacks: Array<(checkId: string, result: boolean) => void> =
+		[];
+	private startedSources = new Set<string>();
+
+	// Add an exact tracker to prevent memory leaks from recursive subscriptions
+	private sessionEmitterCleanups: Array<() => void> = [];
+
+	// Dependency optimization Maps
+	private sourceToCheckMap = new Map<
+		string,
+		SessionCheckPayload<THandlers>[]
+	>();
+	private checksToRun = new Map<
+		string,
+		{ handler: AnyHandler; checkDef: any; sessionParams: any }
+	>();
 
 	constructor(
-		private evaluator: Evaluator<TRegistry>,
-		private docker: Docker,
-		private checks: SessionCheckConfig<TRegistry>[],
-	) {}
-
-	onChange(callback: (id: string, value: boolean) => void) {
-		this.changeListeners.push(callback);
-		return this;
+		private evaluator: Evaluator<THandlers>,
+		private docker: Dockerode,
+		private nodeMapping: Record<string, import("../types").NodeInfo>,
+		checks: SessionCheckPayload<THandlers>[],
+	) {
+		this.checkDefinitions = checks;
+		this.mapDependencies();
 	}
 
-	private notifyChange(id: string, value: boolean) {
-		// Only trigger listeners if the value actually changed
-		if (this.latestValues.get(id) !== value) {
-			this.latestValues.set(id, value);
-			for (const listener of this.changeListeners) {
-				listener(id, value);
+	private mapDependencies() {
+		for (const sessionCheck of this.checkDefinitions) {
+			const [hId, cId] = (sessionCheck.checkId as string).split(".");
+			if (!hId || !cId) continue;
+
+			const handler = this.evaluator.handlers[hId];
+			if (!handler) continue;
+
+			const checkDef = handler._checks[cId];
+			if (!checkDef) continue;
+
+			const sourceKey = `${hId}.${checkDef.source}::${sessionCheck.nodeId}`;
+
+			// Map which sources trigger which checks
+			let mappedChecks = this.sourceToCheckMap.get(sourceKey);
+			if (!mappedChecks) {
+				mappedChecks = [];
+				this.sourceToCheckMap.set(sourceKey, mappedChecks);
 			}
+			mappedChecks.push(sessionCheck);
+
+			// Store runnable definition
+			this.checksToRun.set(sessionCheck.id as string, {
+				handler,
+				checkDef,
+				sessionParams: sessionCheck.params,
+			});
+		}
+	}
+
+	private async getContext(nodeId: string, handlerId: string) {
+		const contextKey = `${nodeId}::${handlerId}`;
+		if (this.contexts.has(contextKey)) return this.contexts.get(contextKey);
+		if (!this.nodeMapping[nodeId]) {
+			throw new Error(`Node ${nodeId} not found in node mapping`);
+		}
+
+		const handler = this.evaluator.handlers[handlerId];
+		const baseContext: BaseContext = {
+			docker: this.docker,
+			node: this.nodeMapping[nodeId],
+		};
+
+		if (!handler) return baseContext;
+
+		let extendedCtx = { ...baseContext };
+
+		if (handler._contextBuilder) {
+			const ext = await handler._contextBuilder(baseContext);
+			extendedCtx = { ...extendedCtx, ...ext };
+		}
+
+		this.contexts.set(contextKey, extendedCtx);
+		if (handler._contextCleanup) {
+			this.cleanups.set(contextKey, () => {
+				if (handler._contextCleanup) {
+					return handler._contextCleanup(extendedCtx);
+				}
+			});
+		}
+		return extendedCtx;
+	}
+
+	onChange(cb: (checkId: string, result: boolean) => void) {
+		this.onChangeCallbacks.push(cb);
+	}
+
+	private async startSource(nodeId: string, sourceId: string) {
+		const sourceKey = `${sourceId}::${nodeId}`;
+		if (this.startedSources.has(sourceKey)) return;
+		this.startedSources.add(sourceKey);
+
+		const [hId, sId] = sourceId.split(".");
+		if (!hId || !sId) return;
+
+		const handler = this.evaluator.handlers[hId];
+		if (!handler) return;
+
+		const sourceDef = handler._sources[sId];
+		if (!sourceDef) return;
+
+		let ctx: any;
+		try {
+			ctx = await this.getContext(nodeId, hId);
+		} catch (err) {
+			console.error(`Failed to get context for ${sourceKey}`, err);
+			return;
+		}
+
+		let emitters = this.evaluator._emitters.get(sourceKey);
+		if (!emitters) {
+			emitters = [];
+			this.evaluator._emitters.set(sourceKey, emitters);
+		}
+
+		// Register check evaluator as a listener
+		const activeChecks = this.sourceToCheckMap.get(sourceKey) || [];
+		if (activeChecks.length > 0) {
+			const checkCb = async (data: any) => {
+				for (const sessionCheck of activeChecks) {
+					const runDef = this.checksToRun.get(sessionCheck.id as string);
+					if (!runDef) continue;
+
+					const result = await runDef.checkDef.handler(
+						ctx,
+						runDef.sessionParams,
+						data,
+					);
+
+					const prev = this.checkResults.get(sessionCheck.id as string);
+					if (prev !== result) {
+						this.checkResults.set(sessionCheck.id as string, result);
+						for (const cb of this.onChangeCallbacks) {
+							cb(sessionCheck.id as string, result);
+						}
+					}
+				}
+			};
+			emitters.push(checkCb);
+
+			// Track local cleanup
+			this.sessionEmitterCleanups.push(() => {
+				const currentEmitters = this.evaluator._emitters.get(sourceKey);
+				if (currentEmitters) {
+					const idx = currentEmitters.indexOf(checkCb);
+					if (idx !== -1) currentEmitters.splice(idx, 1);
+					if (currentEmitters.length === 0)
+						this.evaluator._emitters.delete(sourceKey);
+				}
+			});
+		}
+
+		// Setup subscribe function
+		const subscribe = async (
+			targetSId: string,
+			cb: (data: any) => void | Promise<void>,
+		) => {
+			const targetSourceId = `${hId}.${targetSId}`;
+			const targetKey = `${targetSourceId}::${nodeId}`;
+
+			let targetEmitters = this.evaluator._emitters.get(targetKey);
+			if (!targetEmitters) {
+				targetEmitters = [];
+				this.evaluator._emitters.set(targetKey, targetEmitters);
+			}
+			targetEmitters.push(cb);
+
+			await this.startSource(nodeId, targetSourceId); // Recursively start the dependency
+
+			const cleanup = () => {
+				const currentEmitters = this.evaluator._emitters.get(targetKey);
+				if (currentEmitters) {
+					const idx = currentEmitters.indexOf(cb);
+					if (idx !== -1) currentEmitters.splice(idx, 1);
+					if (currentEmitters.length === 0)
+						this.evaluator._emitters.delete(targetKey);
+				}
+			};
+
+			// Backup tracker just in case user listen functions fail to invoke cleanup
+			this.sessionEmitterCleanups.push(cleanup);
+			return cleanup;
+		};
+
+		// Setup the source's actual listener
+		if (sourceDef.listen) {
+			try {
+				// notify routes the data to `emitSource`, which hits ALL emitters (checks + subscribers)
+				const notifyFn = (data: any) =>
+					this.evaluator.emitSource(nodeId, sourceId as any, data);
+				const cleanupListener = await sourceDef.listen(
+					ctx,
+					notifyFn,
+					subscribe,
+				);
+				if (cleanupListener) {
+					this.listeners.set(sourceKey, cleanupListener);
+				}
+			} catch (err) {
+				console.error(`Failed to setup listen for ${sourceKey}`, err);
+			}
+		}
+	}
+
+	async start() {
+		// Start listeners only for sources that are actively used by our checks
+		// This will recursively start dependent sources via startSource and subscribe
+		for (const sourceKey of this.sourceToCheckMap.keys()) {
+			const [sourceId, nodeId] = sourceKey.split("::");
+			if (!sourceId || !nodeId) continue;
+
+			await this.startSource(nodeId, sourceId);
 		}
 	}
 
 	async check() {
-		const results: Record<string, boolean> = {};
+		// Optimization: Cache source data so we only call read() once per source per `check()` cycle
+		const sourceDataCache = new Map<string, any>();
 
-		for (const config of this.checks) {
-			const [handlerId, checkId] = config.checkId.split(".");
-			if (!handlerId || !checkId) continue;
+		for (const [sourceKey, activeChecks] of this.sourceToCheckMap.entries()) {
+			const [sourceId, nodeId] = sourceKey.split("::");
+			if (!sourceId || !nodeId) continue;
 
-			const handler = this.evaluator.handlers.get(handlerId);
+			const [hId, sId] = sourceId.split(".");
+			if (!hId || !sId) continue;
+
+			const handler = this.evaluator.handlers[hId];
 			if (!handler) continue;
 
-			const checkDef = handler.checks.get(checkId);
-			if (!checkDef) continue;
-
-			const sourceDef = handler.sources.get(checkDef.source);
+			const sourceDef = handler._sources[sId];
 			if (!sourceDef) continue;
 
-			if (sourceDef.read) {
-				const sourceParams = checkDef.sourceParamsBuilder({
-					nodeId: config.nodeId,
-					params: config.params,
-				});
-				const data = await sourceDef.read({
-					docker: this.docker,
-					nodeId: config.nodeId,
-					params: sourceParams,
-				});
-				const result = await checkDef.handler({
-					nodeId: config.nodeId,
-					params: config.params,
-					data,
-				});
+			const ctx = await this.getContext(nodeId, hId);
 
-				results[config.id] = result;
-				this.notifyChange(config.id, result);
-			}
-		}
-		return results;
-	}
+			// Find correct read function (handle override)
+			const readFn =
+				this.evaluator._readOverrides.get(sourceId) || sourceDef.read;
 
-	async start() {
-		if (this.isStarted) return;
-		this.isStarted = true;
+			if (!readFn) continue;
 
-		for (const config of this.checks) {
-			const [handlerId, checkId] = config.checkId.split(".");
-			if (!handlerId || !checkId) continue;
-
-			const handler = this.evaluator.handlers.get(handlerId);
-			if (!handler) continue;
-
-			const checkDef = handler.checks.get(checkId);
-			if (!checkDef) continue;
-
-			const sourceDef = handler.sources.get(checkDef.source);
-			if (!sourceDef) continue;
-
-			const sourceParams = checkDef.sourceParamsBuilder({
-				nodeId: config.nodeId,
-				params: config.params,
-			});
-
-			const notify = async (data: unknown) => {
-				const result = await checkDef.handler({
-					nodeId: config.nodeId,
-					params: config.params,
-					data,
-				});
-				this.notifyChange(config.id, result);
-			};
-
-			this.evaluator.on(
-				`${handlerId}.${checkDef.source}`,
-				config.nodeId,
-				sourceParams,
-				notify,
-			);
-
-			this.cleanups.push(() => {
-				this.evaluator.off(
-					`${handlerId}.${checkDef.source}`,
-					config.nodeId,
-					sourceParams,
-					notify,
-				);
-			});
-
-			if (sourceDef.listen) {
-				// Initialize the listener and save the cleanup function
-				const cleanup = sourceDef.listen({
-					docker: this.docker,
-					nodeId: config.nodeId,
-					params: sourceParams,
-					notify,
-				});
-
-				if (cleanup) {
-					this.cleanups.push(cleanup);
+			// Call read once, evaluate all dependent checks
+			try {
+				let data = sourceDataCache.get(sourceKey);
+				if (!data) {
+					data = await readFn(ctx);
+					sourceDataCache.set(sourceKey, data);
 				}
+
+				for (const sessionCheck of activeChecks) {
+					const runDef = this.checksToRun.get(sessionCheck.id as string);
+					if (!runDef) continue;
+
+					const result = await runDef.checkDef.handler(
+						ctx,
+						runDef.sessionParams,
+						data,
+					);
+
+					const prev = this.checkResults.get(sessionCheck.id as string);
+					if (prev !== result) {
+						this.checkResults.set(sessionCheck.id as string, result);
+						for (const cb of this.onChangeCallbacks) {
+							cb(sessionCheck.id as string, result);
+						}
+					}
+				}
+			} catch (err) {
+				console.error(
+					`Error reading source ${sourceId} on node ${nodeId}:`,
+					err,
+				);
 			}
 		}
 	}
 
-	stop() {
-		if (!this.isStarted) return;
+	async stop() {
+		// Run all listener cleanups
+		for (const cleanup of this.listeners.values()) {
+			await cleanup();
+		}
+		this.listeners.clear();
 
-		for (const cleanup of this.cleanups) {
+		// Run all context cleanups
+		for (const cleanup of this.cleanups.values()) {
+			await cleanup();
+		}
+		this.cleanups.clear();
+		this.contexts.clear();
+		this.startedSources.clear();
+
+		// Cleanup Emitters
+		for (const cleanup of this.sessionEmitterCleanups) {
 			cleanup();
 		}
-		this.cleanups = [];
-		this.isStarted = false;
+		this.sessionEmitterCleanups = [];
 	}
 }

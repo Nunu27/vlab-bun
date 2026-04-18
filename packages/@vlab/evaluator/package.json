@@ -3,15 +3,17 @@
 	"module": "src/index.ts",
 	"type": "module",
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./types": "./src/types.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
 		"@types/dockerode": "^4.0.1"
 	},
 	"peerDependencies": {
-		"@sinclair/typebox": "^0.34.48",
-		"dockerode": "^4.0.9",
-		"typescript": "^5"
+		"typescript": "^6.0.3",
+		"@sinclair/typebox": "^0.34.49",
+		"dockerode": "^4.0.10",
+		"mikro-routeros": "workspace:*"
 	}
 }

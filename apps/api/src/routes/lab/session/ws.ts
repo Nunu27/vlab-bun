@@ -171,18 +171,13 @@ clabMonitor.emitter.on("node-health", ({ id, health }, isTemp) => {
 });
 
 clabMonitor.emitter.on("interface-update", ({ id, interfaces }) => {
+	evaluator.emitSource(id, "node-interface.interfaces-ip", interfaces);
+
 	for (const [iface, ips] of Object.entries(interfaces)) {
 		ws.server.emit("node:[id]:interfaces:[interface]", {
 			params: { id, interface: iface },
 			data: ips,
 		});
-
-		evaluator.emit(
-			"node-interface.interface-ip",
-			id,
-			{ interface: iface },
-			ips,
-		);
 	}
 });
 
