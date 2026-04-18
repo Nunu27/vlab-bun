@@ -82,6 +82,26 @@ const OSPFInterfaceTemplateSchema = t.Array(
 	}),
 );
 
+const OSPFNeighborSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		instance: t.String(),
+		area: t.String(),
+		interface: t.String(),
+		address: t.String(),
+		priority: t.String(),
+		"router-id": t.String(),
+		dr: t.String(),
+		bdr: t.String(),
+		state: t.String(),
+		"state-changes": t.String(),
+		adjacency: t.String(),
+		timeout: t.String(),
+		virtual: t.Optional(t.String()),
+		dynamic: t.Optional(t.String()),
+	}),
+);
+
 export default new EvaluationHandler("mikrotik")
 	.kinds(["mikrotik_ros"])
 	.withContext(
@@ -448,6 +468,70 @@ export default new EvaluationHandler("mikrotik")
 					template.area === params.area &&
 					compareFlag(flags, "X", template.disabled) &&
 					compareFlag(flags, "I", template.inactive)
+				);
+			});
+		},
+	})
+
+	// Neighbor
+	.addSource({
+		id: "ospf-neighbor",
+		data: OSPFNeighborSchema,
+		listen: async ({ client }, notify) => {
+			const list: typeof OSPFNeighborSchema.static = await client.runQuery(
+				"/routing/ospf/neighbor/print",
+			);
+
+			const listener = await client.stream("/routing/ospf/neighbor/listen");
+
+			listener.on("data", (data) => {
+				const index = list.findIndex((item) => item[".id"] === data[".id"]);
+				const isDead = data[".dead"] === "true";
+
+				if (index === -1) {
+					if (isDead) return;
+					list.push(data);
+				} else if (isDead) {
+					removeItemFromArrayByIndex(list, index);
+				} else {
+					list[index] = data;
+				}
+
+				notify(list);
+			});
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/routing/ospf/neighbor/print");
+		},
+	})
+	.addCheck({
+		id: "ospf-neighbor-exist",
+		name: "OSPF Neighbor Exist",
+		text: "Should have OSPF neighbor with ID {neighborId}",
+		source: "ospf-neighbor",
+		params: {
+			instance: t.String({
+				title: "Instance",
+			}),
+			area: t.String({
+				title: "Area",
+			}),
+			interface: t.String({
+				title: "Interface",
+			}),
+			state: t.String({
+				title: "State",
+			}),
+		},
+		handler: (_, params, data) => {
+			return data.some((neighbor) => {
+				return (
+					neighbor.instance === params.instance &&
+					neighbor.area === params.area &&
+					neighbor.interface === params.interface &&
+					neighbor.state === params.state
 				);
 			});
 		},
