@@ -214,4 +214,8 @@
 	&[data-mode="select"]:not([data-sessionid]) .node {
 		@apply pointer-events-auto cursor-move;
 	}
+
+	&[data-mode="select"]:not([data-sessionid]) .edge-path {
+		@apply pointer-events-auto cursor-pointer;
+	}
 }

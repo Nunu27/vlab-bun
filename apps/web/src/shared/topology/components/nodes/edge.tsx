@@ -169,7 +169,7 @@ function Edge({ id }: { id: string }) {
 				ref={pathRef}
 				d={pathData}
 				className={cn(
-					"pointer-events-auto cursor-pointer fill-none stroke-[3px] transition-colors",
+					"edge-path fill-none stroke-[3px] transition-colors",
 					selected
 						? "stroke-orange-500"
 						: "stroke-muted-foreground/40 hover:stroke-orange-500/50",
