@@ -207,7 +207,7 @@ export default new EvaluationHandler("mikrotik")
 			}),
 		},
 		handler: (_, params, data) => {
-			const flags = new Set(params.flag.split(""));
+			const flags = new Set(params.flag?.split("") ?? []);
 
 			return data.some((route) => {
 				return (
@@ -282,7 +282,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-instance-exist",
 		name: "OSPF Instance Exist",
-		text: "Should have OSPF instance with ID {instanceId}",
+		text: "Should have OSPF instance named {name} with router id {routerId}",
 		source: "ospf-instance",
 		params: {
 			name: t.String({
@@ -300,7 +300,7 @@ export default new EvaluationHandler("mikrotik")
 			}),
 		},
 		handler: (_, params, data) => {
-			const flags = new Set(params.flag.split(""));
+			const flags = new Set(params.flag?.split("") ?? []);
 
 			return data.some((instance) => {
 				return (
@@ -373,7 +373,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-area-exist",
 		name: "OSPF Area Exist",
-		text: "Should have OSPF area with ID {areaId}",
+		text: "Should have OSPF area named {name} in instance {instance}",
 		source: "ospf-area",
 		params: {
 			name: t.String({
@@ -392,7 +392,7 @@ export default new EvaluationHandler("mikrotik")
 			}),
 		},
 		handler: (_, params, data) => {
-			const flags = new Set(params.flag.split(""));
+			const flags = new Set(params.flag?.split("") ?? []);
 
 			return data.some((area) => {
 				return (
@@ -445,7 +445,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-interface-template-exist",
 		name: "OSPF Interface Template Exist",
-		text: "Should have OSPF interface template with ID {templateId}",
+		text: "Should have OSPF interface template with interfaces {interfaces} in area {area}",
 		source: "ospf-interface-template",
 		params: {
 			interfaces: t.String({
@@ -460,7 +460,7 @@ export default new EvaluationHandler("mikrotik")
 			}),
 		},
 		handler: (_, params, data) => {
-			const flags = new Set(params.flag.split(""));
+			const flags = new Set(params.flag?.split("") ?? []);
 
 			return data.some((template) => {
 				return (
@@ -509,12 +509,9 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-neighbor-exist",
 		name: "OSPF Neighbor Exist",
-		text: "Should have OSPF neighbor with ID {neighborId}",
+		text: "Should have {interface} as OSPF neighbor in area {area} with state {state}",
 		source: "ospf-neighbor",
 		params: {
-			instance: t.String({
-				title: "Instance",
-			}),
 			area: t.String({
 				title: "Area",
 			}),
@@ -528,7 +525,6 @@ export default new EvaluationHandler("mikrotik")
 		handler: (_, params, data) => {
 			return data.some((neighbor) => {
 				return (
-					neighbor.instance === params.instance &&
 					neighbor.area === params.area &&
 					neighbor.interface === params.interface &&
 					neighbor.state === params.state

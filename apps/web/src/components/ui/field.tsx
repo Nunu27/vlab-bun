@@ -2,8 +2,15 @@
 
 import { Label } from "@web/components/ui/label";
 import { Separator } from "@web/components/ui/separator";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@web/components/ui/tooltip";
 import { cn } from "@web/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
+import { InfoIcon } from "lucide-react";
 import * as React from "react";
 import { useMemo } from "react";
 
@@ -110,14 +117,15 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
 function FieldLabel({
 	className,
 	required,
+	description,
 	children,
 	...props
-}: React.ComponentProps<typeof Label> & { required?: boolean }) {
+}: React.ComponentProps<typeof Label> & { required?: boolean; description?: React.ReactNode }) {
 	return (
 		<Label
 			data-slot="field-label"
 			className={cn(
-				"group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
+				"group/field-label peer/field-label flex w-fit items-center gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
 				"has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-4",
 				"has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:border-primary dark:has-data-[state=checked]:bg-primary/10",
 				className,
@@ -126,6 +134,18 @@ function FieldLabel({
 		>
 			{children}
 			{required && <span className="text-destructive -ml-1">*</span>}
+			{description && (
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<InfoIcon className="ml-1 size-3 text-muted-foreground hover:cursor-help" />
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>{description}</p>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+			)}
 		</Label>
 	);
 }

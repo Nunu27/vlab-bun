@@ -24,7 +24,7 @@ const getHealthColor = (health: string | null) => {
 function Device({ id }: { id: string }) {
 	const ref = useRef<HTMLDivElement>(null) as RefObject<HTMLDivElement>;
 
-	const { selected, state, data } = useTopologyDevice(id);
+	const { selected, state, data, isConnectSource } = useTopologyDevice(id);
 
 	const template = useTopologyTemplate(state?.deviceId);
 	const health = useWSData("node:[id]:health", {
@@ -47,6 +47,7 @@ function Device({ id }: { id: string }) {
 			className={cn(
 				"node pointer-events-auto absolute flex flex-col items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-shadow duration-200",
 				selected && "shadow-lg ring-2 ring-indigo-500",
+				isConnectSource && "animate-pulse shadow-lg ring-2 ring-orange-500",
 			)}
 			style={{
 				left: state.x,

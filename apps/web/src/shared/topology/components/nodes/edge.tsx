@@ -5,8 +5,9 @@ import {
 } from "@web/components/ui/tooltip";
 import { useWSData } from "@web/hooks/ws";
 import { cn } from "@web/lib/utils";
-import { memo } from "react";
+import { memo, type RefObject, useRef } from "react";
 import { DEVICE_HEIGHT, DEVICE_WIDTH } from "../../constants";
+import { useTopologyNodeInteraction } from "../../hooks/helper/use-topology-node-interaction";
 import useTopologyEdge from "../../hooks/store/use-topology-edge";
 
 interface InterfaceLabelProps {
@@ -90,6 +91,12 @@ function Edge({ id }: { id: string }) {
 		selected,
 	} = useTopologyEdge(id);
 
+	const pathRef = useRef<SVGPathElement>(null) as RefObject<SVGPathElement>;
+	useTopologyNodeInteraction({
+		identifier: { id, type: "edge" },
+		elementRef: pathRef,
+	});
+
 	if (!sourceDevice || !targetDevice) return null;
 
 	const sx = sourceDevice.x + DEVICE_WIDTH / 2;
@@ -159,10 +166,13 @@ function Edge({ id }: { id: string }) {
 	return (
 		<g>
 			<path
+				ref={pathRef}
 				d={pathData}
 				className={cn(
-					"fill-none stroke-[3px]",
-					selected ? "stroke-orange-500" : "stroke-muted-foreground/40",
+					"pointer-events-auto cursor-pointer fill-none stroke-[3px] transition-colors",
+					selected
+						? "stroke-orange-500"
+						: "stroke-muted-foreground/40 hover:stroke-orange-500/50",
 				)}
 			/>
 

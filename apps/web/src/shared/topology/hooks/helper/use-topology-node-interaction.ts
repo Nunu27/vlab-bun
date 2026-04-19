@@ -18,7 +18,8 @@ export const useTopologyNodeInteraction = <T extends Element>({
 		store.use.actions();
 
 	const handleMouseDown = (e: MouseEvent) => {
-		if (!e.button) setDragState({ x: e.clientX, y: e.clientY }, identifier);
+		if (!e.button)
+			setDragState({ x: e.clientX, y: e.clientY }, identifier, e.shiftKey);
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {

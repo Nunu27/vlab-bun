@@ -20,7 +20,11 @@ export const dragInitialState: TopologyNodeDragState = {
 export interface TopologyNodeDragActions {
 	applyPos: (transform: (id: string) => Position) => void;
 
-	setDragState: (start: Position | null, source?: NodeIdentifier) => void;
+	setDragState: (
+		start: Position | null,
+		source?: NodeIdentifier,
+		shiftKey?: boolean,
+	) => void;
 	onDrag: (pos: Position) => void;
 }
 
@@ -70,7 +74,7 @@ export const createNodeDragSlice: StateCreator<
 		set({ devices: newDevices, notes: newNotes, groups: newGroups });
 	},
 
-	setDragState: (start, source) => {
+	setDragState: (start, source, shiftKey) => {
 		const {
 			mode,
 			dragState,
@@ -79,6 +83,7 @@ export const createNodeDragSlice: StateCreator<
 			selectedDevices,
 			selectedGroups,
 			selectedNotes,
+			selectedEdges,
 			actions,
 			editingNoteId,
 		} = get();
@@ -92,11 +97,24 @@ export const createNodeDragSlice: StateCreator<
 				device: selectedDevices,
 				group: selectedGroups,
 				note: selectedNotes,
+				edge: selectedEdges,
 			};
 
-			if (!lookup[source.type].has(source.id)) {
-				actions.select({ [`${source.type}s`]: [source.id] });
-				return actions.setDragState(start, source);
+			const isSelected = lookup[source.type].has(source.id);
+
+			if (shiftKey) {
+				if (isSelected) {
+					actions.removeSelection({ [`${source.type}s`]: [source.id] });
+					return;
+				} else {
+					actions.addSelection({ [`${source.type}s`]: [source.id] });
+					return actions.setDragState(start);
+				}
+			} else {
+				if (!isSelected) {
+					actions.select({ [`${source.type}s`]: [source.id] });
+					return actions.setDragState(start, source);
+				}
 			}
 		}
 

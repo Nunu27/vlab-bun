@@ -22,6 +22,7 @@ const fieldMapping: Partial<
 		return (
 			<fieldComponents.TextField
 				label={schema.title ?? name}
+				description={schema.description}
 				required={parent.required?.includes(name)}
 			/>
 		);

@@ -1,5 +1,6 @@
 import { FieldGroup } from "@web/components/ui/field";
 import { useAppForm } from "@web/hooks/form/use-app-form";
+import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTopologyStore } from "../../stores";
 
@@ -19,6 +20,10 @@ function DeviceProperties({ id }: { id: string }) {
 		defaultValues: device,
 		onSubmit: ({ value }) => updateDevice(id, value),
 	});
+
+	useEffect(() => {
+		form.reset(device);
+	}, [device, form.reset]);
 
 	return (
 		<FieldGroup

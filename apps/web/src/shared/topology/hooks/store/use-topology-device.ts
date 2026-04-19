@@ -9,6 +9,8 @@ export default (id: string) => {
 			selected: state.selectedDevices.has(id),
 			state: state.devices[id],
 			data: state.nodesData?.[id],
+			isConnectSource:
+				state.connectDeviceId === id || state.connectSource?.deviceId === id,
 		})),
 	);
 };

@@ -21,7 +21,7 @@ export { dragInitialState, nodeSelectInitialState };
 
 export type NodeIdentifier = {
 	id: string;
-	type: "device" | "note" | "group";
+	type: "device" | "note" | "group" | "edge";
 };
 
 export interface TopologyNodeState

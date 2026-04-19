@@ -3,6 +3,7 @@ import { Input } from "../ui/input";
 
 type TextInputProps = React.ComponentProps<"input"> & {
 	label?: string;
+	description?: string;
 	required?: boolean;
 	isInvalid?: boolean;
 	errors?: Array<{ message?: string }>;
@@ -10,6 +11,7 @@ type TextInputProps = React.ComponentProps<"input"> & {
 
 function TextInput({
 	label,
+	description,
 	required,
 	isInvalid,
 	errors,
@@ -18,7 +20,11 @@ function TextInput({
 	return (
 		<Field>
 			{label && (
-				<FieldLabel htmlFor={props.name} required={required}>
+				<FieldLabel
+					htmlFor={props.name}
+					required={required}
+					description={description}
+				>
 					{label}
 				</FieldLabel>
 			)}

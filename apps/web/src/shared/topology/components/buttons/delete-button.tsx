@@ -6,8 +6,10 @@ function DeleteButton() {
 	const store = useTopologyStore();
 	const { delete: deleteSelected } = store.use.actions();
 	const hasSelection = store(
-		({ selectedDevices, selectedNotes }) =>
-			selectedDevices.size > 0 || selectedNotes.size > 0,
+		({ selectedDevices, selectedNotes, selectedEdges }) =>
+			selectedDevices.size > 0 ||
+			selectedNotes.size > 0 ||
+			selectedEdges.size > 0,
 	);
 
 	return (

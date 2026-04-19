@@ -56,13 +56,13 @@ const clientOptions = {
 		ssh: {
 			"disable-paste": false,
 			"disable-copy": false,
-			"terminal-type": "vt100",
+			"terminal-type": "xterm-256color",
 			scrollback: "1000",
 		},
 		telnet: {
 			"disable-paste": false,
 			"disable-copy": false,
-			"terminal-type": "vt100",
+			"terminal-type": "xterm-256color",
 			scrollback: "1000",
 		},
 	},

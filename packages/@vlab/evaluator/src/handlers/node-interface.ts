@@ -2,7 +2,6 @@ import { Type as t } from "@sinclair/typebox";
 import { EvaluationHandler } from "../base/evaluation-handler";
 
 export default new EvaluationHandler("node-interface")
-	.kinds(["node-interface"])
 	.addSource({
 		id: "interfaces-ip",
 		data: t.Record(t.String(), t.Array(t.String())),
