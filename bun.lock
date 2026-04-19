@@ -254,21 +254,6 @@
     },
     "packages/@vlab/evaluator": {
       "name": "@vlab/evaluator",
-      "dependencies": {
-        "mikro-routeros": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-        "@types/dockerode": "^4.0.1",
-      },
-      "peerDependencies": {
-        "@sinclair/typebox": "^0.34.48",
-        "dockerode": "^4.0.9",
-        "typescript": "^5",
-      },
-    },
-    "packages/@vlab/evaluator-v2": {
-      "name": "@vlab/evaluator-v2",
       "devDependencies": {
         "@types/bun": "latest",
         "@types/dockerode": "^4.0.1",
@@ -1155,8 +1140,6 @@
     "@vlab/clab-monitor": ["@vlab/clab-monitor@workspace:packages/@vlab/clab-monitor"],
 
     "@vlab/evaluator": ["@vlab/evaluator@workspace:packages/@vlab/evaluator"],
-
-    "@vlab/evaluator-v2": ["@vlab/evaluator-v2@workspace:packages/@vlab/evaluator-v2"],
 
     "@vlab/shared": ["@vlab/shared@workspace:packages/@vlab/shared"],
 
