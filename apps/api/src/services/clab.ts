@@ -4,6 +4,7 @@ import { toKebabCase } from "@api/utils/string";
 import { createContainerlabClient } from "@vlab/clab";
 import type { Node } from "@vlab/clab/types";
 import type { DeviceKind } from "@vlab/shared/enums";
+import { stopLabEvaluation } from "./evaluator";
 import { LABELS } from "./events";
 
 const { client, wrapper } = createContainerlabClient({
@@ -99,6 +100,8 @@ export async function deployLab(sessionId: string, config: LabConfig) {
 }
 
 export async function destroyLab(sessionId: string) {
+	await stopLabEvaluation(sessionId, { immediate: true });
+
 	return wrapper(() =>
 		client.DELETE("/api/v1/labs/{labName}", {
 			params: {

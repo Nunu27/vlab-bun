@@ -62,7 +62,7 @@ export const LabCheckForm = withFieldGroup({
 					<div className="grid grid-cols-[2fr_2fr_80px] gap-2">
 						<group.AppField name="nodeId">
 							{(nodeField) => (
-								<nodeField.SelectField
+								<nodeField.ComboboxField
 									label="Node"
 									placeholder="Select device..."
 									options={nodes}
@@ -72,7 +72,7 @@ export const LabCheckForm = withFieldGroup({
 						</group.AppField>
 						<group.AppField name="checkId">
 							{(checkField) => (
-								<checkField.SelectField
+								<checkField.ComboboxField
 									label="Check"
 									placeholder="Select check..."
 									options={checkOptions}

@@ -9,16 +9,19 @@ import evaluator from "@vlab/evaluator";
 import { eq } from "drizzle-orm";
 
 ws.server.on("lab:[id]:init", async ({ params: { id }, socket, reply }) => {
+	console.log("Initializing lab session for lab", id);
 	const userId = socket.data.session.id;
 
 	const lab = await db.query.labs.findFirst({
 		columns: {
+			isPublished: true,
 			topology: true,
 			maxAttempt: true,
 			sessionDuration: true,
+			startAt: true,
 			endAt: true,
 		},
-		where: (lab, { eq, and }) => and(eq(lab.id, id), eq(lab.isPublished, true)),
+		where: (lab, { eq }) => eq(lab.id, id),
 		with: {
 			enrollments: {
 				columns: { labId: true },
@@ -31,8 +34,15 @@ ws.server.on("lab:[id]:init", async ({ params: { id }, socket, reply }) => {
 		},
 	});
 
+	reply("info", "Getting lab configuration...");
+
 	if (!lab) throw new Error("Lab not found");
+	if (!lab.isPublished) throw new Error("Lab is not published");
 	if (!lab.enrollments.length) throw new Error("Not enrolled");
+
+	const now = Date.now();
+	if (now < lab.startAt.getTime()) throw new Error("Lab has not started yet");
+	if (now >= lab.endAt.getTime()) throw new Error("Lab has ended");
 
 	const existingSession = lab.sessions.find(({ submittedAt }) => !submittedAt);
 
@@ -203,6 +213,6 @@ ws.server.on(
 
 		if (!session) throw new Error("Session not found");
 
-		destroyLab(sessionId);
+		await destroyLab(sessionId);
 	},
 );

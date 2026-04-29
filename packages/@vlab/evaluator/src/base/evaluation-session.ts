@@ -1,6 +1,11 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: loose typing */
 import type Dockerode from "dockerode";
-import type { AnyHandler, BaseContext, SessionCheckPayload } from "../types";
+import type {
+	AnyHandler,
+	BaseContext,
+	NodeInfo,
+	SessionCheckPayload,
+} from "../types";
 import type { Evaluator } from "./evaluator";
 
 export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
@@ -15,7 +20,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		[];
 	private startedSources = new Set<string>();
 
-	// Add an exact tracker to prevent memory leaks from recursive subscriptions
+	// Tracks emitter callbacks registered by this session, for cleanup
 	private sessionEmitterCleanups: Array<() => void> = [];
 
 	// Dependency optimization Maps
@@ -28,23 +33,33 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		{ handler: AnyHandler; checkDef: any; sessionParams: any }
 	>();
 
+	// Per-check emitter removal callbacks, used to stop oneTime checks from listening
+	private checkEmitterRemovals = new Map<string, () => void>();
+	private stopped = false;
+
 	constructor(
 		private evaluator: Evaluator<THandlers>,
 		private docker: Dockerode,
-		private nodeMapping: Record<string, import("../types").NodeInfo>,
+		private nodeMapping: Record<string, NodeInfo>,
 		checks: SessionCheckPayload<THandlers>[],
 		private healthHooks?: {
 			isNodeHealthy: (nodeId: string) => boolean;
 			waitForHealth: (nodeId: string, onHealthy: () => void) => () => void;
 		},
+		initialValues?: Record<string, boolean>,
 	) {
 		this.checkDefinitions = checks;
+		if (initialValues) {
+			for (const [id, value] of Object.entries(initialValues)) {
+				this.checkResults.set(id, value);
+			}
+		}
 		this.mapDependencies();
 	}
 
 	private mapDependencies() {
 		for (const sessionCheck of this.checkDefinitions) {
-			const [hId, cId] = (sessionCheck.checkId as string).split(".");
+			const [hId, cId] = sessionCheck.checkId.split(".");
 			if (!hId || !cId) continue;
 
 			const handler = this.evaluator.handlers[hId];
@@ -64,7 +79,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 			mappedChecks.push(sessionCheck);
 
 			// Store runnable definition
-			this.checksToRun.set(sessionCheck.id as string, {
+			this.checksToRun.set(sessionCheck.id, {
 				handler,
 				checkDef,
 				sessionParams: sessionCheck.params,
@@ -122,6 +137,60 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		this.onChangeCallbacks.push(cb);
 	}
 
+	/**
+	 * Evaluates a single check against pre-fetched source data and updates state.
+	 * If the check is `oneTime` and just resolved to `true`, it removes itself from
+	 * the emitter so the listener stops firing for this check going forward.
+	 */
+	private async evaluateCheck(
+		sessionCheck: SessionCheckPayload<THandlers>,
+		ctx: any,
+		data: any,
+	) {
+		const runDef = this.checksToRun.get(sessionCheck.id);
+		if (!runDef) return;
+
+		// oneTime checks that are already true: remove their listener and skip
+		if (
+			runDef.checkDef.oneTime &&
+			this.checkResults.get(sessionCheck.id) === true
+		) {
+			this.removeCheckFromEmitter(sessionCheck.id);
+			return;
+		}
+
+		const result = await runDef.checkDef.handler(
+			ctx,
+			runDef.sessionParams,
+			data,
+		);
+
+		const prev = this.checkResults.get(sessionCheck.id);
+		if (prev !== result) {
+			this.checkResults.set(sessionCheck.id, result);
+			for (const cb of this.onChangeCallbacks) {
+				cb(sessionCheck.id, result);
+			}
+
+			// oneTime check just became true — stop listening immediately
+			if (runDef.checkDef.oneTime && result === true) {
+				this.removeCheckFromEmitter(sessionCheck.id);
+			}
+		}
+	}
+
+	/**
+	 * Removes a specific check's callback from the shared emitter so the source
+	 * no longer triggers evaluation for this check.
+	 */
+	private removeCheckFromEmitter(checkId: string) {
+		const remove = this.checkEmitterRemovals.get(checkId);
+		if (remove) {
+			remove();
+			this.checkEmitterRemovals.delete(checkId);
+		}
+	}
+
 	private async startSource(nodeId: string, sourceId: string) {
 		const sourceKey = `${sourceId}::${nodeId}`;
 		if (this.startedSources.has(sourceKey)) return;
@@ -152,33 +221,17 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 			this.evaluator._emitters.set(sourceKey, emitters);
 		}
 
-		// Register check evaluator as a listener
+		// Register check evaluator as a listener on the source emitter
 		const activeChecks = this.sourceToCheckMap.get(sourceKey) || [];
 		if (activeChecks.length > 0) {
 			const checkCb = async (data: any) => {
 				for (const sessionCheck of activeChecks) {
-					const runDef = this.checksToRun.get(sessionCheck.id as string);
-					if (!runDef) continue;
-
-					const result = await runDef.checkDef.handler(
-						ctx,
-						runDef.sessionParams,
-						data,
-					);
-
-					const prev = this.checkResults.get(sessionCheck.id as string);
-					if (prev !== result) {
-						this.checkResults.set(sessionCheck.id as string, result);
-						for (const cb of this.onChangeCallbacks) {
-							cb(sessionCheck.id as string, result);
-						}
-					}
+					await this.evaluateCheck(sessionCheck, ctx, data);
 				}
 			};
 			emitters.push(checkCb);
 
-			// Track local cleanup
-			this.sessionEmitterCleanups.push(() => {
+			const removeFromEmitter = () => {
 				const currentEmitters = this.evaluator._emitters.get(sourceKey);
 				if (currentEmitters) {
 					const idx = currentEmitters.indexOf(checkCb);
@@ -186,10 +239,18 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 					if (currentEmitters.length === 0)
 						this.evaluator._emitters.delete(sourceKey);
 				}
-			});
+			};
+
+			// Register per-check removal handles so individual oneTime checks can unsubscribe
+			for (const sessionCheck of activeChecks) {
+				this.checkEmitterRemovals.set(sessionCheck.id, removeFromEmitter);
+			}
+
+			// Track session-level cleanup as a fallback
+			this.sessionEmitterCleanups.push(removeFromEmitter);
 		}
 
-		// Setup subscribe function
+		// Setup subscribe function (for sources that depend on other sources)
 		const subscribe = async (
 			targetSId: string,
 			cb: (data: any) => void | Promise<void>,
@@ -225,8 +286,10 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		if (sourceDef.listen) {
 			try {
 				// notify routes the data to `emitSource`, which hits ALL emitters (checks + subscribers)
-				const notifyFn = (data: any) =>
+				const notifyFn = (data: any) => {
+					if (this.stopped) return;
 					this.evaluator.emitSource(nodeId, sourceId as any, data);
+				};
 				const cleanupListener = await sourceDef.listen(
 					ctx,
 					notifyFn,
@@ -242,8 +305,9 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 	}
 
 	async start() {
-		// Start listeners only for sources that are actively used by our checks
-		// This will recursively start dependent sources via startSource and subscribe
+		this.stopped = false;
+		// Start listeners only for sources that are actively used by our checks.
+		// This will recursively start dependent sources via startSource and subscribe.
 		const promises = [];
 
 		for (const sourceKey of this.sourceToCheckMap.keys()) {
@@ -266,6 +330,8 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 	}
 
 	async check() {
+		if (this.stopped) return;
+
 		// Optimization: Cache source data so we only call read() once per source per `check()` cycle
 		const sourceDataCache = new Map<string, any>();
 
@@ -301,22 +367,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 				}
 
 				for (const sessionCheck of activeChecks) {
-					const runDef = this.checksToRun.get(sessionCheck.id as string);
-					if (!runDef) continue;
-
-					const result = await runDef.checkDef.handler(
-						ctx,
-						runDef.sessionParams,
-						data,
-					);
-
-					const prev = this.checkResults.get(sessionCheck.id as string);
-					if (prev !== result) {
-						this.checkResults.set(sessionCheck.id as string, result);
-						for (const cb of this.onChangeCallbacks) {
-							cb(sessionCheck.id as string, result);
-						}
-					}
+					await this.evaluateCheck(sessionCheck, ctx, data);
 				}
 			} catch (err) {
 				console.error(
@@ -328,6 +379,8 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 	}
 
 	async stop() {
+		this.stopped = true;
+
 		// Run all listener cleanups
 		for (const cleanup of this.listeners.values()) {
 			await cleanup();
@@ -342,10 +395,11 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		this.contexts.clear();
 		this.startedSources.clear();
 
-		// Cleanup Emitters
+		// Cleanup emitters
 		for (const cleanup of this.sessionEmitterCleanups) {
 			cleanup();
 		}
 		this.sessionEmitterCleanups = [];
+		this.checkEmitterRemovals.clear();
 	}
 }

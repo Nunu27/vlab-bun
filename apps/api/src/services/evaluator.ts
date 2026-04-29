@@ -15,6 +15,7 @@ const activeEvaluations = new Map<
 	string,
 	ReturnType<typeof evaluator.createSession>
 >();
+const stoppingEvaluations = new Set<string>();
 
 evaluator.setSourceRead(
 	"node-interface.interfaces-ip",
@@ -29,6 +30,8 @@ export async function startLabEvaluation(sessionId: string, labId: string) {
 			"Cancelling evaluation stop, session reconnected",
 		);
 		debouncer.cancel(sessionId);
+		stoppingEvaluations.delete(sessionId);
+		session.check();
 		return session;
 	}
 
@@ -45,6 +48,16 @@ export async function startLabEvaluation(sessionId: string, labId: string) {
 		columns: { id: true, ip: true, containerId: true, labNodeId: true },
 		where: (node, { eq }) => eq(node.labSessionId, sessionId),
 	});
+
+	const checks = await db.query.labSessionChecks.findMany({
+		columns: { checkId: true, completed: true },
+		where: (check, { eq }) => eq(check.labSessionId, sessionId),
+	});
+
+	const values = checks.reduce<Record<string, boolean>>((acc, check) => {
+		acc[check.checkId] = check.completed;
+		return acc;
+	}, {});
 
 	const nodeMap: Record<string, NodeInfo> = {};
 	const nodeIdMap: Record<string, string> = {};
@@ -64,12 +77,25 @@ export async function startLabEvaluation(sessionId: string, labId: string) {
 		}),
 	);
 
-	const evalSession = evaluator.createSession(docker, nodeMap, sessionChecks, {
-		isNodeHealthy: clabMonitor.isNodeHealthy,
-		waitForHealth: clabMonitor.waitForHealth,
-	});
+	const evalSession = evaluator.createSession(
+		docker,
+		nodeMap,
+		sessionChecks,
+		{
+			isNodeHealthy: clabMonitor.isNodeHealthy,
+			waitForHealth: clabMonitor.waitForHealth,
+		},
+		values,
+	);
 
 	evalSession.onChange(async (id, value) => {
+		if (
+			stoppingEvaluations.has(sessionId) ||
+			activeEvaluations.get(sessionId) !== evalSession
+		) {
+			return;
+		}
+
 		logger.debug({ sessionId, checkId: id, value }, "Lab node check changed");
 
 		await db
@@ -92,27 +118,55 @@ export async function startLabEvaluation(sessionId: string, labId: string) {
 		});
 	});
 
-	await evalSession.start();
-	evalSession.check();
 	activeEvaluations.set(sessionId, evalSession);
+
+	try {
+		await evalSession.start();
+		await evalSession.check();
+	} catch (error) {
+		activeEvaluations.delete(sessionId);
+		stoppingEvaluations.delete(sessionId);
+		await evalSession.stop();
+		throw error;
+	}
 
 	return evalSession;
 }
 
-export function stopLabEvaluation(sessionId: string) {
-	if (!activeEvaluations.has(sessionId)) return;
+async function stopEvaluationSession(sessionId: string) {
+	const session = activeEvaluations.get(sessionId);
+	if (!session) return;
+
+	try {
+		await session.stop();
+	} catch (error) {
+		logger.warn({ error, sessionId }, "Failed to stop lab evaluation cleanly");
+	} finally {
+		activeEvaluations.delete(sessionId);
+		stoppingEvaluations.delete(sessionId);
+	}
+
+	logger.info({ sessionId }, "Stopped lab evaluation");
+}
+
+export function stopLabEvaluation(
+	sessionId: string,
+	options: { immediate?: boolean } = {},
+) {
+	if (!activeEvaluations.has(sessionId)) return Promise.resolve();
+	stoppingEvaluations.add(sessionId);
+
+	if (options.immediate) {
+		debouncer.cancel(sessionId);
+		logger.debug({ sessionId }, "Stopping lab evaluation immediately");
+		return stopEvaluationSession(sessionId);
+	}
 
 	logger.debug({ sessionId }, "Scheduling lab evaluation stop");
 
-	debouncer
+	return debouncer
 		.run(sessionId, () => {
-			const session = activeEvaluations.get(sessionId);
-			if (!session) return;
-
-			session.stop();
-			activeEvaluations.delete(sessionId);
-
-			logger.info({ sessionId }, "Stopped lab evaluation");
+			return stopEvaluationSession(sessionId);
 		})
 		.catch(() => {
 			logger.debug({ sessionId }, "Lab evaluation stop cancelled");

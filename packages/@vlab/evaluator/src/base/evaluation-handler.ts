@@ -73,6 +73,8 @@ export class EvaluationHandler<
 		text: string;
 		source: SId;
 		params: CParams;
+		/** When true, the check will not run again once its result becomes true. */
+		oneTime?: boolean;
 		handler: (
 			ctx: BaseContext & TContext,
 			params: Static<TObject<CParams>>,

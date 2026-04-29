@@ -9,20 +9,30 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@web/components/ui/dialog";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@web/components/ui/tooltip";
 import { useWSAction } from "@web/hooks/ws";
 import { PlayIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface StartLabSessionButtonProps {
 	labId: string;
 	attemptCount: number;
 	maxAttempt: number | null;
+	date: { from: Date | string; to: Date | string };
+	isPublished?: boolean;
 }
 
 export function StartLabSessionButton({
 	labId,
 	attemptCount,
 	maxAttempt,
+	date,
+	isPublished = true,
 }: StartLabSessionButtonProps) {
 	const navigate = useNavigate();
 	const { send, dispose } = useWSAction("lab:[id]:init");
@@ -31,8 +41,29 @@ export function StartLabSessionButton({
 	const [logs, setLogs] = useState<LogEntry[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [disposeFn, setDisposeFn] = useState<(() => void) | null>(null);
+	const [now, setNow] = useState(() => Date.now());
 
 	const isLimitReached = maxAttempt !== null && attemptCount >= maxAttempt;
+	const startTime =
+		date.from instanceof Date
+			? date.from.getTime()
+			: new Date(date.from).getTime();
+	const endTime =
+		date.to instanceof Date ? date.to.getTime() : new Date(date.to).getTime();
+	const disabledReason = !isPublished
+		? "Lab is not published"
+		: now < startTime
+			? "Lab has not started yet"
+			: now >= endTime
+				? "Lab has ended"
+				: isLimitReached
+					? "Max attempts reached"
+					: null;
+
+	useEffect(() => {
+		const intervalId = window.setInterval(() => setNow(Date.now()), 30_000);
+		return () => window.clearInterval(intervalId);
+	}, []);
 
 	const handleOpenChange = (newOpen: boolean) => {
 		setOpen(newOpen);
@@ -43,10 +74,14 @@ export function StartLabSessionButton({
 	};
 
 	const handleStartPhase = () => {
+		if (disabledReason) return;
+
 		setOpen(true);
 		setLogs([]);
 		setIsLoading(true);
 		setDisposeFn(() => dispose);
+
+		console.log("sending");
 
 		send({
 			params: { id: labId },
@@ -74,14 +109,23 @@ export function StartLabSessionButton({
 
 	return (
 		<>
-			<Button
-				onClick={handleStartPhase}
-				disabled={isLimitReached}
-				className="gap-2"
-			>
-				<PlayIcon className="h-4 w-4" />
-				Start Lab
-			</Button>
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<span className="inline-flex">
+							<Button
+								onClick={handleStartPhase}
+								disabled={!!disabledReason}
+								className="gap-2"
+							>
+								<PlayIcon data-icon="inline-start" />
+								Start Lab
+							</Button>
+						</span>
+					</TooltipTrigger>
+					{disabledReason && <TooltipContent>{disabledReason}</TooltipContent>}
+				</Tooltip>
+			</TooltipProvider>
 
 			<Dialog open={open} onOpenChange={handleOpenChange}>
 				<DialogContent className="p-0 sm:max-w-200">

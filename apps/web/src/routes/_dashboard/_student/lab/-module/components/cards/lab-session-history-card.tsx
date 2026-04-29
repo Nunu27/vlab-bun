@@ -18,12 +18,16 @@ interface LabSessionHistoryCardProps {
 	maxAttempt?: number | null;
 	sessions: ExtractTreatyData<ReturnType<typeof api.lab>["session"]["get"]>;
 	labId: string;
+	date: { from: Date | string; to: Date | string };
+	isPublished?: boolean;
 }
 
 export function LabSessionHistoryCard({
 	maxAttempt,
 	sessions,
 	labId,
+	date,
+	isPublished,
 }: LabSessionHistoryCardProps) {
 	const attemptCount = sessions.length;
 	const isUnlimited = !maxAttempt;
@@ -58,6 +62,8 @@ export function LabSessionHistoryCard({
 							labId={labId}
 							maxAttempt={maxAttempt || null}
 							attemptCount={attemptCount}
+							date={date}
+							isPublished={isPublished}
 						/>
 					)}
 				</div>

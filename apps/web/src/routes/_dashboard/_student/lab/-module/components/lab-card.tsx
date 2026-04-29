@@ -18,10 +18,10 @@ export function LabCard({ lab }: LabCardProps) {
 		<Link
 			to="/lab/$labId"
 			params={{ labId: lab.id }}
-			className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 		>
-			<Card className="pt-0 transition-all hover:bg-muted/50">
-				<div className="aspect-video w-full overflow-hidden bg-muted">
+			<Card className="flex h-full flex-col overflow-hidden pt-0 transition-all hover:bg-muted/50">
+				<div className="aspect-video w-full shrink-0 overflow-hidden bg-muted">
 					{lab.cover ? (
 						<img
 							src={`/api/file/${lab.cover}`}
@@ -39,7 +39,7 @@ export function LabCard({ lab }: LabCardProps) {
 						{lab.name}
 					</CardTitle>
 				</CardHeader>
-				<CardContent className="flex justify-between">
+				<CardContent className="mt-auto flex justify-between">
 					<div className="flex items-center gap-2">
 						<UserIcon className="size-4" />
 						<span className="truncate">{lab.instructor.name}</span>

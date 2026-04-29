@@ -102,6 +102,38 @@ const OSPFNeighborSchema = t.Array(
 	}),
 );
 
+// RIP Schema
+
+const RIPInstanceSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		disabled: t.Optional(t.String()),
+	}),
+);
+
+const RIPInterfaceTemplateSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		instance: t.String(),
+		interfaces: t.String(),
+		disabled: t.Optional(t.String()),
+	}),
+);
+
+// BGP Schema
+
+const BGPInstanceSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		"router-id": t.Optional(t.String()),
+		as: t.Optional(t.String()),
+		inactive: t.Optional(t.String()),
+		disabled: t.Optional(t.String()),
+	}),
+);
+
 export default new EvaluationHandler("mikrotik")
 	.kinds(["mikrotik_ros"])
 	.withContext(
@@ -313,7 +345,6 @@ export default new EvaluationHandler("mikrotik")
 			});
 		},
 	})
-
 	// Area
 	.addSource({
 		id: "ospf-area",
@@ -407,7 +438,6 @@ export default new EvaluationHandler("mikrotik")
 			});
 		},
 	})
-
 	// Interface Template
 	.addSource({
 		id: "ospf-interface-template",
@@ -472,7 +502,6 @@ export default new EvaluationHandler("mikrotik")
 			});
 		},
 	})
-
 	// Neighbor
 	.addSource({
 		id: "ospf-neighbor",
@@ -528,6 +557,197 @@ export default new EvaluationHandler("mikrotik")
 					neighbor.area === params.area &&
 					neighbor.interface === params.interface &&
 					neighbor.state === params.state
+				);
+			});
+		},
+	})
+
+	// RIP
+	// Instance
+	.addSource({
+		id: "rip-instance",
+		data: RIPInstanceSchema,
+		listen: async ({ client }, notify) => {
+			const list: typeof RIPInstanceSchema.static = await client.runQuery(
+				"/routing/rip/instance/print",
+			);
+
+			const listener = await client.stream("/routing/rip/instance/listen");
+
+			listener.on("data", (data) => {
+				const index = list.findIndex((item) => item[".id"] === data[".id"]);
+				const isDead = data[".dead"] === "true";
+
+				if (index === -1) {
+					if (isDead) return;
+					list.push(data);
+				} else if (isDead) {
+					removeItemFromArrayByIndex(list, index);
+				} else {
+					list[index] = data;
+				}
+
+				notify(list);
+			});
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/routing/rip/instance/print");
+		},
+	})
+	.addCheck({
+		id: "rip-instance-exist",
+		name: "RIP Instance Exist",
+		text: "Should have RIP instance named {name} with flag {flag}",
+		source: "rip-instance",
+		params: {
+			name: t.String({
+				title: "Name",
+			}),
+			flag: t.String({
+				title: "Flag",
+				description: "X - DISABLED",
+			}),
+		},
+		handler: (_, params, data) => {
+			const flags = new Set(params.flag?.split("") ?? []);
+
+			return data.some((instance) => {
+				return (
+					instance.name === params.name &&
+					compareFlag(flags, "X", instance.disabled)
+				);
+			});
+		},
+	})
+	// Interface Template
+	.addSource({
+		id: "rip-interface-template",
+		data: RIPInterfaceTemplateSchema,
+		listen: async ({ client }, notify) => {
+			const list: typeof RIPInterfaceTemplateSchema.static =
+				await client.runQuery("/routing/rip/interface-template/print");
+
+			const listener = await client.stream(
+				"/routing/rip/interface-template/listen",
+			);
+
+			listener.on("data", (data) => {
+				const index = list.findIndex((item) => item[".id"] === data[".id"]);
+				const isDead = data[".dead"] === "true";
+
+				if (index === -1) {
+					if (isDead) return;
+					list.push(data);
+				} else if (isDead) {
+					removeItemFromArrayByIndex(list, index);
+				} else {
+					list[index] = data;
+				}
+
+				notify(list);
+			});
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/routing/rip/interface-template/print");
+		},
+	})
+	.addCheck({
+		id: "rip-interface-template-exist",
+		name: "RIP Interface Template Exist",
+		text: "Should have RIP interface template with interfaces {interfaces} in instance {instance}",
+		source: "rip-interface-template",
+		params: {
+			instance: t.String({
+				title: "Instance",
+			}),
+			interfaces: t.String({
+				title: "Interfaces",
+			}),
+			flag: t.String({
+				title: "Flag",
+				description: "X - DISABLED",
+			}),
+		},
+		handler: (_, params, data) => {
+			const flags = new Set(params.flag?.split("") ?? []);
+
+			return data.some((template) => {
+				return (
+					template.instance === params.instance &&
+					template.interfaces === params.interfaces &&
+					compareFlag(flags, "X", template.disabled)
+				);
+			});
+		},
+	})
+
+	// BGP
+	.addSource({
+		id: "bgp-instance",
+		data: BGPInstanceSchema,
+		listen: async ({ client }, notify) => {
+			const list: typeof BGPInstanceSchema.static = await client.runQuery(
+				"/routing/bgp/instance/print",
+			);
+
+			const listener = await client.stream("/routing/bgp/instance/listen");
+
+			listener.on("data", (data) => {
+				const index = list.findIndex((item) => item[".id"] === data[".id"]);
+				const isDead = data[".dead"] === "true";
+
+				if (index === -1) {
+					if (isDead) return;
+					list.push(data);
+				} else if (isDead) {
+					removeItemFromArrayByIndex(list, index);
+				} else {
+					list[index] = data;
+				}
+
+				notify(list);
+			});
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/routing/bgp/instance/print");
+		},
+	})
+	.addCheck({
+		id: "bgp-instance-exist",
+		name: "BGP Instance Exist",
+		text: "Should have BGP instance named {name} with router id {routerId}",
+		source: "bgp-instance",
+		params: {
+			name: t.String({
+				title: "Instance Name",
+			}),
+			as: t.String({
+				title: "AS",
+			}),
+			routerId: t.String({
+				title: "Router ID",
+			}),
+			flag: t.String({
+				title: "Flag",
+				description: "X - DISABLED, I - INACTIVE",
+			}),
+		},
+		handler: (_, params, data) => {
+			const flags = new Set(params.flag?.split("") ?? []);
+
+			return data.some((instance) => {
+				return (
+					instance.name === params.name &&
+					instance.as === params.as &&
+					instance["router-id"] === params.routerId &&
+					compareFlag(flags, "X", instance.disabled) &&
+					compareFlag(flags, "I", instance.inactive)
 				);
 			});
 		},

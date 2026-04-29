@@ -39,6 +39,7 @@ export default createRouter()
 									},
 									sessions: {
 										where: (session, { eq }) => eq(session.labId, labId),
+										orderBy: (session, { desc }) => [desc(session.score)],
 										limit: 1,
 									},
 								},

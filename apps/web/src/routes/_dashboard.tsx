@@ -39,16 +39,8 @@ function RouteComponent() {
 				<div className="flex-1 p-4 pt-0">
 					<Outlet />
 				</div>
-				<footer className="mt-auto flex items-center justify-center gap-1 p-4 text-muted-foreground text-xs">
-					&copy; {new Date().getFullYear()}{" "}
-					<a
-						href={pkg.author.url}
-						target="_blank"
-						rel="noreferrer"
-						className="hover:text-foreground hover:underline"
-					>
-						{pkg.author.name}
-					</a>
+				<footer className="mt-auto flex items-center justify-end gap-1 p-4 text-muted-foreground text-xs">
+					&copy; {new Date().getFullYear()}
 					{" • "}v{pkg.version}
 				</footer>
 			</SidebarInset>

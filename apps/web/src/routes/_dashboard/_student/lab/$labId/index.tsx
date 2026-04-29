@@ -72,6 +72,8 @@ function RouteComponent() {
 							labId={labId}
 							maxAttempt={lab.maxAttempt}
 							sessions={sessions}
+							date={lab.date}
+							isPublished={lab.isPublished}
 						/>
 					)}
 

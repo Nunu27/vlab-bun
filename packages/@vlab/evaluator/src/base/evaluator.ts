@@ -7,6 +7,7 @@ import type {
 	ExtractContext,
 	ExtractSourceData,
 	ExtractValidSourceIds,
+	NodeInfo,
 	SessionCheckPayload,
 } from "../types";
 import { EvaluationSession } from "./evaluation-session";
@@ -80,12 +81,13 @@ export class Evaluator<THandlers extends Record<string, AnyHandler> = {}> {
 
 	createSession(
 		docker: Dockerode,
-		nodeMapping: Record<string, import("../types").NodeInfo>,
+		nodeMapping: Record<string, NodeInfo>,
 		checks: SessionCheckPayload<THandlers>[],
 		healthHooks?: {
 			isNodeHealthy: (nodeId: string) => boolean;
 			waitForHealth: (nodeId: string, onHealthy: () => void) => () => void;
 		},
+		initialValues?: Record<string, boolean>,
 	) {
 		return new EvaluationSession(
 			this,
@@ -93,6 +95,7 @@ export class Evaluator<THandlers extends Record<string, AnyHandler> = {}> {
 			nodeMapping,
 			checks,
 			healthHooks,
+			initialValues,
 		);
 	}
 }
