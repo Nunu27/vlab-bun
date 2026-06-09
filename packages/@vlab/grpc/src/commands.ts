@@ -38,6 +38,12 @@ export const StartEvaluationPayloadSchema = t.Object({
 });
 
 export const appRouter = new Router()
+	.data("monitor:event", {
+		payload: t.Object({
+			type: t.String(),
+			payload: t.String(),
+		}),
+	})
 	.rpc("clab:deployLab", {
 		payload: t.Object({
 			sessionId: t.String(),

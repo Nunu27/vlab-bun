@@ -12,6 +12,7 @@ import type {
 } from "@vlab/grpc";
 import { AsyncQueue, appRouter, WorkerProto } from "@vlab/grpc";
 import { eq } from "drizzle-orm";
+import { handleMonitorEvent } from "./monitor";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
 
@@ -110,11 +111,16 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			send: async (message) => {
 				msgQueue.push(
 					WorkerProto.CommandRequest.create({
-						rpcMessage: Buffer.from(encode(message)),
+						payload: Buffer.from(encode(message)),
 					}),
 				);
 			},
 		});
+
+		client.onData("monitor:event", undefined, (event: any) => {
+			handleMonitorEvent(workerId, event.type, event.payload);
+		});
+
 		connectedWorkers.set(workerId, client);
 
 		// 4. Subscribe to Redis for manager-to-manager routing
@@ -152,10 +158,10 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		// 5. Process RPC replies
 		const processReplies = async () => {
-			for await (const payload of request) {
-				if (payload.rpcMessage) {
-					// Route rpc message back to caller
-					const msg = decode(payload.rpcMessage) as
+			for await (const requestPayload of request) {
+				if (requestPayload.payload) {
+					// Route message back to caller
+					const msg = decode(requestPayload.payload) as
 						| GrpcRpcReplyMessage
 						| GrpcDataMessage;
 					if ("reply" in msg) {

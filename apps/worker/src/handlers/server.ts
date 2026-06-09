@@ -11,7 +11,7 @@ export function createRpcServer(
 			// No-op since the server only needs to reply, not emit events
 		},
 		reply: (_topic, message) => {
-			replyQueue.push({ rpcMessage: Buffer.from(encode(message)) });
+			replyQueue.push({ payload: Buffer.from(encode(message)) });
 		},
 	});
 

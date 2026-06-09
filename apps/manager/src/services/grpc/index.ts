@@ -1,11 +1,11 @@
-import { MonitorProto, WorkerProto } from "@vlab/grpc";
+import baseLogger from "@manager/lib/logger";
+import { WorkerProto } from "@vlab/grpc";
 import { createServer } from "nice-grpc";
-import { MonitorServiceImpl } from "./monitor";
 import { WorkerServiceImpl } from "./worker";
 
-const grpcServer = createServer();
+const _logger = baseLogger.child({ service: "grpc-server" });
 
-grpcServer.add(MonitorProto.MonitorServiceDefinition, MonitorServiceImpl);
+export const grpcServer = createServer();
 grpcServer.add(WorkerProto.WorkerServiceDefinition, WorkerServiceImpl);
 
 export * from "./monitor";

@@ -1,17 +1,5 @@
-import { AsyncQueue, type MonitorProto } from "@vlab/grpc";
 import { clabMonitor } from "../lib/clab-monitor";
-import { metadata, monitorClient } from "./client";
-
-export const eventQueue = new AsyncQueue<MonitorProto.MonitorEvent>();
-
-export async function streamEvents() {
-	try {
-		await monitorClient.streamMonitorEvents(eventQueue, { metadata });
-	} catch (err) {
-		console.error("StreamMonitorEvents ended with error", err);
-		setTimeout(streamEvents, 5000);
-	}
-}
+import { server } from "./worker";
 
 export function bindMonitorEvents() {
 	const { emitter, init } = clabMonitor;
@@ -19,7 +7,10 @@ export function bindMonitorEvents() {
 	const forwardEvent = (type: string) => {
 		// @ts-expect-error: TypeScript cannot infer dynamic event listener types for generic EventEmitter string names
 		emitter.on(type, (...args: unknown[]) => {
-			eventQueue.push({ type, payload: JSON.stringify(args) });
+			server.emit("monitor:event", undefined, {
+				type,
+				payload: JSON.stringify(args),
+			});
 		});
 	};
 

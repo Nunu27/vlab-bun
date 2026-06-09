@@ -13,5 +13,4 @@ export type GrpcRpcReplyMessage = RpcReplyMessage<GrpcRpcRoutes>;
 export * from "./async-queue";
 export * from "./commands";
 export * as GoogleProto from "./google/protobuf/empty";
-export * as MonitorProto from "./monitor";
 export * as WorkerProto from "./worker";

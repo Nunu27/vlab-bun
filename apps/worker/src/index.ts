@@ -1,10 +1,9 @@
-import { bindMonitorEvents, streamEvents } from "./services/monitor";
+import { bindMonitorEvents } from "./services/monitor";
 import { listenToCommands, streamMetrics } from "./services/worker";
 
 console.log("Worker starting...");
 
 listenToCommands();
-streamEvents();
 streamMetrics();
 bindMonitorEvents();
 

@@ -18,11 +18,11 @@ export interface WorkerSpec {
 
 export interface CommandPayload {
 	workerSpec?: WorkerSpec | undefined;
-	rpcMessage?: Uint8Array | undefined;
+	payload?: Uint8Array | undefined;
 }
 
 export interface CommandRequest {
-	rpcMessage: Uint8Array;
+	payload: Uint8Array;
 }
 
 export interface MetricsRequest {
@@ -147,7 +147,7 @@ export const WorkerSpec: MessageFns<WorkerSpec> = {
 };
 
 function createBaseCommandPayload(): CommandPayload {
-	return { workerSpec: undefined, rpcMessage: undefined };
+	return { workerSpec: undefined, payload: undefined };
 }
 
 export const CommandPayload: MessageFns<CommandPayload> = {
@@ -158,8 +158,8 @@ export const CommandPayload: MessageFns<CommandPayload> = {
 		if (message.workerSpec !== undefined) {
 			WorkerSpec.encode(message.workerSpec, writer.uint32(10).fork()).join();
 		}
-		if (message.rpcMessage !== undefined) {
-			writer.uint32(18).bytes(message.rpcMessage);
+		if (message.payload !== undefined) {
+			writer.uint32(18).bytes(message.payload);
 		}
 		return writer;
 	},
@@ -185,7 +185,7 @@ export const CommandPayload: MessageFns<CommandPayload> = {
 						break;
 					}
 
-					message.rpcMessage = reader.bytes();
+					message.payload = reader.bytes();
 					continue;
 				}
 			}
@@ -204,10 +204,10 @@ export const CommandPayload: MessageFns<CommandPayload> = {
 				: isSet(object.worker_spec)
 					? WorkerSpec.fromJSON(object.worker_spec)
 					: undefined,
-			rpcMessage: isSet(object.rpcMessage)
-				? bytesFromBase64(object.rpcMessage)
-				: isSet(object.rpc_message)
-					? bytesFromBase64(object.rpc_message)
+			payload: isSet(object.payload)
+				? bytesFromBase64(object.payload)
+				: isSet(object.payload)
+					? bytesFromBase64(object.payload)
 					: undefined,
 		};
 	},
@@ -217,8 +217,8 @@ export const CommandPayload: MessageFns<CommandPayload> = {
 		if (message.workerSpec !== undefined) {
 			obj.workerSpec = WorkerSpec.toJSON(message.workerSpec);
 		}
-		if (message.rpcMessage !== undefined) {
-			obj.rpcMessage = base64FromBytes(message.rpcMessage);
+		if (message.payload !== undefined) {
+			obj.payload = base64FromBytes(message.payload);
 		}
 		return obj;
 	},
@@ -232,13 +232,13 @@ export const CommandPayload: MessageFns<CommandPayload> = {
 			object.workerSpec !== undefined && object.workerSpec !== null
 				? WorkerSpec.fromPartial(object.workerSpec)
 				: undefined;
-		message.rpcMessage = object.rpcMessage ?? undefined;
+		message.payload = object.payload ?? undefined;
 		return message;
 	},
 };
 
 function createBaseCommandRequest(): CommandRequest {
-	return { rpcMessage: new Uint8Array(0) };
+	return { payload: new Uint8Array(0) };
 }
 
 export const CommandRequest: MessageFns<CommandRequest> = {
@@ -246,8 +246,8 @@ export const CommandRequest: MessageFns<CommandRequest> = {
 		message: CommandRequest,
 		writer: BinaryWriter = new BinaryWriter(),
 	): BinaryWriter {
-		if (message.rpcMessage.length !== 0) {
-			writer.uint32(10).bytes(message.rpcMessage);
+		if (message.payload.length !== 0) {
+			writer.uint32(10).bytes(message.payload);
 		}
 		return writer;
 	},
@@ -265,7 +265,7 @@ export const CommandRequest: MessageFns<CommandRequest> = {
 						break;
 					}
 
-					message.rpcMessage = reader.bytes();
+					message.payload = reader.bytes();
 					continue;
 				}
 			}
@@ -279,18 +279,18 @@ export const CommandRequest: MessageFns<CommandRequest> = {
 
 	fromJSON(object: any): CommandRequest {
 		return {
-			rpcMessage: isSet(object.rpcMessage)
-				? bytesFromBase64(object.rpcMessage)
-				: isSet(object.rpc_message)
-					? bytesFromBase64(object.rpc_message)
+			payload: isSet(object.payload)
+				? bytesFromBase64(object.payload)
+				: isSet(object.payload)
+					? bytesFromBase64(object.payload)
 					: new Uint8Array(0),
 		};
 	},
 
 	toJSON(message: CommandRequest): unknown {
 		const obj: any = {};
-		if (message.rpcMessage.length !== 0) {
-			obj.rpcMessage = base64FromBytes(message.rpcMessage);
+		if (message.payload.length !== 0) {
+			obj.payload = base64FromBytes(message.payload);
 		}
 		return obj;
 	},
@@ -300,7 +300,7 @@ export const CommandRequest: MessageFns<CommandRequest> = {
 	},
 	fromPartial(object: DeepPartial<CommandRequest>): CommandRequest {
 		const message = createBaseCommandRequest();
-		message.rpcMessage = object.rpcMessage ?? new Uint8Array(0);
+		message.payload = object.payload ?? new Uint8Array(0);
 		return message;
 	},
 };

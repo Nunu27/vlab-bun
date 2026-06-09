@@ -14,14 +14,14 @@ message WorkerSpec {
 }
 
 message CommandPayload {
-  oneof payload {
+  oneof command {
     WorkerSpec worker_spec = 1;
-    bytes rpc_message = 2;
+    bytes payload = 2;
   }
 }
 
 message CommandRequest {
-  bytes rpc_message = 1;
+  bytes payload = 1;
 }
 
 message MetricsRequest {

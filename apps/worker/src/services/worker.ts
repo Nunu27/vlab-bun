@@ -5,7 +5,7 @@ import { initRpc } from "../handlers/index";
 import { metadata, workerClient } from "./client";
 
 export const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
-const server = initRpc(replyQueue);
+export const server = initRpc(replyQueue);
 
 async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {
 	yield {
@@ -28,8 +28,8 @@ export async function listenToCommands() {
 		});
 		for await (const req of requestStream) {
 			try {
-				if (req.rpcMessage) {
-					const message = decode(req.rpcMessage) as {
+				if (req.payload) {
+					const message = decode(req.payload) as {
 						id?: string;
 						[k: string]: unknown;
 					};
