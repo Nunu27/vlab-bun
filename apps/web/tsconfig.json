@@ -1,12 +1,13 @@
 {
-	"include": ["**/*.ts", "**/*.tsx", "../api/src/guacamole-lite.d.ts"],
+	"include": ["**/*.ts", "**/*.tsx", "../manager/src/guacamole-lite.d.ts"],
 	"compilerOptions": {
 		"target": "ES2022",
 		"jsx": "react-jsx",
 		"module": "ESNext",
 		"paths": {
 			"@web/*": ["./src/*"],
-			"@api/*": ["../api/src/*"],
+			"@api/*": ["../manager/src/*"],
+			"@manager/*": ["../manager/src/*"],
 			"@vlab/shared/*": ["../../packages/@vlab/shared/src/*"]
 		},
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],

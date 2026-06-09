@@ -29,7 +29,7 @@ function ImageInput({
 
 	const { mutate, isPending } = api.file.upload.post.useMutation({
 		showSuccessMessage: false,
-		onSuccess: (res) => {
+		onSuccess: (res: any) => {
 			onChange(res.name);
 		},
 	});

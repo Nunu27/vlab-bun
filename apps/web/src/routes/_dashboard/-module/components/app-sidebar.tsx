@@ -18,7 +18,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<AppLogo />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain sections={menuByRole[role]} />
+				<NavMain sections={menuByRole[role as keyof typeof menuByRole]} />
 			</SidebarContent>
 			<SidebarRail />
 		</Sidebar>

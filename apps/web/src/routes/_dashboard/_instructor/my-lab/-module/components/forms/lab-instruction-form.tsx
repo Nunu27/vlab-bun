@@ -21,8 +21,8 @@ export const LabInstructionForm = withFieldGroup({
 		const kindMap = useMemo(() => {
 			const map: Record<string, DeviceKind> = {};
 
-			categorizedTemplates.forEach((category) => {
-				category.templates.forEach((template) => {
+			categorizedTemplates.forEach((category: any) => {
+				category.templates.forEach((template: any) => {
 					map[template.id] = template.kind;
 				});
 			});

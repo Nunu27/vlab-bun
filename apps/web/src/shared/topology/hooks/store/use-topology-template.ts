@@ -9,11 +9,12 @@ export default (id?: string) => {
 			if (!id) return null;
 
 			const template = state.templates.get(id);
-			const { categoryId, ...rest } = template || { categoryId: "" };
-			const category = state.templateCategories.get(categoryId);
+			if (!template) return null;
+
+			const category = state.templateCategories.get(template.categoryId);
 
 			return {
-				...rest,
+				...template,
 				color: category?.color,
 			};
 		}),

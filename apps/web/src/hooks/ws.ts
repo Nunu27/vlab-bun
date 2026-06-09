@@ -27,6 +27,7 @@ export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
 	options: {
 		params?: WSParamsOf<Name>;
 		initialData?: Static<WSDataRoutes[Name]>;
+		enabled?: boolean;
 	} = {},
 ) {
 	const [data, setData] = useState<Static<WSDataRoutes[Name]> | undefined>(
@@ -34,6 +35,8 @@ export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
 	);
 
 	useEffect(() => {
+		if (options.enabled === false) return;
+
 		const dispose = ws.onData(name as any, options.params as any, (newData) => {
 			setData(newData as any);
 		});
@@ -41,7 +44,7 @@ export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
 		return () => {
 			dispose();
 		};
-	}, [name, options.params]);
+	}, [name, options.params, options.enabled]);
 
 	return data;
 }

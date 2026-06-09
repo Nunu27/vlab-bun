@@ -150,7 +150,7 @@ function RouteComponent() {
 											Remote access configuration
 										</CardDescription>
 									</div>
-									<TestConnectionButton form={form} />
+									<TestConnectionButton form={form as any} />
 								</CardHeader>
 								<CardContent>
 									<DeviceConnectionForm form={form} fields="connection" />

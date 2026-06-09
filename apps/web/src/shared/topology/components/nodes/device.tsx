@@ -14,7 +14,7 @@ const healthColorMap: Record<NodeHealth, string> = {
 	unhealthy: "bg-red-500",
 };
 
-const getHealthColor = (health: string | null) => {
+const getHealthColor = (health: string | null | undefined) => {
 	if (!health) return null;
 	if (health === "deleted") return healthColorMap.unhealthy;
 

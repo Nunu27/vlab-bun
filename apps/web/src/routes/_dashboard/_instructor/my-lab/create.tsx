@@ -87,7 +87,7 @@ function RouteComponent() {
 					isEditor
 					categorizedTemplates={categorizedTemplates}
 				>
-					<LabForm form={form} />
+					<LabForm form={form as any} />
 				</TopologyStoreProvider>
 
 				<div className="flex justify-end gap-4">
