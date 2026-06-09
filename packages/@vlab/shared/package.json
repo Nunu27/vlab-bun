@@ -11,7 +11,7 @@
 		"./commands": "./src/commands.ts"
 	},
 	"dependencies": {
-		"waycast": "latest"
+		"waycast": "link:waycast"
 	},
 	"devDependencies": {
 		"@types/bun": "1.3.11"

@@ -38,61 +38,68 @@ export const StartEvaluationPayloadSchema = t.Object({
 });
 
 export const appRouter = new Router()
-	.data("monitor:stale-session", {
-		payload: t.Object({
+	.data(
+		"monitor:stale-session",
+		t.Object({
 			sessionId: t.String(),
 		}),
-	})
-	.data("monitor:snapshot", {
-		payload: t.Object({
+	)
+	.data(
+		"monitor:snapshot",
+		t.Object({
 			sessions: t.Array(t.Object({ id: t.String() })),
 			nodes: t.Array(
 				t.Object({
 					id: t.String(),
-					health: t.String(),
+					health: t.Union([t.String(), t.Null()]),
 					interfaces: t.Record(t.String(), t.Unknown()),
 					containerId: t.String(),
 				}),
 			),
 		}),
-	})
-	.data("monitor:session-create", {
-		payload: t.Object({
+	)
+	.data(
+		"monitor:session-create",
+		t.Object({
 			id: t.String(),
 			ownerId: t.String(),
 			labId: t.String(),
 			labDue: t.Union([t.String(), t.Number()]),
 		}),
-	})
-	.data("monitor:session-remove", {
-		payload: t.Object({
+	)
+	.data(
+		"monitor:session-remove",
+		t.Object({
 			sessionId: t.String(),
 		}),
-	})
-	.data("monitor:node-create", {
-		payload: t.Object({
+	)
+	.data(
+		"monitor:node-create",
+		t.Object({
 			labSessionId: t.String(),
 			labNodeId: t.String(),
 			deviceTemplateId: t.String(),
 			id: t.String(),
 			name: t.String(),
 			status: t.String(),
-			health: t.String(),
+			health: t.Union([t.String(), t.Null()]),
 			containerId: t.String(),
 		}),
-	})
-	.data("monitor:node-health", {
-		payload: t.Object({
+	)
+	.data(
+		"monitor:node-health",
+		t.Object({
 			node: t.Object({
 				id: t.String(),
-				health: t.String(),
+				health: t.Union([t.String(), t.Null()]),
 				labSessionId: t.String(),
 			}),
 			isTemp: t.Boolean(),
 		}),
-	})
-	.data("monitor:interface-update", {
-		payload: t.Object({
+	)
+	.data(
+		"monitor:interface-update",
+		t.Object({
 			node: t.Object({
 				id: t.String(),
 				interfaces: t.Record(t.String(), t.Unknown()),
@@ -100,7 +107,7 @@ export const appRouter = new Router()
 			}),
 			isTemp: t.Boolean(),
 		}),
-	})
+	)
 	.rpc("clab:deployLab", {
 		payload: t.Object({
 			sessionId: t.String(),

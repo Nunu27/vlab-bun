@@ -11,7 +11,7 @@
 	},
 	"dependencies": {
 		"@vlab/shared": "workspace:*",
-		"waycast": "latest",
+		"waycast": "link:waycast",
 		"@sinclair/typebox": "^0.34.13"
 	},
 	"peerDependencies": {

@@ -21,6 +21,6 @@
 		"nice-grpc": "^2.1.16",
 		"nice-grpc-common": "^2.0.3",
 		"protobufjs": "^8.6.1",
-		"waycast": "^1.1.1"
+		"waycast": "link:waycast"
 	}
 }

@@ -4,12 +4,12 @@ import { server } from "./worker";
 export function bindMonitorEvents() {
 	const { emitter, init } = clabMonitor;
 
-	emitter.on("stale-session", (sessionId: string) => {
+	emitter.on("stale-session", (sessionId) => {
 		server.emit("monitor:stale-session", undefined, { sessionId });
 	});
 
-	emitter.on("snapshot", (snapshotObj: any) => {
-		server.emit("monitor:snapshot", undefined, snapshotObj);
+	emitter.on("snapshot", (snapshot) => {
+		server.emit("monitor:snapshot", undefined, snapshot);
 	});
 
 	emitter.on("session-create", (sessionObj: any) => {

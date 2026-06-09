@@ -74,7 +74,7 @@ export async function handleSnapshot(
 	sessions: { id: string }[],
 	nodes: {
 		id: string;
-		health: string;
+		health: string | null;
 		interfaces: Record<string, unknown>;
 		containerId: string;
 	}[],
@@ -178,7 +178,7 @@ export async function handleNodeCreate(
 
 export async function handleNodeHealth(
 	_workerId: string,
-	node: { id: string; health: string; labSessionId: string },
+	node: { id: string; health: string | null; labSessionId: string },
 	isTemp: boolean,
 ) {
 	try {

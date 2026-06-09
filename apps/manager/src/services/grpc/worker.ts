@@ -50,7 +50,6 @@ export async function sendCommandToWorker<
 	const client = connectedWorkers.get(workerId);
 	if (client) {
 		return new Promise((resolve) => {
-			// @ts-expect-error - TypeScript cannot structurally evaluate `StaticType` deeply across generic parameters `K` due to Typebox 0.32+ structural expansion limits
 			client.rpc(command, undefined as never, payload, {
 				response: () => resolve(true),
 			});
@@ -125,13 +124,13 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			},
 		});
 
-		client.onData("monitor:stale-session", undefined, (event: any) => {
+		client.onData("monitor:stale-session", undefined, (event) => {
 			handleStaleSession(workerId, event.sessionId);
 		});
-		client.onData("monitor:snapshot", undefined, (event: any) => {
+		client.onData("monitor:snapshot", undefined, (event) => {
 			handleSnapshot(workerId, event.sessions, event.nodes);
 		});
-		client.onData("monitor:session-create", undefined, (event: any) => {
+		client.onData("monitor:session-create", undefined, (event) => {
 			handleSessionCreate(
 				workerId,
 				event.id,
@@ -140,10 +139,10 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				event.labDue,
 			);
 		});
-		client.onData("monitor:session-remove", undefined, (event: any) => {
+		client.onData("monitor:session-remove", undefined, (event) => {
 			handleSessionRemove(workerId, event.sessionId);
 		});
-		client.onData("monitor:node-create", undefined, (event: any) => {
+		client.onData("monitor:node-create", undefined, (event) => {
 			const { labSessionId, labNodeId, deviceTemplateId, ...node } = event;
 			handleNodeCreate(
 				workerId,
@@ -153,10 +152,10 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				node,
 			);
 		});
-		client.onData("monitor:node-health", undefined, (event: any) => {
+		client.onData("monitor:node-health", undefined, (event) => {
 			handleNodeHealth(workerId, event.node, event.isTemp);
 		});
-		client.onData("monitor:interface-update", undefined, (event: any) => {
+		client.onData("monitor:interface-update", undefined, (event) => {
 			handleInterfaceUpdate(workerId, event.node, event.isTemp);
 		});
 

@@ -28,7 +28,7 @@
 		"@vlab/shared": "workspace:*",
 		"@vlab/grpc": "workspace:*",
 		"@vlab/ws": "workspace:*",
-		"waycast": "latest",
+		"waycast": "link:waycast",
 		"bcryptjs": "^2.4.3",
 		"croner": "^10.0.1",
 		"dotenv": "^17.3.1",
