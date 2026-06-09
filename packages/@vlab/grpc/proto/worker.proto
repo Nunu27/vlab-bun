@@ -16,12 +16,12 @@ message WorkerSpec {
 message CommandPayload {
   oneof payload {
     WorkerSpec worker_spec = 1;
-    bytes waycast_message = 2;
+    bytes rpc_message = 2;
   }
 }
 
 message CommandRequest {
-  bytes waycast_message = 1;
+  bytes rpc_message = 1;
 }
 
 message MetricsRequest {

@@ -1,8 +1,8 @@
 import evaluator from "@vlab/evaluator";
 import type { NodeInfo } from "@vlab/evaluator/types";
 import { pino } from "pino";
-import { clabMonitor } from "../services/monitor.js";
-import docker from "../utils/docker.js";
+import { clabMonitor } from "./clab-monitor";
+import docker from "./docker";
 
 const logger = pino({ name: "evaluator" });
 

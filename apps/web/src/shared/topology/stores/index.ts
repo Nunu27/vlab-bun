@@ -132,7 +132,7 @@ const { Provider, useContext } = createScopedStore(
 			({ id: categoryId, templates: categoryTemplates, ...category }) => {
 				templateCategories.set(categoryId, category);
 
-				categoryTemplates.forEach(({ id, ...template }) => {
+				categoryTemplates.forEach(({ id, ...template }: any) => {
 					templates.set(id, { ...template, categoryId });
 				});
 			},

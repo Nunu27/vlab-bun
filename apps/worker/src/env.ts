@@ -4,18 +4,15 @@ import { Type as t } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
 
-const EnvSchema = t.Object(
-	{
-		NODE_ENV: t.Union(
-			[t.Literal("development"), t.Literal("production"), t.Literal("test")],
-			{ default: "development" },
-		),
+const EnvSchema = t.Object({
+	NODE_ENV: t.Union(
+		[t.Literal("development"), t.Literal("production"), t.Literal("test")],
+		{ default: "development" },
+	),
 
-		WORKER_ID: t.String({ minLength: 1 }),
-		MANAGER_GRPC_URL: t.String({ default: "localhost:50051" }),
-	},
-	{ additionalProperties: true },
-);
+	WORKER_ID: t.String({ minLength: 1 }),
+	MANAGER_GRPC_URL: t.String({ default: "localhost:50051" }),
+});
 
 const validator = TypeCompiler.Compile(EnvSchema);
 const value = Value.Default(EnvSchema, process.env);

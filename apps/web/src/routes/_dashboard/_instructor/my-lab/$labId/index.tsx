@@ -1,3 +1,4 @@
+import type { ExtractTreatyData } from "@jawit/query/types";
 import { createFileRoute } from "@tanstack/react-router";
 import type { DeviceKind } from "@vlab/shared/enums";
 import { LabChecksEditorProvider } from "@web/components/mdx-plugins/lab-checks";
@@ -19,6 +20,13 @@ import EnrollmentsTab from "./-module/components/tabs/enrollments-tab";
 import { InstructionsTab } from "./-module/components/tabs/instructions-tab";
 import { OverviewTab } from "./-module/components/tabs/overview-tab";
 import { TopologyTab } from "./-module/components/tabs/topology-tab";
+
+type CategorizedTemplates = ExtractTreatyData<
+	ReturnType<(typeof api)["device-template"]["list"]["get"]>
+>;
+type LabTopology = ExtractTreatyData<
+	ReturnType<ReturnType<typeof api.lab>["get"]>
+>["topology"];
 
 export const Route = createFileRoute("/_dashboard/_instructor/my-lab/$labId/")({
 	staticData: {
@@ -49,10 +57,12 @@ function RouteComponent() {
 	const kindMap = useMemo(() => {
 		const map: Record<string, DeviceKind> = {};
 
-		categorizedTemplates.forEach((category) => {
-			category.templates.forEach((template) => {
-				map[template.id] = template.kind;
-			});
+		categorizedTemplates.forEach((category: CategorizedTemplates[0]) => {
+			category.templates.forEach(
+				(template: CategorizedTemplates[0]["templates"][0]) => {
+					map[template.id] = template.kind;
+				},
+			);
 		});
 
 		return map;
@@ -61,10 +71,12 @@ function RouteComponent() {
 	const nodes: { label: string; value: string }[] = [];
 	const kindMapping: Record<string, DeviceKind> = {};
 
-	Object.entries(lab.topology.devices).forEach(([id, device]) => {
-		nodes.push({ label: device.name, value: id });
-		kindMapping[id] = kindMap[device.deviceId] || "linux";
-	});
+	Object.entries(lab.topology.devices).forEach(
+		([id, device]: [string, LabTopology["devices"][string]]) => {
+			nodes.push({ label: device.name, value: id });
+			kindMapping[id] = kindMap[device.deviceId] || "linux";
+		},
+	);
 
 	return (
 		<LabChecksEditorProvider

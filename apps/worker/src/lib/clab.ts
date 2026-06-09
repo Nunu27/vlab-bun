@@ -5,7 +5,7 @@ import type {
 import Containerlab from "@vlab/clab";
 import type { DeviceKind } from "@vlab/shared/enums";
 import { toKebabCase } from "@vlab/shared/utils";
-import { stopLabEvaluation } from "./evaluator.js";
+import { stopLabEvaluation } from "./evaluator";
 
 const clab = new Containerlab({
 	cliPath: "containerlab",

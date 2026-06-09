@@ -1,3 +1,4 @@
+import type { ExtractTreatyData } from "@jawit/query/types";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
 	LabChecksSessionProvider,
@@ -24,6 +25,10 @@ import {
 	LabSessionModalProvider,
 	useLabSessionModalStore,
 } from "./-module/store/lab-session-modal-store";
+
+type LabTopology = ExtractTreatyData<
+	ReturnType<ReturnType<typeof api.lab>["get"]>
+>["topology"];
 
 export const Route = createFileRoute("/lab/$labId/session/$labSessionId/")({
 	component: RouteComponent,
@@ -55,9 +60,11 @@ function RouteComponent() {
 	const nodes = useMemo(() => {
 		const map: Record<string, string> = {};
 
-		Object.entries(lab.topology.devices).forEach(([id, device]) => {
-			map[id] = device.name;
-		});
+		Object.entries(lab.topology.devices).forEach(
+			([id, device]: [string, LabTopology["devices"][string]]) => {
+				map[id] = device.name;
+			},
+		);
 
 		return map;
 	}, [lab.topology.devices]);

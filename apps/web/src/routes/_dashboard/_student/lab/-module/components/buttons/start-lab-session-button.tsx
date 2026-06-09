@@ -81,8 +81,6 @@ export function StartLabSessionButton({
 		setIsLoading(true);
 		setDisposeFn(() => dispose);
 
-		console.log("sending");
-
 		send({
 			params: { id: labId },
 			onError: (error) => {
@@ -91,7 +89,6 @@ export function StartLabSessionButton({
 			},
 			callbacks: {
 				info: (msg) => {
-					console.log("info", msg);
 					return setLogs((prev) => [...prev, { type: "info", message: msg }]);
 				},
 				id: (sessionId) => {

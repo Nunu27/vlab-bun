@@ -29,7 +29,7 @@ function InterfaceTooltip({
 }) {
 	const ips = useWSData("node:[id]:interfaces:[interface]", {
 		params: { id: nodeId, interface: interfaceName },
-		default: ip,
+		initialData: ip,
 	});
 
 	return (

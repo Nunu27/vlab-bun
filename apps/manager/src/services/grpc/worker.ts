@@ -4,15 +4,14 @@ import env from "@manager/env";
 import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import { decode, encode } from "@msgpack/msgpack";
+import type { Static } from "@sinclair/typebox";
 import type {
 	GrpcDataMessage,
 	GrpcRpcReplyMessage,
 	GrpcRpcRoutes,
 } from "@vlab/grpc";
-import { appRouter, WorkerProto } from "@vlab/grpc";
-
+import { AsyncQueue, appRouter, WorkerProto } from "@vlab/grpc";
 import { eq } from "drizzle-orm";
-import type { Static } from "elysia";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
 
@@ -42,7 +41,8 @@ export async function sendCommandToWorker<
 	const client = connectedWorkers.get(workerId);
 	if (client) {
 		return new Promise((resolve) => {
-			client.rpc(command, {}, payload, {
+			// @ts-expect-error - TypeScript cannot structurally evaluate `StaticType` deeply across generic parameters `K` due to Typebox 0.32+ structural expansion limits
+			client.rpc(command, undefined as never, payload, {
 				response: () => resolve(true),
 			});
 		});
@@ -103,18 +103,16 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		logger.info(`Worker ${workerId} connected`);
 
-		// 3. Create Waycast client for this worker
-		const msgQueue: WorkerProto.CommandRequest[] = [];
-		let msgResolver: (() => void) | null = null;
+		// 3. Create RPC client for this worker
+		const msgQueue = new AsyncQueue<WorkerProto.CommandRequest>();
 
 		const client = appRouter.buildClient({
 			send: async (message) => {
 				msgQueue.push(
 					WorkerProto.CommandRequest.create({
-						waycastMessage: Buffer.from(encode(message)),
+						rpcMessage: Buffer.from(encode(message)),
 					}),
 				);
-				if (msgResolver) msgResolver();
 			},
 		});
 		connectedWorkers.set(workerId, client);
@@ -148,16 +146,16 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		const abortListener = () => {
 			unsubscribe();
-			if (msgResolver) msgResolver();
+			msgQueue.close();
 		};
 		context.signal.addEventListener("abort", abortListener);
 
-		// 5. Process Waycast replies
+		// 5. Process RPC replies
 		const processReplies = async () => {
 			for await (const payload of request) {
-				if (payload.waycastMessage) {
-					// Route waycast message back to caller
-					const msg = decode(payload.waycastMessage) as
+				if (payload.rpcMessage) {
+					// Route rpc message back to caller
+					const msg = decode(payload.rpcMessage) as
 						| GrpcRpcReplyMessage
 						| GrpcDataMessage;
 					if ("reply" in msg) {
@@ -179,16 +177,8 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		// 6. Yield outgoing commands
 		try {
-			while (!context.signal.aborted) {
-				if (msgQueue.length > 0) {
-					const msg = msgQueue.shift();
-					if (msg) yield msg;
-				} else {
-					await new Promise<void>((res) => {
-						msgResolver = res;
-					});
-					msgResolver = null;
-				}
+			for await (const msg of msgQueue) {
+				yield msg;
 			}
 		} finally {
 			context.signal.removeEventListener("abort", abortListener);

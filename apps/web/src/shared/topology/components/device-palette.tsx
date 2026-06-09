@@ -13,7 +13,7 @@ function DevicePalette() {
 				</h2>
 			</div>
 			<div className="flex-1 space-y-6 overflow-y-auto p-4">
-				{categories?.map((category) => (
+				{categories?.map((category: any) => (
 					<div key={category.id}>
 						<h3
 							className="mb-3 ml-1 font-bold text-gray-400 text-xs uppercase dark:text-muted-foreground"
@@ -21,7 +21,7 @@ function DevicePalette() {
 						>
 							{category.name}
 						</h3>
-						{category.templates.map((template) => (
+						{category.templates.map((template: any) => (
 							<div
 								key={template.id}
 								draggable

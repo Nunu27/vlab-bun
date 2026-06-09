@@ -30,7 +30,7 @@ function RouteComponent() {
 		.get.useSuspenseQuery();
 	const health = useWSData("node:[id]:health", {
 		params: { id: nodeId },
-		default: data.health ?? null,
+		initialData: data.health ?? null,
 	});
 
 	useWSEvent("lab-session:[sessionId]:client-change", {

@@ -32,8 +32,8 @@ export const LabConfigSchema = t.Object({
 
 export const StartEvaluationPayloadSchema = t.Object({
 	sessionId: t.String(),
-	nodeMap: t.Record(t.String(), t.Any()),
-	sessionChecks: t.Array(t.Any()),
+	nodeMap: t.Record(t.String(), t.Unknown()),
+	sessionChecks: t.Array(t.Unknown()),
 	values: t.Record(t.String(), t.Boolean()),
 });
 

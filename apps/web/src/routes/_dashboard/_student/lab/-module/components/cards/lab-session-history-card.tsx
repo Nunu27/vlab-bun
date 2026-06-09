@@ -31,7 +31,9 @@ export function LabSessionHistoryCard({
 }: LabSessionHistoryCardProps) {
 	const attemptCount = sessions.length;
 	const isUnlimited = !maxAttempt;
-	const activeSession = sessions.find((s) => !s.submittedAt);
+	const activeSession = sessions.find(
+		(s: LabSessionHistoryCardProps["sessions"][0]) => !s.submittedAt,
+	);
 
 	return (
 		<Card>
@@ -78,15 +80,17 @@ export function LabSessionHistoryCard({
 					</Empty>
 				) : (
 					<div className="space-y-4">
-						{sessions.map((session) => {
-							return (
-								<LabSessionHistoryItem
-									key={session.id}
-									session={session}
-									labId={labId}
-								/>
-							);
-						})}
+						{sessions.map(
+							(session: LabSessionHistoryCardProps["sessions"][0]) => {
+								return (
+									<LabSessionHistoryItem
+										key={session.id}
+										session={session}
+										labId={labId}
+									/>
+								);
+							},
+						)}
 					</div>
 				)}
 			</CardContent>

@@ -1,3 +1,4 @@
+import type { ExtractTreatyData } from "@jawit/query/types";
 import { Link } from "@tanstack/react-router";
 import { PageHeading } from "@web/components/sections/page-heading";
 import { Button } from "@web/components/ui/button";
@@ -13,6 +14,10 @@ import { LabCard } from "@web/routes/_dashboard/_student/lab/-module/components/
 import { useAuthStore } from "@web/stores/auth-store";
 import { BookOpenIcon, FlaskConicalIcon } from "lucide-react";
 import { UpcomingLabItem } from "./upcoming-lab-item";
+
+type DashboardData = ExtractTreatyData<
+	ReturnType<typeof api.dashboard.student.get>
+>;
 
 function StudentDashboardPage() {
 	const { data } = api.dashboard.student.get.useSuspenseQuery();
@@ -56,7 +61,7 @@ function StudentDashboardPage() {
 					</Card>
 				) : (
 					<div className="flex snap-x gap-4 overflow-x-auto pb-4">
-						{data.enrolledLabs.map((lab) => (
+						{data.enrolledLabs.map((lab: DashboardData["enrolledLabs"][0]) => (
 							<div key={lab.id} className="w-75 shrink-0 snap-start">
 								<LabCard lab={lab} />
 							</div>
@@ -91,9 +96,11 @@ function StudentDashboardPage() {
 							</Empty>
 						) : (
 							<div className="flex flex-col divide-y">
-								{data.upcomingLabs.map((lab) => (
-									<UpcomingLabItem key={lab.id} lab={lab} />
-								))}
+								{data.upcomingLabs.map(
+									(lab: DashboardData["upcomingLabs"][0]) => (
+										<UpcomingLabItem key={lab.id} lab={lab} />
+									),
+								)}
 							</div>
 						)}
 					</CardContent>

@@ -27,7 +27,7 @@ function InterfaceSelectModal() {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex max-h-80 flex-col gap-1 overflow-y-auto pr-1">
-					{data?.interfaces.map((iface) => {
+					{data?.interfaces.map((iface: any) => {
 						const disabled = !iface.configurable || data.used.has(iface.name);
 
 						return (
