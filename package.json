@@ -2,15 +2,15 @@
 	"name": "vlab",
 	"module": "index.ts",
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.9",
+		"@biomejs/biome": "^2.4.14",
 		"@types/bun": "latest",
 		"compose-spec-schema": "^1.0.0",
 		"concurrently": "^9.2.1",
-		"lint-staged": "^16.1.0",
-		"simple-git-hooks": "^2.13.0"
+		"lint-staged": "^16.4.0",
+		"simple-git-hooks": "^2.13.1"
 	},
 	"peerDependencies": {
-		"typescript": "^5"
+		"typescript": "^5.9.3"
 	},
 	"lint-staged": {
 		"*.{ts,tsx,js,jsx,json,css}": [
@@ -37,8 +37,5 @@
 	"workspaces": [
 		"apps/*",
 		"packages/*/*"
-	],
-	"dependencies": {
-		"yaml": "^2.8.3"
-	}
+	]
 }

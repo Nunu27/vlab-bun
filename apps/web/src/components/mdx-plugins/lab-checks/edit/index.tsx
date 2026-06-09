@@ -3,7 +3,7 @@ import {
 	useLexicalNodeRemove,
 	useMdastNodeUpdater,
 } from "@mdxeditor/editor";
-import type { LabRequest } from "@vlab/shared/schemas/lab";
+import type { LabRequest } from "@vlab/shared/schemas";
 import { Badge } from "@web/components/ui/badge";
 import {
 	Tooltip,

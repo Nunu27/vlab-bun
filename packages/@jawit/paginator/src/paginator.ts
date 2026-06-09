@@ -1,3 +1,5 @@
+// paginator.ts
+
 import type { PaginatedData } from "@jawit/common";
 import {
 	and,

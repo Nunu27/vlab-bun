@@ -35,7 +35,7 @@ export const LabInstructionForm = withFieldGroup({
 
 		Object.entries(group.state.values.devices ?? {}).forEach(([id, device]) => {
 			nodes.push({ label: device.name, value: id });
-			kindMapping[id] = kindMap[device.deviceId] || "linux";
+			kindMapping[id] = kindMap[device.deviceId] || ("linux" as DeviceKind);
 		});
 
 		return (

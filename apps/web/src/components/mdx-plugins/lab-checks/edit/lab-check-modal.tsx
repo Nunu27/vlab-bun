@@ -1,4 +1,4 @@
-import type { LabRequest } from "@vlab/shared/schemas/lab";
+import type { LabRequest } from "@vlab/shared/schemas";
 import { Button } from "@web/components/ui/button";
 import {
 	Dialog,

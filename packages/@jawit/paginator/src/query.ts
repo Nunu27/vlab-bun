@@ -1,3 +1,5 @@
+// query.ts
+
 /** biome-ignore-all lint/suspicious/noExplicitAny: for loose typing */
 import { ilike, or, type SQL } from "drizzle-orm";
 import { type FilterOp, filterMap } from "./constants";

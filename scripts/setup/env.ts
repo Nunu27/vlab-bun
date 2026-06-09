@@ -1,5 +1,4 @@
 import type { Compose } from "compose-spec-schema";
-import yaml from "yaml";
 import { ask, confirm } from "../common/input";
 import logger from "../common/logger";
 import { execute } from "../common/shell";
@@ -379,7 +378,7 @@ EOF`);
 		};
 	}
 
-	const composeContent = yaml.stringify(composeObj);
+	const composeContent = Bun.YAML.stringify(composeObj);
 
 	await execute(`cat > "${config.deployPath}/docker-compose.yml" << 'EOF'
 ${composeContent}

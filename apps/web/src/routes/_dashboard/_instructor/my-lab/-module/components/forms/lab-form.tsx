@@ -1,5 +1,5 @@
 import { useStore } from "@tanstack/react-form";
-import type { LabRequestSchema, LabTopology } from "@vlab/shared/schemas";
+import type { LabRequest, LabTopology } from "@vlab/shared/schemas";
 import {
 	Card,
 	CardContent,
@@ -51,7 +51,7 @@ function TabErrorDot() {
 }
 
 export const LabForm = withForm({
-	defaultValues: {} as typeof LabRequestSchema.static,
+	defaultValues: {} as LabRequest,
 	render: ({ form }) => {
 		const store = useTopologyStore();
 

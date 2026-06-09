@@ -6,16 +6,15 @@
 		"module": "ESNext",
 		"paths": {
 			"@web/*": ["./src/*"],
-			"@api/*": ["../api/src/*"]
+			"@api/*": ["../api/src/*"],
+			"@vlab/shared/*": ["../../packages/@vlab/shared/src/*"]
 		},
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"types": ["vite/client", "bun-types"],
-		/* Bundler mode */
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
-		/* Linting */
 		"skipLibCheck": true,
 		"strict": true,
 		"noUnusedLocals": true,
