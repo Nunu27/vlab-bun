@@ -1,29 +1,34 @@
-import { SocketIOClient } from "@jawit/ws";
-import contracts from "@vlab/ws";
+import appRouter, {
+	type ClientToServerEvents,
+	type ServerToClientEvents,
+} from "@vlab/ws";
 import { useAuthStore } from "@web/stores/auth-store";
-import { io } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 import parser from "socket.io-msgpack-parser";
 
-const socket = io(window.location.origin, {
-	parser,
-	path: "/ws",
-	autoConnect: false,
-	transports: ["websocket", "polling", "webtransport"],
-	auth: async (cb) => {
-		const session = await cookieStore.get("session");
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+	window.location.origin,
+	{
+		parser,
+		path: "/ws",
+		autoConnect: false,
+		transports: ["websocket", "polling", "webtransport"],
+		auth: async (cb) => {
+			const session = await cookieStore.get("session");
 
-		return cb({
-			session: session?.value,
-		});
+			return cb({
+				session: session?.value,
+			});
+		},
 	},
-});
+);
 
 socket.on("connect_error", (err) => {
 	console.error("[WebSocket] Connection Error:", err.message);
 });
 
-socket.on("error", (data) => {
-	console.error("[WebSocket] Error:", data);
+socket.on("connect", () => {
+	console.log("[WebSocket] Connected");
 });
 
 useAuthStore.subscribe((state) => {
@@ -33,9 +38,18 @@ useAuthStore.subscribe((state) => {
 	else socket.disconnect();
 });
 
-const ws = new SocketIOClient(contracts);
+const ws = appRouter.buildClient({
+	send: (message) => {
+		return new Promise<string>((resolve) => {
+			socket.emit("rpc", message, (requestId) => {
+				resolve(requestId);
+			});
+		});
+	},
+});
 
-ws.attach(socket);
+socket.on("data", (msg) => ws.handleData(msg));
+socket.on("reply", (msg) => ws.handleReply(msg));
 
 export { socket };
 export default ws;
