@@ -38,10 +38,67 @@ export const StartEvaluationPayloadSchema = t.Object({
 });
 
 export const appRouter = new Router()
-	.data("monitor:event", {
+	.data("monitor:stale-session", {
 		payload: t.Object({
-			type: t.String(),
-			payload: t.String(),
+			sessionId: t.String(),
+		}),
+	})
+	.data("monitor:snapshot", {
+		payload: t.Object({
+			sessions: t.Array(t.Object({ id: t.String() })),
+			nodes: t.Array(
+				t.Object({
+					id: t.String(),
+					health: t.String(),
+					interfaces: t.Record(t.String(), t.Unknown()),
+					containerId: t.String(),
+				}),
+			),
+		}),
+	})
+	.data("monitor:session-create", {
+		payload: t.Object({
+			id: t.String(),
+			ownerId: t.String(),
+			labId: t.String(),
+			labDue: t.Union([t.String(), t.Number()]),
+		}),
+	})
+	.data("monitor:session-remove", {
+		payload: t.Object({
+			sessionId: t.String(),
+		}),
+	})
+	.data("monitor:node-create", {
+		payload: t.Object({
+			labSessionId: t.String(),
+			labNodeId: t.String(),
+			deviceTemplateId: t.String(),
+			id: t.String(),
+			name: t.String(),
+			status: t.String(),
+			health: t.String(),
+			containerId: t.String(),
+		}),
+	})
+	.data("monitor:node-health", {
+		payload: t.Object({
+			node: t.Object({
+				id: t.String(),
+				health: t.String(),
+				labSessionId: t.String(),
+			}),
+			isTemp: t.Boolean(),
+		}),
+	})
+	.data("monitor:interface-update", {
+		payload: t.Object({
+			node: t.Object({
+				id: t.String(),
+				interfaces: t.Record(t.String(), t.Unknown()),
+				labSessionId: t.String(),
+			}),
+			isTemp: t.Boolean(),
 		}),
 	})
 	.rpc("clab:deployLab", {

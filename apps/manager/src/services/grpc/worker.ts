@@ -12,7 +12,15 @@ import type {
 } from "@vlab/grpc";
 import { AsyncQueue, appRouter, WorkerProto } from "@vlab/grpc";
 import { eq } from "drizzle-orm";
-import { handleMonitorEvent } from "./monitor";
+import {
+	handleInterfaceUpdate,
+	handleNodeCreate,
+	handleNodeHealth,
+	handleSessionCreate,
+	handleSessionRemove,
+	handleSnapshot,
+	handleStaleSession,
+} from "./monitor";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
 
@@ -117,8 +125,39 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			},
 		});
 
-		client.onData("monitor:event", undefined, (event: any) => {
-			handleMonitorEvent(workerId, event.type, event.payload);
+		client.onData("monitor:stale-session", undefined, (event: any) => {
+			handleStaleSession(workerId, event.sessionId);
+		});
+		client.onData("monitor:snapshot", undefined, (event: any) => {
+			handleSnapshot(workerId, event.sessions, event.nodes);
+		});
+		client.onData("monitor:session-create", undefined, (event: any) => {
+			handleSessionCreate(
+				workerId,
+				event.id,
+				event.ownerId,
+				event.labId,
+				event.labDue,
+			);
+		});
+		client.onData("monitor:session-remove", undefined, (event: any) => {
+			handleSessionRemove(workerId, event.sessionId);
+		});
+		client.onData("monitor:node-create", undefined, (event: any) => {
+			const { labSessionId, labNodeId, deviceTemplateId, ...node } = event;
+			handleNodeCreate(
+				workerId,
+				labNodeId,
+				deviceTemplateId,
+				labSessionId,
+				node,
+			);
+		});
+		client.onData("monitor:node-health", undefined, (event: any) => {
+			handleNodeHealth(workerId, event.node, event.isTemp);
+		});
+		client.onData("monitor:interface-update", undefined, (event: any) => {
+			handleInterfaceUpdate(workerId, event.node, event.isTemp);
 		});
 
 		connectedWorkers.set(workerId, client);

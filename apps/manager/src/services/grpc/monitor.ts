@@ -60,129 +60,177 @@ async function submitActiveSession(id: string) {
 	logger.debug({ id }, "Session removed and submitted");
 }
 
-export async function handleMonitorEvent(
-	workerId: string,
-	eventType: string,
-	eventPayload: string,
+export async function handleStaleSession(workerId: string, sessionId: string) {
+	try {
+		logger.warn({ sessionId }, "Destroying stale session");
+		sendCommandToWorker(workerId, "clab:destroyLab", { sessionId });
+	} catch (err) {
+		logger.error({ err }, "Failed to process stale-session event");
+	}
+}
+
+export async function handleSnapshot(
+	_workerId: string,
+	sessions: { id: string }[],
+	nodes: {
+		id: string;
+		health: string;
+		interfaces: Record<string, unknown>;
+		containerId: string;
+	}[],
 ) {
 	try {
-		const payload = JSON.parse(eventPayload);
-		const type = eventType;
-
-		if (type === "stale-session") {
-			const sessionId = payload[0];
-			logger.warn({ sessionId }, "Destroying stale session");
-			// Fire and forget via routing
-			sendCommandToWorker(workerId, "clab:destroyLab", {
-				sessionId,
-			});
-		} else if (type === "snapshot") {
-			const { sessions, nodes } = payload[0];
-			const sessionIds = sessions.map((s: { id: string }) => s.id);
-			const staleSessions = await db.query.labSessions.findMany({
-				columns: { id: true },
-				where: (labSessions, { isNull, notInArray, and }) => {
-					if (sessionIds.length > 0)
-						return and(
-							isNull(labSessions.submittedAt),
-							notInArray(labSessions.id, sessionIds),
-						);
-					return isNull(labSessions.submittedAt);
-				},
-			});
-			for (const { id } of staleSessions)
-				await sessionThrottle.run(id, () => submitActiveSession(id));
-			for (const node of nodes) {
-				await db
-					.update(labSessionNodes)
-					.set({
-						health: node.health,
-						interfaces: node.interfaces,
-						containerId: node.containerId,
-					})
-					.where(eq(labSessionNodes.id, node.id));
-			}
-			logger.info(
-				{ sessions: sessions.length, nodes: nodes.length },
-				"Synchronized containerlab state",
-			);
-		} else if (type === "session-create") {
-			const { id, ownerId, labId, labDue } = payload[0];
-			if (labId && labDue) {
-				const now = new Date();
-				const dueDate = new Date(Number(labDue));
-				sessionThrottle.run(id, async () => {
-					await db
-						.insert(labSessions)
-						.values({
-							id,
-							labId,
-							studentId: ownerId,
-							workerId,
-							dueDate,
-							createdAt: now,
-							updatedAt: now,
-						})
-						.onConflictDoNothing();
-				});
-			}
-		} else if (type === "session-remove") {
-			const id = payload[0];
-			await sessionThrottle.run(id, () => submitActiveSession(id));
-			ws.server.emit(
-				"lab-session:[sessionId]:ended",
-				{ sessionId: id },
-				undefined,
-			);
-		} else if (type === "node-create") {
-			const { labNodeId, deviceTemplateId, ...node } = payload[0];
-			if (labNodeId && deviceTemplateId) {
-				await sessionThrottle.wait(node.labSessionId);
-				await db
-					.insert(labSessionNodes)
-					.values({ labNodeId, deviceTemplateId, ...node });
-			}
-		} else if (type === "node-health") {
-			const node = payload[0];
-			const isTemp = payload[1];
-			if (!isTemp)
-				ws.server.emit("node:[id]:health", { id: node.id }, node.health);
-			await sessionThrottle.wait(node.labSessionId, {
-				id: "health",
-				execute: async () => {
-					await db
-						.update(labSessionNodes)
-						.set({ health: node.health })
-						.where(eq(labSessionNodes.id, node.id));
-				},
-			});
-			if (!isTemp)
-				ws.server.emit("node:[id]:health", { id: node.id }, node.health);
-			else tempNodeEvents.emit(`${node.id}:health`, node.health);
-		} else if (type === "interface-update") {
-			const node = payload[0];
-			const isTemp = payload[1];
-			if (!isTemp) {
-				for (const [iface, ips] of Object.entries(node.interfaces)) {
-					ws.server.emit(
-						"node:[id]:interfaces:[interface]",
-						{ id: node.id, interface: iface },
-						ips as string[],
+		const sessionIds = sessions.map((s) => s.id);
+		const staleSessions = await db.query.labSessions.findMany({
+			columns: { id: true },
+			where: (labSessions, { isNull, notInArray, and }) => {
+				if (sessionIds.length > 0)
+					return and(
+						isNull(labSessions.submittedAt),
+						notInArray(labSessions.id, sessionIds),
 					);
-				}
-			}
-			tempNodeEvents.emit(
-				`${node.id}:ip`,
-				Object.values(node.interfaces).flat()[0] as string,
-			);
-			interfaceDebounce.run(node.id, async () => {
+				return isNull(labSessions.submittedAt);
+			},
+		});
+		for (const { id } of staleSessions)
+			await sessionThrottle.run(id, () => submitActiveSession(id));
+		for (const node of nodes) {
+			await db
+				.update(labSessionNodes)
+				.set({
+					health: node.health as "healthy" | "unhealthy" | "starting" | null,
+					interfaces: node.interfaces as Record<string, string[]>,
+					containerId: node.containerId,
+				})
+				.where(eq(labSessionNodes.id, node.id));
+		}
+		logger.info(
+			{ sessions: sessions.length, nodes: nodes.length },
+			"Synchronized containerlab state",
+		);
+	} catch (err) {
+		logger.error({ err }, "Failed to process snapshot event");
+	}
+}
+
+export async function handleSessionCreate(
+	workerId: string,
+	id: string,
+	ownerId: string,
+	labId: string,
+	labDue: string | number,
+) {
+	try {
+		if (labId && labDue) {
+			const now = new Date();
+			const dueDate = new Date(Number(labDue));
+			sessionThrottle.run(id, async () => {
 				await db
-					.update(labSessionNodes)
-					.set({ interfaces: node.interfaces })
-					.where(eq(labSessionNodes.id, node.id));
+					.insert(labSessions)
+					.values({
+						id,
+						labId,
+						studentId: ownerId,
+						workerId,
+						dueDate,
+						createdAt: now,
+						updatedAt: now,
+					})
+					.onConflictDoNothing();
 			});
 		}
 	} catch (err) {
-		logger.error({ err }, "Failed to process monitor event");
+		logger.error({ err }, "Failed to process session-create event");
+	}
+}
+
+export async function handleSessionRemove(_workerId: string, id: string) {
+	try {
+		await sessionThrottle.run(id, () => submitActiveSession(id));
+		ws.server.emit(
+			"lab-session:[sessionId]:ended",
+			{ sessionId: id },
+			undefined,
+		);
+	} catch (err) {
+		logger.error({ err }, "Failed to process session-remove event");
+	}
+}
+
+export async function handleNodeCreate(
+	_workerId: string,
+	labNodeId: string,
+	deviceTemplateId: string,
+	labSessionId: string,
+	node: any,
+) {
+	try {
+		if (labNodeId && deviceTemplateId) {
+			await sessionThrottle.wait(labSessionId);
+			await db
+				.insert(labSessionNodes)
+				.values({ labSessionId, labNodeId, deviceTemplateId, ...node });
+		}
+	} catch (err) {
+		logger.error({ err }, "Failed to process node-create event");
+	}
+}
+
+export async function handleNodeHealth(
+	_workerId: string,
+	node: { id: string; health: string; labSessionId: string },
+	isTemp: boolean,
+) {
+	try {
+		if (!isTemp)
+			ws.server.emit("node:[id]:health", { id: node.id }, node.health as any);
+		await sessionThrottle.wait(node.labSessionId, {
+			id: "health",
+			execute: async () => {
+				await db
+					.update(labSessionNodes)
+					.set({ health: node.health as any })
+					.where(eq(labSessionNodes.id, node.id));
+			},
+		});
+		if (!isTemp)
+			ws.server.emit("node:[id]:health", { id: node.id }, node.health as any);
+		else tempNodeEvents.emit(`${node.id}:health`, node.health);
+	} catch (err) {
+		logger.error({ err }, "Failed to process node-health event");
+	}
+}
+
+export async function handleInterfaceUpdate(
+	_workerId: string,
+	node: {
+		id: string;
+		interfaces: Record<string, unknown>;
+		labSessionId: string;
+	},
+	isTemp: boolean,
+) {
+	try {
+		if (!isTemp) {
+			for (const [iface, ips] of Object.entries(node.interfaces)) {
+				ws.server.emit(
+					"node:[id]:interfaces:[interface]",
+					{ id: node.id, interface: iface },
+					ips as string[],
+				);
+			}
+		}
+		tempNodeEvents.emit(
+			`${node.id}:ip`,
+			Object.values(node.interfaces).flat()[0] as string,
+		);
+		interfaceDebounce.run(node.id, async () => {
+			await db
+				.update(labSessionNodes)
+				.set({ interfaces: node.interfaces as Record<string, string[]> })
+				.where(eq(labSessionNodes.id, node.id));
+		});
+	} catch (err) {
+		logger.error({ err }, "Failed to process interface-update event");
 	}
 }

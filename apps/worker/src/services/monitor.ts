@@ -4,26 +4,33 @@ import { server } from "./worker";
 export function bindMonitorEvents() {
 	const { emitter, init } = clabMonitor;
 
-	const forwardEvent = (type: string) => {
-		// @ts-expect-error: TypeScript cannot infer dynamic event listener types for generic EventEmitter string names
-		emitter.on(type, (...args: unknown[]) => {
-			server.emit("monitor:event", undefined, {
-				type,
-				payload: JSON.stringify(args),
-			});
-		});
-	};
+	emitter.on("stale-session", (sessionId: string) => {
+		server.emit("monitor:stale-session", undefined, { sessionId });
+	});
 
-	[
-		"stale-session",
-		"snapshot",
-		"session-create",
-		"session-remove",
-		"node-create",
-		"node-remove",
-		"node-health",
-		"interface-update",
-	].forEach(forwardEvent);
+	emitter.on("snapshot", (snapshotObj: any) => {
+		server.emit("monitor:snapshot", undefined, snapshotObj);
+	});
+
+	emitter.on("session-create", (sessionObj: any) => {
+		server.emit("monitor:session-create", undefined, sessionObj);
+	});
+
+	emitter.on("session-remove", (sessionId: string) => {
+		server.emit("monitor:session-remove", undefined, { sessionId });
+	});
+
+	emitter.on("node-create", (nodeObj: any) => {
+		server.emit("monitor:node-create", undefined, nodeObj);
+	});
+
+	emitter.on("node-health", (node: any, isTemp: boolean) => {
+		server.emit("monitor:node-health", undefined, { node, isTemp });
+	});
+
+	emitter.on("interface-update", (node: any, isTemp: boolean) => {
+		server.emit("monitor:interface-update", undefined, { node, isTemp });
+	});
 
 	init();
 }
