@@ -117,8 +117,8 @@ export async function handleSessionCreate(
 	workerId: string,
 	id: string,
 	ownerId: string,
-	labId: string,
-	labDue: string | number,
+	labId: string | undefined,
+	labDue: string | number | undefined,
 ) {
 	try {
 		if (labId && labDue) {
@@ -159,8 +159,8 @@ export async function handleSessionRemove(_workerId: string, id: string) {
 
 export async function handleNodeCreate(
 	_workerId: string,
-	labNodeId: string,
-	deviceTemplateId: string,
+	labNodeId: string | undefined,
+	deviceTemplateId: string | undefined,
 	labSessionId: string,
 	node: any,
 ) {

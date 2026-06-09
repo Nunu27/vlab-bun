@@ -63,8 +63,8 @@ export const appRouter = new Router()
 		t.Object({
 			id: t.String(),
 			ownerId: t.String(),
-			labId: t.String(),
-			labDue: t.Union([t.String(), t.Number()]),
+			labId: t.Optional(t.String()),
+			labDue: t.Optional(t.Union([t.String(), t.Number()])),
 		}),
 	)
 	.data(
@@ -77,11 +77,11 @@ export const appRouter = new Router()
 		"monitor:node-create",
 		t.Object({
 			labSessionId: t.String(),
-			labNodeId: t.String(),
-			deviceTemplateId: t.String(),
+			labNodeId: t.Optional(t.String()),
+			deviceTemplateId: t.Optional(t.String()),
 			id: t.String(),
 			name: t.String(),
-			status: t.String(),
+
 			health: t.Union([t.String(), t.Null()]),
 			containerId: t.String(),
 		}),
