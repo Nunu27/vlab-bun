@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package vlab.monitor;
+
+import "google/protobuf/empty.proto";
+
+service MonitorService {
+  rpc StreamMonitorEvents(stream MonitorEvent) returns (google.protobuf.Empty);
+}
+
+message MonitorEvent {
+  string type = 1;
+  string payload = 2;
+}

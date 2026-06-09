@@ -1,4 +1,3 @@
-import type { DeviceKind, NodeHealth } from "@vlab/shared/enums";
 import networkMonitor from "./network-monitor";
 import type {
 	ContainerEvent,
@@ -36,7 +35,7 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 
 	const container = docker.getContainer(ID);
 	const info = await container.inspect();
-	const health = (info.State.Health?.Status as NodeHealth) || null;
+	const health = info.State.Health?.Status || null;
 	const ip = extractManagementIp(info.NetworkSettings);
 
 	if (!ip) return;
@@ -45,7 +44,7 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 		id: resolved.nodeId,
 		health,
 		labSessionId: resolved.sessionId,
-		deviceKind: resolved.deviceKind as DeviceKind,
+		deviceKind: resolved.deviceKind,
 		ip,
 		isTemp,
 	};
@@ -90,7 +89,7 @@ async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
 	networkMonitor.stop(ctx, {
 		id: resolved.nodeId,
 		labSessionId: resolved.sessionId,
-		deviceKind: resolved.deviceKind as DeviceKind,
+		deviceKind: resolved.deviceKind,
 		health: null,
 		ip: "",
 		isTemp,
@@ -107,7 +106,7 @@ async function onContainerHealthStatus<
 	const resolved = buildResolvedData(ctx.mapping, Actor.Attributes);
 	if (!resolved) return;
 
-	const health = Action.split(": ")[1] as NodeHealth;
+	const health = Action.split(": ")[1] ?? null;
 	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
 
 	logger.debug("Container health status: %s, %s", Actor.ID, health);

@@ -4,8 +4,10 @@
 
 ## Overall Architecture
 vLab is structurally divided into two major components housed within a monorepo framework:
-1. **The Backend Engine (`@vlab/api`)**: A high-performance API and WebSocket server built natively on Elysia.js. It acts as the "orchestrator," handling all database persistence (via Drizzle ORM/PostgreSQL), communicating with underlying Docker daemons, and pushing real-time evaluation events.
-2. **The Frontend Client (`@vlab/web`)**: A reactive, single-page application built with React 19 and TanStack dependencies. It provides distinct interface layers for Admins, Instructors, and Students.
+1. **The Backend Engine**: The backend is transitioning into a split architecture for improved scalability and security:
+   - **Manager (`apps/manager`)**: The central brain serving the REST API, WebSocket gateway, Guacamole-lite proxy, and a gRPC server. It handles the database, authentication, and frontend coordination.
+   - **Worker (`apps/worker`)**: The execution node acting as a gRPC client. It holds the lab instance, orchestrates Containerlab, interacts directly with the Docker daemon, and streams evaluations back to the Manager.
+2. **The Frontend Client (`apps/web`)**: A reactive, single-page application built with React 19 and TanStack dependencies. It provides distinct interface layers for Admins, Instructors, and Students.
 
 ## Deep Dive: The Virtualization Translation Mechanism
 

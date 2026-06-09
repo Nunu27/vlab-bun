@@ -1,5 +1,5 @@
 import { t } from "elysia/type-system";
-import { connectionTypeValues, deviceKindValues } from "../enums";
+import { connectionTypeValues } from "../enums";
 import { NonEmptyString } from "./common";
 
 export const DeviceTemplateEnvSchema = t.Record(NonEmptyString(), t.String());
@@ -33,7 +33,7 @@ export type DeviceTemplateInterface =
 
 export const CreateDeviceTemplateRequest = t.Object({
 	name: NonEmptyString(),
-	kind: t.UnionEnum(deviceKindValues),
+	kind: NonEmptyString(),
 	image: NonEmptyString(),
 	icon: NonEmptyString(),
 	deviceCategoryId: t.String({ format: "uuid" }),
@@ -45,7 +45,7 @@ export const CreateDeviceTemplateRequest = t.Object({
 
 export const UpdateDeviceTemplateRequest = t.Object({
 	name: NonEmptyString(),
-	kind: t.UnionEnum(deviceKindValues),
+	kind: NonEmptyString(),
 	image: NonEmptyString(),
 	icon: NonEmptyString(),
 	deviceCategoryId: t.String({ format: "uuid" }),

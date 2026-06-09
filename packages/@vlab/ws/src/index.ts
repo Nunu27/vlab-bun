@@ -1,6 +1,36 @@
-import { WSContracts } from "@jawit/ws";
-import deviceTemplate from "./device-template";
-import labSession from "./lab-session";
+import {
+	type BuiltInRpcRoutes,
+	type DataMessage,
+	type InferDataRoutes,
+	type InferRpcRoutes,
+	type ParamsOf,
+	type RequestMessage,
+	Router,
+	type RpcReplyMessage,
+} from "waycast";
+import { deviceTemplateRouter } from "./device-template";
+import { labSessionRouter } from "./lab-session";
 import type { WSMeta } from "./types";
 
-export default new WSContracts<WSMeta>().use(deviceTemplate).use(labSession);
+const appRouter = new Router<WSMeta>()
+	.merge(deviceTemplateRouter)
+	.merge(labSessionRouter);
+
+export type AppRouter = typeof appRouter;
+export default appRouter;
+
+export type WSDataRoutes = InferDataRoutes<AppRouter>;
+export type WSRpcRoutes = InferRpcRoutes<AppRouter> & BuiltInRpcRoutes;
+
+export type ClientToServerEvents = {
+	rpc: (
+		message: RequestMessage<WSRpcRoutes>,
+		ack?: (requestId: string) => void,
+	) => void;
+};
+export type ServerToClientEvents = {
+	data: (message: DataMessage<WSDataRoutes>) => void;
+	reply: (message: RpcReplyMessage<WSRpcRoutes>) => void;
+};
+
+export type WSParamsOf<T extends string> = ParamsOf<T>;

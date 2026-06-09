@@ -1,64 +1,28 @@
-import type { FetchResponse, Middleware } from "openapi-fetch";
-import createClient from "openapi-fetch";
-import type { MediaType } from "openapi-typescript-helpers";
-import type { paths } from "./clab";
-
-export function createContainerlabClient({
-	uri,
-	username,
-	password,
-}: {
-	uri: string;
-	username: string;
-	password: string;
-}) {
-	let token: string | undefined;
-	const client = createClient<paths>({
-		baseUrl: uri,
-	});
-
-	const getToken = async () => {
-		const { data } = await client.POST("/login", {
-			body: { username, password },
-		});
-
-		if (!data?.token) throw new Error("Failed to get token from CLAB");
-
-		return data.token;
-	};
-
-	const authMiddleware: Middleware = {
-		async onRequest({ request }) {
-			if (request.url.endsWith("/login")) return request;
-
-			token ??= await getToken();
-			request.headers.set("Authorization", `Bearer ${token}`);
-
-			return request;
-		},
-	};
-
-	client.use(authMiddleware);
-
-	return {
-		client,
-		wrapper: async <
-			// biome-ignore lint/suspicious/noExplicitAny: generic type
-			T extends Record<string | number, any>,
-			Options,
-			Media extends MediaType,
-		>(
-			func: () => Promise<FetchResponse<T, Options, Media>>,
-		) => {
-			const response = await func();
-
-			if (response.response.status === 401) {
-				token = await getToken();
-
-				return await func();
-			}
-
-			return response;
-		},
-	};
-}
+export { Containerlab, Containerlab as default } from "./containerlab";
+export {
+	ContainerlabCliNotFoundError,
+	ContainerlabCommandError,
+	InvalidLabIdError,
+} from "./errors";
+export type {
+	ContainerlabBriefLink,
+	ContainerlabGenericLink,
+	ContainerlabHostLink,
+	ContainerlabInspectNode,
+	ContainerlabLinkDefinition,
+	ContainerlabLinkEndpoint,
+	ContainerlabMacvlanLink,
+	ContainerlabMgmtConfig,
+	ContainerlabMgmtNetLink,
+	ContainerlabNodeDefinition,
+	ContainerlabOptions,
+	ContainerlabScalar,
+	ContainerlabTopology,
+	ContainerlabTopologyDefinition,
+	ContainerlabUnknownFields,
+	ContainerlabUnknownValue,
+	ContainerlabVethLink,
+	ContainerlabVxlanLink,
+	DeployOptions,
+	DestroyOptions,
+} from "./types";

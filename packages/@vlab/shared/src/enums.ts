@@ -54,7 +54,7 @@ export const deviceKindValues = [
 	"ext-container",
 	"host",
 ] as const;
-export type DeviceKind = (typeof deviceKindValues)[number];
+export type DeviceKind = string;
 
 export const degreeLevelValues = ["D3", "LJ", "D4", "S2"] as const;
 export type DegreeLevel = (typeof degreeLevelValues)[number];

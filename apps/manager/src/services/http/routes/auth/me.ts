@@ -1,0 +1,41 @@
+import { failure, success } from "@jawit/common";
+import db from "@manager/db";
+import caching from "@manager/services/http/middlewares/caching";
+import { createRouter } from "@manager/services/http/plugins/system";
+
+export default createRouter()
+	.use(caching)
+	.get(
+		"/me",
+		async ({ session, status }) => {
+			const user = await db.query.users.findFirst({
+				columns: { createdAt: false, updatedAt: false },
+				where: (user, { eq }) => eq(user.id, session.data.id),
+				with: {
+					instructor: {
+						columns: { nip: true },
+					},
+					student: {
+						columns: { nrp: true, degreeLevel: true, year: true },
+						with: { studyProgram: { columns: { id: true, name: true } } },
+					},
+				},
+			});
+
+			if (!user) return status(404, failure({ message: "User not found" }));
+			const { instructor, student, passwordHash, ...rest } = user;
+
+			return success({
+				data: {
+					...rest,
+					...instructor,
+					...student,
+					casOnly: passwordHash === null,
+				},
+			});
+		},
+		{
+			personalized: true,
+			cached: { key: "me" },
+		},
+	);

@@ -1,31 +1,32 @@
-import { WSContracts } from "@jawit/ws";
 import { Type as t } from "@sinclair/typebox";
-import { deviceKindValues } from "@vlab/shared/enums";
-import { NonEmptyString } from "@vlab/shared/schemas/common";
 import {
 	DeviceTemplateConnectionSchema,
 	DeviceTemplateEnvSchema,
 	DeviceTemplateResourcesSchema,
-} from "@vlab/shared/schemas/device-template";
+} from "@vlab/shared/schemas";
+import { NonEmptyString } from "@vlab/shared/schemas/common";
+import { Router } from "waycast";
 import type { WSMeta } from "./types";
 
 export const TestDeviceTemplateRequest = t.Object({
 	name: NonEmptyString(),
-	kind: t.Union(deviceKindValues.map((v) => t.Literal(v))),
+	kind: NonEmptyString(),
 	image: NonEmptyString(),
 	env: DeviceTemplateEnvSchema,
 	resources: DeviceTemplateResourcesSchema,
 	connection: DeviceTemplateConnectionSchema,
 });
 
-export default new WSContracts<WSMeta>().register({
-	event: "device-template:test",
-	type: "client2server",
-	data: TestDeviceTemplateRequest,
-	replies: {
-		info: t.String(),
-		warn: t.String(),
-		token: t.String(),
+export const deviceTemplateRouter = new Router<WSMeta>().rpc(
+	"device-template:test",
+	{
+		payload: TestDeviceTemplateRequest,
+		replies: {
+			info: t.String(),
+			warn: t.String(),
+			token: t.String(),
+		},
+		response: t.Void(),
+		meta: { private: ["admin"] },
 	},
-	meta: { private: ["admin"] },
-});
+);

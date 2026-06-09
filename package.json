@@ -3,7 +3,6 @@
 	"module": "index.ts",
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.14",
-		"@types/bun": "latest",
 		"compose-spec-schema": "^1.0.0",
 		"concurrently": "^9.2.1",
 		"lint-staged": "^16.4.0",
@@ -19,9 +18,9 @@
 	},
 	"private": true,
 	"scripts": {
-		"dev": "concurrently -n web,api -c cyan,magenta \"bun web dev\" \"bun api dev\"",
+		"dev": "concurrently -n web,manager -c cyan,magenta \"bun web dev\" \"bun manager dev\"",
 		"web": "bun --filter @vlab/web",
-		"api": "bun --filter @vlab/api",
+		"manager": "bun --filter @vlab/manager",
 		"check": "biome check --write .",
 		"check:ci": "biome check .",
 		"lint": "biome lint --write --unsafe .",
@@ -37,5 +36,9 @@
 	"workspaces": [
 		"apps/*",
 		"packages/*/*"
-	]
+	],
+	"dependencies": {
+		"elysia": "^1.4.28",
+		"waycast": "^1.1.1"
+	}
 }

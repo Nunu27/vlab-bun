@@ -90,8 +90,10 @@ export function StartLabSessionButton({
 				setIsLoading(false);
 			},
 			callbacks: {
-				info: (msg) =>
-					setLogs((prev) => [...prev, { type: "info", message: msg }]),
+				info: (msg) => {
+					console.log("info", msg);
+					return setLogs((prev) => [...prev, { type: "info", message: msg }]);
+				},
 				id: (sessionId) => {
 					setIsLoading(false);
 					setLogs((prev) => [

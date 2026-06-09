@@ -1,5 +1,4 @@
 import type EventEmitter from "node:events";
-import type { DeviceKind, NodeHealth } from "@vlab/shared/enums";
 import type { MaybePromise } from "bun";
 import type Dockerode from "dockerode";
 import type { Container } from "dockerode";
@@ -69,7 +68,7 @@ export type NodeData<TFullMapping extends FullMappingConstraint> =
 	ResolvedMapping<TFullMapping> & {
 		id: string;
 		name: string;
-		health: NodeHealth | null;
+		health: string | null;
 		ip: string;
 		interfaces: Record<string, string[]>;
 		containerId: string;
@@ -79,8 +78,8 @@ export type NodeData<TFullMapping extends FullMappingConstraint> =
 export interface NodeInfo {
 	id: string;
 	labSessionId: string;
-	deviceKind: DeviceKind;
-	health: NodeHealth | null;
+	deviceKind: string;
+	health: string | null;
 	ip: string;
 	isTemp: boolean;
 }
@@ -101,7 +100,7 @@ export interface Events<TFullMapping extends FullMappingConstraint> {
 		{
 			id: string;
 			labSessionId: string;
-			health: NodeHealth;
+			health: string | null;
 		},
 		boolean,
 	];

@@ -1,5 +1,4 @@
 import EventEmitter from "node:events";
-import type { DeviceKind, NodeHealth } from "@vlab/shared/enums";
 import type { MaybePromise } from "bun";
 import type { ContainerInspectInfo } from "dockerode";
 import containerHandler from "./container-handler";
@@ -82,11 +81,7 @@ async function emitInitialState<TFullMapping extends FullMappingConstraint>(
 
 		const healthData =
 			container.Health as ContainerInspectInfo["State"]["Health"];
-		const health = healthData
-			? healthData.Status === "none"
-				? null
-				: (healthData.Status as NodeHealth)
-			: null;
+		const health = healthData?.Status ?? null;
 
 		const ip = extractManagementIp(container.NetworkSettings);
 		if (!ip) continue;
@@ -95,9 +90,9 @@ async function emitInitialState<TFullMapping extends FullMappingConstraint>(
 
 		const nodeInfo: NodeInfo = {
 			id: resolved.nodeId,
-			health,
+			health: healthData?.Status ?? null,
 			labSessionId: resolved.sessionId,
-			deviceKind: resolved.deviceKind as DeviceKind,
+			deviceKind: resolved.deviceKind,
 			ip,
 			isTemp,
 		};
@@ -151,7 +146,7 @@ async function emitInitialState<TFullMapping extends FullMappingConstraint>(
 async function initMonitoring<TFullMapping extends FullMappingConstraint>(
 	emitter: EventEmitter<Events<TFullMapping>>,
 	healthEmitter: EventEmitter,
-	nodeHealths: Map<string, NodeHealth | null>,
+	nodeHealths: Map<string, string | null>,
 	nodeInterfaceMap: Map<string, Record<string, string[]>>,
 	waitForHealth: Context<TFullMapping>["waitForHealth"],
 	options: Options<TFullMapping>,
@@ -253,7 +248,7 @@ export function createMonitor<TFullMapping extends FullMappingConstraint>(
 ) {
 	const emitter = new EventEmitter<Events<TFullMapping>>();
 	const nodeInterfaceMap = new Map<string, Record<string, string[]>>();
-	const nodeHealths = new Map<string, NodeHealth | null>();
+	const nodeHealths = new Map<string, string | null>();
 	const healthEmitter = new EventEmitter();
 
 	const waitForHealth = (

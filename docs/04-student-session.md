@@ -6,7 +6,7 @@ The student workflow revolves entirely around "Sessions". Once an Instructor has
 Network virtualizations using strict Docker memory limits still consume vast resources across host clusters. Because of this, vLab mandates a strict "One Active Session Per Student" rule.
 
 **The Conflict Event Flow**: 
-When a Student initiates a WebSocket handshake (`lab-session:[sessionId]:connect`), the router verifies their `clientId` against the PostgreSQL database. If there is already an active socket bound to their session elsewhere, the API gracefully emits a `conflict` flag. A UI modal then prompts the student to evict the stale socket and forcibly overtake control of the running session, enforcing strict 1:1 concurrency.
+When a Student initiates a WebSocket handshake (`lab-session:[sessionId]:connect`), the router verifies their `clientId` against the PostgreSQL database. If there is already an active socket bound to their session elsewhere, the Manager gracefully emits a `conflict` flag. A UI modal then prompts the student to evict the stale socket and forcibly overtake control of the running session, enforcing strict 1:1 concurrency.
 
 ## Deep Dive: Entering the Workspace Interface
 Located structurally under `_dashboard/_student/lab/$labId/session/$labSessionId`, the Session Workspace is heavily compartmentalized. It consists of the live Topology diagram in the center, flanked by sidebars containing the Markdown instructional document and the dynamically updating Score Indicator.

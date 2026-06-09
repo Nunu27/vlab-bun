@@ -10,7 +10,7 @@
 			"@vlab/shared/*": ["../../packages/@vlab/shared/src/*"]
 		},
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
-		"types": ["vite/client", "bun-types"],
+		"types": ["vite/client", "bun"],
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,

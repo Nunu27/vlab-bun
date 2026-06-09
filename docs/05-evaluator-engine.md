@@ -13,21 +13,22 @@ When initialized, it executes `docker.getEvents()`, tapping directly into the Do
 
 Simultaneously, `clabMonitor` continuously monitors interface statuses and management IPs, broadcasting these updates throughout the API via Node's internal `EventEmitter`.
 
-### The Bridging Mechanism (`ws.ts`)
-The true magic happens inside the WebSocket routing engine (`apps/api/src/routes/lab/session/ws.ts`). 
-The WebSocket server has a permanent listener hooked into the `clabMonitor`:
+### The Bridging Mechanism (Worker to Manager)
+With the new split architecture, the `clabMonitor` and Evaluator Engine run locally on the **Worker** node to remain close to the Docker daemon.
+
+The bridging happens via a gRPC stream. When the Worker's `clabMonitor` detects an interface update, it evaluates the change locally. If the evaluation succeeds, the Worker pushes a message over the gRPC bidirectional stream back to the **Manager**.
+
+The Manager's WebSocket gateway (`apps/manager/src/routes/lab/session/ws.ts`) listens to this gRPC stream:
 
 ```typescript
-clabMonitor.emitter.on("interface-update", ({ id, interfaces }) => {
-	for (const [iface, ips] of Object.entries(interfaces)) {
-		// Pushes a dedicated validation event!
-		evaluator.emit("node-interface.interface-ip", id, { interface: iface }, ips);
-	}
+// On the Manager (receiving from gRPC Worker stream)
+workerStream.on("evaluation-success", (result) => {
+	// Pushes the successful validation event to the student's browser UI
+	ws.send(JSON.stringify({ type: "evaluation", data: result }));
 });
 ```
-When Docker notices an interface has updated (for example, a student correctly added `10.0.0.1` to `eth1`), Docker informs `clabMonitor`, and `clabMonitor` broadcasts it into `ws.ts`. 
 
-`ws.ts` acts as the grand orchestrator, grabbing those updated IPs and aggressively firing `evaluator.emit()`.
+The Manager acts as the grand orchestrator for the frontend, grabbing those evaluated results and aggressively pushing them to the student's browser, while the Worker handles the raw Docker event parsing.
 
 ### The State Handlers (`EvaluationSession`)
 Inside `packages/@vlab/evaluator`, when an `EvaluationSession` is started for a student, it maps all their required Rubric checks (e.g., "Must assign exactly IP X").

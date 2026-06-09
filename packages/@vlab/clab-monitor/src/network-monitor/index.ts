@@ -1,4 +1,3 @@
-import type { DeviceKind } from "@vlab/shared/enums";
 import type { NetworkMonitor } from "../types";
 import { healthyStatus } from "../utils";
 
@@ -6,7 +5,7 @@ import linux from "./linux";
 import mikrotik_ros from "./mikrotik_ros";
 
 const waiters = new Map<string, () => void>();
-const monitors: Partial<Record<DeviceKind, NetworkMonitor>> = {
+const monitors: Partial<Record<string, NetworkMonitor>> = {
 	linux,
 	mikrotik_ros,
 };

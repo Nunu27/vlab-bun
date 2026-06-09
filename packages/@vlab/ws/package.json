@@ -7,11 +7,14 @@
 		"./*": "./src/*.ts"
 	},
 	"devDependencies": {
-		"@types/bun": "latest"
+		"@types/bun": "1.3.11"
+	},
+	"dependencies": {
+		"@vlab/shared": "workspace:*",
+		"waycast": "latest",
+		"@sinclair/typebox": "^0.34.13"
 	},
 	"peerDependencies": {
-		"@jawit/ws": "workspace:*",
-		"@sinclair/typebox": "^0.34.48",
 		"@vlab/shared": "workspace:*",
 		"typescript": "^5"
 	}

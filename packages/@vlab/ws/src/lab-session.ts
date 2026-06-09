@@ -1,60 +1,51 @@
-import { WSContracts } from "@jawit/ws";
 import { Type as t } from "@sinclair/typebox";
-import { nodeHealthValues } from "@vlab/shared/enums";
+import { Router } from "waycast";
 import type { WSMeta } from "./types";
 
-export default new WSContracts<WSMeta>()
-	.register({
-		event: "lab:[id]:init",
-		type: "client2server",
+export const labSessionRouter = new Router<WSMeta>()
+	.rpc("lab:[id]:init", {
+		payload: t.Optional(t.Any()),
 		replies: {
 			info: t.String(),
 			id: t.String(),
 		},
+		response: t.Void(),
 		meta: { private: ["student"] },
 	})
-	.register({
-		event: "lab-session:[sessionId]:connect",
-		type: "client2server",
-		data: t.Boolean(),
+	.rpc("lab-session:[sessionId]:connect", {
+		payload: t.Boolean(),
 		replies: {
 			conflict: t.Boolean(),
 		},
+		response: t.Void(),
 		meta: { private: ["student"] },
 	})
-	.register({
-		event: "lab-session:[sessionId]:submit",
-		type: "client2server",
+	.rpc("lab-session:[sessionId]:submit", {
+		payload: t.Optional(t.Any()),
+		replies: {},
+		response: t.Void(),
 		meta: { private: ["student"] },
 	})
-	.register({
-		event: "lab-session:[sessionId]:client-change",
-		type: "server2client",
-		data: t.Union([t.String(), t.Null()]),
-	})
-	.register({
-		event: "lab-session:[sessionId]:ended",
-		type: "server2client",
-	})
-	.register({
-		event: "lab-session:[sessionId]:checks",
-		type: "server2client",
-		data: t.Object({
+	.data(
+		"lab-session:[sessionId]:client-change",
+		t.Union([t.String(), t.Null()]),
+	)
+	.data("lab-session:[sessionId]:ended", t.Void())
+	.data(
+		"lab-session:[sessionId]:checks",
+		t.Object({
 			id: t.String(),
 			completed: t.Boolean(),
 		}),
-	})
-	.register({
-		event: "node:[id]:health",
-		type: "server2client",
-		data: t.Union([
+	)
+	.data(
+		"node:[id]:health",
+		t.Union([
 			t.Null(),
 			t.Literal("deleted"),
-			...nodeHealthValues.map((v) => t.Literal(v)),
+			t.Literal("healthy"),
+			t.Literal("unhealthy"),
+			t.Literal("starting"),
 		]),
-	})
-	.register({
-		event: "node:[id]:interfaces:[interface]",
-		type: "server2client",
-		data: t.Array(t.String()),
-	});
+	)
+	.data("node:[id]:interfaces:[interface]", t.Array(t.String()));

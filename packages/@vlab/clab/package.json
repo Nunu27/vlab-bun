@@ -2,19 +2,14 @@
 	"name": "@vlab/clab",
 	"module": "src/index.ts",
 	"type": "module",
-	"exports": {
-		".": "./src/index.ts",
-		"./types": "./src/types.ts"
+	"exports": "./src/index.ts",
+	"scripts": {
+		"typecheck": "bun x tsc --noEmit"
 	},
 	"devDependencies": {
-		"@types/bun": "latest",
-		"openapi-typescript": "^7.13.0",
-		"openapi-typescript-helpers": "^0.1.0"
+		"@types/bun": "1.3.11"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
-	},
-	"dependencies": {
-		"openapi-fetch": "^0.17.0"
 	}
 }

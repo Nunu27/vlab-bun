@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package vlab.worker;
+
+service WorkerService {
+  rpc ListenCommand(stream CommandPayload) returns (stream CommandRequest);
+  rpc SendMetrics(MetricsRequest) returns (MetricsResponse);
+}
+
+message WorkerSpec {
+  int32 cpu_cores = 1;
+  int32 memory_mb = 2;
+  int32 storage_mb = 3;
+}
+
+message CommandPayload {
+  oneof payload {
+    WorkerSpec worker_spec = 1;
+    bytes waycast_message = 2;
+  }
+}
+
+message CommandRequest {
+  bytes waycast_message = 1;
+}
+
+message MetricsRequest {
+  double cpu_usage_percent = 1;
+  double memory_usage_percent = 2;
+  double storage_usage_percent = 3;
+  double score = 4;
+  int32 active_labs = 5;
+  int32 active_nodes = 6;
+}
+
+message MetricsResponse {
+  bool success = 1;
+}
