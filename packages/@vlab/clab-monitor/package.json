@@ -12,6 +12,6 @@
 	"peerDependencies": {
 		"dockerode": "^5.0.0",
 		"mikro-routeros": "workspace:*",
-		"typescript": "^5"
+		"typescript": "^6.0.3"
 	}
 }

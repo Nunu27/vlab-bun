@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.9/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab"
@@ -31,16 +31,27 @@
 			"tailwindDirectives": true
 		}
 	},
-	"files": {
-		"includes": [
-			"**/*.ts",
-			"**/*.tsx",
-			"**/*.js",
-			"**/*.jsx",
-			"**/*.json",
-			"**/*.css",
-			"!apps/web/src/components/ui",
-			"!apps/web/src/routeTree.gen.ts"
-		]
-	}
+	"overrides": [
+		{
+			"includes": [
+				"apps/web/src/components/ui/**",
+				"apps/web/src/routeTree.gen.ts",
+				"packages/@vlab/grpc/src/**/*.ts",
+				"out/**"
+			],
+			"linter": {
+				"enabled": false
+			}
+		},
+		{
+			"includes": ["apps/web/src/hooks/ws.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		}
+	]
 }

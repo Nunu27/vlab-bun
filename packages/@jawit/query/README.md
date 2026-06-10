@@ -12,7 +12,7 @@ bun add @jawit/query
 ## Usage
 
 ```ts
-import { treaty } from "@elysiajs/eden";
+import { treaty } from "@elysia/eden";
 import { treatyQuery } from "@jawit/query";
 import type { App } from "your-api-package";
 

@@ -1,5 +1,6 @@
 import { stdin as input, stdout as output } from "node:process";
 import * as readline from "node:readline/promises";
+import { Writable } from "node:stream";
 import colors from "./colors";
 
 export async function ask(
@@ -45,7 +46,6 @@ export async function confirm(
 
 export async function askPassword(question: string): Promise<string> {
 	let muted = false;
-	const { Writable } = await import("node:stream");
 
 	const mutableStdout = new Writable({
 		write(chunk, encoding, callback) {

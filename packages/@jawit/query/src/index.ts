@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: proxy internals require loose typing */
 
-import type { Treaty } from "@elysiajs/eden";
+import type { Treaty } from "@elysia/eden";
 import type { AnyElysia } from "elysia";
 import {
 	ALL_HOOKS,
@@ -140,3 +140,6 @@ export function treatyQuery<
 		clientOptions,
 	) as TreatyQueryProxy<TTreaty>;
 }
+
+export type { Treaty } from "@elysia/eden";
+export { treaty } from "@elysia/eden";
