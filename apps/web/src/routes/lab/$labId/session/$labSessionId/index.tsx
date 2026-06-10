@@ -27,7 +27,7 @@ import {
 } from "./-module/store/lab-session-modal-store";
 
 type LabTopology = ExtractTreatyData<
-	ReturnType<ReturnType<typeof api.lab>["get"]>
+	ReturnType<typeof api.lab>["get"]
 >["topology"];
 
 export const Route = createFileRoute("/lab/$labId/session/$labSessionId/")({

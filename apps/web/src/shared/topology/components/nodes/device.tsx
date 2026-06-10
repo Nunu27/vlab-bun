@@ -29,6 +29,7 @@ function Device({ id }: { id: string }) {
 	const template = useTopologyTemplate(state?.deviceId);
 	const health = useWSData("node:[id]:health", {
 		params: { id: data?.id ?? "" },
+		// biome-ignore lint/suspicious/noExplicitAny: bypassed generic type
 		initialData: (data?.health as any) ?? null,
 		enabled: !!data?.id,
 	});

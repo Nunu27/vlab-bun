@@ -1,5 +1,5 @@
-import type { Treaty } from "@elysiajs/eden";
 import type { BaseResponse } from "@jawit/common";
+import type { Treaty } from "@jawit/query";
 import type { ExtractTreatyResponse } from "@jawit/query/types";
 import { redirect } from "@tanstack/react-router";
 import { toast } from "sonner";

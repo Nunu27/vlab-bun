@@ -22,10 +22,10 @@ import { OverviewTab } from "./-module/components/tabs/overview-tab";
 import { TopologyTab } from "./-module/components/tabs/topology-tab";
 
 type CategorizedTemplates = ExtractTreatyData<
-	ReturnType<(typeof api)["device-template"]["list"]["get"]>
+	(typeof api)["device-template"]["list"]["get"]
 >;
 type LabTopology = ExtractTreatyData<
-	ReturnType<ReturnType<typeof api.lab>["get"]>
+	ReturnType<typeof api.lab>["get"]
 >["topology"];
 
 export const Route = createFileRoute("/_dashboard/_instructor/my-lab/$labId/")({

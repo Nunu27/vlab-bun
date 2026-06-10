@@ -89,7 +89,10 @@ export function StartLabSessionButton({
 			},
 			callbacks: {
 				info: (msg) => {
-					return setLogs((prev) => [...prev, { type: "info", message: msg }]);
+					return setLogs((prev) => [
+						...prev,
+						{ type: "info", message: msg as string },
+					]);
 				},
 				id: (sessionId) => {
 					setIsLoading(false);
@@ -99,7 +102,7 @@ export function StartLabSessionButton({
 					]);
 					navigate({
 						to: "/lab/$labId/session/$labSessionId",
-						params: { labId, labSessionId: sessionId },
+						params: { labId, labSessionId: sessionId as string },
 					});
 				},
 			},
