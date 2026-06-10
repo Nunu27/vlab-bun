@@ -5,11 +5,11 @@ import { Type as t } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
 
-let defaultGuacdIp = "172.17.0.1";
-try {
+let defaultGuacdIp = process.env.GUACD_IP;
+if (!defaultGuacdIp) {
 	const res = await dns.lookup("guacd");
 	defaultGuacdIp = res.address;
-} catch {}
+}
 
 const EnvSchema = t.Object({
 	NODE_ENV: t.Union(
