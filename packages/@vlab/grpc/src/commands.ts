@@ -30,20 +30,27 @@ export const LabConfigSchema = t.Object({
 	links: t.Optional(t.Array(LabLinkSchema)),
 });
 
+export const EvaluatorNodeInfoSchema = t.Object({
+	id: t.String(),
+	ip: t.String(),
+	containerId: t.String(),
+});
+
+export const EvaluatorSessionCheckSchema = t.Object({
+	id: t.String(),
+	nodeId: t.String(),
+	checkId: t.String(),
+	params: t.Record(t.String(), t.Unknown()),
+});
+
 export const StartEvaluationPayloadSchema = t.Object({
 	sessionId: t.String(),
-	nodeMap: t.Record(t.String(), t.Unknown()),
-	sessionChecks: t.Array(t.Unknown()),
+	nodeMap: t.Record(t.String(), EvaluatorNodeInfoSchema),
+	sessionChecks: t.Array(EvaluatorSessionCheckSchema),
 	values: t.Record(t.String(), t.Boolean()),
 });
 
 export const appRouter = new Router()
-	.data(
-		"monitor:stale-session",
-		t.Object({
-			sessionId: t.String(),
-		}),
-	)
 	.data(
 		"monitor:snapshot",
 		t.Object({
@@ -52,7 +59,7 @@ export const appRouter = new Router()
 				t.Object({
 					id: t.String(),
 					health: t.Union([t.String(), t.Null()]),
-					interfaces: t.Record(t.String(), t.Unknown()),
+					interfaces: t.Record(t.String(), t.Array(t.String())),
 					containerId: t.String(),
 				}),
 			),
@@ -81,7 +88,8 @@ export const appRouter = new Router()
 			deviceTemplateId: t.Optional(t.String()),
 			id: t.String(),
 			name: t.String(),
-
+			ip: t.String(),
+			interfaces: t.Record(t.String(), t.Array(t.String())),
 			health: t.Union([t.String(), t.Null()]),
 			containerId: t.String(),
 		}),
@@ -102,9 +110,16 @@ export const appRouter = new Router()
 		t.Object({
 			node: t.Object({
 				id: t.String(),
-				interfaces: t.Record(t.String(), t.Unknown()),
+				interfaces: t.Record(t.String(), t.Array(t.String())),
 				labSessionId: t.String(),
 			}),
+			isTemp: t.Boolean(),
+		}),
+	)
+	.data(
+		"monitor:node-remove",
+		t.Object({
+			id: t.String(),
 			isTemp: t.Boolean(),
 		}),
 	)

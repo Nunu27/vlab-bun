@@ -90,7 +90,7 @@ async function emitInitialState<TFullMapping extends FullMappingConstraint>(
 
 		const nodeInfo: NodeInfo = {
 			id: resolved.nodeId,
-			health: healthData?.Status ?? null,
+			health,
 			labSessionId: resolved.sessionId,
 			deviceKind: resolved.deviceKind,
 			ip,
