@@ -15,9 +15,7 @@ import { useAuthStore } from "@web/stores/auth-store";
 import { BookOpenIcon, FlaskConicalIcon } from "lucide-react";
 import { UpcomingLabItem } from "./upcoming-lab-item";
 
-type DashboardData = ExtractTreatyData<
-	ReturnType<typeof api.dashboard.student.get>
->;
+type DashboardData = ExtractTreatyData<typeof api.dashboard.student.get>;
 
 function StudentDashboardPage() {
 	const { data } = api.dashboard.student.get.useSuspenseQuery();

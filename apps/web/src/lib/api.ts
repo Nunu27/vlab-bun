@@ -1,6 +1,5 @@
-import type { App } from "@api/server";
-import { treaty } from "@elysiajs/eden";
-import { treatyQuery } from "@jawit/query";
+import { treaty, treatyQuery } from "@jawit/query";
+import type { App } from "@manager/server";
 import { toast } from "sonner";
 
 const client = treaty<App>(window.location.origin);

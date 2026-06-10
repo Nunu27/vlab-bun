@@ -14,6 +14,7 @@ export type DataTableContextValue<TItem> = {
 	search: string;
 	sortBy: string | undefined;
 	sortOrder: SortOrder;
+	// biome-ignore lint/suspicious/noExplicitAny: generic filters
 	filters: any[] | undefined;
 
 	// Setters
@@ -21,6 +22,7 @@ export type DataTableContextValue<TItem> = {
 	setPerPage: (perPage: number) => void;
 	setSearch: (search: string) => void;
 	setSort: (sortBy: string | undefined, sortOrder: SortOrder) => void;
+	// biome-ignore lint/suspicious/noExplicitAny: generic filters
 	setFilters: (filters: any[] | null) => void;
 	refresh: () => void;
 };

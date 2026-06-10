@@ -120,7 +120,10 @@ function FieldLabel({
 	description,
 	children,
 	...props
-}: React.ComponentProps<typeof Label> & { required?: boolean; description?: React.ReactNode }) {
+}: React.ComponentProps<typeof Label> & {
+	required?: boolean;
+	description?: React.ReactNode;
+}) {
 	return (
 		<Label
 			data-slot="field-label"

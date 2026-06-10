@@ -28,17 +28,19 @@ export const LabCheckForm = withFieldGroup({
 
 			const options: { label: string; value: string }[] = [];
 
-			Object.entries(evaluator.handlers).forEach(([sysName, sys]: any) => {
-				if (!sys.kinds.length || sys.kinds.includes(kind)) {
-					for (const checkId of sys.checks) {
-						const id = `${sysName}.${checkId}`;
-						options.push({
-							label: evaluator.checks[id].name,
-							value: id,
-						});
+			Object.entries(evaluator.handlers).forEach(
+				([sysName, sys]: [string, { kinds: string[]; checks: string[] }]) => {
+					if (!sys.kinds.length || sys.kinds.includes(kind)) {
+						for (const checkId of sys.checks) {
+							const id = `${sysName}.${checkId}`;
+							options.push({
+								label: evaluator.checks[id].name,
+								value: id,
+							});
+						}
 					}
-				}
-			});
+				},
+			);
 
 			return options;
 		}, [kind, evaluator]);

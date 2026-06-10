@@ -6,7 +6,11 @@ import { create } from "zustand";
 interface LabChecksEditorStore {
 	nodes: { label: string; value: string }[];
 	kindMapping: Record<string, DeviceKind>;
-	evaluator: any;
+	evaluator: {
+		handlers: Record<string, { kinds: string[]; checks: string[] }>;
+		// biome-ignore lint/suspicious/noExplicitAny: AutoForm expects any JSON schema
+		checks: Record<string, { name: string; params: any }>;
+	};
 	checks?: LabChecksMap;
 }
 

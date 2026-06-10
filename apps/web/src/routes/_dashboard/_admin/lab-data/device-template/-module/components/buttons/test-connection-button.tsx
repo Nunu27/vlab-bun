@@ -70,8 +70,8 @@ const TestConnectionButton = withForm({
 				data: validator.Parse(value),
 				onError: (error) => log("error", error),
 				callbacks: {
-					info: (msg) => log("info", msg),
-					warn: (msg) => log("warn", msg),
+					info: (msg) => log("info", msg as string),
+					warn: (msg) => log("warn", msg as string),
 					token: (token) => setToken(token),
 				},
 			});
