@@ -40,6 +40,6 @@
 	],
 	"dependencies": {
 		"elysia": "^1.4.28",
-		"waycast": "^1.1.1"
+		"waycast": "^1.1.2"
 	}
 }
