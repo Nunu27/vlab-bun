@@ -4,6 +4,10 @@ networks:
   vlab-network:
     driver: overlay
     attachable: true
+  clab-mgmt:
+    name: clab-mgmt
+    driver: overlay
+    attachable: true
 
 services:
   manager:
@@ -39,6 +43,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - vlab-network
+      - clab-mgmt
     deploy:
       mode: global
       restart_policy:
@@ -48,6 +53,7 @@ services:
     image: linuxserver/guacd:latest
     networks:
       - vlab-network
+      - clab-mgmt
     deploy:
       mode: global
       restart_policy:
