@@ -5,6 +5,7 @@ import type {
 import Containerlab from "@vlab/clab";
 import type { DeviceKind } from "@vlab/shared/enums";
 import { toKebabCase } from "@vlab/shared/utils";
+import env from "../env";
 import { stopLabEvaluation } from "./evaluator";
 
 const clab = new Containerlab({
@@ -12,30 +13,13 @@ const clab = new Containerlab({
 	topologiesPath: "/var/lib/vlab/topologies",
 });
 
-import { promises as dns } from "node:dns";
-
-async function getGuacdIp() {
-	if (process.env.GUACD_IP) return process.env.GUACD_IP;
-	try {
-		const result = await dns.lookup("guacd");
-		return result.address;
-	} catch {
-		return "172.17.0.1";
-	}
-}
-
-async function getStartupExecs(): Promise<
-	Partial<Record<DeviceKind, string[]>>
-> {
-	const ip = await getGuacdIp();
-	return {
-		linux: [
-			"ip route del default",
-			`ip route add ${ip} dev eth0`,
-			`sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'`,
-		],
-	};
-}
+const startupExecs: Partial<Record<DeviceKind, string[]>> = {
+	linux: [
+		"ip route del default",
+		`ip route add ${env.GUACD_IP} dev eth0`,
+		`sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'`,
+	],
+};
 
 export const LABELS = {
 	LAB_NODE_ID: "vlab.lab.node.id",
@@ -63,8 +47,6 @@ export async function deployLab(sessionId: string, config: any) {
 
 	const nodeNames: Record<string, string> = {};
 	const nodes: Record<string, ContainerlabNodeDefinition> = {};
-
-	const startupExecs = await getStartupExecs();
 
 	for (const {
 		id,

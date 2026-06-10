@@ -1,8 +1,15 @@
 import "dotenv/config";
 
+import { promises as dns } from "node:dns";
 import { Type as t } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
+
+let defaultGuacdIp = "172.17.0.1";
+try {
+	const res = await dns.lookup("guacd");
+	defaultGuacdIp = res.address;
+} catch {}
 
 const EnvSchema = t.Object({
 	NODE_ENV: t.Union(
@@ -12,6 +19,7 @@ const EnvSchema = t.Object({
 
 	WORKER_ID: t.String({ minLength: 1 }),
 	MANAGER_GRPC_URL: t.String({ default: "localhost:50051" }),
+	GUACD_IP: t.String({ default: defaultGuacdIp }),
 });
 
 const validator = TypeCompiler.Compile(EnvSchema);
