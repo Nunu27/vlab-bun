@@ -2,6 +2,11 @@ import { destroyLab } from "../lib/clab";
 import { clabMonitor } from "../lib/clab-monitor";
 import { server } from "./worker";
 
+export const monitorState = {
+	activeLabs: 0,
+	activeNodes: 0,
+};
+
 export function bindMonitorEvents() {
 	const { emitter, init } = clabMonitor;
 
@@ -10,22 +15,28 @@ export function bindMonitorEvents() {
 	});
 
 	emitter.on("snapshot", (snapshot) => {
+		monitorState.activeLabs = snapshot.sessions.length;
+		monitorState.activeNodes = snapshot.nodes.length;
 		server.emit("monitor:snapshot", undefined, snapshot);
 	});
 
 	emitter.on("session-create", (session) => {
+		monitorState.activeLabs++;
 		server.emit("monitor:session-create", undefined, session);
 	});
 
 	emitter.on("session-remove", (sessionId) => {
+		monitorState.activeLabs = Math.max(0, monitorState.activeLabs - 1);
 		server.emit("monitor:session-remove", undefined, { sessionId });
 	});
 
 	emitter.on("node-create", (node) => {
+		monitorState.activeNodes++;
 		server.emit("monitor:node-create", undefined, node);
 	});
 
 	emitter.on("node-remove", (id, isTemp) => {
+		monitorState.activeNodes = Math.max(0, monitorState.activeNodes - 1);
 		server.emit("monitor:node-remove", undefined, { id, isTemp });
 	});
 

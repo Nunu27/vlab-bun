@@ -2,8 +2,13 @@ import os from "node:os";
 import { decode } from "@msgpack/msgpack";
 import { AsyncQueue, type WorkerProto } from "@vlab/grpc";
 import { initRpc } from "../handlers/index";
+import {
+	getCpuUsagePercent,
+	getMemoryUsagePercent,
+	getStorageInfo,
+} from "../lib/system-metrics";
 import { metadata, workerClient } from "./client";
-
+import { monitorState } from "./monitor";
 export const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
 export const server = initRpc(replyQueue);
 
@@ -12,7 +17,7 @@ async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {
 		workerSpec: {
 			cpuCores: os.cpus().length,
 			memoryMb: Math.round(os.totalmem() / 1024 / 1024),
-			storageMb: 100000,
+			storageMb: Math.round(getStorageInfo().totalMb),
 		},
 	};
 
@@ -54,14 +59,35 @@ export async function listenToCommands() {
 
 export async function streamMetrics() {
 	try {
+		const cpuUsagePercent = getCpuUsagePercent();
+		const memoryUsagePercent = getMemoryUsagePercent();
+		const storageInfo = getStorageInfo();
+		const storageUsagePercent = storageInfo.usedPercent;
+
+		const cpuWeight = 0.35;
+		const memWeight = 0.5;
+		const storageWeight = 0.15;
+
+		let score =
+			100 -
+			((cpuUsagePercent / 100) ** 2 * cpuWeight * 100 +
+				(memoryUsagePercent / 100) ** 2 * memWeight * 100 +
+				(storageUsagePercent / 100) ** 2 * storageWeight * 100);
+
+		if (memoryUsagePercent > 90 || storageUsagePercent > 90) {
+			score -= 50;
+		}
+
+		score = Math.max(0, Math.min(100, Math.round(score)));
+
 		await workerClient.sendMetrics(
 			{
-				cpuUsagePercent: Math.random() * 20,
-				memoryUsagePercent: Math.random() * 40,
-				storageUsagePercent: 10,
-				score: 100,
-				activeLabs: 0,
-				activeNodes: 0,
+				cpuUsagePercent,
+				memoryUsagePercent,
+				storageUsagePercent,
+				score,
+				activeLabs: monitorState.activeLabs,
+				activeNodes: monitorState.activeNodes,
 			},
 			{ metadata },
 		);
