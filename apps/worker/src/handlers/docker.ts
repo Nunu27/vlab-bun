@@ -6,14 +6,18 @@ export function registerDockerHandlers(server: RpcServer) {
 		const { image } = ctx.payload;
 
 		await new Promise<void>((resolve, reject) => {
-			docker.pull(image, {}, (err, stream) => {
-				if (err || !stream)
-					return reject(err ?? new Error("Image pull failed"));
-				docker.modem.followProgress(stream, (err) => {
-					if (err) return reject(err);
-					resolve();
-				});
-			});
+			docker.pull(
+				image,
+				{},
+				(err: Error | null, stream: NodeJS.ReadableStream | undefined) => {
+					if (err || !stream)
+						return reject(err ?? new Error("Image pull failed"));
+					docker.modem.followProgress(stream, (err: Error | null) => {
+						if (err) return reject(err);
+						resolve();
+					});
+				},
+			);
 		});
 		return true;
 	});

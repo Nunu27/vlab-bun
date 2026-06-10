@@ -6,7 +6,9 @@ export function registerEvaluatorHandlers(server: RpcServer) {
 	server.on("evaluator:start", async (ctx) => {
 		const { sessionId, values } = ctx.payload;
 		const nodeMap = ctx.payload.nodeMap as Record<string, NodeInfo>;
-		const sessionChecks = ctx.payload.sessionChecks as unknown[];
+		const sessionChecks = ctx.payload.sessionChecks as Parameters<
+			typeof startLabEvaluation
+		>[2];
 		await startLabEvaluation(
 			sessionId,
 			nodeMap,

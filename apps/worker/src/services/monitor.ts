@@ -1,3 +1,4 @@
+import { destroyLab } from "../lib/clab";
 import { clabMonitor } from "../lib/clab-monitor";
 import { server } from "./worker";
 
@@ -5,7 +6,7 @@ export function bindMonitorEvents() {
 	const { emitter, init } = clabMonitor;
 
 	emitter.on("stale-session", (sessionId) => {
-		server.emit("monitor:stale-session", undefined, { sessionId });
+		destroyLab(sessionId).catch(console.error);
 	});
 
 	emitter.on("snapshot", (snapshot) => {
@@ -22,6 +23,10 @@ export function bindMonitorEvents() {
 
 	emitter.on("node-create", (node) => {
 		server.emit("monitor:node-create", undefined, node);
+	});
+
+	emitter.on("node-remove", (id, isTemp) => {
+		server.emit("monitor:node-remove", undefined, { id, isTemp });
 	});
 
 	emitter.on("node-health", (node, isTemp) => {
