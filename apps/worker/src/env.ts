@@ -7,8 +7,16 @@ import { Value } from "@sinclair/typebox/value";
 
 let defaultGuacdIp = process.env.GUACD_IP;
 if (!defaultGuacdIp) {
-	const res = await dns.lookup("guacd");
-	defaultGuacdIp = res.address;
+	try {
+		const res = await dns.lookup("guacd");
+		defaultGuacdIp = res.address;
+	} catch {
+		console.error("❌ Invalid environment variables:");
+		console.error(
+			"- GUACD_IP Failed to resolve 'guacd' hostname. Ensure the service is running or set GUACD_IP manually.",
+		);
+		process.exit(1);
+	}
 }
 
 const EnvSchema = t.Object({
