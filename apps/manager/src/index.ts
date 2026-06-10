@@ -1,16 +1,14 @@
 import { populateEnv } from "@manager/env";
+import { runSeeder } from "./seeders";
+import { startServer } from "./server";
 
 await populateEnv();
 
 const commands: Record<string, () => Promise<void>> = {
 	serve: async () => {
-		const { startServer } = await import("./server");
-
 		await startServer();
 	},
 	seed: async () => {
-		const { runSeeder } = await import("./seeders");
-
 		await runSeeder();
 	},
 };
