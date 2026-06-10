@@ -8,585 +8,585 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/_dashboard'
-import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
-import { Route as DashboardStudentRouteImport } from './routes/_dashboard/_student'
-import { Route as DashboardInstructorRouteImport } from './routes/_dashboard/_instructor'
-import { Route as DashboardAdminRouteImport } from './routes/_dashboard/_admin'
-import { Route as DashboardInstructorMyLabIndexRouteImport } from './routes/_dashboard/_instructor/my-lab/index'
-import { Route as DashboardStudentLabEnrolledRouteImport } from './routes/_dashboard/_student/lab/enrolled'
-import { Route as DashboardStudentLabBrowseRouteImport } from './routes/_dashboard/_student/lab/browse'
-import { Route as DashboardInstructorMyLabCreateRouteImport } from './routes/_dashboard/_instructor/my-lab/create'
-import { Route as LabLabIdSessionLabSessionIdIndexRouteImport } from './routes/lab/$labId/session/$labSessionId/index'
-import { Route as DashboardStudentLabLabIdIndexRouteImport } from './routes/_dashboard/_student/lab/$labId/index'
-import { Route as DashboardInstructorMyLabLabIdIndexRouteImport } from './routes/_dashboard/_instructor/my-lab/$labId/index'
-import { Route as DashboardAdminUserStudentIndexRouteImport } from './routes/_dashboard/_admin/user/student/index'
-import { Route as DashboardAdminUserInstructorIndexRouteImport } from './routes/_dashboard/_admin/user/instructor/index'
-import { Route as DashboardAdminUserAdminIndexRouteImport } from './routes/_dashboard/_admin/user/admin/index'
-import { Route as DashboardAdminMasterStudyProgramIndexRouteImport } from './routes/_dashboard/_admin/master/study-program/index'
-import { Route as DashboardAdminMasterDepartmentIndexRouteImport } from './routes/_dashboard/_admin/master/department/index'
-import { Route as DashboardAdminLabDataDeviceTemplateIndexRouteImport } from './routes/_dashboard/_admin/lab-data/device-template/index'
-import { Route as DashboardAdminLabDataDeviceCategoryIndexRouteImport } from './routes/_dashboard/_admin/lab-data/device-category/index'
-import { Route as DashboardInstructorMyLabLabIdEditRouteImport } from './routes/_dashboard/_instructor/my-lab/$labId/edit'
-import { Route as DashboardAdminLabDataDeviceTemplateCreateRouteImport } from './routes/_dashboard/_admin/lab-data/device-template/create'
-import { Route as LabLabIdSessionLabSessionIdNodeNodeIdRouteImport } from './routes/lab/$labId/session/$labSessionId/node/$nodeId'
-import { Route as DashboardAdminLabDataDeviceTemplateIdEditRouteImport } from './routes/_dashboard/_admin/lab-data/device-template/$id.edit'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as DashboardRouteImport } from "./routes/_dashboard";
+import { Route as DashboardAdminRouteImport } from "./routes/_dashboard/_admin";
+import { Route as DashboardAdminLabDataDeviceCategoryIndexRouteImport } from "./routes/_dashboard/_admin/lab-data/device-category/index";
+import { Route as DashboardAdminLabDataDeviceTemplateIdEditRouteImport } from "./routes/_dashboard/_admin/lab-data/device-template/$id.edit";
+import { Route as DashboardAdminLabDataDeviceTemplateCreateRouteImport } from "./routes/_dashboard/_admin/lab-data/device-template/create";
+import { Route as DashboardAdminLabDataDeviceTemplateIndexRouteImport } from "./routes/_dashboard/_admin/lab-data/device-template/index";
+import { Route as DashboardAdminMasterDepartmentIndexRouteImport } from "./routes/_dashboard/_admin/master/department/index";
+import { Route as DashboardAdminMasterStudyProgramIndexRouteImport } from "./routes/_dashboard/_admin/master/study-program/index";
+import { Route as DashboardAdminUserAdminIndexRouteImport } from "./routes/_dashboard/_admin/user/admin/index";
+import { Route as DashboardAdminUserInstructorIndexRouteImport } from "./routes/_dashboard/_admin/user/instructor/index";
+import { Route as DashboardAdminUserStudentIndexRouteImport } from "./routes/_dashboard/_admin/user/student/index";
+import { Route as DashboardInstructorRouteImport } from "./routes/_dashboard/_instructor";
+import { Route as DashboardInstructorMyLabLabIdEditRouteImport } from "./routes/_dashboard/_instructor/my-lab/$labId/edit";
+import { Route as DashboardInstructorMyLabLabIdIndexRouteImport } from "./routes/_dashboard/_instructor/my-lab/$labId/index";
+import { Route as DashboardInstructorMyLabCreateRouteImport } from "./routes/_dashboard/_instructor/my-lab/create";
+import { Route as DashboardInstructorMyLabIndexRouteImport } from "./routes/_dashboard/_instructor/my-lab/index";
+import { Route as DashboardStudentRouteImport } from "./routes/_dashboard/_student";
+import { Route as DashboardStudentLabLabIdIndexRouteImport } from "./routes/_dashboard/_student/lab/$labId/index";
+import { Route as DashboardStudentLabBrowseRouteImport } from "./routes/_dashboard/_student/lab/browse";
+import { Route as DashboardStudentLabEnrolledRouteImport } from "./routes/_dashboard/_student/lab/enrolled";
+import { Route as DashboardIndexRouteImport } from "./routes/_dashboard/index";
+import { Route as LabLabIdSessionLabSessionIdIndexRouteImport } from "./routes/lab/$labId/session/$labSessionId/index";
+import { Route as LabLabIdSessionLabSessionIdNodeNodeIdRouteImport } from "./routes/lab/$labId/session/$labSessionId/node/$nodeId";
+import { Route as LoginRouteImport } from "./routes/login";
 
 const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/login",
+	path: "/login",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const DashboardRoute = DashboardRouteImport.update({
-  id: '/_dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
+	id: "/_dashboard",
+	getParentRoute: () => rootRouteImport,
+} as any);
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRoute,
-} as any)
+	id: "/",
+	path: "/",
+	getParentRoute: () => DashboardRoute,
+} as any);
 const DashboardStudentRoute = DashboardStudentRouteImport.update({
-  id: '/_student',
-  getParentRoute: () => DashboardRoute,
-} as any)
+	id: "/_student",
+	getParentRoute: () => DashboardRoute,
+} as any);
 const DashboardInstructorRoute = DashboardInstructorRouteImport.update({
-  id: '/_instructor',
-  getParentRoute: () => DashboardRoute,
-} as any)
+	id: "/_instructor",
+	getParentRoute: () => DashboardRoute,
+} as any);
 const DashboardAdminRoute = DashboardAdminRouteImport.update({
-  id: '/_admin',
-  getParentRoute: () => DashboardRoute,
-} as any)
+	id: "/_admin",
+	getParentRoute: () => DashboardRoute,
+} as any);
 const DashboardInstructorMyLabIndexRoute =
-  DashboardInstructorMyLabIndexRouteImport.update({
-    id: '/my-lab/',
-    path: '/my-lab/',
-    getParentRoute: () => DashboardInstructorRoute,
-  } as any)
+	DashboardInstructorMyLabIndexRouteImport.update({
+		id: "/my-lab/",
+		path: "/my-lab/",
+		getParentRoute: () => DashboardInstructorRoute,
+	} as any);
 const DashboardStudentLabEnrolledRoute =
-  DashboardStudentLabEnrolledRouteImport.update({
-    id: '/lab/enrolled',
-    path: '/lab/enrolled',
-    getParentRoute: () => DashboardStudentRoute,
-  } as any)
+	DashboardStudentLabEnrolledRouteImport.update({
+		id: "/lab/enrolled",
+		path: "/lab/enrolled",
+		getParentRoute: () => DashboardStudentRoute,
+	} as any);
 const DashboardStudentLabBrowseRoute =
-  DashboardStudentLabBrowseRouteImport.update({
-    id: '/lab/browse',
-    path: '/lab/browse',
-    getParentRoute: () => DashboardStudentRoute,
-  } as any)
+	DashboardStudentLabBrowseRouteImport.update({
+		id: "/lab/browse",
+		path: "/lab/browse",
+		getParentRoute: () => DashboardStudentRoute,
+	} as any);
 const DashboardInstructorMyLabCreateRoute =
-  DashboardInstructorMyLabCreateRouteImport.update({
-    id: '/my-lab/create',
-    path: '/my-lab/create',
-    getParentRoute: () => DashboardInstructorRoute,
-  } as any)
+	DashboardInstructorMyLabCreateRouteImport.update({
+		id: "/my-lab/create",
+		path: "/my-lab/create",
+		getParentRoute: () => DashboardInstructorRoute,
+	} as any);
 const LabLabIdSessionLabSessionIdIndexRoute =
-  LabLabIdSessionLabSessionIdIndexRouteImport.update({
-    id: '/lab/$labId/session/$labSessionId/',
-    path: '/lab/$labId/session/$labSessionId/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+	LabLabIdSessionLabSessionIdIndexRouteImport.update({
+		id: "/lab/$labId/session/$labSessionId/",
+		path: "/lab/$labId/session/$labSessionId/",
+		getParentRoute: () => rootRouteImport,
+	} as any);
 const DashboardStudentLabLabIdIndexRoute =
-  DashboardStudentLabLabIdIndexRouteImport.update({
-    id: '/lab/$labId/',
-    path: '/lab/$labId/',
-    getParentRoute: () => DashboardStudentRoute,
-  } as any)
+	DashboardStudentLabLabIdIndexRouteImport.update({
+		id: "/lab/$labId/",
+		path: "/lab/$labId/",
+		getParentRoute: () => DashboardStudentRoute,
+	} as any);
 const DashboardInstructorMyLabLabIdIndexRoute =
-  DashboardInstructorMyLabLabIdIndexRouteImport.update({
-    id: '/my-lab/$labId/',
-    path: '/my-lab/$labId/',
-    getParentRoute: () => DashboardInstructorRoute,
-  } as any)
+	DashboardInstructorMyLabLabIdIndexRouteImport.update({
+		id: "/my-lab/$labId/",
+		path: "/my-lab/$labId/",
+		getParentRoute: () => DashboardInstructorRoute,
+	} as any);
 const DashboardAdminUserStudentIndexRoute =
-  DashboardAdminUserStudentIndexRouteImport.update({
-    id: '/user/student/',
-    path: '/user/student/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminUserStudentIndexRouteImport.update({
+		id: "/user/student/",
+		path: "/user/student/",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const DashboardAdminUserInstructorIndexRoute =
-  DashboardAdminUserInstructorIndexRouteImport.update({
-    id: '/user/instructor/',
-    path: '/user/instructor/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminUserInstructorIndexRouteImport.update({
+		id: "/user/instructor/",
+		path: "/user/instructor/",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const DashboardAdminUserAdminIndexRoute =
-  DashboardAdminUserAdminIndexRouteImport.update({
-    id: '/user/admin/',
-    path: '/user/admin/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminUserAdminIndexRouteImport.update({
+		id: "/user/admin/",
+		path: "/user/admin/",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const DashboardAdminMasterStudyProgramIndexRoute =
-  DashboardAdminMasterStudyProgramIndexRouteImport.update({
-    id: '/master/study-program/',
-    path: '/master/study-program/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminMasterStudyProgramIndexRouteImport.update({
+		id: "/master/study-program/",
+		path: "/master/study-program/",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const DashboardAdminMasterDepartmentIndexRoute =
-  DashboardAdminMasterDepartmentIndexRouteImport.update({
-    id: '/master/department/',
-    path: '/master/department/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminMasterDepartmentIndexRouteImport.update({
+		id: "/master/department/",
+		path: "/master/department/",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const DashboardAdminLabDataDeviceTemplateIndexRoute =
-  DashboardAdminLabDataDeviceTemplateIndexRouteImport.update({
-    id: '/lab-data/device-template/',
-    path: '/lab-data/device-template/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminLabDataDeviceTemplateIndexRouteImport.update({
+		id: "/lab-data/device-template/",
+		path: "/lab-data/device-template/",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const DashboardAdminLabDataDeviceCategoryIndexRoute =
-  DashboardAdminLabDataDeviceCategoryIndexRouteImport.update({
-    id: '/lab-data/device-category/',
-    path: '/lab-data/device-category/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminLabDataDeviceCategoryIndexRouteImport.update({
+		id: "/lab-data/device-category/",
+		path: "/lab-data/device-category/",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const DashboardInstructorMyLabLabIdEditRoute =
-  DashboardInstructorMyLabLabIdEditRouteImport.update({
-    id: '/my-lab/$labId/edit',
-    path: '/my-lab/$labId/edit',
-    getParentRoute: () => DashboardInstructorRoute,
-  } as any)
+	DashboardInstructorMyLabLabIdEditRouteImport.update({
+		id: "/my-lab/$labId/edit",
+		path: "/my-lab/$labId/edit",
+		getParentRoute: () => DashboardInstructorRoute,
+	} as any);
 const DashboardAdminLabDataDeviceTemplateCreateRoute =
-  DashboardAdminLabDataDeviceTemplateCreateRouteImport.update({
-    id: '/lab-data/device-template/create',
-    path: '/lab-data/device-template/create',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminLabDataDeviceTemplateCreateRouteImport.update({
+		id: "/lab-data/device-template/create",
+		path: "/lab-data/device-template/create",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 const LabLabIdSessionLabSessionIdNodeNodeIdRoute =
-  LabLabIdSessionLabSessionIdNodeNodeIdRouteImport.update({
-    id: '/lab/$labId/session/$labSessionId/node/$nodeId',
-    path: '/lab/$labId/session/$labSessionId/node/$nodeId',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+	LabLabIdSessionLabSessionIdNodeNodeIdRouteImport.update({
+		id: "/lab/$labId/session/$labSessionId/node/$nodeId",
+		path: "/lab/$labId/session/$labSessionId/node/$nodeId",
+		getParentRoute: () => rootRouteImport,
+	} as any);
 const DashboardAdminLabDataDeviceTemplateIdEditRoute =
-  DashboardAdminLabDataDeviceTemplateIdEditRouteImport.update({
-    id: '/lab-data/device-template/$id/edit',
-    path: '/lab-data/device-template/$id/edit',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
+	DashboardAdminLabDataDeviceTemplateIdEditRouteImport.update({
+		id: "/lab-data/device-template/$id/edit",
+		path: "/lab-data/device-template/$id/edit",
+		getParentRoute: () => DashboardAdminRoute,
+	} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof DashboardIndexRoute
-  '/login': typeof LoginRoute
-  '/my-lab/create': typeof DashboardInstructorMyLabCreateRoute
-  '/lab/browse': typeof DashboardStudentLabBrowseRoute
-  '/lab/enrolled': typeof DashboardStudentLabEnrolledRoute
-  '/my-lab/': typeof DashboardInstructorMyLabIndexRoute
-  '/lab-data/device-template/create': typeof DashboardAdminLabDataDeviceTemplateCreateRoute
-  '/my-lab/$labId/edit': typeof DashboardInstructorMyLabLabIdEditRoute
-  '/lab-data/device-category/': typeof DashboardAdminLabDataDeviceCategoryIndexRoute
-  '/lab-data/device-template/': typeof DashboardAdminLabDataDeviceTemplateIndexRoute
-  '/master/department/': typeof DashboardAdminMasterDepartmentIndexRoute
-  '/master/study-program/': typeof DashboardAdminMasterStudyProgramIndexRoute
-  '/user/admin/': typeof DashboardAdminUserAdminIndexRoute
-  '/user/instructor/': typeof DashboardAdminUserInstructorIndexRoute
-  '/user/student/': typeof DashboardAdminUserStudentIndexRoute
-  '/my-lab/$labId/': typeof DashboardInstructorMyLabLabIdIndexRoute
-  '/lab/$labId/': typeof DashboardStudentLabLabIdIndexRoute
-  '/lab/$labId/session/$labSessionId/': typeof LabLabIdSessionLabSessionIdIndexRoute
-  '/lab-data/device-template/$id/edit': typeof DashboardAdminLabDataDeviceTemplateIdEditRoute
-  '/lab/$labId/session/$labSessionId/node/$nodeId': typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute
+	"/": typeof DashboardIndexRoute;
+	"/login": typeof LoginRoute;
+	"/my-lab/create": typeof DashboardInstructorMyLabCreateRoute;
+	"/lab/browse": typeof DashboardStudentLabBrowseRoute;
+	"/lab/enrolled": typeof DashboardStudentLabEnrolledRoute;
+	"/my-lab/": typeof DashboardInstructorMyLabIndexRoute;
+	"/lab-data/device-template/create": typeof DashboardAdminLabDataDeviceTemplateCreateRoute;
+	"/my-lab/$labId/edit": typeof DashboardInstructorMyLabLabIdEditRoute;
+	"/lab-data/device-category/": typeof DashboardAdminLabDataDeviceCategoryIndexRoute;
+	"/lab-data/device-template/": typeof DashboardAdminLabDataDeviceTemplateIndexRoute;
+	"/master/department/": typeof DashboardAdminMasterDepartmentIndexRoute;
+	"/master/study-program/": typeof DashboardAdminMasterStudyProgramIndexRoute;
+	"/user/admin/": typeof DashboardAdminUserAdminIndexRoute;
+	"/user/instructor/": typeof DashboardAdminUserInstructorIndexRoute;
+	"/user/student/": typeof DashboardAdminUserStudentIndexRoute;
+	"/my-lab/$labId/": typeof DashboardInstructorMyLabLabIdIndexRoute;
+	"/lab/$labId/": typeof DashboardStudentLabLabIdIndexRoute;
+	"/lab/$labId/session/$labSessionId/": typeof LabLabIdSessionLabSessionIdIndexRoute;
+	"/lab-data/device-template/$id/edit": typeof DashboardAdminLabDataDeviceTemplateIdEditRoute;
+	"/lab/$labId/session/$labSessionId/node/$nodeId": typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute;
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
-  '/': typeof DashboardIndexRoute
-  '/my-lab/create': typeof DashboardInstructorMyLabCreateRoute
-  '/lab/browse': typeof DashboardStudentLabBrowseRoute
-  '/lab/enrolled': typeof DashboardStudentLabEnrolledRoute
-  '/my-lab': typeof DashboardInstructorMyLabIndexRoute
-  '/lab-data/device-template/create': typeof DashboardAdminLabDataDeviceTemplateCreateRoute
-  '/my-lab/$labId/edit': typeof DashboardInstructorMyLabLabIdEditRoute
-  '/lab-data/device-category': typeof DashboardAdminLabDataDeviceCategoryIndexRoute
-  '/lab-data/device-template': typeof DashboardAdminLabDataDeviceTemplateIndexRoute
-  '/master/department': typeof DashboardAdminMasterDepartmentIndexRoute
-  '/master/study-program': typeof DashboardAdminMasterStudyProgramIndexRoute
-  '/user/admin': typeof DashboardAdminUserAdminIndexRoute
-  '/user/instructor': typeof DashboardAdminUserInstructorIndexRoute
-  '/user/student': typeof DashboardAdminUserStudentIndexRoute
-  '/my-lab/$labId': typeof DashboardInstructorMyLabLabIdIndexRoute
-  '/lab/$labId': typeof DashboardStudentLabLabIdIndexRoute
-  '/lab/$labId/session/$labSessionId': typeof LabLabIdSessionLabSessionIdIndexRoute
-  '/lab-data/device-template/$id/edit': typeof DashboardAdminLabDataDeviceTemplateIdEditRoute
-  '/lab/$labId/session/$labSessionId/node/$nodeId': typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute
+	"/login": typeof LoginRoute;
+	"/": typeof DashboardIndexRoute;
+	"/my-lab/create": typeof DashboardInstructorMyLabCreateRoute;
+	"/lab/browse": typeof DashboardStudentLabBrowseRoute;
+	"/lab/enrolled": typeof DashboardStudentLabEnrolledRoute;
+	"/my-lab": typeof DashboardInstructorMyLabIndexRoute;
+	"/lab-data/device-template/create": typeof DashboardAdminLabDataDeviceTemplateCreateRoute;
+	"/my-lab/$labId/edit": typeof DashboardInstructorMyLabLabIdEditRoute;
+	"/lab-data/device-category": typeof DashboardAdminLabDataDeviceCategoryIndexRoute;
+	"/lab-data/device-template": typeof DashboardAdminLabDataDeviceTemplateIndexRoute;
+	"/master/department": typeof DashboardAdminMasterDepartmentIndexRoute;
+	"/master/study-program": typeof DashboardAdminMasterStudyProgramIndexRoute;
+	"/user/admin": typeof DashboardAdminUserAdminIndexRoute;
+	"/user/instructor": typeof DashboardAdminUserInstructorIndexRoute;
+	"/user/student": typeof DashboardAdminUserStudentIndexRoute;
+	"/my-lab/$labId": typeof DashboardInstructorMyLabLabIdIndexRoute;
+	"/lab/$labId": typeof DashboardStudentLabLabIdIndexRoute;
+	"/lab/$labId/session/$labSessionId": typeof LabLabIdSessionLabSessionIdIndexRoute;
+	"/lab-data/device-template/$id/edit": typeof DashboardAdminLabDataDeviceTemplateIdEditRoute;
+	"/lab/$labId/session/$labSessionId/node/$nodeId": typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/_dashboard': typeof DashboardRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_dashboard/_admin': typeof DashboardAdminRouteWithChildren
-  '/_dashboard/_instructor': typeof DashboardInstructorRouteWithChildren
-  '/_dashboard/_student': typeof DashboardStudentRouteWithChildren
-  '/_dashboard/': typeof DashboardIndexRoute
-  '/_dashboard/_instructor/my-lab/create': typeof DashboardInstructorMyLabCreateRoute
-  '/_dashboard/_student/lab/browse': typeof DashboardStudentLabBrowseRoute
-  '/_dashboard/_student/lab/enrolled': typeof DashboardStudentLabEnrolledRoute
-  '/_dashboard/_instructor/my-lab/': typeof DashboardInstructorMyLabIndexRoute
-  '/_dashboard/_admin/lab-data/device-template/create': typeof DashboardAdminLabDataDeviceTemplateCreateRoute
-  '/_dashboard/_instructor/my-lab/$labId/edit': typeof DashboardInstructorMyLabLabIdEditRoute
-  '/_dashboard/_admin/lab-data/device-category/': typeof DashboardAdminLabDataDeviceCategoryIndexRoute
-  '/_dashboard/_admin/lab-data/device-template/': typeof DashboardAdminLabDataDeviceTemplateIndexRoute
-  '/_dashboard/_admin/master/department/': typeof DashboardAdminMasterDepartmentIndexRoute
-  '/_dashboard/_admin/master/study-program/': typeof DashboardAdminMasterStudyProgramIndexRoute
-  '/_dashboard/_admin/user/admin/': typeof DashboardAdminUserAdminIndexRoute
-  '/_dashboard/_admin/user/instructor/': typeof DashboardAdminUserInstructorIndexRoute
-  '/_dashboard/_admin/user/student/': typeof DashboardAdminUserStudentIndexRoute
-  '/_dashboard/_instructor/my-lab/$labId/': typeof DashboardInstructorMyLabLabIdIndexRoute
-  '/_dashboard/_student/lab/$labId/': typeof DashboardStudentLabLabIdIndexRoute
-  '/lab/$labId/session/$labSessionId/': typeof LabLabIdSessionLabSessionIdIndexRoute
-  '/_dashboard/_admin/lab-data/device-template/$id/edit': typeof DashboardAdminLabDataDeviceTemplateIdEditRoute
-  '/lab/$labId/session/$labSessionId/node/$nodeId': typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute
+	__root__: typeof rootRouteImport;
+	"/_dashboard": typeof DashboardRouteWithChildren;
+	"/login": typeof LoginRoute;
+	"/_dashboard/_admin": typeof DashboardAdminRouteWithChildren;
+	"/_dashboard/_instructor": typeof DashboardInstructorRouteWithChildren;
+	"/_dashboard/_student": typeof DashboardStudentRouteWithChildren;
+	"/_dashboard/": typeof DashboardIndexRoute;
+	"/_dashboard/_instructor/my-lab/create": typeof DashboardInstructorMyLabCreateRoute;
+	"/_dashboard/_student/lab/browse": typeof DashboardStudentLabBrowseRoute;
+	"/_dashboard/_student/lab/enrolled": typeof DashboardStudentLabEnrolledRoute;
+	"/_dashboard/_instructor/my-lab/": typeof DashboardInstructorMyLabIndexRoute;
+	"/_dashboard/_admin/lab-data/device-template/create": typeof DashboardAdminLabDataDeviceTemplateCreateRoute;
+	"/_dashboard/_instructor/my-lab/$labId/edit": typeof DashboardInstructorMyLabLabIdEditRoute;
+	"/_dashboard/_admin/lab-data/device-category/": typeof DashboardAdminLabDataDeviceCategoryIndexRoute;
+	"/_dashboard/_admin/lab-data/device-template/": typeof DashboardAdminLabDataDeviceTemplateIndexRoute;
+	"/_dashboard/_admin/master/department/": typeof DashboardAdminMasterDepartmentIndexRoute;
+	"/_dashboard/_admin/master/study-program/": typeof DashboardAdminMasterStudyProgramIndexRoute;
+	"/_dashboard/_admin/user/admin/": typeof DashboardAdminUserAdminIndexRoute;
+	"/_dashboard/_admin/user/instructor/": typeof DashboardAdminUserInstructorIndexRoute;
+	"/_dashboard/_admin/user/student/": typeof DashboardAdminUserStudentIndexRoute;
+	"/_dashboard/_instructor/my-lab/$labId/": typeof DashboardInstructorMyLabLabIdIndexRoute;
+	"/_dashboard/_student/lab/$labId/": typeof DashboardStudentLabLabIdIndexRoute;
+	"/lab/$labId/session/$labSessionId/": typeof LabLabIdSessionLabSessionIdIndexRoute;
+	"/_dashboard/_admin/lab-data/device-template/$id/edit": typeof DashboardAdminLabDataDeviceTemplateIdEditRoute;
+	"/lab/$labId/session/$labSessionId/node/$nodeId": typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/login'
-    | '/my-lab/create'
-    | '/lab/browse'
-    | '/lab/enrolled'
-    | '/my-lab/'
-    | '/lab-data/device-template/create'
-    | '/my-lab/$labId/edit'
-    | '/lab-data/device-category/'
-    | '/lab-data/device-template/'
-    | '/master/department/'
-    | '/master/study-program/'
-    | '/user/admin/'
-    | '/user/instructor/'
-    | '/user/student/'
-    | '/my-lab/$labId/'
-    | '/lab/$labId/'
-    | '/lab/$labId/session/$labSessionId/'
-    | '/lab-data/device-template/$id/edit'
-    | '/lab/$labId/session/$labSessionId/node/$nodeId'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/login'
-    | '/'
-    | '/my-lab/create'
-    | '/lab/browse'
-    | '/lab/enrolled'
-    | '/my-lab'
-    | '/lab-data/device-template/create'
-    | '/my-lab/$labId/edit'
-    | '/lab-data/device-category'
-    | '/lab-data/device-template'
-    | '/master/department'
-    | '/master/study-program'
-    | '/user/admin'
-    | '/user/instructor'
-    | '/user/student'
-    | '/my-lab/$labId'
-    | '/lab/$labId'
-    | '/lab/$labId/session/$labSessionId'
-    | '/lab-data/device-template/$id/edit'
-    | '/lab/$labId/session/$labSessionId/node/$nodeId'
-  id:
-    | '__root__'
-    | '/_dashboard'
-    | '/login'
-    | '/_dashboard/_admin'
-    | '/_dashboard/_instructor'
-    | '/_dashboard/_student'
-    | '/_dashboard/'
-    | '/_dashboard/_instructor/my-lab/create'
-    | '/_dashboard/_student/lab/browse'
-    | '/_dashboard/_student/lab/enrolled'
-    | '/_dashboard/_instructor/my-lab/'
-    | '/_dashboard/_admin/lab-data/device-template/create'
-    | '/_dashboard/_instructor/my-lab/$labId/edit'
-    | '/_dashboard/_admin/lab-data/device-category/'
-    | '/_dashboard/_admin/lab-data/device-template/'
-    | '/_dashboard/_admin/master/department/'
-    | '/_dashboard/_admin/master/study-program/'
-    | '/_dashboard/_admin/user/admin/'
-    | '/_dashboard/_admin/user/instructor/'
-    | '/_dashboard/_admin/user/student/'
-    | '/_dashboard/_instructor/my-lab/$labId/'
-    | '/_dashboard/_student/lab/$labId/'
-    | '/lab/$labId/session/$labSessionId/'
-    | '/_dashboard/_admin/lab-data/device-template/$id/edit'
-    | '/lab/$labId/session/$labSessionId/node/$nodeId'
-  fileRoutesById: FileRoutesById
+	fileRoutesByFullPath: FileRoutesByFullPath;
+	fullPaths:
+		| "/"
+		| "/login"
+		| "/my-lab/create"
+		| "/lab/browse"
+		| "/lab/enrolled"
+		| "/my-lab/"
+		| "/lab-data/device-template/create"
+		| "/my-lab/$labId/edit"
+		| "/lab-data/device-category/"
+		| "/lab-data/device-template/"
+		| "/master/department/"
+		| "/master/study-program/"
+		| "/user/admin/"
+		| "/user/instructor/"
+		| "/user/student/"
+		| "/my-lab/$labId/"
+		| "/lab/$labId/"
+		| "/lab/$labId/session/$labSessionId/"
+		| "/lab-data/device-template/$id/edit"
+		| "/lab/$labId/session/$labSessionId/node/$nodeId";
+	fileRoutesByTo: FileRoutesByTo;
+	to:
+		| "/login"
+		| "/"
+		| "/my-lab/create"
+		| "/lab/browse"
+		| "/lab/enrolled"
+		| "/my-lab"
+		| "/lab-data/device-template/create"
+		| "/my-lab/$labId/edit"
+		| "/lab-data/device-category"
+		| "/lab-data/device-template"
+		| "/master/department"
+		| "/master/study-program"
+		| "/user/admin"
+		| "/user/instructor"
+		| "/user/student"
+		| "/my-lab/$labId"
+		| "/lab/$labId"
+		| "/lab/$labId/session/$labSessionId"
+		| "/lab-data/device-template/$id/edit"
+		| "/lab/$labId/session/$labSessionId/node/$nodeId";
+	id:
+		| "__root__"
+		| "/_dashboard"
+		| "/login"
+		| "/_dashboard/_admin"
+		| "/_dashboard/_instructor"
+		| "/_dashboard/_student"
+		| "/_dashboard/"
+		| "/_dashboard/_instructor/my-lab/create"
+		| "/_dashboard/_student/lab/browse"
+		| "/_dashboard/_student/lab/enrolled"
+		| "/_dashboard/_instructor/my-lab/"
+		| "/_dashboard/_admin/lab-data/device-template/create"
+		| "/_dashboard/_instructor/my-lab/$labId/edit"
+		| "/_dashboard/_admin/lab-data/device-category/"
+		| "/_dashboard/_admin/lab-data/device-template/"
+		| "/_dashboard/_admin/master/department/"
+		| "/_dashboard/_admin/master/study-program/"
+		| "/_dashboard/_admin/user/admin/"
+		| "/_dashboard/_admin/user/instructor/"
+		| "/_dashboard/_admin/user/student/"
+		| "/_dashboard/_instructor/my-lab/$labId/"
+		| "/_dashboard/_student/lab/$labId/"
+		| "/lab/$labId/session/$labSessionId/"
+		| "/_dashboard/_admin/lab-data/device-template/$id/edit"
+		| "/lab/$labId/session/$labSessionId/node/$nodeId";
+	fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  DashboardRoute: typeof DashboardRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  LabLabIdSessionLabSessionIdIndexRoute: typeof LabLabIdSessionLabSessionIdIndexRoute
-  LabLabIdSessionLabSessionIdNodeNodeIdRoute: typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute
+	DashboardRoute: typeof DashboardRouteWithChildren;
+	LoginRoute: typeof LoginRoute;
+	LabLabIdSessionLabSessionIdIndexRoute: typeof LabLabIdSessionLabSessionIdIndexRoute;
+	LabLabIdSessionLabSessionIdNodeNodeIdRoute: typeof LabLabIdSessionLabSessionIdNodeNodeIdRoute;
 }
 
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard': {
-      id: '/_dashboard'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard/': {
-      id: '/_dashboard/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/_student': {
-      id: '/_dashboard/_student'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof DashboardStudentRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/_instructor': {
-      id: '/_dashboard/_instructor'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof DashboardInstructorRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/_admin': {
-      id: '/_dashboard/_admin'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof DashboardAdminRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/_instructor/my-lab/': {
-      id: '/_dashboard/_instructor/my-lab/'
-      path: '/my-lab'
-      fullPath: '/my-lab/'
-      preLoaderRoute: typeof DashboardInstructorMyLabIndexRouteImport
-      parentRoute: typeof DashboardInstructorRoute
-    }
-    '/_dashboard/_student/lab/enrolled': {
-      id: '/_dashboard/_student/lab/enrolled'
-      path: '/lab/enrolled'
-      fullPath: '/lab/enrolled'
-      preLoaderRoute: typeof DashboardStudentLabEnrolledRouteImport
-      parentRoute: typeof DashboardStudentRoute
-    }
-    '/_dashboard/_student/lab/browse': {
-      id: '/_dashboard/_student/lab/browse'
-      path: '/lab/browse'
-      fullPath: '/lab/browse'
-      preLoaderRoute: typeof DashboardStudentLabBrowseRouteImport
-      parentRoute: typeof DashboardStudentRoute
-    }
-    '/_dashboard/_instructor/my-lab/create': {
-      id: '/_dashboard/_instructor/my-lab/create'
-      path: '/my-lab/create'
-      fullPath: '/my-lab/create'
-      preLoaderRoute: typeof DashboardInstructorMyLabCreateRouteImport
-      parentRoute: typeof DashboardInstructorRoute
-    }
-    '/lab/$labId/session/$labSessionId/': {
-      id: '/lab/$labId/session/$labSessionId/'
-      path: '/lab/$labId/session/$labSessionId'
-      fullPath: '/lab/$labId/session/$labSessionId/'
-      preLoaderRoute: typeof LabLabIdSessionLabSessionIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard/_student/lab/$labId/': {
-      id: '/_dashboard/_student/lab/$labId/'
-      path: '/lab/$labId'
-      fullPath: '/lab/$labId/'
-      preLoaderRoute: typeof DashboardStudentLabLabIdIndexRouteImport
-      parentRoute: typeof DashboardStudentRoute
-    }
-    '/_dashboard/_instructor/my-lab/$labId/': {
-      id: '/_dashboard/_instructor/my-lab/$labId/'
-      path: '/my-lab/$labId'
-      fullPath: '/my-lab/$labId/'
-      preLoaderRoute: typeof DashboardInstructorMyLabLabIdIndexRouteImport
-      parentRoute: typeof DashboardInstructorRoute
-    }
-    '/_dashboard/_admin/user/student/': {
-      id: '/_dashboard/_admin/user/student/'
-      path: '/user/student'
-      fullPath: '/user/student/'
-      preLoaderRoute: typeof DashboardAdminUserStudentIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/user/instructor/': {
-      id: '/_dashboard/_admin/user/instructor/'
-      path: '/user/instructor'
-      fullPath: '/user/instructor/'
-      preLoaderRoute: typeof DashboardAdminUserInstructorIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/user/admin/': {
-      id: '/_dashboard/_admin/user/admin/'
-      path: '/user/admin'
-      fullPath: '/user/admin/'
-      preLoaderRoute: typeof DashboardAdminUserAdminIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/master/study-program/': {
-      id: '/_dashboard/_admin/master/study-program/'
-      path: '/master/study-program'
-      fullPath: '/master/study-program/'
-      preLoaderRoute: typeof DashboardAdminMasterStudyProgramIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/master/department/': {
-      id: '/_dashboard/_admin/master/department/'
-      path: '/master/department'
-      fullPath: '/master/department/'
-      preLoaderRoute: typeof DashboardAdminMasterDepartmentIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/lab-data/device-template/': {
-      id: '/_dashboard/_admin/lab-data/device-template/'
-      path: '/lab-data/device-template'
-      fullPath: '/lab-data/device-template/'
-      preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/lab-data/device-category/': {
-      id: '/_dashboard/_admin/lab-data/device-category/'
-      path: '/lab-data/device-category'
-      fullPath: '/lab-data/device-category/'
-      preLoaderRoute: typeof DashboardAdminLabDataDeviceCategoryIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_instructor/my-lab/$labId/edit': {
-      id: '/_dashboard/_instructor/my-lab/$labId/edit'
-      path: '/my-lab/$labId/edit'
-      fullPath: '/my-lab/$labId/edit'
-      preLoaderRoute: typeof DashboardInstructorMyLabLabIdEditRouteImport
-      parentRoute: typeof DashboardInstructorRoute
-    }
-    '/_dashboard/_admin/lab-data/device-template/create': {
-      id: '/_dashboard/_admin/lab-data/device-template/create'
-      path: '/lab-data/device-template/create'
-      fullPath: '/lab-data/device-template/create'
-      preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateCreateRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/lab/$labId/session/$labSessionId/node/$nodeId': {
-      id: '/lab/$labId/session/$labSessionId/node/$nodeId'
-      path: '/lab/$labId/session/$labSessionId/node/$nodeId'
-      fullPath: '/lab/$labId/session/$labSessionId/node/$nodeId'
-      preLoaderRoute: typeof LabLabIdSessionLabSessionIdNodeNodeIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard/_admin/lab-data/device-template/$id/edit': {
-      id: '/_dashboard/_admin/lab-data/device-template/$id/edit'
-      path: '/lab-data/device-template/$id/edit'
-      fullPath: '/lab-data/device-template/$id/edit'
-      preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateIdEditRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-  }
+declare module "@tanstack/react-router" {
+	interface FileRoutesByPath {
+		"/login": {
+			id: "/login";
+			path: "/login";
+			fullPath: "/login";
+			preLoaderRoute: typeof LoginRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/_dashboard": {
+			id: "/_dashboard";
+			path: "";
+			fullPath: "/";
+			preLoaderRoute: typeof DashboardRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/_dashboard/": {
+			id: "/_dashboard/";
+			path: "/";
+			fullPath: "/";
+			preLoaderRoute: typeof DashboardIndexRouteImport;
+			parentRoute: typeof DashboardRoute;
+		};
+		"/_dashboard/_student": {
+			id: "/_dashboard/_student";
+			path: "";
+			fullPath: "/";
+			preLoaderRoute: typeof DashboardStudentRouteImport;
+			parentRoute: typeof DashboardRoute;
+		};
+		"/_dashboard/_instructor": {
+			id: "/_dashboard/_instructor";
+			path: "";
+			fullPath: "/";
+			preLoaderRoute: typeof DashboardInstructorRouteImport;
+			parentRoute: typeof DashboardRoute;
+		};
+		"/_dashboard/_admin": {
+			id: "/_dashboard/_admin";
+			path: "";
+			fullPath: "/";
+			preLoaderRoute: typeof DashboardAdminRouteImport;
+			parentRoute: typeof DashboardRoute;
+		};
+		"/_dashboard/_instructor/my-lab/": {
+			id: "/_dashboard/_instructor/my-lab/";
+			path: "/my-lab";
+			fullPath: "/my-lab/";
+			preLoaderRoute: typeof DashboardInstructorMyLabIndexRouteImport;
+			parentRoute: typeof DashboardInstructorRoute;
+		};
+		"/_dashboard/_student/lab/enrolled": {
+			id: "/_dashboard/_student/lab/enrolled";
+			path: "/lab/enrolled";
+			fullPath: "/lab/enrolled";
+			preLoaderRoute: typeof DashboardStudentLabEnrolledRouteImport;
+			parentRoute: typeof DashboardStudentRoute;
+		};
+		"/_dashboard/_student/lab/browse": {
+			id: "/_dashboard/_student/lab/browse";
+			path: "/lab/browse";
+			fullPath: "/lab/browse";
+			preLoaderRoute: typeof DashboardStudentLabBrowseRouteImport;
+			parentRoute: typeof DashboardStudentRoute;
+		};
+		"/_dashboard/_instructor/my-lab/create": {
+			id: "/_dashboard/_instructor/my-lab/create";
+			path: "/my-lab/create";
+			fullPath: "/my-lab/create";
+			preLoaderRoute: typeof DashboardInstructorMyLabCreateRouteImport;
+			parentRoute: typeof DashboardInstructorRoute;
+		};
+		"/lab/$labId/session/$labSessionId/": {
+			id: "/lab/$labId/session/$labSessionId/";
+			path: "/lab/$labId/session/$labSessionId";
+			fullPath: "/lab/$labId/session/$labSessionId/";
+			preLoaderRoute: typeof LabLabIdSessionLabSessionIdIndexRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/_dashboard/_student/lab/$labId/": {
+			id: "/_dashboard/_student/lab/$labId/";
+			path: "/lab/$labId";
+			fullPath: "/lab/$labId/";
+			preLoaderRoute: typeof DashboardStudentLabLabIdIndexRouteImport;
+			parentRoute: typeof DashboardStudentRoute;
+		};
+		"/_dashboard/_instructor/my-lab/$labId/": {
+			id: "/_dashboard/_instructor/my-lab/$labId/";
+			path: "/my-lab/$labId";
+			fullPath: "/my-lab/$labId/";
+			preLoaderRoute: typeof DashboardInstructorMyLabLabIdIndexRouteImport;
+			parentRoute: typeof DashboardInstructorRoute;
+		};
+		"/_dashboard/_admin/user/student/": {
+			id: "/_dashboard/_admin/user/student/";
+			path: "/user/student";
+			fullPath: "/user/student/";
+			preLoaderRoute: typeof DashboardAdminUserStudentIndexRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/_dashboard/_admin/user/instructor/": {
+			id: "/_dashboard/_admin/user/instructor/";
+			path: "/user/instructor";
+			fullPath: "/user/instructor/";
+			preLoaderRoute: typeof DashboardAdminUserInstructorIndexRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/_dashboard/_admin/user/admin/": {
+			id: "/_dashboard/_admin/user/admin/";
+			path: "/user/admin";
+			fullPath: "/user/admin/";
+			preLoaderRoute: typeof DashboardAdminUserAdminIndexRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/_dashboard/_admin/master/study-program/": {
+			id: "/_dashboard/_admin/master/study-program/";
+			path: "/master/study-program";
+			fullPath: "/master/study-program/";
+			preLoaderRoute: typeof DashboardAdminMasterStudyProgramIndexRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/_dashboard/_admin/master/department/": {
+			id: "/_dashboard/_admin/master/department/";
+			path: "/master/department";
+			fullPath: "/master/department/";
+			preLoaderRoute: typeof DashboardAdminMasterDepartmentIndexRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/_dashboard/_admin/lab-data/device-template/": {
+			id: "/_dashboard/_admin/lab-data/device-template/";
+			path: "/lab-data/device-template";
+			fullPath: "/lab-data/device-template/";
+			preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateIndexRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/_dashboard/_admin/lab-data/device-category/": {
+			id: "/_dashboard/_admin/lab-data/device-category/";
+			path: "/lab-data/device-category";
+			fullPath: "/lab-data/device-category/";
+			preLoaderRoute: typeof DashboardAdminLabDataDeviceCategoryIndexRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/_dashboard/_instructor/my-lab/$labId/edit": {
+			id: "/_dashboard/_instructor/my-lab/$labId/edit";
+			path: "/my-lab/$labId/edit";
+			fullPath: "/my-lab/$labId/edit";
+			preLoaderRoute: typeof DashboardInstructorMyLabLabIdEditRouteImport;
+			parentRoute: typeof DashboardInstructorRoute;
+		};
+		"/_dashboard/_admin/lab-data/device-template/create": {
+			id: "/_dashboard/_admin/lab-data/device-template/create";
+			path: "/lab-data/device-template/create";
+			fullPath: "/lab-data/device-template/create";
+			preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateCreateRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+		"/lab/$labId/session/$labSessionId/node/$nodeId": {
+			id: "/lab/$labId/session/$labSessionId/node/$nodeId";
+			path: "/lab/$labId/session/$labSessionId/node/$nodeId";
+			fullPath: "/lab/$labId/session/$labSessionId/node/$nodeId";
+			preLoaderRoute: typeof LabLabIdSessionLabSessionIdNodeNodeIdRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
+		"/_dashboard/_admin/lab-data/device-template/$id/edit": {
+			id: "/_dashboard/_admin/lab-data/device-template/$id/edit";
+			path: "/lab-data/device-template/$id/edit";
+			fullPath: "/lab-data/device-template/$id/edit";
+			preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateIdEditRouteImport;
+			parentRoute: typeof DashboardAdminRoute;
+		};
+	}
 }
 
 interface DashboardAdminRouteChildren {
-  DashboardAdminLabDataDeviceTemplateCreateRoute: typeof DashboardAdminLabDataDeviceTemplateCreateRoute
-  DashboardAdminLabDataDeviceCategoryIndexRoute: typeof DashboardAdminLabDataDeviceCategoryIndexRoute
-  DashboardAdminLabDataDeviceTemplateIndexRoute: typeof DashboardAdminLabDataDeviceTemplateIndexRoute
-  DashboardAdminMasterDepartmentIndexRoute: typeof DashboardAdminMasterDepartmentIndexRoute
-  DashboardAdminMasterStudyProgramIndexRoute: typeof DashboardAdminMasterStudyProgramIndexRoute
-  DashboardAdminUserAdminIndexRoute: typeof DashboardAdminUserAdminIndexRoute
-  DashboardAdminUserInstructorIndexRoute: typeof DashboardAdminUserInstructorIndexRoute
-  DashboardAdminUserStudentIndexRoute: typeof DashboardAdminUserStudentIndexRoute
-  DashboardAdminLabDataDeviceTemplateIdEditRoute: typeof DashboardAdminLabDataDeviceTemplateIdEditRoute
+	DashboardAdminLabDataDeviceTemplateCreateRoute: typeof DashboardAdminLabDataDeviceTemplateCreateRoute;
+	DashboardAdminLabDataDeviceCategoryIndexRoute: typeof DashboardAdminLabDataDeviceCategoryIndexRoute;
+	DashboardAdminLabDataDeviceTemplateIndexRoute: typeof DashboardAdminLabDataDeviceTemplateIndexRoute;
+	DashboardAdminMasterDepartmentIndexRoute: typeof DashboardAdminMasterDepartmentIndexRoute;
+	DashboardAdminMasterStudyProgramIndexRoute: typeof DashboardAdminMasterStudyProgramIndexRoute;
+	DashboardAdminUserAdminIndexRoute: typeof DashboardAdminUserAdminIndexRoute;
+	DashboardAdminUserInstructorIndexRoute: typeof DashboardAdminUserInstructorIndexRoute;
+	DashboardAdminUserStudentIndexRoute: typeof DashboardAdminUserStudentIndexRoute;
+	DashboardAdminLabDataDeviceTemplateIdEditRoute: typeof DashboardAdminLabDataDeviceTemplateIdEditRoute;
 }
 
 const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
-  DashboardAdminLabDataDeviceTemplateCreateRoute:
-    DashboardAdminLabDataDeviceTemplateCreateRoute,
-  DashboardAdminLabDataDeviceCategoryIndexRoute:
-    DashboardAdminLabDataDeviceCategoryIndexRoute,
-  DashboardAdminLabDataDeviceTemplateIndexRoute:
-    DashboardAdminLabDataDeviceTemplateIndexRoute,
-  DashboardAdminMasterDepartmentIndexRoute:
-    DashboardAdminMasterDepartmentIndexRoute,
-  DashboardAdminMasterStudyProgramIndexRoute:
-    DashboardAdminMasterStudyProgramIndexRoute,
-  DashboardAdminUserAdminIndexRoute: DashboardAdminUserAdminIndexRoute,
-  DashboardAdminUserInstructorIndexRoute:
-    DashboardAdminUserInstructorIndexRoute,
-  DashboardAdminUserStudentIndexRoute: DashboardAdminUserStudentIndexRoute,
-  DashboardAdminLabDataDeviceTemplateIdEditRoute:
-    DashboardAdminLabDataDeviceTemplateIdEditRoute,
-}
+	DashboardAdminLabDataDeviceTemplateCreateRoute:
+		DashboardAdminLabDataDeviceTemplateCreateRoute,
+	DashboardAdminLabDataDeviceCategoryIndexRoute:
+		DashboardAdminLabDataDeviceCategoryIndexRoute,
+	DashboardAdminLabDataDeviceTemplateIndexRoute:
+		DashboardAdminLabDataDeviceTemplateIndexRoute,
+	DashboardAdminMasterDepartmentIndexRoute:
+		DashboardAdminMasterDepartmentIndexRoute,
+	DashboardAdminMasterStudyProgramIndexRoute:
+		DashboardAdminMasterStudyProgramIndexRoute,
+	DashboardAdminUserAdminIndexRoute: DashboardAdminUserAdminIndexRoute,
+	DashboardAdminUserInstructorIndexRoute:
+		DashboardAdminUserInstructorIndexRoute,
+	DashboardAdminUserStudentIndexRoute: DashboardAdminUserStudentIndexRoute,
+	DashboardAdminLabDataDeviceTemplateIdEditRoute:
+		DashboardAdminLabDataDeviceTemplateIdEditRoute,
+};
 
 const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
-  DashboardAdminRouteChildren,
-)
+	DashboardAdminRouteChildren,
+);
 
 interface DashboardInstructorRouteChildren {
-  DashboardInstructorMyLabCreateRoute: typeof DashboardInstructorMyLabCreateRoute
-  DashboardInstructorMyLabIndexRoute: typeof DashboardInstructorMyLabIndexRoute
-  DashboardInstructorMyLabLabIdEditRoute: typeof DashboardInstructorMyLabLabIdEditRoute
-  DashboardInstructorMyLabLabIdIndexRoute: typeof DashboardInstructorMyLabLabIdIndexRoute
+	DashboardInstructorMyLabCreateRoute: typeof DashboardInstructorMyLabCreateRoute;
+	DashboardInstructorMyLabIndexRoute: typeof DashboardInstructorMyLabIndexRoute;
+	DashboardInstructorMyLabLabIdEditRoute: typeof DashboardInstructorMyLabLabIdEditRoute;
+	DashboardInstructorMyLabLabIdIndexRoute: typeof DashboardInstructorMyLabLabIdIndexRoute;
 }
 
 const DashboardInstructorRouteChildren: DashboardInstructorRouteChildren = {
-  DashboardInstructorMyLabCreateRoute: DashboardInstructorMyLabCreateRoute,
-  DashboardInstructorMyLabIndexRoute: DashboardInstructorMyLabIndexRoute,
-  DashboardInstructorMyLabLabIdEditRoute:
-    DashboardInstructorMyLabLabIdEditRoute,
-  DashboardInstructorMyLabLabIdIndexRoute:
-    DashboardInstructorMyLabLabIdIndexRoute,
-}
+	DashboardInstructorMyLabCreateRoute: DashboardInstructorMyLabCreateRoute,
+	DashboardInstructorMyLabIndexRoute: DashboardInstructorMyLabIndexRoute,
+	DashboardInstructorMyLabLabIdEditRoute:
+		DashboardInstructorMyLabLabIdEditRoute,
+	DashboardInstructorMyLabLabIdIndexRoute:
+		DashboardInstructorMyLabLabIdIndexRoute,
+};
 
 const DashboardInstructorRouteWithChildren =
-  DashboardInstructorRoute._addFileChildren(DashboardInstructorRouteChildren)
+	DashboardInstructorRoute._addFileChildren(DashboardInstructorRouteChildren);
 
 interface DashboardStudentRouteChildren {
-  DashboardStudentLabBrowseRoute: typeof DashboardStudentLabBrowseRoute
-  DashboardStudentLabEnrolledRoute: typeof DashboardStudentLabEnrolledRoute
-  DashboardStudentLabLabIdIndexRoute: typeof DashboardStudentLabLabIdIndexRoute
+	DashboardStudentLabBrowseRoute: typeof DashboardStudentLabBrowseRoute;
+	DashboardStudentLabEnrolledRoute: typeof DashboardStudentLabEnrolledRoute;
+	DashboardStudentLabLabIdIndexRoute: typeof DashboardStudentLabLabIdIndexRoute;
 }
 
 const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
-  DashboardStudentLabBrowseRoute: DashboardStudentLabBrowseRoute,
-  DashboardStudentLabEnrolledRoute: DashboardStudentLabEnrolledRoute,
-  DashboardStudentLabLabIdIndexRoute: DashboardStudentLabLabIdIndexRoute,
-}
+	DashboardStudentLabBrowseRoute: DashboardStudentLabBrowseRoute,
+	DashboardStudentLabEnrolledRoute: DashboardStudentLabEnrolledRoute,
+	DashboardStudentLabLabIdIndexRoute: DashboardStudentLabLabIdIndexRoute,
+};
 
 const DashboardStudentRouteWithChildren =
-  DashboardStudentRoute._addFileChildren(DashboardStudentRouteChildren)
+	DashboardStudentRoute._addFileChildren(DashboardStudentRouteChildren);
 
 interface DashboardRouteChildren {
-  DashboardAdminRoute: typeof DashboardAdminRouteWithChildren
-  DashboardInstructorRoute: typeof DashboardInstructorRouteWithChildren
-  DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
-  DashboardIndexRoute: typeof DashboardIndexRoute
+	DashboardAdminRoute: typeof DashboardAdminRouteWithChildren;
+	DashboardInstructorRoute: typeof DashboardInstructorRouteWithChildren;
+	DashboardStudentRoute: typeof DashboardStudentRouteWithChildren;
+	DashboardIndexRoute: typeof DashboardIndexRoute;
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardAdminRoute: DashboardAdminRouteWithChildren,
-  DashboardInstructorRoute: DashboardInstructorRouteWithChildren,
-  DashboardStudentRoute: DashboardStudentRouteWithChildren,
-  DashboardIndexRoute: DashboardIndexRoute,
-}
+	DashboardAdminRoute: DashboardAdminRouteWithChildren,
+	DashboardInstructorRoute: DashboardInstructorRouteWithChildren,
+	DashboardStudentRoute: DashboardStudentRouteWithChildren,
+	DashboardIndexRoute: DashboardIndexRoute,
+};
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
-)
+	DashboardRouteChildren,
+);
 
 const rootRouteChildren: RootRouteChildren = {
-  DashboardRoute: DashboardRouteWithChildren,
-  LoginRoute: LoginRoute,
-  LabLabIdSessionLabSessionIdIndexRoute: LabLabIdSessionLabSessionIdIndexRoute,
-  LabLabIdSessionLabSessionIdNodeNodeIdRoute:
-    LabLabIdSessionLabSessionIdNodeNodeIdRoute,
-}
+	DashboardRoute: DashboardRouteWithChildren,
+	LoginRoute: LoginRoute,
+	LabLabIdSessionLabSessionIdIndexRoute: LabLabIdSessionLabSessionIdIndexRoute,
+	LabLabIdSessionLabSessionIdNodeNodeIdRoute:
+		LabLabIdSessionLabSessionIdNodeNodeIdRoute,
+};
 export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+	._addFileChildren(rootRouteChildren)
+	._addFileTypes<FileRouteTypes>();
