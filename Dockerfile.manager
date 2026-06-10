@@ -12,11 +12,11 @@ FROM base AS deps
 COPY --parents package.json bun.lock tsconfig.json apps/*/package.json packages/*/*/package.json ./
 RUN SKIP_INSTALL_SIMPLE_GIT_HOOKS=true bun install --frozen-lockfile
 
-# --- API Builder ---
-FROM deps AS api-builder
+# --- Manager Builder ---
+FROM deps AS manager-builder
 COPY packages/ ./packages/
-COPY apps/api/ ./apps/api/
-RUN cd apps/api && bun run build
+COPY apps/manager/ ./apps/manager/
+RUN cd apps/manager && bun run build
 
 # --- Web Builder ---
 FROM deps AS web-builder
@@ -29,8 +29,8 @@ FROM gcr.io/distroless/cc
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=api-builder /app/out/app /app/app
-COPY --from=api-builder /app/out/migrations /app/migrations
+COPY --from=manager-builder /app/out/app /app/app
+COPY --from=manager-builder /app/out/migrations /app/migrations
 COPY --from=web-builder /app/out/public /app/public
 
 ENTRYPOINT ["/app/app"]

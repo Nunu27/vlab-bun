@@ -6,6 +6,7 @@ import type { Server } from "bun";
 import { Elysia } from "elysia";
 import redis from "./lib/redis";
 
+import grpcServer from "./services/grpc";
 import guacamoleLite from "./services/guacamole-lite";
 import httpHandler from "./services/http";
 import { cache } from "./services/http/middlewares/caching";
@@ -22,8 +23,6 @@ const app = new Elysia().use(httpHandler).all(
 	},
 	{ detail: { hide: true } },
 );
-
-import grpcServer from "./services/grpc";
 
 async function shutdown() {
 	logger.info("Shutting down...");
