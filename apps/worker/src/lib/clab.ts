@@ -1,8 +1,10 @@
+import type { Static } from "@sinclair/typebox";
 import type {
 	ContainerlabNodeDefinition,
 	ContainerlabTopologyDefinition,
 } from "@vlab/clab";
 import Containerlab from "@vlab/clab";
+import type { LabConfigSchema, LabLinkSchema } from "@vlab/grpc";
 import type { DeviceKind } from "@vlab/shared/enums";
 import { toKebabCase } from "@vlab/shared/utils";
 import env from "../env";
@@ -31,7 +33,10 @@ export const LABELS = {
 	DEVICE_TEMPLATE_ID: "vlab.device.template.id",
 } as const;
 
-export async function deployLab(sessionId: string, config: any) {
+export async function deployLab(
+	sessionId: string,
+	config: Static<typeof LabConfigSchema>,
+) {
 	const defaultLabels: Record<string, string> = {
 		[LABELS.SESSION_ID]: sessionId,
 		[LABELS.OWNER_ID]: config.ownerId,
@@ -86,7 +91,7 @@ export async function deployLab(sessionId: string, config: any) {
 		} as ContainerlabNodeDefinition;
 	}
 
-	const links = config.links?.map((link: any) => ({
+	const links = config.links?.map((link: Static<typeof LabLinkSchema>) => ({
 		endpoints: [
 			`${nodeNames[link.sourceId]}:${link.sourceInterface}`,
 			`${nodeNames[link.targetId]}:${link.targetInterface}`,
@@ -101,7 +106,7 @@ export async function deployLab(sessionId: string, config: any) {
 		topology: {
 			defaults: { labels: defaultLabels },
 			nodes,
-			links: links as any,
+			links: links as never,
 		},
 	};
 

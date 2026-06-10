@@ -20,7 +20,7 @@ evaluator.setSourceRead(
 export async function startLabEvaluation(
 	sessionId: string,
 	nodeMap: Record<string, NodeInfo>,
-	sessionChecks: any[],
+	sessionChecks: Parameters<typeof evaluator.createSession>[2],
 	values: Record<string, boolean>,
 	onCheckChange: (id: string, value: boolean) => void,
 ) {

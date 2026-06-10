@@ -5,20 +5,6 @@ import { Type as t } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
 
-let defaultGuacdIp = process.env.GUACD_IP;
-if (!defaultGuacdIp) {
-	try {
-		const res = await dns.lookup("guacd");
-		defaultGuacdIp = res.address;
-	} catch {
-		console.error("❌ Invalid environment variables:");
-		console.error(
-			"- GUACD_IP Failed to resolve 'guacd' hostname. Ensure the service is running or set GUACD_IP manually.",
-		);
-		process.exit(1);
-	}
-}
-
 const EnvSchema = t.Object({
 	NODE_ENV: t.Union(
 		[t.Literal("development"), t.Literal("production"), t.Literal("test")],
@@ -27,7 +13,7 @@ const EnvSchema = t.Object({
 
 	WORKER_ID: t.String({ minLength: 1 }),
 	MANAGER_GRPC_URL: t.String({ default: "localhost:50051" }),
-	GUACD_IP: t.String({ default: defaultGuacdIp }),
+	GUACD_IP: t.String({ default: "127.0.0.1" }),
 });
 
 const validator = TypeCompiler.Compile(EnvSchema);
@@ -45,6 +31,14 @@ if (errors.length) {
 }
 
 const env = validator.Decode(casted);
+
+if (env.GUACD_IP === "127.0.0.1") {
+	const { address } = await dns.lookup("guacd").catch(() => {
+		console.error("❌ GUACD_IP Failed to resolve 'guacd' hostname");
+		process.exit(1);
+	});
+	env.GUACD_IP = address;
+}
 
 export default env;
 export const inProduction = env.NODE_ENV === "production";
