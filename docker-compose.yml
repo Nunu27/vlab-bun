@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  manager:
+    image: ghcr.io/nunu27/vlab-bun-manager:latest
+    environment:
+      - NODE_ENV=production
+      - MANAGER_ID={{.Node.ID}}
+      # Define your Postgres/Redis URLs or other environment variables here
+      # - DATABASE_URL=postgres://user:pass@db:5432/vlab
+      # - REDIS_URL=redis://redis:6379
+    ports:
+      - "80:80"
+      - "443:443"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          # Ensure this only runs on the main manager node
+          - node.role == manager
+      restart_policy:
+        condition: any
+
+  worker:
+    image: ghcr.io/nunu27/vlab-bun-worker:latest
+    environment:
+      - NODE_ENV=production
+      - WORKER_ID={{.Node.ID}}
+      # The worker needs to know where the manager's gRPC/WS server is:
+      # - MANAGER_URL=http://manager:80
+    volumes:
+      # Mount Docker socket so the worker can use dockerode & containerlab
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      # Run exactly one instance of this container on every single node in the swarm cluster
+      mode: global
+      restart_policy:
+        condition: any
