@@ -4,7 +4,7 @@ import env from "@manager/env";
 import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import { decode, encode } from "@msgpack/msgpack";
-import type { Static } from "@sinclair/typebox";
+import type { Static, TSchema } from "@sinclair/typebox";
 import type {
 	GrpcDataMessage,
 	GrpcRpcReplyMessage,
@@ -12,15 +12,7 @@ import type {
 } from "@vlab/grpc";
 import { AsyncQueue, appRouter, WorkerProto } from "@vlab/grpc";
 import { eq } from "drizzle-orm";
-import {
-	handleInterfaceUpdate,
-	handleNodeCreate,
-	handleNodeHealth,
-	handleSessionCreate,
-	handleSessionRemove,
-	handleSnapshot,
-	handleStaleSession,
-} from "./monitor";
+import { attachMonitorHandlers } from "./monitor";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
 
@@ -30,15 +22,16 @@ export const connectedWorkers = new Map<
 >();
 
 export async function getAvailableWorkerId(): Promise<string> {
-	const onlineWorkers = await db.query.workers.findMany({
+	const worker = await db.query.workers.findFirst({
 		columns: { id: true },
 		where: (w, { eq }) => eq(w.status, "online"),
-		orderBy: (w, { asc }) => [asc(w.activeLabs), asc(w.activeNodes)],
-		limit: 1,
+		orderBy: (w, { desc }) => [desc(w.score)],
 	});
-	if (!onlineWorkers.length) throw new Error("No online workers available");
-	return onlineWorkers[0].id;
+	if (!worker) throw new Error("No online workers available");
+	return worker.id;
 }
+
+type ExtractReplyType<T> = T extends TSchema ? Static<T> : never;
 
 export async function sendCommandToWorker<
 	K extends Extract<keyof GrpcRpcRoutes, string>,
@@ -46,23 +39,23 @@ export async function sendCommandToWorker<
 	workerId: string,
 	command: K,
 	payload: Static<GrpcRpcRoutes[K]["payload"]>,
+	replies?: {
+		[R in keyof GrpcRpcRoutes[K]["replies"]]?: (
+			data: ExtractReplyType<GrpcRpcRoutes[K]["replies"][R]>,
+		) => void | Promise<void>;
+	},
 ): Promise<boolean> {
 	const client = connectedWorkers.get(workerId);
-	if (client) {
-		return new Promise((resolve) => {
-			client.rpc(command, undefined as never, payload, {
-				response: () => resolve(true),
-			});
-		});
+	if (!client) {
+		throw new Error(`Worker ${workerId} is not connected to this manager!`);
 	}
 
-	// Worker is not on this manager. Forward via Redis.
-	const buffer = encode({ command, payload });
-	const receivers = await redis.client.publish(
-		`vlab:worker-command:${workerId}`,
-		Buffer.from(buffer),
-	);
-	return receivers > 0;
+	return new Promise((resolve) => {
+		client.rpc(command, undefined as never, payload, {
+			response: () => resolve(true),
+			...(replies as Record<string, unknown>),
+		});
+	});
 }
 
 export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
@@ -124,72 +117,20 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			},
 		});
 
-		client.onData("monitor:stale-session", undefined, (event) => {
-			handleStaleSession(workerId, event.sessionId);
-		});
-		client.onData("monitor:snapshot", undefined, (event) => {
-			handleSnapshot(workerId, event.sessions, event.nodes);
-		});
-		client.onData("monitor:session-create", undefined, (event) => {
-			handleSessionCreate(
-				workerId,
-				event.id,
-				event.ownerId,
-				event.labId,
-				event.labDue,
+		try {
+			await redis.client.subscribe(`vlab:worker-action:${workerId}`);
+		} catch (error) {
+			logger.error(
+				{ error, workerId },
+				"Failed to subscribe to worker action channel",
 			);
-		});
-		client.onData("monitor:session-remove", undefined, (event) => {
-			handleSessionRemove(workerId, event.sessionId);
-		});
-		client.onData("monitor:node-create", undefined, (event) => {
-			const { labSessionId, labNodeId, deviceTemplateId, ...node } = event;
-			handleNodeCreate(
-				workerId,
-				labNodeId,
-				deviceTemplateId,
-				labSessionId,
-				node,
-			);
-		});
-		client.onData("monitor:node-health", undefined, (event) => {
-			handleNodeHealth(workerId, event.node, event.isTemp);
-		});
-		client.onData("monitor:interface-update", undefined, (event) => {
-			handleInterfaceUpdate(workerId, event.node, event.isTemp);
-		});
+		}
+
+		attachMonitorHandlers(workerId, client);
 
 		connectedWorkers.set(workerId, client);
 
-		// 4. Subscribe to Redis for manager-to-manager routing
-		const redisSubscriber = redis.client.duplicate();
-		const topic = `vlab:worker-command:${workerId}`;
-		await redisSubscriber.subscribe(topic);
-		redisSubscriber.on("messageBuffer", (channel, messageBuffer) => {
-			if (channel.toString() !== topic) return;
-			try {
-				const decoded = decode(messageBuffer) as {
-					command: string;
-					payload: unknown;
-				};
-				client.rpc(
-					decoded.command as never,
-					undefined as never,
-					decoded.payload as never,
-					{},
-				);
-			} catch (err) {
-				logger.error(`Failed to decode Redis command: ${err}`);
-			}
-		});
-
-		const unsubscribe = () => {
-			redisSubscriber.unsubscribe(topic);
-			redisSubscriber.quit();
-		};
-
 		const abortListener = () => {
-			unsubscribe();
 			msgQueue.close();
 		};
 		context.signal.addEventListener("abort", abortListener);
@@ -202,14 +143,11 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 					const msg = decode(requestPayload.payload) as
 						| GrpcRpcReplyMessage
 						| GrpcDataMessage;
-					if ("reply" in msg) {
-						client.handleReply(msg as never);
-					} else if ("data" in msg) {
-						(
-							client as unknown as { handleData: (msg: unknown) => void }
-						).handleData(msg);
+
+					if ("data" in msg) {
+						client.handleData(msg);
 					} else {
-						client.handleReply(msg as never);
+						client.handleReply(msg);
 					}
 				}
 			}
@@ -226,19 +164,26 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			}
 		} finally {
 			context.signal.removeEventListener("abort", abortListener);
-			unsubscribe();
+			logger.info({ workerId }, "Worker stream ended");
 			connectedWorkers.delete(workerId);
+			try {
+				await redis.client.unsubscribe(`vlab:worker-action:${workerId}`);
+			} catch (error) {
+				logger.error(
+					{ error, workerId },
+					"Failed to unsubscribe from worker action channel",
+				);
+			}
 			await db
 				.update(workers)
-				.set({ status: "offline" })
+				.set({ status: "offline", activeLabs: 0, activeNodes: 0 })
 				.where(eq(workers.id, workerId));
-			logger.info(`Worker ${workerId} disconnected`);
 		}
 	},
 
 	async sendMetrics(request, context) {
 		const workerId = context.metadata.get("worker-id");
-		if (typeof workerId !== "string") return { success: false };
+		if (!workerId) return { success: false };
 
 		await db
 			.update(workers)

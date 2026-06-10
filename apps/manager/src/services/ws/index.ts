@@ -1,6 +1,8 @@
+import redis from "@manager/lib/redis";
 import { sessions } from "@manager/services/http/middlewares/auth";
 import type { WSContext } from "@manager/types/ws";
 import { Server as Engine } from "@socket.io/bun-engine";
+import { createAdapter } from "@socket.io/redis-adapter";
 import appRouter, {
 	type ClientToServerEvents,
 	type ServerToClientEvents,
@@ -8,12 +10,18 @@ import appRouter, {
 import { type DefaultEventsMap, Server } from "socket.io";
 import parser from "socket.io-msgpack-parser";
 
+const pubClient = redis.client.duplicate();
+const subClient = redis.client.duplicate();
+
 const io = new Server<
 	ClientToServerEvents,
 	ServerToClientEvents,
 	DefaultEventsMap,
 	WSContext
->({ parser });
+>({
+	parser,
+	adapter: createAdapter(pubClient, subClient),
+});
 
 const engine = new Engine({ path: "/ws" });
 io.bind(engine);
@@ -46,8 +54,8 @@ io.use(async (socket, next) => {
 	next();
 });
 
-io.of("/").adapter.on("leave-room", (room) => {
-	if (room.endsWith("|reply")) server.handleDispose(room);
+io.of("/").adapter.on("leave-room", (room, id) => {
+	if (room.endsWith("|reply")) server.handleDispose(id, room);
 });
 
 io.on("connection", (socket) => {

@@ -3,6 +3,7 @@ import db from "@manager/db";
 import caching from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { RequestWithId } from "@vlab/shared/schemas/common";
+import type { LabTopology } from "@vlab/shared/schemas/lab";
 
 export default createRouter()
 	.use(caching)
@@ -77,6 +78,7 @@ export default createRouter()
 							return success({
 								data: {
 									...lab,
+									topology: lab.topology as LabTopology,
 									date: { from: startAt, to: endAt },
 									enrolled: !!enrollments?.length,
 									instructor: {
