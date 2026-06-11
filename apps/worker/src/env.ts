@@ -10,6 +10,17 @@ const EnvSchema = t.Object({
 		[t.Literal("development"), t.Literal("production"), t.Literal("test")],
 		{ default: "development" },
 	),
+	LOG_LEVEL: t.Union(
+		[
+			t.Literal("fatal"),
+			t.Literal("error"),
+			t.Literal("warn"),
+			t.Literal("info"),
+			t.Literal("debug"),
+			t.Literal("trace"),
+		],
+		{ default: "info" },
+	),
 
 	WORKER_ID: t.String({ minLength: 1 }),
 	MANAGER_GRPC_URL: t.String({ default: "localhost:50051" }),
