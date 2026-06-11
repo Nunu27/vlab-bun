@@ -7,7 +7,7 @@ export type RpcServer = ReturnType<typeof appRouter.buildServer>;
 export function createRpcServer(
 	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
 ) {
-	const logger = baseLogger.child({ service: "ws" });
+	const logger = baseLogger.child({ service: "rpc" });
 	const server = appRouter.buildServer({
 		logger,
 		emit: () => {
