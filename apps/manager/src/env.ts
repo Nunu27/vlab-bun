@@ -13,6 +13,17 @@ const EnvSchema = t.Object(
 			t.Literal("production"),
 			t.Literal("test"),
 		]),
+		LOG_LEVEL: t.Union(
+			[
+				t.Literal("fatal"),
+				t.Literal("error"),
+				t.Literal("warn"),
+				t.Literal("info"),
+				t.Literal("debug"),
+				t.Literal("trace"),
+			],
+			{ default: "info" },
+		),
 
 		ENABLE_OPENAPI: t.Boolean({ default: false }),
 

@@ -10,8 +10,10 @@ import {
 } from "../lib/system-metrics";
 import { metadata, workerClient } from "./client";
 import { monitorState } from "./monitor";
+
 export const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
 export const server = initRpc(replyQueue);
+
 const logger = baseLogger.child({ service: "grpc" });
 
 async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {

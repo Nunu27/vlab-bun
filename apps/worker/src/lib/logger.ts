@@ -1,8 +1,8 @@
 import { pino } from "pino";
-import { inProduction } from "../env";
+import env from "../env";
 
 const baseLogger = pino({
-	level: inProduction ? "info" : "debug",
+	level: env.LOG_LEVEL,
 	base: { service: "system" },
 });
 
