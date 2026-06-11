@@ -75,7 +75,114 @@ import { useApiPagination } from "@web/hooks/pagination/use-api-pagination";
 const { data, isLoading, setFilters } = useApiPagination(client.my.endpoint.index);
 ```
 
-## 3. UI Components and Styling
+## 3. Tables (`DataTable` + TanStack Table)
+
+All paginated lists/tables must use the shared `DataTable` component (`@web/components/data-table/data-table`), which is already wired to TanStack Table internally. **Do not** build raw `useReactTable` setups in page-level code unless you have a very specific reason.
+
+### Pattern: Columns file + DataTable
+
+Each module that shows a table should have a dedicated `columns.tsx` file that exports a typed `ColumnDef[]` array. Wire it to `<DataTable>` alongside a `useApiPagination` result.
+
+```tsx
+// -module/columns.tsx
+import type { ColumnDef } from "@tanstack/react-table";
+import type { DepartmentItem } from "./types";
+import { DepartmentActionsCell } from "./components/department-actions-cell";
+
+export const departmentColumns: ColumnDef<DepartmentItem>[] = [
+  {
+    accessorKey: "index",
+    size: 60,
+    enableHiding: false,
+    enableSorting: false,
+    meta: { label: "#", center: true },
+    cell: ({ row }) => (
+      <span className="block w-full text-center font-medium">
+        {row.original.index}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "name",
+    enableHiding: false,
+    meta: { label: "Name", isGrow: true },
+  },
+  {
+    id: "actions",
+    size: 60,
+    enableSorting: false,
+    enableHiding: false,
+    cell: ({ row }) => <DepartmentActionsCell department={row.original} />,
+  },
+];
+```
+
+```tsx
+// Page component
+import { DataTable } from "@web/components/data-table/data-table";
+import { useApiPagination } from "@web/hooks/pagination/use-api-pagination";
+import { departmentColumns } from "./-module/columns";
+
+const pagination = useApiPagination(client.departments.index);
+
+<DataTable
+  pagination={pagination}
+  columns={departmentColumns}
+  searchPlaceholder="Search departments…"
+  emptyMessage="No departments found."
+/>;
+```
+
+### `DataTableProps` reference
+
+| Prop | Type | Required | Notes |
+|---|---|---|---|
+| `pagination` | `UseApiPaginationReturn<TData>` | ✅ | From `useApiPagination` |
+| `columns` | `ColumnDef<TData>[]` | ✅ | TanStack column definitions |
+| `searchPlaceholder` | `string` | — | Input placeholder |
+| `emptyMessage` | `string` | — | Text shown when table is empty |
+| `pageSizeOptions` | `number[]` | — | Rows-per-page selector options |
+| `filters` | `React.ReactNode` | — | Extra filter UI in the toolbar |
+
+### `ColumnMeta` type augmentation
+
+The project extends `ColumnMeta` (declared in `apps/web/src/env.d.ts`) with these fields — use them in `meta` on any column definition:
+
+| Field | Type | Effect |
+|---|---|---|
+| `label` | `string` | Column header label shown in the header and visibility toggle |
+| `center` | `boolean` | Centers the column header text |
+| `isGrow` | `boolean` | Column stretches to fill remaining width |
+| `widthPercentage` | `number` | Sets column width as a % of total table width |
+
+> **Note:** Set `size` (in px) for fixed-width columns (e.g., index `#` or an actions column). Use `meta.isGrow: true` for the primary content column so it fills available space. Columns without `size` or `isGrow` auto-distribute.
+
+### `createColumnHelper` (alternative)
+
+For better type inference in complex columns, prefer `createColumnHelper` from `@tanstack/react-table`:
+
+```tsx
+import { createColumnHelper } from "@tanstack/react-table";
+import type { UserItem } from "./types";
+
+const col = createColumnHelper<UserItem>();
+
+export const userColumns = [
+  col.accessor("name", {
+    meta: { label: "Name", isGrow: true },
+  }),
+  col.display({
+    id: "actions",
+    size: 60,
+    enableSorting: false,
+    cell: ({ row }) => <UserActionsCell user={row.original} />,
+  }),
+];
+```
+
+---
+
+## 4. UI Components and Styling
 
 - **Shadcn**: Use Shadcn UI components for the base of the UI design system. Apply utility classes via Tailwind CSS.
 - **Icons**: Exclusively use **Lucide React** (`lucide-react`) for icons.
