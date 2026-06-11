@@ -1,105 +1,34 @@
 import { success } from "@jawit/common";
 import db from "@manager/db";
-import {
-	deviceCategories,
-	deviceTemplates,
-	labSessions,
-	labs,
-	users,
-	workers,
-} from "@manager/db/schema";
+import { workers } from "@manager/db/schema";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-import { desc, sql } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 
 export default createRouter()
 	.use(auth)
 	.get(
 		"/admin",
 		async () => {
-			// 1. Group users by role in a single query
-			const userCounts = await db
+			const workerList = await db
 				.select({
-					role: users.role,
-					total: sql<number>`count(*)::int`,
+					id: workers.id,
+					status: workers.status,
+					lastSeen: workers.lastSeen,
+					cpuCores: workers.cpuCores,
+					memoryMB: workers.memoryMB,
+					storageMB: workers.storageMB,
+					cpuUsagePercent: workers.cpuUsagePercent,
+					memoryUsagePercent: workers.memoryUsagePercent,
+					storageUsagePercent: workers.storageUsagePercent,
+					activeLabs: workers.activeLabs,
+					activeNodes: workers.activeNodes,
 				})
-				.from(users)
-				.groupBy(users.role);
-
-			// 2. Group labs by published status in a single query
-			const labCounts = await db
-				.select({
-					isPublished: labs.isPublished,
-					total: sql<number>`count(*)::int`,
-				})
-				.from(labs)
-				.groupBy(labs.isPublished);
-
-			// 3. Aggregate session stats (active, completed, average score)
-			const sessionStats = await db
-				.select({
-					active: sql<number>`count(*) filter (where ${labSessions.submittedAt} is null)::int`,
-					completed: sql<number>`count(*) filter (where ${labSessions.submittedAt} is not null)::int`,
-					avgScore: sql<number>`avg(${labSessions.score})::float`,
-				})
-				.from(labSessions);
-
-			// 4. Batch query the flat table counts and workers
-			const [templateCount, deviceCategoryCount, workerList] =
-				await Promise.all([
-					db.$count(deviceTemplates),
-					db.$count(deviceCategories),
-					db
-						.select({
-							id: workers.id,
-							status: workers.status,
-							lastSeen: workers.lastSeen,
-							cpuCores: workers.cpuCores,
-							memoryMB: workers.memoryMB,
-							storageMB: workers.storageMB,
-							cpuUsagePercent: workers.cpuUsagePercent,
-							memoryUsagePercent: workers.memoryUsagePercent,
-							storageUsagePercent: workers.storageUsagePercent,
-							activeLabs: workers.activeLabs,
-							activeNodes: workers.activeNodes,
-						})
-						.from(workers)
-						.orderBy(desc(workers.lastSeen)),
-				]);
-
-			// Transform grouped data
-			const usersData = { admin: 0, instructor: 0, student: 0 };
-			for (const r of userCounts) {
-				if (r.role in usersData) {
-					usersData[r.role as keyof typeof usersData] = r.total;
-				}
-			}
-
-			const labsData = { published: 0, draft: 0, total: 0 };
-			for (const r of labCounts) {
-				if (r.isPublished) labsData.published = r.total;
-				else labsData.draft = r.total;
-				labsData.total += r.total;
-			}
-
-			const sessionData = sessionStats[0] || {
-				active: 0,
-				completed: 0,
-				avgScore: 0,
-			};
+				.from(workers)
+				.orderBy(desc(workers.lastSeen));
 
 			return success({
 				data: {
-					users: usersData,
-					labs: labsData,
-					sessions: {
-						total: sessionData.active + sessionData.completed,
-						active: sessionData.active,
-						completed: sessionData.completed,
-						avgScore: sessionData.avgScore || 0,
-					},
-					templates: templateCount,
-					deviceCategories: deviceCategoryCount,
 					workers: workerList,
 				},
 			});

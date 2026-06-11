@@ -1,8 +1,15 @@
 import { Button } from "@web/components/ui/button";
-import { Empty, EmptyDescription } from "@web/components/ui/empty";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyMedia,
+	EmptyTitle,
+} from "@web/components/ui/empty";
 import { Spinner } from "@web/components/ui/spinner";
 import type { UseApiInfiniteListReturn } from "@web/hooks/pagination/use-api-infinite-list";
 import { cn } from "@web/lib/utils";
+import { List } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 export type InfiniteListProps<TItem> = UseApiInfiniteListReturn<TItem> & {
@@ -65,7 +72,13 @@ function DefaultLoadMore({
 function DefaultEmpty() {
 	return (
 		<Empty className="border-0 py-16">
-			<EmptyDescription>No items found.</EmptyDescription>
+			<EmptyContent>
+				<EmptyMedia variant="icon">
+					<List />
+				</EmptyMedia>
+				<EmptyTitle>No items found</EmptyTitle>
+				<EmptyDescription>There are no items to display.</EmptyDescription>
+			</EmptyContent>
 		</Empty>
 	);
 }

@@ -9,7 +9,7 @@ import {
 } from "@manager/db/schema";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 
 export default createRouter()
 	.use(auth)
@@ -60,8 +60,7 @@ export default createRouter()
 				.where(
 					and(
 						eq(labEnrollments.studentId, user.id),
-						// Filters out labs that are already completed
-						sql`${labSessions.submittedAt} is null`,
+						isNull(labSessions.submittedAt),
 					),
 				)
 				.orderBy(labs.endAt)

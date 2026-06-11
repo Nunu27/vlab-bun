@@ -22,7 +22,13 @@ import { useStore } from "@tanstack/react-form";
 import type { DeviceTemplateInterface } from "@vlab/shared/schemas/device-template";
 import { ActionButton } from "@web/components/buttons/action-button";
 import { Button } from "@web/components/ui/button";
-import { Empty, EmptyDescription } from "@web/components/ui/empty";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyMedia,
+	EmptyTitle,
+} from "@web/components/ui/empty";
 import {
 	Table,
 	TableBody,
@@ -33,7 +39,12 @@ import {
 } from "@web/components/ui/table";
 import { withFieldGroup } from "@web/hooks/form/use-app-form";
 import { cn } from "@web/lib/utils";
-import { GripVerticalIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import {
+	GripVerticalIcon,
+	NetworkIcon,
+	PlusIcon,
+	Trash2Icon,
+} from "lucide-react";
 
 type InterfaceEntry = DeviceTemplateInterface & {
 	id?: string;
@@ -180,9 +191,15 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
 					</div>
 				) : (
 					<Empty className="border border-dashed">
-						<EmptyDescription>
-							No interfaces defined. Click the button below to add one.
-						</EmptyDescription>
+						<EmptyContent>
+							<EmptyMedia variant="icon">
+								<NetworkIcon />
+							</EmptyMedia>
+							<EmptyTitle>No Interfaces</EmptyTitle>
+							<EmptyDescription>
+								No interfaces defined. Click the button below to add one.
+							</EmptyDescription>
+						</EmptyContent>
 					</Empty>
 				)}
 

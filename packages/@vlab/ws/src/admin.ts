@@ -23,6 +23,7 @@ export const adminRouter = new Router<WSMeta>()
 		t.Object({
 			id: t.String(),
 			status: t.String(),
+			lastSeen: t.Union([t.Date(), t.String()]),
 		}),
 	)
 	.data(

@@ -192,14 +192,21 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 					"Failed to unsubscribe from worker action channel",
 				);
 			}
+			const now = new Date();
 			await db
 				.update(workers)
-				.set({ status: "offline", activeLabs: 0, activeNodes: 0 })
+				.set({
+					status: "offline",
+					lastSeen: now,
+					activeLabs: 0,
+					activeNodes: 0,
+				})
 				.where(eq(workers.id, workerId));
 
 			ws.server.emit("admin:worker:status", undefined, {
 				id: workerId,
 				status: "offline",
+				lastSeen: now,
 			});
 		}
 	},

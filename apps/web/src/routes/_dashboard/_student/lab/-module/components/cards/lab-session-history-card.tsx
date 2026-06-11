@@ -8,7 +8,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@web/components/ui/card";
-import { Empty, EmptyDescription, EmptyMedia } from "@web/components/ui/empty";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyMedia,
+	EmptyTitle,
+} from "@web/components/ui/empty";
 import type api from "@web/lib/api";
 import { ClockIcon, PlayCircleIcon } from "lucide-react";
 import { StartLabSessionButton } from "../buttons/start-lab-session-button";
@@ -73,10 +79,13 @@ export function LabSessionHistoryCard({
 			<CardContent>
 				{sessions.length === 0 ? (
 					<Empty className="border-0 p-6">
-						<EmptyMedia>
-							<ClockIcon className="h-8 w-8 opacity-20" />
-						</EmptyMedia>
-						<EmptyDescription>No sessions started yet.</EmptyDescription>
+						<EmptyContent>
+							<EmptyMedia variant="icon">
+								<ClockIcon />
+							</EmptyMedia>
+							<EmptyTitle>No Sessions Started</EmptyTitle>
+							<EmptyDescription>No sessions started yet.</EmptyDescription>
+						</EmptyContent>
 					</Empty>
 				) : (
 					<div className="space-y-4">
