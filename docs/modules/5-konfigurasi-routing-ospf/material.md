@@ -6,7 +6,7 @@ Berbeda dengan RIP yang "menyontek" tabel rute tetangga secara buta, OSPF mengum
 Setiap router menyusun *database* (LSDB) yang identik. Kemudian, setiap router menggunakan algoritma matematika kompleks bernama **Dijkstra (Shortest Path First / SPF)** untuk menggambar peta topologi secara utuh dan menghitung rute terpendek secara mandiri.
 
 ## Metrik OSPF: Cost (Biaya Bandwidth)
-OSPF sangat cerdas. Ia tidak menghitung jarak berdasarkan "lompatan router" (hop), melainkan menggunakan kalkulasi **Cost**.
+OSPF sangat cerdas. Protokol ini tidak menghitung jarak berdasarkan "lompatan router" (hop), melainkan menggunakan kalkulasi **Cost**.
 *   Jalur dengan bandwidth besar (seperti Gigabit Fiber) akan memiliki *Cost* yang sangat kecil.
 *   Jalur lambat (seperti Modem Satelit) akan memiliki *Cost* yang sangat besar.
 OSPF selalu memilih rute dengan total *Cost* (akumulasi) terkecil, sehingga lalu lintas selalu melalui jalur tercepat.
@@ -15,7 +15,7 @@ OSPF selalu memilih rute dengan total *Cost* (akumulasi) terkecil, sehingga lalu
 OSPF didesain untuk menskalakan jaringan hingga ribuan router. Jika ribuan router bertukar data topologi secara konstan, CPU router akan jebol.
 Solusinya adalah membagi jaringan menjadi beberapa **Area**.
 *   Router hanya perlu mengetahui detail topologi yang berada di dalam area yang sama (Intra-Area). Rute lintas area akan dirangkum oleh router perbatasan (ABR).
-*   **Area 0 (Backbone Area):** Semua desain OSPF harus dimulai dari Area 0. Jika Anda membuat Area 1 dan Area 2, keduanya wajib terhubung secara fisik/logis ke Area 0.
+*   **Area 0 (Backbone Area):** Semua desain OSPF harus dimulai dari Area 0. Jika membuat Area 1 dan Area 2, keduanya wajib terhubung secara fisik/logis ke Area 0.
 
 ## DR & BDR (Designated Router)
 Pada jaringan multi-akses (seperti *switch* dengan banyak router terhubung), OSPF mencegah terbentuknya ratusan sesi komunikasi antar router dengan cara melakukan "Pemilu" (Election).
@@ -29,24 +29,17 @@ Ketika OSPF aktif, router tetangga tidak langsung bertukar tabel routing. Mereka
 2. **2-Way:** Pemilu DR/BDR berlangsung.
 3. **ExStart / Exchange:** Menukar ringkasan database topologi.
 4. **Loading:** Meminta rincian data topologi yang kurang.
-5. **Full:** Sinkronisasi 100% selesai! Tabel rute mulai dikalkulasi. (Target akhir yang selalu Anda harapkan saat *troubleshooting*).
+5. **Full:** Sinkronisasi 100% selesai! Tabel rute mulai dikalkulasi. (Target akhir yang selalu diharapkan saat *troubleshooting*).
 
 ## Referensi Perintah
-
 ### MikroTik RouterOS v7
+
 Pada v7, konfigurasi Area tidak lagi terikat di menu *Instance*, melainkan dipisahkan menjadi hierarki yang lebih modular.
 
-- **Membuat OSPF Instance:**
-  \`/routing ospf instance add name=<nama-instance> router-id=<ip-id>\`
-  *(Setiap router wajib memiliki pengenal identitas unik bernama Router ID).*
-- **Mendefinisikan OSPF Area (Backbone):**
-  \`/routing ospf area add name=<nama-area> instance=<nama-instance> area-id=<area-id>\`
-- **Memasukkan Interface ke OSPF Area:**
-  \`/routing ospf interface-template add area=<nama-area> interfaces=<daftar-interface>\`
-  *(Menentukan port mana saja yang menyiarkan Hello Packet dan IP mana saja yang dimasukkan ke topologi OSPF).*
-- **Verifikasi Status Adjacency (Wajib):**
-  \`/routing ospf neighbor print\`
-  *(Pastikan kolom state bernilai **Full**).*
-- **Verifikasi Tabel Rute Dinamis:**
-  \`/ip route print\`
-  *(Rute jarak jauh yang dihitung OSPF akan ditandai dengan flag **Do** (Dynamic, OSPF)).*
+| Aksi / Fungsi | Perintah | Keterangan |
+|---|---|---|
+| Membuat OSPF Instance | `/routing ospf instance add name=<nama-instance> router-id=<ip-id>` | Router wajib punya Router ID unik. |
+| Mendefinisikan OSPF Area | `/routing ospf area add name=<nama-area> instance=<nama-instance> area-id=<area-id>` | - |
+| Menambahkan Interface ke OSPF | `/routing ospf interface-template add area=<nama-area> interfaces=<daftar-interface>` | Tentukan *port* penyiar *Hello Packet* & *Network* OSPF. |
+| Memverifikasi Status Adjacency (Wajib) | `/routing ospf neighbor print` | Pastikan state **Full**. |
+| Memverifikasi Tabel Rute Dinamis | `/ip route print` | Rute OSPF berstatus **Do** (Dynamic, OSPF). |
