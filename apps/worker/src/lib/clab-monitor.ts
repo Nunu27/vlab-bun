@@ -1,6 +1,6 @@
 import { createMonitor } from "@vlab/clab-monitor";
 import { pino } from "pino";
-import { LABELS } from "./clab";
+import { LABELS } from "./constants";
 import docker from "./docker";
 
 const logger = pino({ name: "monitor" });

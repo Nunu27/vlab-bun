@@ -1,7 +1,8 @@
 import env, { inProduction } from "@manager/env";
 import baseLogger from "@manager/lib/logger";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { drizzle } from "drizzle-orm/bun-sql";
+import { migrate } from "drizzle-orm/bun-sql/migrator";
+
 import * as schema from "./schema";
 
 const logger = baseLogger.child({ service: "db" });

@@ -19,7 +19,7 @@ export const workerActions = new WorkerActionRouter()
 	.on("device:testCleanup", handleTestCleanup);
 
 // Global listener for actions forwarded from other managers
-redis.client.on("messageBuffer", (channelBuffer, messageBuffer) => {
+redis.subscriber.on("messageBuffer", (channelBuffer, messageBuffer) => {
 	const channel = channelBuffer.toString();
 	if (!channel.startsWith("vlab:worker-action:")) return;
 

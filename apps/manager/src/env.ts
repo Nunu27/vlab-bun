@@ -24,9 +24,6 @@ const EnvSchema = t.Object(
 		REDIS_URL: t.String({ format: "uri" }),
 
 		SESSION_TTL: t.Number({ default: 60 * 60 * 3 }),
-		BATCH_SIZE: t.Number({ default: 100 }),
-		DEBOUNCE_MS: t.Number({ default: 100 }),
-		MAX_BATCH_WAIT_MS: t.Number({ default: 500 }),
 
 		S3_ENDPOINT: t.String({ format: "uri" }),
 		S3_ACCESS_KEY: t.String(),
@@ -42,14 +39,11 @@ const EnvSchema = t.Object(
 		COOKIE_SECRET: t.String({ minLength: 32, maxLength: 64 }),
 
 		// Labs
-		GUACD_IP: t.Optional(t.String({ format: "ipv4" })),
+		// GUACD_IP will be automatically inferred from GUACD_HOST if not provided
+		GUACD_IP: t.String({ default: "" }),
 		GUACD_HOST: t.String(),
 		GUACD_PORT: t.Number({ default: 4822 }),
 		GUACD_SECRET: t.String({ minLength: 32, maxLength: 64 }),
-
-		CLAB_URL: t.String({ format: "uri" }),
-		CLAB_USERNAME: t.String(),
-		CLAB_PASSWORD: t.String(),
 	},
 	{ additionalProperties: false },
 );

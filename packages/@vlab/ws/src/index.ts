@@ -8,11 +8,13 @@ import {
 	Router,
 	type RpcReplyMessage,
 } from "waycast";
+import { adminRouter } from "./admin";
 import { deviceTemplateRouter } from "./device-template";
 import { labSessionRouter } from "./lab-session";
 import type { WSMeta } from "./types";
 
 const appRouter = new Router<WSMeta>()
+	.merge(adminRouter)
 	.merge(deviceTemplateRouter)
 	.merge(labSessionRouter);
 

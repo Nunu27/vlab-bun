@@ -1,4 +1,4 @@
-import { t } from "elysia/type-system";
+import { Type as t } from "@sinclair/typebox";
 import { NonEmptyString } from "./common";
 
 export const CreateDepartmentRequest = t.Object({

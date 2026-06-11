@@ -1,13 +1,15 @@
 import { failure } from "@jawit/common";
 import { inProduction } from "@manager/env";
-import logger from "@manager/lib/logger";
+import baseLogger from "@manager/lib/logger";
 import {
 	formatDBError,
 	formatValidationError,
 } from "@manager/utils/error-formatter";
+import { SQL } from "bun";
 import { DrizzleError, DrizzleQueryError } from "drizzle-orm";
 import { Elysia } from "elysia";
-import { DatabaseError } from "pg";
+
+const logger = baseLogger.child({ service: "http" });
 
 const errorHandler = new Elysia({ name: "error-handler" })
 	.error({
@@ -29,6 +31,9 @@ const errorHandler = new Elysia({ name: "error-handler" })
 					}),
 				);
 
+			case "NOT_FOUND":
+				return status(404, failure({ message: "Resource not found" }));
+
 			case "DrizzleError":
 				logger.error({ error: error.cause }, error.message);
 
@@ -40,7 +45,7 @@ const errorHandler = new Elysia({ name: "error-handler" })
 				);
 
 			case "DrizzleQueryError":
-				if (error.cause instanceof DatabaseError) {
+				if (error.cause instanceof SQL.PostgresError) {
 					const response = formatDBError(error.cause);
 					if (response) return response;
 				}
@@ -60,7 +65,7 @@ const errorHandler = new Elysia({ name: "error-handler" })
 				return status(
 					500,
 					failure({
-						message: inProduction ? "Internal server error" : error.toString(),
+						message: inProduction ? "Internal server error" : String(error),
 					}),
 				);
 		}

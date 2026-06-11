@@ -11,6 +11,7 @@ export const QUERY_HOOKS = [
 	"usePagination",
 	"ensureQueryData",
 	"invalidateQuery",
+	"setQueryData",
 ] as const;
 
 export const MUTATION_HOOKS = [

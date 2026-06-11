@@ -1,4 +1,5 @@
-import { t } from "elysia/type-system";
+import { Type as t } from "@sinclair/typebox";
+import { Nullable } from "./common";
 
 export const LoginRequest = t.Object({
 	email: t.String({ format: "email" }),
@@ -9,7 +10,7 @@ export const LoginRequest = t.Object({
 });
 
 export const AuthChangePasswordRequest = t.Object({
-	oldPassword: t.Nullable(
+	oldPassword: Nullable(
 		t.String({
 			minLength: 8,
 			maxLength: 128,

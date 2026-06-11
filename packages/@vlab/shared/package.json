@@ -4,9 +4,10 @@
 	"devDependencies": {
 		"@types/bun": "1.3.11"
 	},
+	"dependencies": {
+		"@sinclair/typebox": "0.34.49"
+	},
 	"peerDependencies": {
-		"@sinclair/typebox": "^0.34.49",
-		"elysia": "1.4.28",
 		"typescript": "^6.0.3"
 	},
 	"exports": {

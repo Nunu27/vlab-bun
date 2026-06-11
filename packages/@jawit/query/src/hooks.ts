@@ -233,3 +233,8 @@ export function createInvalidateQuery(key: unknown[]) {
 	return (queryClient: QueryClient) =>
 		queryClient.invalidateQueries({ queryKey: key });
 }
+
+export function createSetQueryData(key: unknown[]) {
+	return (queryClient: QueryClient, updater: any, args?: any) =>
+		queryClient.setQueryData([...key, args], updater);
+}

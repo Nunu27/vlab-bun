@@ -1,5 +1,6 @@
-import { t } from "elysia/type-system";
+import { Type as t } from "@sinclair/typebox";
+import { FileSchema } from "./common";
 
 export const UploadFileRequest = t.Object({
-	file: t.File(),
+	file: FileSchema(),
 });

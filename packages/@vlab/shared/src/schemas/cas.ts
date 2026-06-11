@@ -1,4 +1,4 @@
-import { t } from "elysia/type-system";
+import { Type as t } from "@sinclair/typebox";
 
 export const CASRequestQuery = t.Object({
 	ticket: t.Optional(t.String()),

@@ -14,7 +14,6 @@ import {
 	type SQL,
 	type SQLWrapper,
 } from "drizzle-orm";
-import type { NodePgQueryResultHKT } from "drizzle-orm/node-postgres/session";
 import type { PgDatabase, PgTable } from "drizzle-orm/pg-core";
 import type { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query";
 import { buildFilterConditions, buildSearchConditions } from "./query";
@@ -33,7 +32,7 @@ export const createPaginator = <
 		keyof TRelationalSchema[TEntity]["columns"]
 	> = [],
 >(
-	db: PgDatabase<NodePgQueryResultHKT, TFullSchema>,
+	db: PgDatabase<any, TFullSchema, any>,
 	entity: TEntity,
 	config?: {
 		usableColumns?: TUsableColumns;

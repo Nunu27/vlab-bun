@@ -1,5 +1,5 @@
-import { t } from "elysia/type-system";
-import { connectionTypeValues } from "../enums";
+import { Type as t } from "@sinclair/typebox";
+
 import { NonEmptyString } from "./common";
 
 export const DeviceTemplateEnvSchema = t.Record(NonEmptyString(), t.String());
@@ -10,7 +10,12 @@ export const DeviceTemplateResourcesSchema = t.Object({
 });
 
 export const DeviceTemplateConnectionSchema = t.Object({
-	type: t.UnionEnum(connectionTypeValues),
+	type: t.Union([
+		t.Literal("rdp"),
+		t.Literal("vnc"),
+		t.Literal("ssh"),
+		t.Literal("telnet"),
+	]),
 	data: t.Object({
 		port: t.Number(),
 		username: t.Optional(NonEmptyString()),

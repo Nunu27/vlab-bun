@@ -1,11 +1,11 @@
 import { failure } from "@jawit/common";
 import { TypeGuard } from "@sinclair/typebox";
+import type { SQL } from "bun";
 import { status } from "elysia";
 import type { ValidationError } from "elysia/error";
-import type { DatabaseError } from "pg";
 import { toTitleCase } from "./string";
 
-function handleForeignKeyViolation(error: DatabaseError) {
+function handleForeignKeyViolation(error: SQL.PostgresError) {
 	if (
 		error.detail?.includes("still referenced") ||
 		error.detail?.includes("is referenced")
@@ -37,7 +37,7 @@ function handleForeignKeyViolation(error: DatabaseError) {
 	);
 }
 
-function handleUniqueViolation(error: DatabaseError) {
+function handleUniqueViolation(error: SQL.PostgresError) {
 	if (error.detail?.startsWith("Key (")) {
 		const table = error.table ? toTitleCase(error.table) : "data";
 		const column = error.detail.substring(5, error.detail.indexOf(")="));
@@ -64,7 +64,7 @@ const dbErrorHandlers = {
 	"23505": handleUniqueViolation,
 } as const;
 
-export function formatDBError(error: DatabaseError) {
+export function formatDBError(error: SQL.PostgresError) {
 	const { code } = error;
 	if (!code || !(code in dbErrorHandlers)) {
 		return null;

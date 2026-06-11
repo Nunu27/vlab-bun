@@ -13,7 +13,9 @@ const EnvSchema = t.Object({
 
 	WORKER_ID: t.String({ minLength: 1 }),
 	MANAGER_GRPC_URL: t.String({ default: "localhost:50051" }),
-	GUACD_IP: t.String({ default: "127.0.0.1" }),
+	GUACD_HOST: t.String(),
+	// GUACD_IP will be automatically inferred from GUACD_HOST if not provided
+	GUACD_IP: t.String({ default: "" }),
 });
 
 const validator = TypeCompiler.Compile(EnvSchema);
@@ -32,9 +34,11 @@ if (errors.length) {
 
 const env = validator.Decode(casted);
 
-if (env.GUACD_IP === "127.0.0.1") {
-	const { address } = await dns.lookup("guacd").catch(() => {
-		console.error("❌ GUACD_IP Failed to resolve 'guacd' hostname");
+if (!env.GUACD_IP) {
+	const { address } = await dns.lookup(env.GUACD_HOST).catch(() => {
+		console.error(
+			`❌ GUACD_HOST Failed to resolve '${env.GUACD_HOST}' hostname`,
+		);
 		process.exit(1);
 	});
 	env.GUACD_IP = address;

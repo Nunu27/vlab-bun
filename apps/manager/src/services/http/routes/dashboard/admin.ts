@@ -1,17 +1,16 @@
 import { success } from "@jawit/common";
 import db from "@manager/db";
 import {
-	departments,
 	deviceCategories,
 	deviceTemplates,
 	labSessions,
 	labs,
-	studyPrograms,
 	users,
+	workers,
 } from "@manager/db/schema";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 
 export default createRouter()
 	.use(auth)
@@ -45,18 +44,28 @@ export default createRouter()
 				})
 				.from(labSessions);
 
-			// 4. Batch query the flat table counts
-			const [
-				templateCount,
-				deviceCategoryCount,
-				departmentCount,
-				studyProgramCount,
-			] = await Promise.all([
-				db.$count(deviceTemplates),
-				db.$count(deviceCategories),
-				db.$count(departments),
-				db.$count(studyPrograms),
-			]);
+			// 4. Batch query the flat table counts and workers
+			const [templateCount, deviceCategoryCount, workerList] =
+				await Promise.all([
+					db.$count(deviceTemplates),
+					db.$count(deviceCategories),
+					db
+						.select({
+							id: workers.id,
+							status: workers.status,
+							lastSeen: workers.lastSeen,
+							cpuCores: workers.cpuCores,
+							memoryMB: workers.memoryMB,
+							storageMB: workers.storageMB,
+							cpuUsagePercent: workers.cpuUsagePercent,
+							memoryUsagePercent: workers.memoryUsagePercent,
+							storageUsagePercent: workers.storageUsagePercent,
+							activeLabs: workers.activeLabs,
+							activeNodes: workers.activeNodes,
+						})
+						.from(workers)
+						.orderBy(desc(workers.lastSeen)),
+				]);
 
 			// Transform grouped data
 			const usersData = { admin: 0, instructor: 0, student: 0 };
@@ -91,8 +100,7 @@ export default createRouter()
 					},
 					templates: templateCount,
 					deviceCategories: deviceCategoryCount,
-					departments: departmentCount,
-					studyPrograms: studyProgramCount,
+					workers: workerList,
 				},
 			});
 		},

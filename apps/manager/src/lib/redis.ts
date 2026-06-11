@@ -18,6 +18,11 @@ client.on("error", (error) => {
 	logger.error({ error }, "Redis connection error");
 });
 
+const subscriber = client.duplicate();
+subscriber.on("error", (error) => {
+	logger.error({ error }, "Redis subscriber connection error");
+});
+
 type ScanPlan = {
 	match: string;
 	isExact: boolean;
@@ -123,6 +128,7 @@ export function createScanPlan(values: readonly string[]): ScanPlan {
 
 export default {
 	client,
+	subscriber,
 	async get<T>(key: string) {
 		const value = await client.getBuffer(key);
 		if (!value) return null;

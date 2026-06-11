@@ -19,9 +19,7 @@ export async function handleTestInit(
 	const executionId = payload.requestId;
 	const nodeId = Bun.randomUUIDv7();
 
-	const reply = (type: "info" | "warn" | "token", message: string) => {
-		ws.server.reply("device-template:test", payload.requestId)(type, message);
-	};
+	const reply = ws.server.reply("device-template:test", payload.requestId);
 
 	reply("info", `Pulling image ${data.image}...`);
 
