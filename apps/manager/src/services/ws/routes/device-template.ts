@@ -37,5 +37,5 @@ ws.server.on("device-template:test", async (ctx) => {
 		data,
 	});
 
-	return (ws.server as any).defer;
+	return ws.server.defer;
 });

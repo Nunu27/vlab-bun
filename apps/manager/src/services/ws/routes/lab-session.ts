@@ -23,7 +23,7 @@ ws.server.on("lab:[id]:init", async (ctx) => {
 		userId,
 	});
 
-	return (ws.server as any).defer;
+	return ws.server.defer;
 });
 
 ws.server.on("lab-session:[sessionId]:connect", async (ctx) => {

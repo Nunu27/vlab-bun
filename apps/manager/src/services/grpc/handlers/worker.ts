@@ -54,7 +54,7 @@ export async function sendCommandToWorker<
 	return new Promise((resolve) => {
 		client.rpc(command, undefined as never, payload, {
 			response: () => resolve(true),
-			...(replies as Record<string, unknown>),
+			...replies,
 		});
 	});
 }
