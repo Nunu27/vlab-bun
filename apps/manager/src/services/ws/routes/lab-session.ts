@@ -9,12 +9,7 @@ ws.server.on("lab:[id]:init", async (ctx) => {
 	const { id } = ctx.params;
 	const userId = ctx.context.session.id;
 
-	let workerId: string;
-	try {
-		workerId = await getAvailableWorkerId();
-	} catch (_err) {
-		throw new Error("No online workers available to run this lab.");
-	}
+	const workerId = await getAvailableWorkerId();
 
 	await workerActions.dispatch("lab:initSession", workerId, {
 		connectionId: ctx.connectionId,
@@ -44,8 +39,7 @@ ws.server.on("lab-session:[sessionId]:connect", async (ctx) => {
 
 	if (!session) throw new Error("Session not found");
 	if (!force && session.clientId && session.clientId !== connectionId) {
-		ctx.reply("conflict", true);
-		return;
+		return true;
 	}
 
 	ws.server.emit(
@@ -59,14 +53,12 @@ ws.server.on("lab-session:[sessionId]:connect", async (ctx) => {
 		.set({ clientId: connectionId })
 		.where(eq(labSessions.id, sessionId));
 
-	ctx.reply("conflict", false);
+	await workerActions.dispatch("evaluator:start", session.workerId, {
+		sessionId,
+		labId: session.labId,
+	});
 
-	if (session.workerId) {
-		await workerActions.dispatch("evaluator:start", session.workerId, {
-			sessionId,
-			labId: session.labId,
-		});
-	}
+	return false;
 });
 
 ws.server.onDispose("lab-session:[sessionId]:connect", async (connectionId) => {
@@ -74,22 +66,16 @@ ws.server.onDispose("lab-session:[sessionId]:connect", async (connectionId) => {
 		.update(labSessions)
 		.set({ clientId: null })
 		.where(eq(labSessions.clientId, connectionId))
-		.returning({ id: labSessions.id });
+		.returning({ id: labSessions.id, workerId: labSessions.workerId });
+	if (!data) return;
 
-	if (data) {
-		ws.server.emit(
-			"lab-session:[sessionId]:client-change",
-			{ sessionId: data.id },
-			null,
-		);
-		const session = await db.query.labSessions.findFirst({
-			where: eq(labSessions.id, data.id),
-			columns: { workerId: true },
-		});
-		if (session?.workerId) {
-			await workerActions.dispatch("evaluator:stop", session.workerId, {
-				sessionId: data.id,
-			});
-		}
-	}
+	ws.server.emit(
+		"lab-session:[sessionId]:client-change",
+		{ sessionId: data.id },
+		null,
+	);
+
+	await workerActions.dispatch("evaluator:stop", data.workerId, {
+		sessionId: data.id,
+	});
 });

@@ -92,7 +92,7 @@ export async function handleTestInit(
 		const token = guacamole.generateToken({
 			type: data.connection.type,
 			settings: {
-				hostname: ip as string,
+				hostname: ip,
 				port: data.connection.data.port.toString(),
 				username: data.connection.data.username,
 				password: data.connection.data.password,

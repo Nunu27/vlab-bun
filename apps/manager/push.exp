@@ -1,5 +1,0 @@
-#!/usr/bin/expect -f
-spawn npx drizzle-kit push
-expect "Is worker_status enum created or renamed from another enum?"
-send "\r"
-expect eof

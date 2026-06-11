@@ -3,6 +3,8 @@ import db from "@manager/db";
 import { labSessionNodes, labSessions } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
 import ws from "@manager/services/ws";
+import type { TempNodeEvents } from "@manager/types/clab";
+import type { TypedEventEmitter } from "@manager/types/events";
 import Debouncer from "@manager/utils/debouncer";
 import Throttler from "@manager/utils/throttler";
 import type { appRouter } from "@vlab/grpc";
@@ -11,7 +13,8 @@ import { eq } from "drizzle-orm";
 
 const logger = baseLogger.child({ service: "monitor-grpc" });
 
-export const tempNodeEvents = new EventEmitter();
+export const tempNodeEvents: TypedEventEmitter<TempNodeEvents> =
+	new EventEmitter();
 
 const sessionThrottle = new Throttler(1000);
 const interfaceDebounce = new Debouncer(750);
