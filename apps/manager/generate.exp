@@ -1,5 +1,0 @@
-#!/usr/bin/expect -f
-spawn bun run drizzle:generate --name create_worker
-expect "Is worker_status enum created or renamed from another enum?"
-send "\r"
-expect eof

@@ -129,7 +129,7 @@ export const appRouter = new Router()
 			config: LabConfigSchema,
 		}),
 		replies: {},
-		response: t.Boolean(),
+		response: t.Void(),
 		meta: {},
 	})
 	.rpc("clab:destroyLab", {
@@ -137,7 +137,7 @@ export const appRouter = new Router()
 			sessionId: t.String(),
 		}),
 		replies: {},
-		response: t.Boolean(),
+		response: t.Void(),
 		meta: {},
 	})
 	.rpc("evaluator:start", {
@@ -145,7 +145,7 @@ export const appRouter = new Router()
 		replies: {
 			checkChanged: t.Object({ id: t.String(), completed: t.Boolean() }),
 		},
-		response: t.Boolean(),
+		response: t.Void(),
 		meta: {},
 	})
 	.rpc("docker:pullImage", {
@@ -153,7 +153,7 @@ export const appRouter = new Router()
 			image: t.String(),
 		}),
 		replies: {},
-		response: t.Boolean(),
+		response: t.Void(),
 		meta: {},
 	})
 	.rpc("evaluator:stop", {
@@ -162,7 +162,7 @@ export const appRouter = new Router()
 			immediate: t.Optional(t.Boolean()),
 		}),
 		replies: {},
-		response: t.Boolean(),
+		response: t.Void(),
 		meta: {},
 	});
 

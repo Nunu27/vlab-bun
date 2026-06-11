@@ -27,6 +27,7 @@ const engine = new Engine({ path: "/ws" });
 io.bind(engine);
 
 const server = appRouter.buildServer<WSContext>({
+	logger: console,
 	topic: {
 		subscribe: (connId, ...topics) => {
 			const socket = io.sockets.sockets.get(connId);

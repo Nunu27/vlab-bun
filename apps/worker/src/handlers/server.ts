@@ -7,6 +7,7 @@ export function createRpcServer(
 	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
 ) {
 	const server = appRouter.buildServer({
+		logger: console,
 		emit: () => {
 			// No-op since the server only needs to reply, not emit events
 		},

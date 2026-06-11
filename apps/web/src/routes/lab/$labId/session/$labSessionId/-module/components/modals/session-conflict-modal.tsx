@@ -25,10 +25,8 @@ function SessionConflictModal({ sessionId }: { sessionId: string }) {
 		connectSession({
 			params: { sessionId },
 			data: false,
-			callbacks: {
-				conflict: (isConflict) => {
-					if (isConflict) conflict.open("open");
-				},
+			onResponse: (isConflict) => {
+				if (isConflict) conflict.open("open");
 			},
 		});
 	}, [conflict.open, connectSession, sessionId]);
@@ -52,9 +50,6 @@ function SessionConflictModal({ sessionId }: { sessionId: string }) {
 							connectSession({
 								params: { sessionId },
 								data: true,
-								callbacks: {
-									conflict: () => {},
-								},
 							});
 						}}
 					>

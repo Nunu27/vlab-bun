@@ -13,10 +13,8 @@ export const labSessionRouter = new Router<WSMeta>()
 	})
 	.rpc("lab-session:[sessionId]:connect", {
 		payload: t.Boolean(),
-		replies: {
-			conflict: t.Boolean(),
-		},
-		response: t.Void(),
+		replies: {},
+		response: t.Boolean(),
 		meta: { private: ["student"] },
 	})
 

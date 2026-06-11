@@ -128,6 +128,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 		const msgQueue = new AsyncQueue<WorkerProto.CommandRequest>();
 
 		const client = appRouter.buildClient({
+			logger,
 			send: async (message) => {
 				msgQueue.push(
 					WorkerProto.CommandRequest.create({
