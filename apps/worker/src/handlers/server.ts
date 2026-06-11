@@ -1,13 +1,13 @@
 import { encode } from "@msgpack/msgpack";
 import { type AsyncQueue, appRouter, type WorkerProto } from "@vlab/grpc";
-import pino from "pino";
+import baseLogger from "@worker/lib/logger";
 
 export type RpcServer = ReturnType<typeof appRouter.buildServer>;
 
 export function createRpcServer(
 	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
 ) {
-	const logger = pino({ name: "waycast" });
+	const logger = baseLogger.child({ service: "ws" });
 	const server = appRouter.buildServer({
 		logger,
 		emit: () => {

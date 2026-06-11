@@ -1,8 +1,8 @@
-import { pino } from "pino";
+import baseLogger from "@worker/lib/logger";
 import { bindMonitorEvents } from "./services/monitor";
 import { listenToCommands, streamMetrics } from "./services/worker";
 
-const logger = pino({ name: "worker" });
+const logger = baseLogger.child({ service: "core" });
 
 logger.info("Worker starting...");
 
