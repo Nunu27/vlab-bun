@@ -1,13 +1,13 @@
+import type { RpcServer } from "../handlers/server";
 import { destroyLab } from "../lib/clab";
 import { clabMonitor } from "../lib/clab-monitor";
-import { server } from "./worker";
 
 export const monitorState = {
 	activeLabs: 0,
 	activeNodes: 0,
 };
 
-export function bindMonitorEvents() {
+export function bindMonitorEvents(server: RpcServer) {
 	const { emitter, init } = clabMonitor;
 
 	emitter.on("stale-session", (sessionId) => {
