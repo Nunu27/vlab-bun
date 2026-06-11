@@ -4,8 +4,8 @@ import type { WSMeta } from "./types";
 
 const WorkerSchema = t.Object({
 	id: t.String(),
-	status: t.String(),
-	lastSeen: t.Union([t.Date(), t.String()]),
+	status: t.Union([t.Literal("online"), t.Literal("offline")]),
+	lastSeen: t.Date(),
 	cpuCores: t.Number(),
 	memoryMB: t.Number(),
 	storageMB: t.Number(),
@@ -22,8 +22,8 @@ export const adminRouter = new Router<WSMeta>()
 		"admin:worker:status",
 		t.Object({
 			id: t.String(),
-			status: t.String(),
-			lastSeen: t.Union([t.Date(), t.String()]),
+			status: t.Union([t.Literal("online"), t.Literal("offline")]),
+			lastSeen: t.Date(),
 		}),
 	)
 	.data(
