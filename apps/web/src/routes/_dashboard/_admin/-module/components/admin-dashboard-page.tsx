@@ -51,29 +51,41 @@ function AdminDashboardPage() {
 	const { data } = api.dashboard.admin.get.useSuspenseQuery();
 	const user = useAuthStore.use.user();
 
-	const onlineWorkers = data.workers.filter((w) => w.status === "online");
+	const connectedWorkers = data.workers.filter((w) => w.status === "online");
 
-	const activeLabs = onlineWorkers.reduce((acc, w) => acc + w.activeLabs, 0);
-	const activeNodes = onlineWorkers.reduce((acc, w) => acc + w.activeNodes, 0);
+	const activeLabs = connectedWorkers.reduce((acc, w) => acc + w.activeLabs, 0);
+	const activeNodes = connectedWorkers.reduce(
+		(acc, w) => acc + w.activeNodes,
+		0,
+	);
 
-	const totalCpuCores = onlineWorkers.reduce((acc, w) => acc + w.cpuCores, 0);
-	const usedCpuCores = onlineWorkers.reduce(
+	const totalCpuCores = connectedWorkers.reduce(
+		(acc, w) => acc + w.cpuCores,
+		0,
+	);
+	const usedCpuCores = connectedWorkers.reduce(
 		(acc, w) => acc + (w.cpuCores * Number(w.cpuUsagePercent)) / 100,
 		0,
 	);
 	const cpuUsagePercent =
 		totalCpuCores > 0 ? (usedCpuCores / totalCpuCores) * 100 : 0;
 
-	const totalMemoryMB = onlineWorkers.reduce((acc, w) => acc + w.memoryMB, 0);
-	const usedMemoryMB = onlineWorkers.reduce(
+	const totalMemoryMB = connectedWorkers.reduce(
+		(acc, w) => acc + w.memoryMB,
+		0,
+	);
+	const usedMemoryMB = connectedWorkers.reduce(
 		(acc, w) => acc + (w.memoryMB * Number(w.memoryUsagePercent)) / 100,
 		0,
 	);
 	const memoryUsagePercent =
 		totalMemoryMB > 0 ? (usedMemoryMB / totalMemoryMB) * 100 : 0;
 
-	const totalStorageMB = onlineWorkers.reduce((acc, w) => acc + w.storageMB, 0);
-	const usedStorageMB = onlineWorkers.reduce(
+	const totalStorageMB = connectedWorkers.reduce(
+		(acc, w) => acc + w.storageMB,
+		0,
+	);
+	const usedStorageMB = connectedWorkers.reduce(
 		(acc, w) => acc + (w.storageMB * Number(w.storageUsagePercent)) / 100,
 		0,
 	);
@@ -84,17 +96,9 @@ function AdminDashboardPage() {
 		handler: (worker) => {
 			api.dashboard.admin.get.setQueryData(queryClient, (oldData) => {
 				if (!oldData) return oldData;
-				const exists = oldData.workers.some((w) => w.id === worker.id);
 				return {
 					...oldData,
-					workers: (exists
-						? oldData.workers.map((w) =>
-								w.id === worker.id ? ({ ...w, ...worker } as typeof w) : w,
-							)
-						: [
-								worker,
-								...oldData.workers,
-							]) as unknown as typeof oldData.workers,
+					workers: [worker, ...oldData.workers],
 				};
 			});
 		},
@@ -108,13 +112,13 @@ function AdminDashboardPage() {
 					...oldData,
 					workers: oldData.workers.map((w) =>
 						w.id === worker.id
-							? ({
+							? {
 									...w,
 									status: worker.status,
 									lastSeen: worker.lastSeen ?? w.lastSeen,
-								} as typeof w)
+								}
 							: w,
-					) as unknown as typeof oldData.workers,
+					),
 				};
 			});
 		},
@@ -127,8 +131,8 @@ function AdminDashboardPage() {
 				return {
 					...oldData,
 					workers: oldData.workers.map((w) =>
-						w.id === metrics.id ? ({ ...w, ...metrics } as typeof w) : w,
-					) as unknown as typeof oldData.workers,
+						w.id === metrics.id ? { ...w, ...metrics } : w,
+					),
 				};
 			});
 		},
@@ -150,8 +154,8 @@ function AdminDashboardPage() {
 			{/* Primary Key Metrics */}
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				<StatCard
-					title="Online Workers"
-					value={onlineWorkers.length}
+					title="Connected Workers"
+					value={connectedWorkers.length}
 					icon={<ServerIcon className="h-4 w-4 text-blue-400" />}
 				/>
 				<StatCard
