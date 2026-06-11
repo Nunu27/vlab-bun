@@ -95,15 +95,12 @@ export function StartLabSessionButton({
 				]);
 				navigate({
 					to: "/lab/$labId/session/$labSessionId",
-					params: { labId, labSessionId: sessionId as string },
+					params: { labId, labSessionId: sessionId },
 				});
 			},
 			callbacks: {
 				info: (msg) => {
-					return setLogs((prev) => [
-						...prev,
-						{ type: "info", message: msg as string },
-					]);
+					return setLogs((prev) => [...prev, { type: "info", message: msg }]);
 				},
 			},
 		});

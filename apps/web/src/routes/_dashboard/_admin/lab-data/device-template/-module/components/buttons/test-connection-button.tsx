@@ -69,10 +69,10 @@ const TestConnectionButton = withForm({
 			send({
 				data: validator.Parse(value),
 				onError: (error) => log("error", error),
-				onResponse: (token) => setToken(token as string),
+				onResponse: (token) => setToken(token),
 				callbacks: {
-					info: (msg) => log("info", msg as string),
-					warn: (msg) => log("warn", msg as string),
+					info: (msg) => log("info", msg),
+					warn: (msg) => log("warn", msg),
 				},
 			});
 		};
