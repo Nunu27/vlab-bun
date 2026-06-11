@@ -76,7 +76,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 		const workerSpec = first.value.workerSpec;
 
 		// 2. Upsert worker into DB
-		const [connectedWorker] = await db
+		const [{ createdAt, updatedAt, ...worker }] = await db
 			.insert(workers)
 			.values({
 				id: workerId,
@@ -114,10 +114,12 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				storageUsagePercent: workers.storageUsagePercent,
 				activeLabs: workers.activeLabs,
 				activeNodes: workers.activeNodes,
+				createdAt: workers.createdAt,
+				updatedAt: workers.updatedAt,
 			});
 
-		if (connectedWorker) {
-			ws.server.emit("admin:worker:new", undefined, connectedWorker);
+		if (updatedAt?.getTime() === createdAt.getTime()) {
+			ws.server.emit("admin:worker:new", undefined, worker);
 		}
 
 		logger.info(`Worker ${workerId} connected`);
