@@ -1,8 +1,8 @@
 import os from "node:os";
 import { decode } from "@msgpack/msgpack";
-import { AsyncQueue, type WorkerProto } from "@vlab/grpc";
+import type { AsyncQueue, WorkerProto } from "@vlab/grpc";
 import baseLogger from "@worker/lib/logger";
-import { initRpc } from "../handlers/index";
+import type { RpcServer } from "../handlers/server";
 import {
 	getCpuUsagePercent,
 	getMemoryUsagePercent,
@@ -11,12 +11,11 @@ import {
 import { metadata, workerClient } from "./client";
 import { monitorState } from "./monitor";
 
-export const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
-export const server = initRpc(replyQueue);
-
 const logger = baseLogger.child({ service: "grpc" });
 
-async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {
+async function* createReplyStream(
+	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
+): AsyncIterable<WorkerProto.CommandPayload> {
 	yield {
 		workerSpec: {
 			cpuCores: os.cpus().length,
@@ -30,12 +29,16 @@ async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {
 	}
 }
 
-export async function listenToCommands() {
+export async function listenToCommands(
+	server: RpcServer,
+	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
+) {
 	try {
 		logger.info("Connecting to Manager gRPC server...");
-		const requestStream = workerClient.listenCommand(createReplyStream(), {
-			metadata,
-		});
+		const requestStream = workerClient.listenCommand(
+			createReplyStream(replyQueue),
+			{ metadata },
+		);
 		logger.info(
 			"Successfully connected to Manager gRPC server and started ListenCommand stream",
 		);
@@ -71,7 +74,7 @@ export async function listenToCommands() {
 			{ err },
 			"ListenCommand stream disconnected or ended with error. Reconnecting in 5s...",
 		);
-		setTimeout(listenToCommands, 5000);
+		setTimeout(() => listenToCommands(server, replyQueue), 5000);
 	}
 }
 

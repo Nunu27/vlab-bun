@@ -1,4 +1,6 @@
+import { AsyncQueue, type WorkerProto } from "@vlab/grpc";
 import baseLogger from "@worker/lib/logger";
+import { initRpc } from "./handlers/index";
 import { bindMonitorEvents } from "./services/monitor";
 import { listenToCommands, streamMetrics } from "./services/worker";
 
@@ -6,9 +8,12 @@ const logger = baseLogger.child({ service: "core" });
 
 logger.info("Worker starting...");
 
-listenToCommands();
+const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
+const server = initRpc(replyQueue);
+
+listenToCommands(server, replyQueue);
 streamMetrics();
-bindMonitorEvents();
+bindMonitorEvents(server);
 
 function shutdown(signal: string) {
 	logger.info(`Received ${signal}, shutting down gracefully...`);
