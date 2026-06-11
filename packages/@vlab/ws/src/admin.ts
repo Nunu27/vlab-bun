@@ -20,20 +20,16 @@ export const adminRouter = new Router<WSMeta>()
 	.data("admin:worker:new", WorkerSchema)
 	.data(
 		"admin:worker:status",
-		t.Object({
-			id: t.String(),
-			status: t.Union([t.Literal("online"), t.Literal("offline")]),
-			lastSeen: t.Date(),
-		}),
+		t.Pick(WorkerSchema, ["id", "status", "lastSeen"]),
 	)
 	.data(
 		"admin:worker:metrics",
-		t.Object({
-			id: t.String(),
-			cpuUsagePercent: t.String(),
-			memoryUsagePercent: t.String(),
-			storageUsagePercent: t.String(),
-			activeLabs: t.Number(),
-			activeNodes: t.Number(),
-		}),
+		t.Pick(WorkerSchema, [
+			"id",
+			"cpuUsagePercent",
+			"memoryUsagePercent",
+			"storageUsagePercent",
+			"activeLabs",
+			"activeNodes",
+		]),
 	);

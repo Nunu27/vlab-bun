@@ -74,4 +74,31 @@ export default createRouter()
 			});
 		},
 		{ private: ["student"] },
+	)
+	.post(
+		"/student/lab-sessions/:sessionId/submit",
+		async ({ params: { sessionId }, session: { data: user } }) => {
+			const session = await db.query.labSessions.findFirst({
+				columns: { id: true, workerId: true },
+				where: (session, { eq, and, isNull }) => {
+					return and(
+						eq(session.id, sessionId),
+						eq(session.studentId, user.id),
+						isNull(session.submittedAt),
+					);
+				},
+			});
+
+			if (!session) throw new Error("Session not found");
+
+			if (session.workerId) {
+				const { workerActions } = await import("@manager/services/actions");
+				await workerActions.dispatch("lab:submitSession", session.workerId, {
+					sessionId,
+				});
+			}
+
+			return success({ data: { submitted: true } });
+		},
+		{ private: ["student"] },
 	);

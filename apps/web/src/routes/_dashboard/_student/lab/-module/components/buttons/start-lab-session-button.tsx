@@ -87,23 +87,23 @@ export function StartLabSessionButton({
 				setLogs((prev) => [...prev, { type: "error", message: error }]);
 				setIsLoading(false);
 			},
+			onResponse: (sessionId) => {
+				setIsLoading(false);
+				setLogs((prev) => [
+					...prev,
+					{ type: "info", message: "Redirecting to session..." },
+				]);
+				navigate({
+					to: "/lab/$labId/session/$labSessionId",
+					params: { labId, labSessionId: sessionId as string },
+				});
+			},
 			callbacks: {
 				info: (msg) => {
 					return setLogs((prev) => [
 						...prev,
 						{ type: "info", message: msg as string },
 					]);
-				},
-				id: (sessionId) => {
-					setIsLoading(false);
-					setLogs((prev) => [
-						...prev,
-						{ type: "info", message: "Redirecting to session..." },
-					]);
-					navigate({
-						to: "/lab/$labId/session/$labSessionId",
-						params: { labId, labSessionId: sessionId as string },
-					});
 				},
 			},
 		});

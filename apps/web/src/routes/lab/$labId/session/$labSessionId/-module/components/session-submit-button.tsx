@@ -1,22 +1,24 @@
 import { Button } from "@web/components/ui/button";
-import { useWSAction } from "@web/hooks/ws";
+import api from "@web/lib/api";
 import { Send } from "lucide-react";
-import { useState } from "react";
+
 import { toast } from "sonner";
 
 export function SessionSubmitButton({ sessionId }: { sessionId: string }) {
-	const { send: emit } = useWSAction("lab-session:[sessionId]:submit");
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const { mutate: emit, isPending: isSubmitting } = api.dashboard.student[
+		"lab-sessions"
+	]({ sessionId }).submit.post.useMutation({
+		onSuccess: () => {
+			toast.success("Session submitted successfully");
+		},
+		onError: (err) => {
+			console.error(err);
+			toast.error("Failed to submit");
+		},
+	});
 
 	const handleSubmit = async () => {
-		setIsSubmitting(true);
-		emit({
-			params: { sessionId },
-			onError: (err) => {
-				console.error(err);
-				toast.error("Failed to submit");
-			},
-		});
+		emit();
 	};
 
 	return (
