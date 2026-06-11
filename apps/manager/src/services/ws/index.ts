@@ -27,7 +27,7 @@ const io = new Server<
 const engine = new Engine({ path: "/ws" });
 io.bind(engine);
 
-const logger = baseLogger.child({ service: "waycast" });
+const logger = baseLogger.child({ service: "ws" });
 
 const server = appRouter.buildServer<WSContext>({
 	logger,

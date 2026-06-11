@@ -1,10 +1,10 @@
 import evaluator from "@vlab/evaluator";
 import type { NodeInfo } from "@vlab/evaluator/types";
-import { pino } from "pino";
+import baseLogger from "@worker/lib/logger";
 import { clabMonitor } from "./clab-monitor";
 import docker from "./docker";
 
-const logger = pino({ name: "evaluator" });
+const logger = baseLogger.child({ service: "evaluator" });
 
 const activeEvaluations = new Map<
 	string,

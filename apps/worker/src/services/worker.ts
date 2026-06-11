@@ -1,7 +1,7 @@
 import os from "node:os";
 import { decode } from "@msgpack/msgpack";
 import { AsyncQueue, type WorkerProto } from "@vlab/grpc";
-import { pino } from "pino";
+import baseLogger from "@worker/lib/logger";
 import { initRpc } from "../handlers/index";
 import {
 	getCpuUsagePercent,
@@ -12,7 +12,7 @@ import { metadata, workerClient } from "./client";
 import { monitorState } from "./monitor";
 export const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
 export const server = initRpc(replyQueue);
-const logger = pino({ name: "grpc" });
+const logger = baseLogger.child({ service: "grpc" });
 
 async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {
 	yield {
