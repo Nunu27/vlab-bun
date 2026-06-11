@@ -52,37 +52,37 @@
 }
 
 .dark {
-	--background: oklch(0.15 0.05 268);
-	--foreground: oklch(0.98 0.005 260);
-	--card: oklch(0.2 0.05 268);
-	--card-foreground: oklch(0.98 0.005 260);
-	--popover: oklch(0.2 0.05 268);
-	--popover-foreground: oklch(0.98 0.005 260);
-	--primary: oklch(0.48 0.18 268);
+	--background: oklch(0.145 0.04 264);
+	--foreground: oklch(0.98 0 0);
+	--card: oklch(0.19 0.04 264);
+	--card-foreground: oklch(0.98 0 0);
+	--popover: oklch(0.19 0.04 264);
+	--popover-foreground: oklch(0.98 0 0);
+	--primary: oklch(0.55 0.2 260);
 	--primary-foreground: oklch(1 0 0);
-	--secondary: oklch(0.25 0.05 268);
-	--secondary-foreground: oklch(0.98 0.005 260);
-	--muted: oklch(0.25 0.05 268);
-	--muted-foreground: oklch(0.7 0.05 260);
-	--accent: oklch(0.25 0.05 268);
-	--accent-foreground: oklch(0.98 0.005 260);
+	--secondary: oklch(0.24 0.04 264);
+	--secondary-foreground: oklch(0.98 0 0);
+	--muted: oklch(0.24 0.04 264);
+	--muted-foreground: oklch(0.7 0.02 264);
+	--accent: oklch(0.24 0.04 264);
+	--accent-foreground: oklch(0.98 0 0);
 	--destructive: oklch(0.6356 0.2082 25.3782);
-	--border: oklch(0.28 0.05 268);
-	--input: oklch(0.28 0.05 268);
-	--ring: oklch(0.48 0.18 268);
+	--border: oklch(0.24 0.04 264);
+	--input: oklch(0.24 0.04 264);
+	--ring: oklch(0.55 0.2 260);
 	--chart-1: oklch(0.48 0.18 268);
 	--chart-2: oklch(0.817 0.0516 264.2344);
 	--chart-3: oklch(0.9052 0.0234 276.8902);
 	--chart-4: oklch(0.7874 0.0878 231.1055);
 	--chart-5: oklch(0.7578 0.0545 285.0248);
-	--sidebar: oklch(0.15 0.05 268);
-	--sidebar-foreground: oklch(0.98 0.005 260);
-	--sidebar-primary: oklch(0.48 0.18 268);
+	--sidebar: oklch(0.145 0.04 264);
+	--sidebar-foreground: oklch(0.98 0 0);
+	--sidebar-primary: oklch(0.55 0.2 260);
 	--sidebar-primary-foreground: oklch(1 0 0);
-	--sidebar-accent: oklch(0.25 0.05 268);
-	--sidebar-accent-foreground: oklch(0.98 0.005 260);
-	--sidebar-border: oklch(0.28 0.05 268);
-	--sidebar-ring: oklch(0.48 0.18 268);
+	--sidebar-accent: oklch(0.24 0.04 264);
+	--sidebar-accent-foreground: oklch(0.98 0 0);
+	--sidebar-border: oklch(0.24 0.04 264);
+	--sidebar-ring: oklch(0.55 0.2 260);
 }
 
 .dark-editor,

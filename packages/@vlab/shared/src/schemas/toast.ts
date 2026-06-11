@@ -1,8 +1,8 @@
-import { t } from "elysia/type-system";
+import { Type as t } from "@sinclair/typebox";
 
 export const ToastItemSchema = t.Object({
 	message: t.String(),
-	type: t.UnionEnum(["success", "error"]),
+	type: t.Union([t.Literal("success"), t.Literal("error")]),
 });
 
 export type ToastItem = typeof ToastItemSchema.static;

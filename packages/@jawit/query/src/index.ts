@@ -13,6 +13,7 @@ import {
 	createEnsureQueryData,
 	createInvalidateQuery,
 	createQueryOptions,
+	createSetQueryData,
 	createUseInfiniteQuery,
 	createUseMutation,
 	createUseQuery,
@@ -66,6 +67,8 @@ function dispatchHook(
 				: undefined;
 		case "invalidateQuery":
 			return isQueryMethod ? createInvalidateQuery(key) : undefined;
+		case "setQueryData":
+			return isQueryMethod ? createSetQueryData(key) : undefined;
 		case "useMutation":
 			return isMutationMethod
 				? createUseMutation(target, clientOptions)

@@ -3,6 +3,7 @@ import { workers } from "@manager/db/schema";
 import env from "@manager/env";
 import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
+import ws from "@manager/services/ws";
 import { decode, encode } from "@msgpack/msgpack";
 import type { Static, TSchema } from "@sinclair/typebox";
 import type {
@@ -75,7 +76,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 		const workerSpec = first.value.workerSpec;
 
 		// 2. Upsert worker into DB
-		await db
+		const [connectedWorker] = await db
 			.insert(workers)
 			.values({
 				id: workerId,
@@ -100,7 +101,24 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 					memoryMB: workerSpec.memoryMb,
 					storageMB: workerSpec.storageMb,
 				},
+			})
+			.returning({
+				id: workers.id,
+				status: workers.status,
+				lastSeen: workers.lastSeen,
+				cpuCores: workers.cpuCores,
+				memoryMB: workers.memoryMB,
+				storageMB: workers.storageMB,
+				cpuUsagePercent: workers.cpuUsagePercent,
+				memoryUsagePercent: workers.memoryUsagePercent,
+				storageUsagePercent: workers.storageUsagePercent,
+				activeLabs: workers.activeLabs,
+				activeNodes: workers.activeNodes,
 			});
+
+		if (connectedWorker) {
+			ws.server.emit("admin:worker:new", undefined, connectedWorker);
+		}
 
 		logger.info(`Worker ${workerId} connected`);
 
@@ -118,7 +136,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 		});
 
 		try {
-			await redis.client.subscribe(`vlab:worker-action:${workerId}`);
+			await redis.subscriber.subscribe(`vlab:worker-action:${workerId}`);
 		} catch (error) {
 			logger.error(
 				{ error, workerId },
@@ -167,7 +185,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			logger.info({ workerId }, "Worker stream ended");
 			connectedWorkers.delete(workerId);
 			try {
-				await redis.client.unsubscribe(`vlab:worker-action:${workerId}`);
+				await redis.subscriber.unsubscribe(`vlab:worker-action:${workerId}`);
 			} catch (error) {
 				logger.error(
 					{ error, workerId },
@@ -178,6 +196,11 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				.update(workers)
 				.set({ status: "offline", activeLabs: 0, activeNodes: 0 })
 				.where(eq(workers.id, workerId));
+
+			ws.server.emit("admin:worker:status", undefined, {
+				id: workerId,
+				status: "offline",
+			});
 		}
 	},
 
@@ -198,6 +221,15 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				activeNodes: request.activeNodes,
 			})
 			.where(eq(workers.id, workerId));
+
+		ws.server.emit("admin:worker:metrics", undefined, {
+			id: workerId,
+			cpuUsagePercent: request.cpuUsagePercent.toString(),
+			memoryUsagePercent: request.memoryUsagePercent.toString(),
+			storageUsagePercent: request.storageUsagePercent.toString(),
+			activeLabs: request.activeLabs,
+			activeNodes: request.activeNodes,
+		});
 
 		return { success: true };
 	},

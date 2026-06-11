@@ -1,4 +1,4 @@
-import { t } from "elysia";
+import { Type as t } from "@sinclair/typebox";
 import { DateRange, NonEmptyString } from "./common";
 import { DeviceTemplateResourcesSchema } from "./device-template";
 

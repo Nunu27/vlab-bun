@@ -40,12 +40,19 @@ export async function listenToCommands() {
 					};
 					const requestId = message.id || Math.random().toString(36).slice(2);
 
-					server.handle(
-						"manager",
-						requestId,
-						message as Parameters<typeof server.handle>[2],
-						async () => ({}),
-					);
+					server
+						.handle(
+							"manager",
+							requestId,
+							message as Parameters<typeof server.handle>[2],
+							async () => ({}),
+						)
+						.catch((err) => {
+							console.error(
+								`[RPC] Unhandled error in command ${requestId}:`,
+								err,
+							);
+						});
 				}
 			} catch (err) {
 				console.error("Failed to parse or handle command", err);

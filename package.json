@@ -17,9 +17,11 @@
 	},
 	"private": true,
 	"scripts": {
-		"dev": "concurrently -n web,manager -c cyan,magenta \"bun web dev\" \"bun manager dev\"",
+		"dev": "concurrently -n web,manager,worker -c cyan,magenta,yellow \"bun web dev\" \"bun manager dev\" \"bun worker dev\"",
+		"dev:tmux": "bun run scripts/dev.ts",
 		"web": "bun --filter @vlab/web",
 		"manager": "bun --filter @vlab/manager",
+		"worker": "bun --filter @vlab/worker",
 		"check": "biome check --write .",
 		"check:ci": "biome check .",
 		"lint": "biome lint --write --unsafe .",

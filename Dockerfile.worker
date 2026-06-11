@@ -4,10 +4,6 @@
 FROM oven/bun:1 AS base
 WORKDIR /app
 
-# The worker might not need libpq-dev, but we keep the same base for compatibility
-RUN apt-get update && apt-get install -y python3 python3-setuptools pkg-config make g++ \
-    && rm -rf /var/lib/apt/lists/*
-
 # --- Dependencies ---
 FROM base AS deps
 COPY --parents package.json bun.lock tsconfig.json apps/*/package.json packages/*/*/package.json ./

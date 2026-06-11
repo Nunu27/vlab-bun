@@ -58,7 +58,7 @@ rtk bun run check
 
 ## 5. Coding Conventions
 
-- **No `any`/`never` casts** unless absolutely necessary.
+- **No `any`/`never` casts or schema** unless absolutely necessary.
 - **Minimal comments** — only for non-obvious logic, special cases, or workarounds.
 - **TODOs** — mark unimplemented/mocked sections and architectural workarounds with `// TODO`.
 - **Imports** — use path aliases (`@manager/...`) and workspace imports (`"@vlab/shared": "workspace:*"`), not relative paths.
@@ -71,8 +71,9 @@ When modifying schemas under `apps/manager/src/db/schema/*`:
 
 ```bash
 rtk bun run drizzle:generate --name <action>_<entity>_<detail>
-rtk bun run drizzle:migrate
 ```
+
+Migrations will be run automatically, so you do not need to execute `drizzle:migrate` yourself.
 
 Examples: `create_users_table`, `add_status_to_lab_sessions`
 

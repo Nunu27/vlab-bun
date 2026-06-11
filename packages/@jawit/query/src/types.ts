@@ -181,6 +181,19 @@ type QueryHooks<TFn> = {
 	): Promise<ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>>;
 
 	invalidateQuery(queryClient: QueryClient): Promise<void>;
+
+	setQueryData(
+		queryClient: QueryClient,
+		updater:
+			| ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>
+			| undefined
+			| ((
+					oldData:
+						| ExtractTreatyData<Extract<TFn, (...a: any[]) => any>>
+						| undefined,
+			  ) => ExtractTreatyData<Extract<TFn, (...a: any[]) => any>> | undefined),
+		args?: ExtractTreatyParams<TFn>,
+	): ExtractTreatyData<Extract<TFn, (...a: any[]) => any>> | undefined;
 };
 
 type MutationHooks<TFn> = {
