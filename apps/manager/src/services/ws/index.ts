@@ -1,3 +1,4 @@
+import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import { sessions } from "@manager/services/http/middlewares/auth";
 import type { WSContext } from "@manager/types/ws";
@@ -26,8 +27,10 @@ const io = new Server<
 const engine = new Engine({ path: "/ws" });
 io.bind(engine);
 
+const logger = baseLogger.child({ service: "waycast" });
+
 const server = appRouter.buildServer<WSContext>({
-	logger: console,
+	logger,
 	topic: {
 		subscribe: (connId, ...topics) => {
 			const socket = io.sockets.sockets.get(connId);
