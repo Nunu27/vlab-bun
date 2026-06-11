@@ -23,7 +23,14 @@ export class WorkerActionRouter<
 		payload: T[K],
 	) {
 		if (connectedWorkers.has(workerId)) {
-			this.handlers.get(actionName)?.(workerId, payload);
+			this.handlers
+				.get(actionName)?.(workerId, payload)
+				.catch((err) => {
+					console.error(
+						`Worker action ${actionName} failed for ${workerId}:`,
+						err,
+					);
+				});
 		} else {
 			await redis.client.publish(
 				`vlab:worker-action:${workerId}`,
