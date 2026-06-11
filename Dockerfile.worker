@@ -20,6 +20,6 @@ FROM gcr.io/distroless/cc
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=worker-builder /app/out/worker /app/worker
+COPY --from=worker-builder /app/out/worker/app /app/app
 
-ENTRYPOINT ["/app/worker"]
+ENTRYPOINT ["/app/app"]
