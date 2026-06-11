@@ -1,5 +1,4 @@
 import db from "@manager/db";
-import redis from "@manager/lib/redis";
 import { sendCommandToWorker } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
 import type { LabLink, LabNode } from "@manager/types/clab";
@@ -55,8 +54,9 @@ export async function handleInitLabSession(
 	const existingSession = lab.sessions.find(({ submittedAt }) => !submittedAt);
 
 	if (existingSession) {
-		await redis.client.publish(
-			`vlab:rpc-resolve:${payload.requestId}`,
+		ws.server.replyResponse(
+			"lab:[id]:init",
+			payload.requestId,
 			existingSession.id,
 		);
 		return;
@@ -127,10 +127,7 @@ export async function handleInitLabSession(
 	});
 
 	reply("info", "Lab provisioned successfully.");
-	await redis.client.publish(
-		`vlab:rpc-resolve:${payload.requestId}`,
-		sessionId,
-	);
+	ws.server.replyResponse("lab:[id]:init", payload.requestId, sessionId);
 }
 
 export async function handleSubmitLabSession(

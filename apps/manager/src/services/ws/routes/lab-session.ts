@@ -1,6 +1,5 @@
 import db from "@manager/db";
 import { labSessions } from "@manager/db/schema";
-import redis from "@manager/lib/redis";
 import { workerActions } from "@manager/services/actions";
 import { getAvailableWorkerId } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
@@ -17,24 +16,6 @@ ws.server.on("lab:[id]:init", async (ctx) => {
 		throw new Error("No online workers available to run this lab.");
 	}
 
-	const executionId = ctx.requestId;
-	await redis.subscriber.subscribe(`vlab:rpc-resolve:${executionId}`);
-
-	const resultPromise = new Promise<string>((resolve, reject) => {
-		const handler = (channelBuffer: Buffer, messageBuffer: Buffer) => {
-			const channel = channelBuffer.toString();
-			if (channel === `vlab:rpc-resolve:${executionId}`) {
-				redis.subscriber.off("messageBuffer", handler);
-				redis.subscriber
-					.unsubscribe(`vlab:rpc-resolve:${executionId}`)
-					.catch(console.error);
-				resolve(messageBuffer.toString());
-			}
-		};
-		redis.subscriber.on("messageBuffer", handler);
-		setTimeout(() => reject(new Error("Timeout initializing lab")), 180000); // 3m timeout
-	});
-
 	await workerActions.dispatch("lab:initSession", workerId, {
 		connectionId: ctx.connectionId,
 		requestId: ctx.requestId,
@@ -42,7 +23,7 @@ ws.server.on("lab:[id]:init", async (ctx) => {
 		userId,
 	});
 
-	return await resultPromise;
+	return (ws.server as any).defer;
 });
 
 ws.server.on("lab-session:[sessionId]:connect", async (ctx) => {
