@@ -1,3 +1,4 @@
+import redis from "@manager/lib/redis";
 import { sendCommandToWorker, tempNodeEvents } from "@manager/services/grpc";
 import guacamole from "@manager/services/guacamole-lite";
 import ws from "@manager/services/ws";
@@ -99,7 +100,7 @@ export async function handleTestInit(
 	});
 
 	reply("info", "Access token generated.");
-	reply("token", token);
+	await redis.client.publish(`vlab:rpc-resolve:${executionId}`, token);
 }
 
 export async function handleTestCleanup(

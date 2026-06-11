@@ -7,9 +7,8 @@ export const labSessionRouter = new Router<WSMeta>()
 		payload: t.Optional(t.Any()),
 		replies: {
 			info: t.String(),
-			id: t.String(),
 		},
-		response: t.Void(),
+		response: t.String(),
 		meta: { private: ["student"] },
 	})
 	.rpc("lab-session:[sessionId]:connect", {
@@ -20,12 +19,7 @@ export const labSessionRouter = new Router<WSMeta>()
 		response: t.Void(),
 		meta: { private: ["student"] },
 	})
-	.rpc("lab-session:[sessionId]:submit", {
-		payload: t.Optional(t.Any()),
-		replies: {},
-		response: t.Void(),
-		meta: { private: ["student"] },
-	})
+
 	.data(
 		"lab-session:[sessionId]:client-change",
 		t.Union([t.String(), t.Null()]),

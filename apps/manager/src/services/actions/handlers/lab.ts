@@ -1,4 +1,5 @@
 import db from "@manager/db";
+import redis from "@manager/lib/redis";
 import { sendCommandToWorker } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
 import type { LabLink, LabNode } from "@manager/types/clab";
@@ -15,7 +16,7 @@ export async function handleInitLabSession(
 	const labId = payload.labId;
 	const userId = payload.userId;
 
-	const reply = (type: "info" | "id", message: string) => {
+	const reply = (type: "info", message: string) => {
 		ws.server.reply("lab:[id]:init", payload.requestId)(type, message);
 	};
 
@@ -54,7 +55,10 @@ export async function handleInitLabSession(
 	const existingSession = lab.sessions.find(({ submittedAt }) => !submittedAt);
 
 	if (existingSession) {
-		reply("id", existingSession.id);
+		await redis.client.publish(
+			`vlab:rpc-resolve:${payload.requestId}`,
+			existingSession.id,
+		);
 		return;
 	} else if (lab.maxAttempt && lab.sessions.length >= lab.maxAttempt) {
 		throw new Error("Max attempts reached");
@@ -123,7 +127,10 @@ export async function handleInitLabSession(
 	});
 
 	reply("info", "Lab provisioned successfully.");
-	reply("id", sessionId);
+	await redis.client.publish(
+		`vlab:rpc-resolve:${payload.requestId}`,
+		sessionId,
+	);
 }
 
 export async function handleSubmitLabSession(
