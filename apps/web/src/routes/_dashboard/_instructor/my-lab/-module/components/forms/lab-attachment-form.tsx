@@ -1,12 +1,19 @@
 import { ActionButton } from "@web/components/buttons/action-button";
 import { Button } from "@web/components/ui/button";
-import { Empty, EmptyDescription } from "@web/components/ui/empty";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyMedia,
+	EmptyTitle,
+} from "@web/components/ui/empty";
 import { InputGroup, InputGroupAddon } from "@web/components/ui/input-group";
 import { withFieldGroup } from "@web/hooks/form/use-app-form";
 import api from "@web/lib/api";
 import {
 	ExternalLinkIcon,
 	Loader2Icon,
+	PaperclipIcon,
 	PlusIcon,
 	Trash2Icon,
 } from "lucide-react";
@@ -150,7 +157,15 @@ export const LabAttachmentForm = withFieldGroup({
 								</div>
 							) : (
 								<Empty className="border border-dashed">
-									<EmptyDescription>No attachments added yet.</EmptyDescription>
+									<EmptyContent>
+										<EmptyMedia variant="icon">
+											<PaperclipIcon />
+										</EmptyMedia>
+										<EmptyTitle>No Attachments</EmptyTitle>
+										<EmptyDescription>
+											No attachments added yet.
+										</EmptyDescription>
+									</EmptyContent>
 								</Empty>
 							)}
 						</div>

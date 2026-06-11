@@ -5,7 +5,7 @@ import { Button } from "@web/components/ui/button";
 import { Card, CardContent } from "@web/components/ui/card";
 import {
 	Empty,
-	EmptyHeader,
+	EmptyContent,
 	EmptyMedia,
 	EmptyTitle,
 } from "@web/components/ui/empty";
@@ -48,12 +48,12 @@ function StudentDashboardPage() {
 					<Card>
 						<CardContent className="pt-6">
 							<Empty className="border-0">
-								<EmptyHeader>
+								<EmptyContent>
 									<EmptyMedia variant="icon">
 										<BookOpenIcon className="h-6 w-6 text-muted-foreground" />
 									</EmptyMedia>
 									<EmptyTitle>You haven't enrolled in any labs yet</EmptyTitle>
-								</EmptyHeader>
+								</EmptyContent>
 							</Empty>
 						</CardContent>
 					</Card>
@@ -85,12 +85,12 @@ function StudentDashboardPage() {
 					>
 						{data.upcomingLabs.length === 0 ? (
 							<Empty className="border-0">
-								<EmptyHeader>
+								<EmptyContent>
 									<EmptyMedia variant="icon">
 										<FlaskConicalIcon className="h-6 w-6 text-muted-foreground" />
 									</EmptyMedia>
 									<EmptyTitle>You have no pending labs right now</EmptyTitle>
-								</EmptyHeader>
+								</EmptyContent>
 							</Empty>
 						) : (
 							<div className="flex flex-col divide-y">

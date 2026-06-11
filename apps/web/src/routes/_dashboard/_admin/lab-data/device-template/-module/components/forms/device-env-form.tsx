@@ -2,11 +2,17 @@
 
 import { ActionButton } from "@web/components/buttons/action-button";
 import { Button } from "@web/components/ui/button";
-import { Empty, EmptyDescription } from "@web/components/ui/empty";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyMedia,
+	EmptyTitle,
+} from "@web/components/ui/empty";
 import { Field, FieldError } from "@web/components/ui/field";
 import { Input } from "@web/components/ui/input";
 import { withFieldGroup } from "@web/hooks/form/use-app-form";
-import { PlusIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon, VariableIcon } from "lucide-react";
 import { memo, useEffect } from "react";
 import { useEnvFormStore } from "../../stores/env-form-store";
 
@@ -73,10 +79,16 @@ export const DeviceEnvForm = withFieldGroup({
 					</div>
 				) : (
 					<Empty className="border border-dashed">
-						<EmptyDescription>
-							No environment variables defined. Click the button below to add
-							one.
-						</EmptyDescription>
+						<EmptyContent>
+							<EmptyMedia variant="icon">
+								<VariableIcon />
+							</EmptyMedia>
+							<EmptyTitle>No Environment Variables</EmptyTitle>
+							<EmptyDescription>
+								No environment variables defined. Click the button below to add
+								one.
+							</EmptyDescription>
+						</EmptyContent>
 					</Empty>
 				)}
 

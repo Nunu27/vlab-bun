@@ -10,13 +10,15 @@ import {
 } from "@web/components/ui/dialog";
 import {
 	Empty,
+	EmptyContent,
 	EmptyDescription,
-	EmptyHeader,
+	EmptyMedia,
 	EmptyTitle,
 } from "@web/components/ui/empty";
 import { ScrollArea } from "@web/components/ui/scroll-area";
 import { useTypedAppFormContext } from "@web/hooks/form/use-app-form";
 import { useModalState } from "@web/hooks/state/use-modal-state";
+import { ClipboardCheck } from "lucide-react";
 import { useLabChecksModalStore } from "../stores/lab-checks-modal-store";
 import { LabCheckForm } from "./lab-check-form";
 
@@ -63,12 +65,15 @@ function LabCheckModal() {
 				<ScrollArea className="-mx-4 -my-2 max-h-[60vh] px-2">
 					{ids.length === 0 ? (
 						<Empty className="border">
-							<EmptyHeader>
+							<EmptyContent>
+								<EmptyMedia variant="icon">
+									<ClipboardCheck />
+								</EmptyMedia>
 								<EmptyTitle>No checks defined</EmptyTitle>
 								<EmptyDescription>
 									Click "Add Check" below to create one.
 								</EmptyDescription>
-							</EmptyHeader>
+							</EmptyContent>
 						</Empty>
 					) : (
 						ids.map((id) => (
