@@ -33,9 +33,20 @@
 	},
 	"overrides": [
 		{
+			"includes": ["apps/web/src/routeTree.gen.ts"],
+			"formatter": {
+				"enabled": false
+			},
+			"linter": {
+				"enabled": false
+			},
+			"assist": {
+				"enabled": false
+			}
+		},
+		{
 			"includes": [
 				"apps/web/src/components/ui/**",
-				"apps/web/src/routeTree.gen.ts",
 				"packages/@vlab/grpc/src/**/*.ts",
 				"out/**"
 			],
