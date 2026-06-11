@@ -26,8 +26,8 @@ FROM gcr.io/distroless/cc
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=manager-builder /app/out/app /app/app
-COPY --from=manager-builder /app/out/migrations /app/migrations
-COPY --from=web-builder /app/out/public /app/public
+COPY --from=manager-builder /app/out/manager/app /app/app
+COPY --from=manager-builder /app/out/manager/migrations /app/migrations
+COPY --from=web-builder /app/out/manager/public /app/public
 
 ENTRYPOINT ["/app/app"]

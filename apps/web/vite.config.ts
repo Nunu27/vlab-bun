@@ -14,7 +14,7 @@ const config = defineConfig({
 		viteReact(),
 	],
 	build: {
-		outDir: "../../out/public",
+		outDir: "../../out/manager/public",
 		emptyOutDir: true,
 	},
 	server: {
