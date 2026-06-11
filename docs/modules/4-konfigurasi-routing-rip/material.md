@@ -16,20 +16,16 @@ RIP sangat mudah dikonfigurasi, namun memiliki limitasi yang membuatnya tidak co
 
 ## Mekanisme Split Horizon & Poison Reverse
 RIP menggunakan berbagai trik untuk mencegah paket data berputar-putar dalam lingkaran tanpa henti (*Routing Loop*):
-*   **Split Horizon:** Aturan emas RIP yang mengatakan, "Jangan pernah mengirimkan informasi tentang sebuah rute, kembali melalui *interface* yang sama dari mana informasi rute tersebut pertama kali kamu dengar."
+*   **Split Horizon:** Aturan emas RIP yang mengatakan, "Jangan pernah mengirimkan informasi tentang sebuah rute, kembali melalui *interface* yang sama dari mana informasi rute tersebut pertama kali diterima."
 *   **Poison Reverse:** Modifikasi dari Split Horizon, di mana rute tetap dikirimkan kembali ke *interface* asal, namun metrik rutenya "diracun" menjadi 16 hop (*Unreachable*).
 
 ## Referensi Perintah
-
 ### MikroTik RouterOS v7
+
 Pada RouterOS v7, RIP telah didesain ulang untuk menggunakan arsitektur *Instance* dan *Interface-Template*.
 
-- **Membuat RIP Instance:**
-  \`/routing rip instance add name=<nama-instance>\`
-  *(Menjalankan satu proses utama protokol RIP di background).*
-- **Menambahkan Interface Template:**
-  \`/routing rip interface-template add instance=<nama-instance> interfaces=<daftar-interface>\`
-  *(Mengaktifkan distribusi dan pengiriman update RIP secara spesifik hanya pada port yang diizinkan, misalnya port yang mengarah ke router tetangga).*
-- **Melihat Tabel Rute Dinamis:**
-  \`/ip route print\`
-  *(Rute yang ditambahkan otomatis oleh RIP akan memiliki *flag* / status **Dr** (Dynamic, RIP)).*
+| Aksi / Fungsi | Perintah | Keterangan |
+|---|---|---|
+| Membuat RIP Instance | `/routing rip instance add name=<nama-instance>` | Menjalankan proses RIP di background. |
+| Menambah Interface Template | `/routing rip interface-template add instance=<nama-instance> interfaces=<daftar-interface>` | Mengaktifkan *routing update* RIP pada *port* tertentu. |
+| Mengecek Tabel Rute Dinamis | `/ip route print` | Rute otomatis RIP berstatus **Dr** (Dynamic, RIP). |

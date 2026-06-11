@@ -13,27 +13,32 @@ Meskipun GUI terlihat lebih modern dan mudah digunakan, seorang *Network Enginee
 Meskipun sama-sama CLI, kedua sistem operasi ini memiliki filosofi penggunaan yang berbeda:
 
 *   **Linux (Bash Shell):**
-    Linux menggunakan filosofi *File System Hierarchy*. Semuanya dianggap sebagai file. Anda menavigasi direktori (folder) menggunakan perintah seperti `cd` dan melihat isi folder menggunakan `ls`. Konfigurasi jaringan biasanya dilakukan dengan mengedit file teks (seperti `/etc/network/interfaces` atau netplan) atau mengeksekusi *binary* langsung seperti `ip`.
+    Linux menggunakan filosofi *File System Hierarchy*. Semuanya dianggap sebagai file. Direktori (folder) dikelola menggunakan perintah seperti `cd` dan isinya dilihat dengan `ls`. Konfigurasi jaringan biasanya dilakukan dengan mengedit file teks (seperti `/etc/network/interfaces` atau netplan) atau mengeksekusi *binary* langsung seperti `ip`.
 
 *   **MikroTik RouterOS:**
-    RouterOS menggunakan filosofi *Menu Hierarchy*. Anda tidak berpindah "folder", melainkan berpindah "menu pengaturan". Jika Anda berada di root `/`, Anda bisa mengetik `ip address` untuk masuk ke sub-menu IP Address. Perintah dalam RouterOS bersifat *Context-Aware*, artinya jika Anda berada di menu `/ip/address`, Anda hanya bisa menjalankan aksi yang relevan dengan IP Address.
+    RouterOS menggunakan filosofi *Menu Hierarchy*. Sistem ini tidak menggunakan perpindahan "folder", melainkan perpindahan "menu pengaturan". Pada root `/`, perintah `ip address` akan membuka sub-menu IP. Perintah dalam RouterOS bersifat *Context-Aware*, artinya pada menu `/ip/address`, aksi yang dieksekusi hanya relevan dengan menu IP.
 
 ## Tips & Trik Eksplorasi (Best Practices)
-Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Faktanya, Anda tidak perlu menghafal semuanya. Gunakan fitur bantuan bawaan:
-*   **Tombol `?` (Tanya):** Tekan tombol tanda tanya kapan saja pada MikroTik untuk melihat daftar perintah atau parameter apa saja yang tersedia di posisi Anda saat ini.
+Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Faktanya, menghafal seluruh perintah tidaklah perlu. Gunakan fitur bantuan bawaan:
+*   **Tombol `?` (Tanya):** Tekan tombol tanda tanya kapan saja pada MikroTik untuk melihat daftar perintah atau parameter apa saja yang tersedia di posisi saat ini.
 *   **Tombol `Tab` (Auto-Complete):** Jangan mengetik `interface`. Cukup ketik `int` lalu tekan `Tab`, sistem akan melengkapinya secara otomatis. Ini mencegah *typo* (salah ketik) dan mempercepat pekerjaan.
 
 ## Referensi Perintah
-
 ### Linux (Ubuntu)
-- \`whoami\` : Melihat nama user yang sedang aktif digunakan.
-- \`pwd\` : (*Print Working Directory*) Melihat lokasi direktori Anda saat ini.
-- \`ls -la\` : Menampilkan daftar file secara detail beserta *hidden files* (file tersembunyi yang diawali tanda titik).
-- \`uname -a\` : Menampilkan informasi detail mengenai OS dan versi Kernel.
+
+| Perintah | Keterangan |
+|---|---|
+| `whoami` | Mengecek nama user aktif. |
+| `pwd` | (*Print Working Directory*) Mengecek lokasi direktori saat ini. |
+| `ls -la` | Menampilkan file detail & hidden files. |
+| `uname -a` | Menampilkan info OS & Kernel. |
 
 ### MikroTik RouterOS
-- \`?\` : Menampilkan daftar perintah yang tersedia di direktori saat ini.
-- \`..\` : Mundur/naik satu tingkat ke hierarki menu sebelumnya.
-- \`/\` : Kembali langsung ke *root* menu (menu teratas).
-- \`system resource print\` : Melihat statistik penggunaan sistem (beban CPU, sisa RAM, dan arsitektur perangkat keras keras router).
-- \`ip address print\` : Melihat daftar alamat IP yang sedang terpasang pada router.
+
+| Perintah | Keterangan |
+|---|---|
+| `?` | Menampilkan perintah tersedia. |
+| `..` | Kembali 1 tingkat menu. |
+| `/` | Kembali ke root menu. |
+| `system resource print` | Mengecek statistik sistem (CPU, RAM). |
+| `ip address print` | Mengecek daftar IP router. |
