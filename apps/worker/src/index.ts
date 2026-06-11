@@ -1,14 +1,17 @@
+import { pino } from "pino";
 import { bindMonitorEvents } from "./services/monitor";
 import { listenToCommands, streamMetrics } from "./services/worker";
 
-console.log("Worker starting...");
+const logger = pino({ name: "worker" });
+
+logger.info("Worker starting...");
 
 listenToCommands();
 streamMetrics();
 bindMonitorEvents();
 
 function shutdown(signal: string) {
-	console.log(`Received ${signal}, shutting down gracefully...`);
+	logger.info(`Received ${signal}, shutting down gracefully...`);
 	// Add any additional cleanup logic here if needed
 	process.exit(0);
 }
@@ -16,8 +19,8 @@ function shutdown(signal: string) {
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("unhandledRejection", (reason, promise) => {
-	console.error("Unhandled Rejection at:", promise, "reason:", reason);
+	logger.error({ reason, promise }, "Unhandled Rejection");
 });
 process.on("uncaughtException", (error) => {
-	console.error("Uncaught Exception:", error);
+	logger.error({ error }, "Uncaught Exception");
 });

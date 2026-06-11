@@ -1,6 +1,7 @@
 import os from "node:os";
 import { decode } from "@msgpack/msgpack";
 import { AsyncQueue, type WorkerProto } from "@vlab/grpc";
+import { pino } from "pino";
 import { initRpc } from "../handlers/index";
 import {
 	getCpuUsagePercent,
@@ -11,6 +12,7 @@ import { metadata, workerClient } from "./client";
 import { monitorState } from "./monitor";
 export const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
 export const server = initRpc(replyQueue);
+const logger = pino({ name: "grpc" });
 
 async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {
 	yield {
@@ -28,9 +30,13 @@ async function* createReplyStream(): AsyncIterable<WorkerProto.CommandPayload> {
 
 export async function listenToCommands() {
 	try {
+		logger.info("Connecting to Manager gRPC server...");
 		const requestStream = workerClient.listenCommand(createReplyStream(), {
 			metadata,
 		});
+		logger.info(
+			"Successfully connected to Manager gRPC server and started ListenCommand stream",
+		);
 		for await (const req of requestStream) {
 			try {
 				if (req.payload) {
@@ -48,18 +54,21 @@ export async function listenToCommands() {
 							async () => ({}),
 						)
 						.catch((err) => {
-							console.error(
-								`[RPC] Unhandled error in command ${requestId}:`,
-								err,
+							logger.error(
+								{ err },
+								`[RPC] Unhandled error in command ${requestId}`,
 							);
 						});
 				}
 			} catch (err) {
-				console.error("Failed to parse or handle command", err);
+				logger.error({ err }, "Failed to parse or handle command");
 			}
 		}
 	} catch (err) {
-		console.error("ListenCommand stream ended with error", err);
+		logger.warn(
+			{ err },
+			"ListenCommand stream disconnected or ended with error. Reconnecting in 5s...",
+		);
 		setTimeout(listenToCommands, 5000);
 	}
 }
@@ -99,7 +108,7 @@ export async function streamMetrics() {
 			{ metadata },
 		);
 	} catch (err) {
-		console.error("Failed to send metrics", err);
+		logger.error({ err }, "Failed to send metrics");
 	}
 	setTimeout(streamMetrics, 10000);
 }
