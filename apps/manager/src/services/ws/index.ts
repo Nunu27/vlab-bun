@@ -59,11 +59,8 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 });
 
 io.on("connection", (socket) => {
-	socket.on("rpc", (message, ack) => {
-		const requestId = Math.random().toString(36).slice(2);
-		ack?.(requestId);
-
-		server.handle(socket.id, requestId, message, async (meta) => {
+	socket.on("rpc", (message) => {
+		server.handle(socket.id, message, async (meta) => {
 			const allowed = meta?.private?.includes(socket.data.session.role) ?? true;
 			if (!allowed) throw new Error("Unauthorized");
 			return { session: socket.data.session };

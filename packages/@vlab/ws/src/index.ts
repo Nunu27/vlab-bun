@@ -25,10 +25,7 @@ export type WSDataRoutes = InferDataRoutes<AppRouter>;
 export type WSRpcRoutes = InferRpcRoutes<AppRouter> & BuiltInRpcRoutes;
 
 export type ClientToServerEvents = {
-	rpc: (
-		message: RequestMessage<WSRpcRoutes>,
-		ack?: (requestId: string) => void,
-	) => void;
+	rpc: (message: RequestMessage<WSRpcRoutes>) => void;
 };
 export type ServerToClientEvents = {
 	data: (message: DataMessage<WSDataRoutes>) => void;

@@ -10,8 +10,8 @@ export function createRpcServer(
 	const logger = baseLogger.child({ service: "rpc" });
 	const server = appRouter.buildServer({
 		logger,
-		emit: () => {
-			// No-op since the server only needs to reply, not emit events
+		emit: (_topic, message) => {
+			replyQueue.push({ payload: Buffer.from(encode(message)) });
 		},
 		reply: (_topic, message) => {
 			replyQueue.push({ payload: Buffer.from(encode(message)) });
