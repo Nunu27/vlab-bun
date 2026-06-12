@@ -1,6 +1,6 @@
 import os from "node:os";
 import { decode } from "@msgpack/msgpack";
-import type { AsyncQueue, WorkerProto } from "@vlab/grpc";
+import type { AsyncQueue, GrpcRequestMessage, WorkerProto } from "@vlab/grpc";
 import baseLogger from "@worker/lib/logger";
 import type { RpcServer } from "../handlers/server";
 import {
@@ -45,25 +45,20 @@ export async function listenToCommands(
 		for await (const req of requestStream) {
 			try {
 				if (req.payload) {
-					const message = decode(req.payload) as {
-						id?: string;
-						[k: string]: unknown;
-					};
-					const requestId = message.id || Math.random().toString(36).slice(2);
+					const message = decode(req.payload) as GrpcRequestMessage;
+					const requestId = Math.random().toString(36).slice(2);
 
-					server
-						.handle(
-							"manager",
-							requestId,
-							message as Parameters<typeof server.handle>[2],
-							async () => ({}),
-						)
-						.catch((err) => {
-							logger.error(
-								{ err },
-								`[RPC] Unhandled error in command ${requestId}`,
-							);
-						});
+					logger.info(
+						{ requestId, name: message.name },
+						"Received command from Manager",
+					);
+
+					server.handle("manager", requestId, message).catch((err) => {
+						logger.error(
+							{ err },
+							`[RPC] Unhandled error in command ${requestId}`,
+						);
+					});
 				}
 			} catch (err) {
 				logger.error({ err }, "Failed to parse or handle command");
