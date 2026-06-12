@@ -2,7 +2,7 @@ import { success } from "@jawit/common";
 import { uploadFile } from "@manager/lib/storage";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-import { UploadFileRequest } from "@vlab/shared/schemas/file";
+import { t } from "elysia";
 
 export default createRouter()
 	.use(auth)
@@ -16,6 +16,8 @@ export default createRouter()
 		},
 		{
 			private: ["instructor"],
-			body: UploadFileRequest,
+			body: t.Object({
+				file: t.File(),
+			}),
 		},
 	);

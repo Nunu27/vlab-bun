@@ -1,17 +1,7 @@
-import { Kind, type TSchema, type TString, Type as t } from "@sinclair/typebox";
+import { type TSchema, type TString, Type as t } from "@sinclair/typebox";
 
 export const Nullable = <T extends TSchema>(schema: T) =>
 	t.Union([schema, t.Null()]);
-
-export const FileSchema = (
-	options?: import("@sinclair/typebox").SchemaOptions,
-) =>
-	t.Unsafe<File>({
-		...options,
-		[Kind]: "File",
-		type: "string",
-		format: "binary",
-	});
 
 export const RequestWithId = <const TKeys extends string = "id">(
 	entries?: TKeys[],

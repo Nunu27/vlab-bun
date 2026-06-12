@@ -5,7 +5,7 @@ import { NonEmptyString } from "./common";
 export const CreateStudentRequest = t.Object({
 	name: NonEmptyString(),
 	email: t.String({ format: "email" }),
-	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
+	nrp: t.String({ minLength: 10, maxLength: 10, pattern: "^\\d+$" }),
 	year: t.Integer({ min: 0 }),
 	degreeLevel: t.Union([
 		t.Literal("D3"),
@@ -23,7 +23,7 @@ export const CreateStudentRequest = t.Object({
 export const UpdateStudentRequest = t.Object({
 	name: NonEmptyString(),
 	email: t.String({ format: "email" }),
-	nrp: t.String({ minLength: 10, maxLength: 10, format: "numeric" }),
+	nrp: t.String({ minLength: 10, maxLength: 10, pattern: "^\\d+$" }),
 	year: t.Integer({ min: 0 }),
 	degreeLevel: t.Union([
 		t.Literal("D3"),
