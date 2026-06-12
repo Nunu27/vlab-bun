@@ -1,3 +1,10 @@
+import type Dockerode from "dockerode";
+import type { Container } from "dockerode";
+
+export function getModem(container: Container): Dockerode["modem"] {
+	return container.modem;
+}
+
 export function deterministicStringify(obj: unknown): string {
 	if (obj === null || obj === undefined) {
 		return String(obj);
