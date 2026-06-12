@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { access, mkdir, rm } from "node:fs/promises";
+import { access, mkdir, rm, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { buildDeployArgs, buildDestroyArgs } from "./args";
 import {
@@ -63,6 +63,27 @@ export class Containerlab {
 				`Failed to execute Containerlab CLI. Details: ${error instanceof Error ? error.message : error}`,
 				{ cause: error },
 			);
+		}
+
+		try {
+			const resolvedPath = Bun.which(this.cliPath) ?? this.cliPath;
+			const stats = await stat(resolvedPath);
+			const isRoot = process.geteuid?.() === 0;
+			const isSuidRoot = (stats.mode & 0o4000) !== 0 && stats.uid === 0;
+
+			if (!isRoot && !isSuidRoot) {
+				throw new Error(
+					`Containerlab requires root privileges. Please run the worker as root, or grant the executable root SUID permissions.\nTo grant SUID, run exactly: 'sudo chown root:root ${resolvedPath} && sudo chmod u+s ${resolvedPath}' (do not change 'root:root' to your username).`,
+				);
+			}
+		} catch (error) {
+			if (
+				error instanceof Error &&
+				error.message.includes("Containerlab requires root")
+			) {
+				throw error;
+			}
+			// Ignore stat failures (e.g., symlink resolution issues) if version check already passed
 		}
 
 		try {
