@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "bun run --watch src/index.ts | pino-pretty",
-		"build": "bun build src/index.ts --compile --minify --sourcemap --outfile ../../out/worker/app",
+		"build": "bun build src/index.ts --compile --minify --external cpu-features --outfile ../../out/worker/app",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
