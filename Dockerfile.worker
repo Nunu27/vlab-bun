@@ -51,6 +51,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=worker-builder /app/out/worker/app /app/app
-COPY --from=clab-downloader /containerlab /usr/local/bin/containerlab
+COPY --from=clab-downloader /containerlab /app/containerlab
 
 ENTRYPOINT ["/app/app"]

@@ -5,17 +5,16 @@ import type {
 } from "@vlab/clab";
 import Containerlab from "@vlab/clab";
 import type { LabConfigSchema, LabLinkSchema } from "@vlab/grpc";
-import type { DeviceKind } from "@vlab/shared/enums";
 import { toKebabCase } from "@vlab/shared/utils";
 import env from "../env";
 import { stopLabEvaluation } from "./evaluator";
 
 const clab = new Containerlab({
-	cliPath: "containerlab",
-	topologiesPath: "/var/lib/vlab/topologies",
+	cliPath: env.CLAB_CLI_PATH,
+	topologiesPath: env.CLAB_TOPOLOGIES_PATH,
 });
 
-const startupExecs: Partial<Record<DeviceKind, string[]>> = {
+const startupExecs: Partial<Record<string, string[]>> = {
 	linux: [
 		"ip route del default",
 		`ip route add ${env.GUACD_IP} dev eth0`,
@@ -73,7 +72,7 @@ export async function deployLab(
 			"auto-remove": true,
 			stages: {
 				configure: {
-					exec: startupExecs[rest.kind as DeviceKind]?.map((command) => ({
+					exec: startupExecs[rest.kind]?.map((command) => ({
 						command,
 						target: "container",
 						phase: "on-exit",
@@ -110,4 +109,8 @@ export async function destroyLab(sessionId: string) {
 	return clab.destroy(sessionId);
 }
 
-export default { deployLab, destroyLab };
+export async function checkPrerequisites() {
+	return clab.checkPrerequisites();
+}
+
+export default { deployLab, destroyLab, checkPrerequisites };

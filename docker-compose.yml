@@ -42,8 +42,11 @@ services:
       - WORKER_ID={{.Node.ID}}
       - MANAGER_GRPC_URL=http://manager:50051
       - GUACD_HOST=guacd
+      - CLAB_CLI_PATH=/app/containerlab
+      - CLAB_TOPOLOGIES_PATH=/app/lab
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - vlab-topologies:/app/lab
     networks:
       - vlab-network
       - clab-mgmt
@@ -63,3 +66,6 @@ services:
         condition: any
       labels:
         - "app.vlab.component=guacd"
+
+volumes:
+  vlab-topologies:

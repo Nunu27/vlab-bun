@@ -27,6 +27,9 @@ const EnvSchema = t.Object({
 	GUACD_HOST: t.String(),
 	// GUACD_IP will be automatically inferred from GUACD_HOST if not provided
 	GUACD_IP: t.String({ default: "" }),
+
+	CLAB_CLI_PATH: t.String({ default: "containerlab" }),
+	CLAB_TOPOLOGIES_PATH: t.String({ default: "/var/lib/vlab/topologies" }),
 });
 
 const validator = TypeCompiler.Compile(EnvSchema);
