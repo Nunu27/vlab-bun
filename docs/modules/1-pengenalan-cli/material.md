@@ -32,6 +32,9 @@ Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Fak
 | `pwd` | (*Print Working Directory*) Mengecek lokasi direktori saat ini. |
 | `ls -la` | Menampilkan file detail & hidden files. |
 | `uname -a` | Menampilkan info OS & Kernel. |
+| `useradd <nama>` | Membuat akun pengguna baru pada sistem. |
+| `systemctl start <service>` | Menyalakan (start) sebuah layanan daemon (misal: systemd-networkd). |
+| `systemctl status <service>` | Melihat status dari sebuah layanan daemon. |
 
 ### MikroTik RouterOS
 
@@ -42,3 +45,5 @@ Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Fak
 | `/` | Kembali ke root menu. |
 | `system resource print` | Mengecek statistik sistem (CPU, RAM). |
 | `ip address print` | Mengecek daftar IP router. |
+| `system identity set name=<name>` | Mengubah nama/identitas dari router. |
+| `user add name=<nama>` | Menambahkan akun pengguna baru. |
