@@ -32,6 +32,7 @@ export const createPaginator = <
 		keyof TRelationalSchema[TEntity]["columns"]
 	> = [],
 >(
+	// biome-ignore lint/suspicious/noExplicitAny: Drizzle requires any for generic database instances
 	db: PgDatabase<any, TFullSchema, any>,
 	entity: TEntity,
 	config?: {
