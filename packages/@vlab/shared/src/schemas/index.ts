@@ -3,7 +3,7 @@ export * from "./auth";
 export * from "./department";
 export * from "./device-category";
 export * from "./device-template";
-export * from "./file";
+
 export * from "./instructor";
 export * from "./lab";
 export * from "./student";
