@@ -25,4 +25,4 @@ The Evaluator currently supports several types of checks (defined in `@vlab/eval
 - **RIP Checks:** Verifies RIP Instances and Interface Templates (MikroTik).
 - **BGP Checks:** Verifies BGP Instances (MikroTik).
 
-*(Note: Instructors can combine multiple checks into a single Rule to create complex grading scenarios).*
+*(Note: Instructors can use multiple checks to create complex grading scenarios).*

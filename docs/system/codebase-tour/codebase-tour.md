@@ -4,8 +4,6 @@ Welcome to the vLab codebase! This document serves as a guided tour for new deve
 
 vLab is a monorepo utilizing **Bun** for package management and script execution. The codebase is divided into two primary directories: `apps/` for deployable applications, and `packages/` for shared libraries and configuration.
 
-*(Please refer to the `monorepo-structure.excalidraw` diagram in this directory for a visual map of the apps and packages).*
-
 ---
 
 ## 1. Applications (`apps/`)
