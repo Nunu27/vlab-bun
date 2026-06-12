@@ -8,7 +8,6 @@ import GuacamoleLite, {
 	type Callbacks,
 	type ClientOptions,
 	type ConnectionToken,
-	type GuacdOptions,
 	type RDPSettings,
 	type SSHSettings,
 	type TelnetSettings,
@@ -23,11 +22,6 @@ const SESSION_TTL_SECONDS = 24 * 60 * 60; // 1 day
 const websocketOptions: WSServerOptions = {
 	port: env.DISPLAY_PORT,
 	host: "0.0.0.0",
-};
-
-const guacdOptions: GuacdOptions = {
-	host: env.GUACD_HOST,
-	port: env.GUACD_PORT,
 };
 
 const clientOptions = {
@@ -136,12 +130,7 @@ function initGuacamole(server?: Server) {
 
 	const options = server ? { server } : websocketOptions;
 
-	guacServer = new GuacamoleLite(
-		options,
-		guacdOptions,
-		clientOptions,
-		callbacks,
-	);
+	guacServer = new GuacamoleLite(options, {}, clientOptions, callbacks);
 
 	guacServer.on("open", (clientConnection) => {
 		logger.debug(

@@ -13,10 +13,12 @@ services:
   manager:
     image: ghcr.io/nunu27/vlab-bun-manager:latest
     env_file:
-      - .env
+      - .env.manager
     environment:
       - NODE_ENV=production
       - MANAGER_ID={{.Node.ID}}
+      - GUACD_HOST=guacd
+      - GUACD_PORT=4822
     ports:
       - "80:80"
       - "443:443"
@@ -34,11 +36,12 @@ services:
   worker:
     image: ghcr.io/nunu27/vlab-bun-worker:latest
     env_file:
-      - .env
+      - .env.worker
     environment:
       - NODE_ENV=production
       - WORKER_ID={{.Node.ID}}
       - MANAGER_GRPC_URL=http://manager:50051
+      - GUACD_HOST=guacd
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
