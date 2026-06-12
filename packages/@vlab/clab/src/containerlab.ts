@@ -1,11 +1,15 @@
-import { mkdir, rm } from "node:fs/promises";
+import { constants } from "node:fs";
+import { access, mkdir, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import { buildDeployArgs, buildDestroyArgs } from "./args";
 import {
 	type ContainerlabCommandRunner,
 	commandRunner,
 } from "./command-runner";
-import { ContainerlabCommandError } from "./errors";
+import {
+	ContainerlabCliNotFoundError,
+	ContainerlabCommandError,
+} from "./errors";
 import { parseInspectOutput } from "./inspect";
 import { validateLabId } from "./lab-id";
 import type {
@@ -43,6 +47,33 @@ export class Containerlab {
 			});
 
 		await this.#readyPromise;
+	}
+
+	async checkPrerequisites(): Promise<void> {
+		try {
+			await this.#run(["version"]);
+		} catch (error) {
+			if (error instanceof ContainerlabCliNotFoundError) {
+				throw new Error(
+					`Containerlab CLI not found at '${this.cliPath}'. Please ensure it is installed and accessible.`,
+					{ cause: error },
+				);
+			}
+			throw new Error(
+				`Failed to execute Containerlab CLI. Details: ${error instanceof Error ? error.message : error}`,
+				{ cause: error },
+			);
+		}
+
+		try {
+			await mkdir(this.topologiesPath, { recursive: true });
+			await access(this.topologiesPath, constants.R_OK | constants.W_OK);
+		} catch (error) {
+			throw new Error(
+				`Cannot access or create topologies directory at '${this.topologiesPath}'. Please check permissions. Details: ${error instanceof Error ? error.message : error}`,
+				{ cause: error },
+			);
+		}
 	}
 
 	async deploy(
