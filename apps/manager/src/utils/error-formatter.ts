@@ -65,12 +65,12 @@ const dbErrorHandlers = {
 } as const;
 
 export function formatDBError(error: SQL.PostgresError) {
-	const { code } = error;
-	if (!code || !(code in dbErrorHandlers)) {
+	const { errno } = error;
+	if (!errno || !(errno in dbErrorHandlers)) {
 		return null;
 	}
 
-	return dbErrorHandlers[code as keyof typeof dbErrorHandlers](error);
+	return dbErrorHandlers[errno as keyof typeof dbErrorHandlers](error);
 }
 
 function getValidationMessage(error: ValidationError["all"][number]) {
