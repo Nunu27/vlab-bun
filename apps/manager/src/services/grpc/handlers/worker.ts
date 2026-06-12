@@ -122,6 +122,12 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		if (updatedAt?.getTime() === createdAt.getTime()) {
 			ws.server.emit("admin:worker:new", undefined, worker);
+		} else {
+			ws.server.emit("admin:worker:status", undefined, {
+				id: worker.id,
+				status: "online",
+				lastSeen: worker.lastSeen,
+			});
 		}
 
 		logger.info(`Worker ${workerId} connected`);

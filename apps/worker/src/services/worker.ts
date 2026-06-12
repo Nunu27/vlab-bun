@@ -46,8 +46,7 @@ export async function listenToCommands(
 			try {
 				if (req.payload) {
 					const message = decode(req.payload) as GrpcRequestMessage;
-					const requestId =
-						message.requestId || Math.random().toString(36).slice(2);
+					const requestId = message.requestId;
 
 					logger.info(
 						{ requestId, name: message.name },
