@@ -5,6 +5,7 @@ import type {
 import { createSelectors, type Store } from "@jawit/zustand-helper";
 import { errorHandler } from "@web/helper/error";
 import api from "@web/lib/api";
+import { queryClient } from "@web/lib/query";
 import { create } from "zustand";
 
 type LoginData = ExtractTreatyParams<typeof api.auth.login.post>;
@@ -44,6 +45,7 @@ const store = create<AuthStore>()((set, get) => ({
 			await errorHandler(api.auth.logout.post(), {
 				callback: async ({ data }) => {
 					await cookieStore.delete("session");
+					queryClient.clear();
 					set({ user: null, redirectUrl: data });
 				},
 			});
