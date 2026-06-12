@@ -45,16 +45,18 @@ export async function sendCommandToWorker<
 			data: ExtractReplyType<GrpcRpcRoutes[K]["replies"][R]>,
 		) => void | Promise<void>;
 	},
-): Promise<boolean> {
+): Promise<void> {
 	const client = connectedWorkers.get(workerId);
 	if (!client) {
 		throw new Error(`Worker ${workerId} is not connected to this manager!`);
 	}
 
-	return new Promise((resolve) => {
-		client.rpc(command, undefined as never, payload, {
-			response: () => resolve(true),
+	return new Promise((resolve, reject) => {
+		// @ts-expect-error: TS intersection of mapped types and spreads is too complex
+		client.rpc(command, undefined, payload, {
 			...replies,
+			response: () => resolve(),
+			error: (err: string) => reject(new Error(err)),
 		});
 	});
 }
@@ -166,8 +168,17 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 						| GrpcDataMessage;
 
 					if ("data" in msg) {
+						logger.debug(
+							{ ...msg, workerId },
+							"Received data message from worker",
+						);
+
 						client.handleData(msg);
 					} else {
+						logger.debug(
+							{ ...msg, workerId },
+							"Received reply message from worker",
+						);
 						client.handleReply(msg);
 					}
 				}

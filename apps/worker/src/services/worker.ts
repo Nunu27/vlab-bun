@@ -46,14 +46,15 @@ export async function listenToCommands(
 			try {
 				if (req.payload) {
 					const message = decode(req.payload) as GrpcRequestMessage;
-					const requestId = Math.random().toString(36).slice(2);
+					const requestId =
+						message.requestId || Math.random().toString(36).slice(2);
 
 					logger.info(
 						{ requestId, name: message.name },
 						"Received command from Manager",
 					);
 
-					server.handle("manager", requestId, message).catch((err) => {
+					server.handle("manager", message).catch((err) => {
 						logger.error(
 							{ err },
 							`[RPC] Unhandled error in command ${requestId}`,

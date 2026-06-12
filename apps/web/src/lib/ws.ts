@@ -41,11 +41,7 @@ useAuthStore.subscribe((state) => {
 const ws = appRouter.buildClient({
 	logger: console,
 	send: (message) => {
-		return new Promise<string>((resolve) => {
-			socket.emit("rpc", message, (requestId) => {
-				resolve(requestId);
-			});
-		});
+		socket.emit("rpc", message);
 	},
 });
 
