@@ -11,11 +11,19 @@ if (containers.length === 0) {
 
 for (const container of containers) {
 	try {
-		const ip =
-			await $`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${container}`.text();
-		const trimmedIp = ip.trim();
-		if (trimmedIp) {
-			console.log(`${container}: ${trimmedIp}`);
+		const output =
+			await $`docker inspect -f '{{json .NetworkSettings.Networks}}' ${container}`.text();
+		const networks = JSON.parse(output) as Record<
+			string,
+			{ IPAddress: string }
+		>;
+
+		const results = Object.entries(networks)
+			.map(([name, net]) => `${name} (${net.IPAddress})`)
+			.filter(Boolean);
+
+		if (results.length > 0) {
+			console.log(`${container}: ${results.join(", ")}`);
 		} else {
 			console.log(
 				`${container}: No IP found (container might be stopped or using host network)`,
