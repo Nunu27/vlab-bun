@@ -4,6 +4,7 @@ import { users } from "@manager/db/schema/auth";
 import auth, { sessions } from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
+import { getAffectedCount } from "@manager/utils/db";
 import { RequestWithId } from "@vlab/shared/schemas/common";
 import { and, eq } from "drizzle-orm";
 
@@ -12,9 +13,12 @@ export default createRouter()
 	.delete(
 		"/:id",
 		async ({ params: { id }, status, entity: { label, key } }) => {
-			const { rowCount } = await db
-				.delete(users)
-				.where(and(eq(users.id, id), eq(users.role, "student")));
+			const rowCount = await getAffectedCount(
+				db
+					.delete(users)
+					.where(and(eq(users.id, id), eq(users.role, "student")))
+					.$dynamic(),
+			);
 
 			if (rowCount) {
 				await cache.delete(`${key}:pagination:*`, `${key}:${id}`, `me:${id}`);

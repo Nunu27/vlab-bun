@@ -4,6 +4,7 @@ import { deviceTemplates } from "@manager/db/schema/device-template";
 import auth from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
+import { getAffectedCount } from "@manager/utils/db";
 import { RequestWithId } from "@vlab/shared/schemas/common";
 import { eq } from "drizzle-orm";
 
@@ -12,9 +13,9 @@ export default createRouter()
 	.delete(
 		"/:id",
 		async ({ params: { id }, status, entity: { label, key } }) => {
-			const { rowCount } = await db
-				.delete(deviceTemplates)
-				.where(eq(deviceTemplates.id, id));
+			const rowCount = await getAffectedCount(
+				db.delete(deviceTemplates).where(eq(deviceTemplates.id, id)).$dynamic(),
+			);
 
 			if (rowCount) {
 				await cache.delete(

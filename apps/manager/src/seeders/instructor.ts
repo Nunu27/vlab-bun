@@ -1,5 +1,6 @@
 import { instructors, users } from "@manager/db/schema/auth";
 import type { Transaction } from "@manager/types/db";
+import { getAffectedCount } from "@manager/utils/db";
 import type { Logger } from "pino";
 
 export default {
@@ -28,15 +29,18 @@ export default {
 			},
 		};
 
-		const { rowCount } = await tx
-			.insert(instructors)
-			.values(
-				insertedUsers.map((user) => ({
-					...user,
-					...instructorData[user.email as keyof typeof instructorData],
-				})),
-			)
-			.onConflictDoNothing();
+		const rowCount = await getAffectedCount(
+			tx
+				.insert(instructors)
+				.values(
+					insertedUsers.map((user) => ({
+						...user,
+						...instructorData[user.email as keyof typeof instructorData],
+					})),
+				)
+				.onConflictDoNothing()
+				.$dynamic(),
+		);
 
 		logger.info(`Seeded ${rowCount} instructor user(s)`);
 	},

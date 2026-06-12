@@ -4,6 +4,7 @@ import { studyPrograms } from "@manager/db/schema/auth";
 import auth from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
+import { getAffectedCount } from "@manager/utils/db";
 import { RequestWithId } from "@vlab/shared/schemas/common";
 import { UpdateStudyProgramRequest } from "@vlab/shared/schemas/study-program";
 import { eq } from "drizzle-orm";
@@ -13,10 +14,13 @@ export default createRouter()
 	.put(
 		"/:id",
 		async ({ params: { id }, body, status, entity: { label, key } }) => {
-			const { rowCount } = await db
-				.update(studyPrograms)
-				.set(body)
-				.where(eq(studyPrograms.id, id));
+			const rowCount = await getAffectedCount(
+				db
+					.update(studyPrograms)
+					.set(body)
+					.where(eq(studyPrograms.id, id))
+					.$dynamic(),
+			);
 
 			if (rowCount) {
 				await cache.delete(`${key}:pagination:*`, `${key}:${id}`);
