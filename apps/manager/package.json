@@ -8,7 +8,7 @@
 	"scripts": {
 		"dev": "bun run --watch src/index.ts serve | pino-pretty",
 		"seed": "bun run src/index.ts seed | pino-pretty",
-		"build": "bun build src/index.ts --compile --minify --sourcemap --outfile ../../out/manager/app && cp -r migrations ../../out/manager/migrations",
+		"build": "bun build src/index.ts --compile --minify --outfile ../../out/manager/app && cp -r migrations ../../out/manager/migrations",
 		"typecheck": "tsc --noEmit",
 		"drizzle:generate": "drizzle-kit generate",
 		"drizzle:migrate": "drizzle-kit migrate",
@@ -39,7 +39,6 @@
 		"guacamole-lite": "^1.2.0",
 		"ioredis": "^5.4.1",
 		"nice-grpc": "^2.1.10",
-		"node-pty": "^1.0.0",
 		"pino": "^10.3.1",
 		"s3mini": "^0.9.2",
 		"socket.io": "^4.8.3",
