@@ -50,60 +50,73 @@ type InterfaceEntry = DeviceTemplateInterface & {
 	id?: string;
 };
 
-const SortableInterfaceRow = withFieldGroup({
-	defaultValues: {} as InterfaceEntry,
-	props: {
-		index: 0,
-		onDelete: () => {},
-	},
-	render: function Render({ group, index, onDelete }) {
-		const { attributes, listeners, setNodeRef, transform, isDragging } =
-			useSortable({ id: index });
+function SortableInterfaceRow({
+	group,
+	id,
+	index,
+	onDelete,
+}: {
+	// biome-ignore lint/suspicious/noExplicitAny: generic form group
+	group: any;
+	id: string;
+	index: number;
+	onDelete: () => void;
+}) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id });
 
-		const style = {
-			transform: CSS.Transform.toString(transform),
-		};
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	};
 
-		return (
-			<TableRow
-				ref={setNodeRef}
-				style={style}
-				className={cn(isDragging && "opacity-50")}
-			>
-				<TableCell className="w-12 border-r text-center">
-					<button
-						type="button"
-						className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
-						{...attributes}
-						{...listeners}
-					>
-						<GripVerticalIcon className="size-5" />
-					</button>
-				</TableCell>
-				<TableCell className="border-r">
-					<group.AppField name="name">
-						{(field) => <field.TextField />}
+	return (
+		<TableRow
+			ref={setNodeRef}
+			style={style}
+			className={cn(isDragging && "opacity-50")}
+		>
+			<TableCell className="w-12 border-r text-center">
+				<button
+					type="button"
+					className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+					{...attributes}
+					{...listeners}
+				>
+					<GripVerticalIcon className="size-5" />
+				</button>
+			</TableCell>
+			<TableCell className="border-r">
+				<group.AppField name={`interfaces[${index}].name`}>
+					{/* biome-ignore lint/suspicious/noExplicitAny: generic form field */}
+					{(field: any) => <field.TextField />}
+				</group.AppField>
+			</TableCell>
+			<TableCell className="w-24 border-r pr-2 text-center align-middle [&:has([role=checkbox])]:pr-2">
+				<div className="flex w-full items-center justify-center *:data-[slot=field]:w-auto *:data-[slot=field]:justify-center">
+					<group.AppField name={`interfaces[${index}].configurable`}>
+						{/* biome-ignore lint/suspicious/noExplicitAny: generic form field */}
+						{(field: any) => <field.CheckboxField />}
 					</group.AppField>
-				</TableCell>
-				<TableCell className="w-24 border-r pr-2 text-center align-middle [&:has([role=checkbox])]:pr-2">
-					<div className="flex w-full items-center justify-center *:data-[slot=field]:w-auto *:data-[slot=field]:justify-center">
-						<group.AppField name="configurable">
-							{(field) => <field.CheckboxField />}
-						</group.AppField>
-					</div>
-				</TableCell>
-				<TableCell className="w-16 text-center">
-					<ActionButton
-						icon={Trash2Icon}
-						tooltip="Delete"
-						variant="destructive"
-						onClick={onDelete}
-					/>
-				</TableCell>
-			</TableRow>
-		);
-	},
-});
+				</div>
+			</TableCell>
+			<TableCell className="w-16 text-center">
+				<ActionButton
+					icon={Trash2Icon}
+					tooltip="Delete"
+					variant="destructive"
+					onClick={onDelete}
+				/>
+			</TableCell>
+		</TableRow>
+	);
+}
 
 export const DeviceNetworkInterfacesForm = withFieldGroup({
 	defaultValues: {
@@ -126,7 +139,17 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
 			const { active, over } = event;
 
 			if (over && active.id !== over.id) {
-				group.moveFieldValues("interfaces", Number(active.id), Number(over.id));
+				const values = group.getFieldValue("interfaces");
+				const oldIndex = values.findIndex(
+					(i, index) => i.id === active.id || String(index) === active.id,
+				);
+				const newIndex = values.findIndex(
+					(i, index) => i.id === over.id || String(index) === over.id,
+				);
+
+				if (oldIndex !== -1 && newIndex !== -1) {
+					group.moveFieldValues("interfaces", oldIndex, newIndex);
+				}
 			}
 		};
 
@@ -155,7 +178,9 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
 									<group.Field name="interfaces" mode="array">
 										{(field) => (
 											<SortableContext
-												items={field.state.value.map((_, i) => i)}
+												items={field.state.value.map(
+													(iface, i) => (iface.id as string) || String(i),
+												)}
 												strategy={verticalListSortingStrategy}
 											>
 												{field.state.value.map((iface, index) => {
@@ -168,14 +193,10 @@ export const DeviceNetworkInterfacesForm = withFieldGroup({
 
 													return (
 														<SortableInterfaceRow
-															key={iface.id}
+															key={iface.id || index}
+															id={(iface.id as string) || String(index)}
 															index={index}
-															form={group}
-															fields={{
-																id: `interfaces[${index}].id`,
-																name: `interfaces[${index}].name`,
-																configurable: `interfaces[${index}].configurable`,
-															}}
+															group={group}
 															onDelete={() => {
 																field.removeValue(index);
 															}}
