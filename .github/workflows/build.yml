@@ -4,6 +4,15 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'docs/**'
+      - 'scripts/**'
+      - '**.md'
+      - 'docker-compose.yml'
+      - '.agents/**'
+      - '.devtool/**'
+      - '.gitignore'
+      - '.dockerignore'
 
 env:
   REGISTRY: ghcr.io
