@@ -5,6 +5,7 @@ import { labAttachments, labs } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
+import { getAffectedCount } from "@manager/utils/db";
 import { RequestWithId } from "@vlab/shared/schemas/common";
 import { LabRequestSchema } from "@vlab/shared/schemas/lab";
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
@@ -26,10 +27,13 @@ export default createRouter()
 			const { attachments, date, ...labData } = body;
 
 			const updated = await db.transaction(async (tx) => {
-				const { rowCount } = await tx
-					.update(labs)
-					.set({ ...labData, startAt: date.from, endAt: date.to })
-					.where(and(eq(labs.id, id), eq(labs.instructorId, userId)));
+				const rowCount = await getAffectedCount(
+					tx
+						.update(labs)
+						.set({ ...labData, startAt: date.from, endAt: date.to })
+						.where(and(eq(labs.id, id), eq(labs.instructorId, userId)))
+						.$dynamic(),
+				);
 				if (!rowCount) return false;
 
 				const attachmentFiles = attachments.map(({ file }) => file);
