@@ -134,6 +134,19 @@ const BGPInstanceSchema = t.Array(
 	}),
 );
 
+const SystemIdentitySchema = t.Array(
+	t.Object({
+		name: t.String(),
+	}),
+);
+
+const UserSchema = t.Array(
+	t.Object({
+		name: t.String(),
+		group: t.String(),
+	}),
+);
+
 export default new EvaluationHandler("mikrotik")
 	.kinds(["mikrotik_ros"])
 	.withContext(
@@ -750,5 +763,87 @@ export default new EvaluationHandler("mikrotik")
 					compareFlag(flags, "I", instance.inactive)
 				);
 			});
+		},
+	})
+	// System Identity
+	.addSource({
+		id: "system-identity",
+		data: SystemIdentitySchema,
+		listen: async ({ client }, notify) => {
+			const list: typeof SystemIdentitySchema.static = await client.runQuery(
+				"/system/identity/print",
+			);
+
+			const listener = await client.stream("/system/identity/listen");
+
+			listener.on("data", (data) => {
+				list[0] = data;
+				notify(list);
+			});
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/system/identity/print");
+		},
+	})
+	.addCheck({
+		id: "system-identity",
+		name: "System Identity",
+		text: "Should have identity {name}",
+		source: "system-identity",
+		params: {
+			name: t.String({
+				title: "Identity Name",
+			}),
+		},
+		handler: (_, params, data) => {
+			return data.length > 0 && data[0].name === params.name;
+		},
+	})
+	// Users
+	.addSource({
+		id: "users",
+		data: UserSchema,
+		listen: async ({ client }, notify) => {
+			const list: typeof UserSchema.static =
+				await client.runQuery("/user/print");
+
+			const listener = await client.stream("/user/listen");
+
+			listener.on("data", (data) => {
+				const index = list.findIndex((item) => item.name === data.name);
+				const isDead = data[".dead"] === "true";
+
+				if (index === -1) {
+					if (isDead) return;
+					list.push(data);
+				} else if (isDead) {
+					removeItemFromArrayByIndex(list, index);
+				} else {
+					list[index] = data;
+				}
+
+				notify(list);
+			});
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/user/print");
+		},
+	})
+	.addCheck({
+		id: "user-exist",
+		name: "User Exist",
+		text: "Should have user {username}",
+		source: "users",
+		params: {
+			username: t.String({
+				title: "Username",
+			}),
+		},
+		handler: (_, params, data) => {
+			return data.some((user) => user.name === params.username);
 		},
 	});
