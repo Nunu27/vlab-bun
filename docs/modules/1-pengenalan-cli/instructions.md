@@ -1,6 +1,6 @@
 ### A. Skenario & Topologi
 
-Pada lab pengenalan ini, Anda diberikan akses ke dua jenis perangkat: sebuah klien berbasis Linux (**PC1**) dan sebuah router MikroTik (**R1**). Tugas Anda adalah mengeksplorasi antarmuka *Command Line Interface* (CLI) pada masing-masing perangkat untuk membiasakan diri dengan lingkungan kerjanya.
+Pada lab pengenalan ini, Anda diberikan akses ke dua jenis perangkat: sebuah klien berbasis Linux (**PC1**) dan sebuah router MikroTik (**R1**). Tugas Anda adalah mengeksplorasi antarmuka *Command Line Interface* (CLI) pada masing-masing perangkat untuk membiasakan diri dengan lingkungan kerjanya, dan melakukan sedikit konfigurasi dasar.
 
 
 
@@ -20,3 +20,9 @@ Pada lab pengenalan ini, Anda diberikan akses ke dua jenis perangkat: sebuah kli
 4. Periksa daftar IP yang terpasang pada router dengan perintah `print`.
 5. Kembali ke menu utama (root) dengan mengeksekusi perintah `/`.
 6. Lihat statistik beban CPU, penggunaan memori (RAM), dan arsitektur *board* router dengan perintah `system resource print`.
+
+#### Tahap III: Konfigurasi Dasar
+1. Pada **R1**, ubah identitas (nama) router menjadi `R1` dengan mengeksekusi perintah `/system identity set name=R1`.
+2. Pada **R1**, buat pengguna baru bernama `siswa` dengan hak akses baca menggunakan perintah `/user add name=siswa password=123 group=read`.
+3. Pada **PC1**, nyalakan layanan manajemen jaringan bawaan dengan mengeksekusi perintah `systemctl start systemd-networkd`.
+4. Pada **PC1**, buat pengguna baru bernama `siswa` dengan mengeksekusi perintah `useradd siswa`.

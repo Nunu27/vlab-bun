@@ -7,3 +7,4 @@ Modul ini memberikan pemahaman mendasar mengenai penggunaan *Command Line Interf
 - Melakukan navigasi struktur direktori dan hierarki menu pada CLI.
 - Memanfaatkan fitur bantuan (*help system*) dan *autocomplete* untuk mempercepat eksekusi perintah.
 - Mengekstrak informasi dasar sistem dan identitas pengguna melalui baris perintah.
+- Melakukan modifikasi konfigurasi dasar seperti manajemen pengguna, layanan Linux, dan identitas RouterOS.
