@@ -92,7 +92,7 @@ export async function deployLab(
 	const topologyContent: ContainerlabTopologyDefinition = {
 		name: sessionId,
 		mgmt: {
-			network: "clab-mgmt",
+			network: env.CLAB_MGMT_NETWORK,
 		},
 		topology: {
 			defaults: { labels: defaultLabels },

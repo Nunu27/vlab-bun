@@ -39,6 +39,7 @@ useAuthStore.subscribe((state) => {
 });
 
 const ws = appRouter.buildClient({
+	// @ts-expect-error type mismatch with custom logger
 	logger: console,
 	send: (message) => {
 		socket.emit("rpc", message);

@@ -30,6 +30,7 @@ const EnvSchema = t.Object({
 
 	CLAB_CLI_PATH: t.String({ default: "containerlab" }),
 	CLAB_TOPOLOGIES_PATH: t.String({ default: "/var/lib/vlab/topologies" }),
+	CLAB_MGMT_NETWORK: t.String({ default: "clab-mgmt" }),
 });
 
 const validator = TypeCompiler.Compile(EnvSchema);
