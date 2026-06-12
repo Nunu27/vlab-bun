@@ -11,9 +11,6 @@ import appRouter, {
 import { type DefaultEventsMap, Server } from "socket.io";
 import parser from "socket.io-msgpack-parser";
 
-const pubClient = redis.client.duplicate();
-const subClient = redis.client.duplicate();
-
 const io = new Server<
 	ClientToServerEvents,
 	ServerToClientEvents,
@@ -21,7 +18,7 @@ const io = new Server<
 	WSContext
 >({
 	parser,
-	adapter: createAdapter(pubClient, subClient),
+	adapter: createAdapter(redis.client, redis.subscriber),
 });
 
 const engine = new Engine({ path: "/ws" });
@@ -33,14 +30,13 @@ const server = appRouter.buildServer<WSContext>({
 	logger,
 	topic: {
 		subscribe: (connId, ...topics) => {
-			const socket = io.sockets.sockets.get(connId);
-			socket?.join(topics);
+			io.sockets.sockets.get(connId)?.join(topics);
 		},
 		unsubscribe: (connId, ...topics) => {
 			const socket = io.sockets.sockets.get(connId);
-			if (socket) {
-				for (const t of topics) socket.leave(t);
-			}
+			if (!socket) return;
+
+			for (const t of topics) socket.leave(t);
 		},
 	},
 	emit: (topic, message) => io.to(topic).emit("data", message),
