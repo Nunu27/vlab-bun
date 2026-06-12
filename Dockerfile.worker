@@ -1,5 +1,35 @@
 # syntax=docker/dockerfile:1.7-labs
 
+ARG CLAB_VERSION=0.75.0
+
+# --- Containerlab Downloader ---
+FROM --platform=$BUILDPLATFORM alpine:3.20 AS clab-downloader
+ARG CLAB_VERSION
+ARG TARGETARCH
+
+RUN apk add --no-cache ca-certificates curl tar
+
+WORKDIR /tmp/containerlab
+
+RUN set -eux; \
+	arch="${TARGETARCH:-}"; \
+	if [ -z "$arch" ]; then \
+		arch="$(uname -m)"; \
+	fi; \
+	case "$arch" in \
+		amd64|x86_64) clab_arch="amd64" ;; \
+		arm64|aarch64) clab_arch="arm64" ;; \
+		*) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
+	esac; \
+	artifact="containerlab_${CLAB_VERSION}_linux_${clab_arch}.tar.gz"; \
+	release_url="https://github.com/srl-labs/containerlab/releases/download/v${CLAB_VERSION}"; \
+	curl -fsSLO "${release_url}/${artifact}"; \
+	curl -fsSLO "${release_url}/checksums.txt"; \
+	grep " ${artifact}$" checksums.txt | sha256sum -c -; \
+	tar -xzf "${artifact}" containerlab; \
+	chmod +x containerlab; \
+	mv containerlab /containerlab
+
 # --- Base ---
 FROM oven/bun:1 AS base
 WORKDIR /app
@@ -21,5 +51,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=worker-builder /app/out/worker/app /app/app
+COPY --from=clab-downloader /containerlab /usr/local/bin/containerlab
 
 ENTRYPOINT ["/app/app"]
