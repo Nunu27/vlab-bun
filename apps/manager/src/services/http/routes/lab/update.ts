@@ -1,15 +1,14 @@
 import { failure, success } from "@jawit/common";
 import db from "@manager/db";
-import { files } from "@manager/db/schema";
-import { labAttachments, labs } from "@manager/db/schema/lab";
+import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { getAffectedCount } from "@manager/utils/db";
+import { extractEmbeddedFiles } from "@manager/utils/file";
 import { RequestWithId } from "@vlab/shared/schemas/common";
 import { LabRequestSchema } from "@vlab/shared/schemas/lab";
-import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { storageCleanUpJob } from "../file/cron";
+import { and, eq, notInArray } from "drizzle-orm";
 
 export default createRouter()
 	.use(auth)
@@ -44,7 +43,7 @@ export default createRouter()
 
 				const attachmentFiles = attachments.map(({ file }) => file);
 				const attachmentFilter = eq(labAttachments.labId, id);
-				const deletedFiles = await tx
+				await tx
 					.delete(labAttachments)
 					.where(
 						attachments.length
@@ -53,23 +52,10 @@ export default createRouter()
 									notInArray(labAttachments.file, attachmentFiles),
 								)
 							: attachmentFilter,
-					)
-					.returning({ file: labAttachments.file });
-
-				if (deletedFiles.length) {
-					await tx
-						.update(files)
-						.set({ usedBy: sql`${files.usedBy} - 1` })
-						.where(
-							inArray(
-								files.name,
-								deletedFiles.map(({ file }) => file),
-							),
-						);
-				}
+					);
 
 				if (attachments.length) {
-					const inserted = await tx
+					await tx
 						.insert(labAttachments)
 						.values(
 							attachments.map((attachment) => ({
@@ -77,27 +63,41 @@ export default createRouter()
 								labId: id,
 							})),
 						)
-						.onConflictDoNothing()
-						.returning({ file: labAttachments.file });
+						.onConflictDoNothing();
+				}
 
-					if (inserted.length) {
-						await tx
-							.update(files)
-							.set({ usedBy: sql`${files.usedBy} + 1` })
-							.where(
-								inArray(
-									files.name,
-									inserted.map(({ file }) => file),
-								),
-							);
-					}
+				const embeddedFiles = extractEmbeddedFiles(
+					labData.content,
+					labData.instructions,
+				);
+
+				await tx
+					.delete(labEmbeddedFiles)
+					.where(
+						embeddedFiles.length
+							? and(
+									eq(labEmbeddedFiles.labId, id),
+									notInArray(labEmbeddedFiles.file, embeddedFiles),
+								)
+							: eq(labEmbeddedFiles.labId, id),
+					);
+
+				if (embeddedFiles.length) {
+					await tx
+						.insert(labEmbeddedFiles)
+						.values(
+							embeddedFiles.map((file) => ({
+								labId: id,
+								file,
+							})),
+						)
+						.onConflictDoNothing();
 				}
 
 				return true;
 			});
 
 			if (updated) {
-				storageCleanUpJob.resume();
 				await cache.delete(`${key}:pagination:*`, `${key}:${id}`);
 
 				return success({ message: `${label} updated` });

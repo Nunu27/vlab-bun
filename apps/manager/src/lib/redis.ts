@@ -5,7 +5,10 @@ import baseLogger from "./logger";
 
 const patternRegex = /\*|\?|\[/;
 
-const client = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
+const client = new Redis(env.REDIS_URL, {
+	retryStrategy: (times) => Math.max(Math.min(Math.exp(times), 20000), 1000),
+	maxRetriesPerRequest: null,
+});
 const logger = baseLogger.child({ service: "redis" });
 
 client.on("connecting", () => {

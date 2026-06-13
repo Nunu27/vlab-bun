@@ -3,8 +3,7 @@ import db from "@manager/db";
 import { files } from "@manager/db/schema/file";
 import env from "@manager/env";
 import logger from "@manager/lib/logger";
-import type { Transaction } from "@manager/types/db";
-import { eq, inArray, sql } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { S3mini } from "s3mini";
 
 const storage = new S3mini({
@@ -17,18 +16,15 @@ const storage = new S3mini({
 export default storage;
 
 function getUniqueFilename(name: string, buffer: Buffer) {
-	const length = 8;
-
 	const hash = new Bun.CryptoHasher("sha256").update(buffer).digest();
 	const base64url = hash
 		.toString("base64")
 		.replace(/\+/g, "-")
 		.replace(/\//g, "_")
 		.replace(/=/g, "");
-	const shortHash = base64url.slice(0, length);
 	const ext = path.extname(name);
 
-	return `${shortHash}${ext}`;
+	return `${base64url}${ext}`;
 }
 
 export async function uploadFile(file: File) {
@@ -43,11 +39,10 @@ export async function uploadFile(file: File) {
 			.values({
 				id: newId,
 				name,
-				usedBy: 1,
 			})
 			.onConflictDoUpdate({
 				target: files.name,
-				set: { usedBy: sql`${files.usedBy} + 1` },
+				set: { updatedAt: new Date() },
 			})
 			.returning({ id: files.id });
 
@@ -63,24 +58,49 @@ export async function uploadFile(file: File) {
 	return { id, name };
 }
 
-export async function deleteFile(tx: Transaction, name: string) {
-	await tx
-		.update(files)
-		.set({ usedBy: sql`${files.usedBy} - 1` })
-		.where(eq(files.name, name));
-}
-
 export async function storageCleanup() {
 	await db.transaction(async (tx) => {
+		const cutoff = new Date(
+			Date.now() - 1000 * 60 * 60 * env.STORAGE_CLEANUP_WINDOW_HOURS,
+		);
+
+		const { labs, labAttachments, labEmbeddedFiles } = await import(
+			"@manager/db/schema/lab"
+		);
+		const { notExists, and, lt, isNotNull, eq, sql } = await import(
+			"drizzle-orm"
+		);
+
 		const filesToDelete = await tx.query.files.findMany({
 			columns: { name: true },
-			where: (files, { eq }) => eq(files.usedBy, 0),
+			where: (f) =>
+				and(
+					lt(sql`COALESCE(${f.updatedAt}, ${f.createdAt})`, cutoff),
+					notExists(
+						tx
+							.select()
+							.from(labs)
+							.where(and(isNotNull(labs.cover), eq(labs.cover, f.name))),
+					),
+					notExists(
+						tx
+							.select()
+							.from(labAttachments)
+							.where(eq(labAttachments.file, f.name)),
+					),
+					notExists(
+						tx
+							.select()
+							.from(labEmbeddedFiles)
+							.where(eq(labEmbeddedFiles.file, f.name)),
+					),
+				),
 		});
 
 		const names = filesToDelete.map((f) => f.name);
 		if (!names.length) return;
 
-		logger.info("Found %d unused files, deleting...", names.length);
+		logger.info("Found %d orphaned files, deleting...", names.length);
 		const statuses = await storage.deleteObjects(names);
 		const deleted = names.filter((_, i) => statuses[i]);
 
