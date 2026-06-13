@@ -1,6 +1,5 @@
 import { createRouter } from "@manager/services/http/plugins/system";
 
-import "./cron";
 import upload from "./upload";
 import view from "./view";
 

@@ -1,13 +1,11 @@
 import { success } from "@jawit/common";
 import db from "@manager/db";
-import { files } from "@manager/db/schema";
-import { labAttachments, labs } from "@manager/db/schema/lab";
+import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
+import { extractEmbeddedFiles } from "@manager/utils/file";
 import { LabRequestSchema } from "@vlab/shared/schemas/lab";
-import { inArray, sql } from "drizzle-orm";
-import { storageCleanUpJob } from "../file/cron";
 
 export default createRouter()
 	.use(auth)
@@ -34,21 +32,23 @@ export default createRouter()
 							labId: id,
 						})),
 					);
+				}
 
-					await tx
-						.update(files)
-						.set({ usedBy: sql`${files.usedBy} + 1` })
-						.where(
-							inArray(
-								files.name,
-								attachments.map(({ file }) => file),
-							),
-						);
+				const embeddedFiles = extractEmbeddedFiles(
+					labData.content,
+					labData.instructions,
+				);
+				if (embeddedFiles.length) {
+					await tx.insert(labEmbeddedFiles).values(
+						embeddedFiles.map((file) => ({
+							labId: id,
+							file,
+						})),
+					);
 				}
 
 				return id;
 			});
-			storageCleanUpJob.resume();
 			await cache.delete(`${key}:pagination:*`);
 
 			return success({ message: `${label} created`, data: { id } });

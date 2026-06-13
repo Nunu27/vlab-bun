@@ -10,7 +10,6 @@ import grpcServer from "./services/grpc";
 import guacamoleLite from "./services/guacamole-lite";
 import httpHandler from "./services/http";
 import { cache } from "./services/http/middlewares/caching";
-import { labSessionQueue, labSessionWorker } from "./services/queue";
 import ws from "./services/ws";
 
 import "./services/ws/routes";
@@ -34,8 +33,16 @@ async function shutdown() {
 
 	guacamoleLite.shutdown();
 
+	const {
+		labSessionWorker,
+		labSessionQueue,
+		storageCleanupQueue,
+		storageCleanupWorker,
+	} = await import("./services/queue");
 	await labSessionWorker.close();
 	await labSessionQueue.close();
+	await storageCleanupWorker.close();
+	await storageCleanupQueue.close();
 
 	await redis.client.quit();
 	await db.$client.end();
@@ -63,4 +70,9 @@ export async function startServer() {
 	const grpcPort = env.GRPC_PORT;
 	await grpcServer.listen(`0.0.0.0:${grpcPort}`);
 	logger.info(`gRPC Server running on 0.0.0.0:${grpcPort}`);
+
+	const { storageCleanupQueue } = await import("./services/queue");
+	await storageCleanupQueue.add("cleanup", undefined, {
+		repeat: { pattern: "0 * * * *" }, // Run every hour
+	});
 }

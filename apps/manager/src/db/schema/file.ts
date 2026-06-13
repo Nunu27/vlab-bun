@@ -1,4 +1,4 @@
-import { integer, pgTable, text, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { base } from "./base";
 
 export const files = pgTable(
@@ -6,7 +6,6 @@ export const files = pgTable(
 	{
 		...base,
 		name: text().unique().notNull(),
-		usedBy: integer().default(0).notNull(),
 	},
 	(t) => [uniqueIndex().on(t.name)],
 );
