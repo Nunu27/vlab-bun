@@ -92,6 +92,5 @@ export async function handleStopLabEvaluation(
 ) {
 	await sendCommandToWorker(workerId, "evaluator:stop", {
 		sessionId: payload.sessionId,
-		immediate: true,
 	});
 }

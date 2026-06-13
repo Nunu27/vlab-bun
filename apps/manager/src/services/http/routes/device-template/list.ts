@@ -19,6 +19,8 @@ export default createRouter()
 								icon: true,
 								interfaces: true,
 								kind: true,
+								resources: true,
+								connection: true,
 							},
 						},
 					},

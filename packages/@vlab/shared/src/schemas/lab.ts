@@ -14,6 +14,12 @@ export const LabDeviceNodeSchema = t.Intersect([
 		deviceId: t.String({ format: "uuid" }),
 		groupIds: t.Array(t.String({ format: "uuid" })),
 		resources: DeviceTemplateResourcesSchema,
+		credentials: t.Optional(
+			t.Object({
+				username: t.Optional(t.String()),
+				password: t.Optional(t.String()),
+			}),
+		),
 		edges: t.Record(t.String({ format: "uuid" }), NonEmptyString()),
 	}),
 ]);

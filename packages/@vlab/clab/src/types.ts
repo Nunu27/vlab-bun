@@ -48,14 +48,55 @@ export interface ContainerlabTopology extends ContainerlabUnknownFields {
 	links?: ContainerlabLinkDefinition[];
 }
 
+export interface ContainerlabNodeCredentials extends ContainerlabUnknownFields {
+	username?: string;
+	password?: string;
+}
+
+export interface ContainerlabNodeDns extends ContainerlabUnknownFields {
+	servers?: string[];
+	search?: string[];
+	options?: string[];
+}
+
+export interface ContainerlabNodeStageExec extends ContainerlabUnknownFields {
+	command?: string;
+	target?: string;
+	phase?: string;
+}
+
+export interface ContainerlabNodeStage extends ContainerlabUnknownFields {
+	"wait-for"?: string[];
+	exec?: (string | ContainerlabNodeStageExec)[];
+	"host-exec"?: (string | ContainerlabNodeStageExec)[];
+}
+
+export interface ContainerlabNodeCertificate extends ContainerlabUnknownFields {
+	issue?: boolean;
+	san?: string[];
+}
+
+export interface ContainerlabNodeHealthcheck extends ContainerlabUnknownFields {
+	test?: string[];
+	"start-period"?: number;
+	retries?: number;
+	interval?: number;
+	timeout?: number;
+}
+
 export interface ContainerlabNodeDefinition extends ContainerlabUnknownFields {
 	kind?: string;
 	type?: string;
 	image?: string;
+	"image-pull-policy"?: string;
+	"restart-policy"?: string;
 	group?: string;
 	labels?: Record<string, string>;
 	env?: Record<string, ContainerlabScalar>;
 	"env-files"?: string[];
+	credentials?: ContainerlabNodeCredentials;
+	user?: string;
+	entrypoint?: string;
 	binds?: string[];
 	ports?: string[];
 	cmd?: string;
@@ -63,15 +104,26 @@ export interface ContainerlabNodeDefinition extends ContainerlabUnknownFields {
 	"startup-config"?: string;
 	"startup-delay"?: number;
 	"enforce-startup-config"?: boolean;
+	"suppress-startup-config"?: boolean;
 	"auto-remove"?: boolean;
 	"network-mode"?: string;
 	"mgmt-ipv4"?: string;
 	"mgmt-ipv6"?: string;
+	dns?: ContainerlabNodeDns;
+	runtime?: string;
 	license?: string;
 	cpu?: number;
 	memory?: string;
 	"cpu-set"?: string;
+	"shm-size"?: string;
+	devices?: string[];
+	"cap-add"?: string[];
+	sysctls?: Record<string, string | number>;
 	ulimits?: Record<string, number | string>;
+	stages?: Record<string, ContainerlabNodeStage>;
+	certificate?: ContainerlabNodeCertificate;
+	healthcheck?: ContainerlabNodeHealthcheck;
+	aliases?: string[];
 }
 
 export type ContainerlabLinkDefinition =

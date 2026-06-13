@@ -1,10 +1,11 @@
 import type { Static } from "@sinclair/typebox";
 import type {
+	ContainerlabLinkDefinition,
 	ContainerlabNodeDefinition,
 	ContainerlabTopologyDefinition,
 } from "@vlab/clab";
 import Containerlab from "@vlab/clab";
-import type { LabConfigSchema, LabLinkSchema } from "@vlab/grpc";
+import type { LabConfigSchema } from "@vlab/grpc";
 import { toKebabCase } from "@vlab/shared/utils";
 import env from "../env";
 import { stopLabEvaluation } from "./evaluator";
@@ -66,8 +67,8 @@ export async function deployLab(
 
 		nodes[kebabName] = {
 			...rest,
-			cpu: resources.cpu,
-			memory: resources.memory,
+			cpu: resources.cpu ?? undefined,
+			memory: resources.memory ?? undefined,
 			labels,
 			"auto-remove": true,
 			stages: {
@@ -79,15 +80,16 @@ export async function deployLab(
 					})),
 				},
 			},
-		} as ContainerlabNodeDefinition;
+		};
 	}
 
-	const links = config.links?.map((link: Static<typeof LabLinkSchema>) => ({
-		endpoints: [
-			`${nodeNames[link.sourceId]}:${link.sourceInterface}`,
-			`${nodeNames[link.targetId]}:${link.targetInterface}`,
-		],
-	}));
+	const links: ContainerlabLinkDefinition[] =
+		config.links?.map((link) => ({
+			endpoints: [
+				`${nodeNames[link.sourceId]}:${link.sourceInterface}`,
+				`${nodeNames[link.targetId]}:${link.targetInterface}`,
+			],
+		})) ?? [];
 
 	const topologyContent: ContainerlabTopologyDefinition = {
 		name: sessionId,
@@ -97,7 +99,7 @@ export async function deployLab(
 		topology: {
 			defaults: { labels: defaultLabels },
 			nodes,
-			links: links as never,
+			links,
 		},
 	};
 

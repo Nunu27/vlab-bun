@@ -12,6 +12,7 @@ import { FieldGroup } from "@web/components/ui/field";
 import { useApiForm } from "@web/hooks/form/use-api-form";
 import { useModalState } from "@web/hooks/state/use-modal-state";
 import api from "@web/lib/api";
+import { useEffect } from "react";
 import { useDeviceCategoryModalStore } from "../../stores/device-category-modal-store";
 
 const validator = Compile(UpdateDeviceCategoryRequest);
@@ -39,9 +40,13 @@ export function EditDeviceCategoryModal() {
 		},
 	});
 
+	useEffect(() => {
+		if (!data) form.reset();
+	}, [data, form]);
+
 	return (
 		<Dialog open={open} onOpenChange={actions.update.close}>
-			<DialogContent>
+			<DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
 				<DialogHeader>
 					<DialogTitle>Edit Device Category</DialogTitle>
 					<DialogDescription>

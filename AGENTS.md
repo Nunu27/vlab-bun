@@ -44,14 +44,6 @@ We use the `kanban-markdown` extension for project management.
 - **Frontend**: React 19, Vite, Tailwind CSS v4, Zustand, TanStack Query/Router, Shadcn UI.
 - **Linting/Formatting**: **Biome** only — never ESLint or Prettier.
 
-### Environment Setup
-
-Because the agent runs commands in a non-interactive shell, custom binaries like `bun` or `rtk` may not be in the `PATH`. If you encounter a `command not found` error, try proactively look for the executable path on common places, for example below:
-
-```bash
-~/.local/bin/rtk ~/.bun/bin/bun run typecheck
-```
-
 ### RTK (Rust Token Killer)
 
 Always prefix shell commands with `rtk` to compress output and save tokens.
