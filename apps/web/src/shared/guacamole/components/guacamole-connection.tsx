@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useGuacamoleClient } from "../hooks/use-guacamole-client";
 import { useGuacamoleClipboard } from "../hooks/use-guacamole-clipboard";
 import { useGuacamoleKeyboard } from "../hooks/use-guacamole-keyboard";
@@ -52,10 +52,18 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 
 	useGuacamoleClipboard({ clientRef });
 
+	useEffect(() => {
+		if (state === "connected") {
+			containerRef.current?.focus();
+		}
+	}, [state]);
+
 	return (
 		<div className="relative h-full w-full overflow-hidden bg-gray-900 outline-none focus:outline-none focus-visible:outline-none">
 			<div
 				ref={containerRef}
+				// biome-ignore lint/a11y/noNoninteractiveTabindex: Guacamole requires a focusable container to capture keyboard events
+				tabIndex={0}
 				className="outline-none focus:outline-none focus-visible:outline-none"
 				style={{
 					width: "100%",
