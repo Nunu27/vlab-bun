@@ -9,7 +9,7 @@ import {
 import { formatTimeAgo } from "@web/helper/date";
 import type api from "@web/lib/api";
 import { cn } from "@web/lib/utils";
-import { Activity, Box, ServerIcon } from "lucide-react";
+import { Box, FlaskConicalIcon, ServerIcon } from "lucide-react";
 
 type WorkerData = ExtractTreatyData<
 	typeof api.dashboard.admin.get
@@ -88,15 +88,19 @@ export const workerColumns = [
 	}),
 	columnHelper.accessor("memoryUsagePercent", {
 		header: "MEMORY",
-		size: 150,
+		size: 180,
 		cell: (info) => {
 			const worker = info.row.original;
 			const isOffline = worker.status === "offline";
 			const memUsage = isOffline ? 0 : Number(worker.memoryUsagePercent);
+			const usedMem = (worker.memoryMB * memUsage) / 100;
 			return (
 				<div className="flex w-full flex-col gap-1.5 pr-4 xl:pr-8">
 					<div className="flex items-center justify-between text-muted-foreground text-xs">
-						<span>{formatMemory(worker.memoryMB)}</span>
+						<span>
+							{isOffline ? 0 : formatMemory(usedMem)} /{" "}
+							{formatMemory(worker.memoryMB)}
+						</span>
 						<span className="font-medium text-foreground">
 							{memUsage.toFixed(1)}%
 						</span>
@@ -116,15 +120,19 @@ export const workerColumns = [
 	}),
 	columnHelper.accessor("storageUsagePercent", {
 		header: "STORAGE",
-		size: 150,
+		size: 180,
 		cell: (info) => {
 			const worker = info.row.original;
 			const isOffline = worker.status === "offline";
 			const storageUsage = isOffline ? 0 : Number(worker.storageUsagePercent);
+			const usedStorage = (worker.storageMB * storageUsage) / 100;
 			return (
 				<div className="flex w-full flex-col gap-1.5 pr-4 xl:pr-8">
 					<div className="flex items-center justify-between text-muted-foreground text-xs">
-						<span>{formatMemory(worker.storageMB)}</span>
+						<span>
+							{isOffline ? 0 : formatMemory(usedStorage)} /{" "}
+							{formatMemory(worker.storageMB)}
+						</span>
 						<span className="font-medium text-foreground">
 							{storageUsage.toFixed(1)}%
 						</span>
@@ -156,7 +164,7 @@ export const workerColumns = [
 					<TooltipProvider delayDuration={100}>
 						<Tooltip>
 							<TooltipTrigger className="flex cursor-default items-center gap-1.5">
-								<Activity
+								<FlaskConicalIcon
 									className={cn(
 										"h-3.5 w-3.5",
 										!isOffline && "text-emerald-400",
