@@ -29,7 +29,7 @@ export const cache: CacheAdapter = {
 		await redis.del(...allKeys);
 	},
 	clear: async () => {
-		const deletedCount = await redis.delByPrefix(PREFIX);
+		const deletedCount = await redis.delByPattern(`${PREFIX}*`);
 		if (deletedCount) {
 			logger.debug(`Cleared ${deletedCount} cache entries.`);
 		}
