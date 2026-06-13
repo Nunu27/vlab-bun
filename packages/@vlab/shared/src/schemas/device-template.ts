@@ -5,8 +5,8 @@ import { NonEmptyString } from "./common";
 export const DeviceTemplateEnvSchema = t.Record(NonEmptyString(), t.String());
 
 export const DeviceTemplateResourcesSchema = t.Object({
-	cpu: t.Optional(t.Number()),
-	memory: t.Optional(t.String()),
+	cpu: t.Optional(t.Union([t.Number(), t.Null()])),
+	memory: t.Optional(t.Union([t.String(), t.Null()])),
 });
 
 export const DeviceTemplateConnectionSchema = t.Object({

@@ -44,22 +44,8 @@ export async function listenToCommands(
 		);
 		for await (const req of requestStream) {
 			try {
-				if (req.payload) {
-					const message = decode(req.payload) as GrpcRequestMessage;
-					const requestId = message.requestId;
-
-					logger.info(
-						{ requestId, name: message.name },
-						"Received command from Manager",
-					);
-
-					server.handle("manager", message).catch((err) => {
-						logger.error(
-							{ err },
-							`[RPC] Unhandled error in command ${requestId}`,
-						);
-					});
-				}
+				const message = decode(req.payload) as GrpcRequestMessage;
+				server.handle("manager", message);
 			} catch (err) {
 				logger.error({ err }, "Failed to parse or handle command");
 			}

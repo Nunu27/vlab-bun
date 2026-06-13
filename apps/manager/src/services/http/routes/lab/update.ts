@@ -30,7 +30,11 @@ export default createRouter()
 				const rowCount = await getAffectedCount(
 					tx
 						.update(labs)
-						.set({ ...labData, startAt: date.from, endAt: date.to })
+						.set({
+							...labData,
+							startAt: new Date(date.from),
+							endAt: new Date(date.to),
+						})
 						.where(and(eq(labs.id, id), eq(labs.instructorId, userId)))
 						.$dynamic(),
 				);

@@ -23,12 +23,20 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 	},
 );
 
+const ws = appRouter.buildClient({
+	logger: console,
+	send: (message) => {
+		socket.emit("rpc", message);
+	},
+});
+
 socket.on("connect_error", (err) => {
 	console.error("[WebSocket] Connection Error:", err.message);
 });
 
 socket.on("connect", () => {
 	console.log("[WebSocket] Connected");
+	ws.resubscribe();
 });
 
 useAuthStore.subscribe((state) => {
@@ -36,14 +44,6 @@ useAuthStore.subscribe((state) => {
 
 	if (user) socket.connect();
 	else socket.disconnect();
-});
-
-const ws = appRouter.buildClient({
-	// @ts-expect-error type mismatch with custom logger
-	logger: console,
-	send: (message) => {
-		socket.emit("rpc", message);
-	},
 });
 
 socket.on("data", (msg) => ws.handleData(msg));

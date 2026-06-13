@@ -1,32 +1,33 @@
-import { workerActions } from "@manager/services/actions";
+import redis from "@manager/lib/redis";
 import { getAvailableWorkerId } from "@manager/services/grpc";
+import { workerActions } from "@manager/services/worker-actions";
 import ws from "@manager/services/ws";
 
-const testLabWorkers = new Map<string, string>();
+const PREFIX = "test-lab-worker:";
 
-ws.server.onDispose("device-template:test", async (requestId) => {
-	const workerId = testLabWorkers.get(requestId);
-	if (workerId) {
-		await workerActions.dispatch("device:testCleanup", workerId, {
-			sessionId: requestId,
+ws.server.on(
+	"device-template:test",
+	async ({ connectionId, requestId, payload, context }) => {
+		const workerId = await getAvailableWorkerId();
+		await redis.client.set(`${PREFIX}${requestId}`, workerId);
+
+		await workerActions.dispatch("device:testInit", workerId, {
+			connectionId,
+			requestId,
+			userId: context.session.id,
+			data: payload,
 		});
-		testLabWorkers.delete(requestId);
-	}
-});
 
-ws.server.on("device-template:test", async (ctx) => {
-	const data = ctx.payload;
-	const executionId = ctx.requestId;
+		return ws.server.defer;
+	},
+);
 
-	const workerId = await getAvailableWorkerId();
-	testLabWorkers.set(executionId, workerId);
+ws.server.onDispose("device-template:test", async (_, requestId) => {
+	const workerId = await redis.client.get(`${PREFIX}${requestId}`);
+	if (!workerId) return;
 
-	await workerActions.dispatch("device:testInit", workerId, {
-		connectionId: ctx.connectionId,
-		requestId: ctx.requestId,
-		userId: ctx.context.session.id,
-		data,
+	await workerActions.dispatch("device:testCleanup", workerId, {
+		sessionId: requestId,
 	});
-
-	return ws.server.defer;
+	await redis.client.del(`${PREFIX}${requestId}`);
 });

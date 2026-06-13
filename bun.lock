@@ -258,7 +258,7 @@
         "nice-grpc": "^2.1.16",
         "nice-grpc-common": "^2.0.3",
         "protobufjs": "^8.6.1",
-        "waycast": "^1.1.11",
+        "waycast": "^1.1.14",
       },
       "devDependencies": {
         "@bufbuild/protobuf": "^2.12.0",
@@ -287,7 +287,7 @@
       "dependencies": {
         "@sinclair/typebox": "^0.34.49",
         "@vlab/shared": "workspace:*",
-        "waycast": "^1.1.11",
+        "waycast": "^1.1.14",
       },
       "devDependencies": {
         "@types/bun": "1.3.11",
@@ -2452,7 +2452,7 @@
 
     "w3c-xmlserializer": ["w3c-xmlserializer@5.0.0", "", { "dependencies": { "xml-name-validator": "^5.0.0" } }, "sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA=="],
 
-    "waycast": ["waycast@1.1.11", "", { "dependencies": { "@sinclair/typebox": "^0.34.49" }, "peerDependencies": { "typescript": ">=5" } }, "sha512-dNQ2th6E9FxzeVtul9XcrFEuTDCehqVrKPCdj7ar8AxbJpCqxQMbh65r1AvNNNNb32mth82HwIpt/ywmkCjn6A=="],
+    "waycast": ["waycast@1.1.14", "", { "dependencies": { "@sinclair/typebox": "^0.34.49" }, "peerDependencies": { "typescript": ">=5" } }, "sha512-TgMtGBH7XWrpiwMQ1ctWFT5MPfLTrbeaewW8O2evqwGzTMg8mDvBB2b020+WwM0+T6gLlyKia2L0KdK0Mfq6EQ=="],
 
     "web-streams-polyfill": ["web-streams-polyfill@3.3.3", "", {}, "sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw=="],
 

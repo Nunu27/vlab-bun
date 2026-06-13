@@ -9,8 +9,8 @@ export const LabNodeSchema = t.Object({
 	kind: t.String(),
 	env: t.Record(t.String(), t.String()),
 	resources: t.Object({
-		cpu: t.Optional(t.Number()),
-		memory: t.Optional(t.String()),
+		cpu: t.Optional(t.Union([t.Number(), t.Null()])),
+		memory: t.Optional(t.Union([t.String(), t.Null()])),
 	}),
 	deviceId: t.Optional(t.String()),
 });

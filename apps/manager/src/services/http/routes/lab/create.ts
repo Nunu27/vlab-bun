@@ -21,8 +21,8 @@ export default createRouter()
 					.insert(labs)
 					.values({
 						...labData,
-						startAt: date.from,
-						endAt: date.to,
+						startAt: new Date(date.from),
+						endAt: new Date(date.to),
 						instructorId: session.data.id,
 					})
 					.returning({ id: labs.id });
