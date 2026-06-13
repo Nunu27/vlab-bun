@@ -1,3 +1,4 @@
+import evaluator from "@vlab/evaluator";
 import type { RpcServer } from "../handlers/server";
 import { destroyLab } from "../lib/clab";
 import { clabMonitor } from "../lib/clab-monitor";
@@ -32,6 +33,7 @@ export function bindMonitorEvents(server: RpcServer) {
 
 	emitter.on("node-create", (node) => {
 		monitorState.activeNodes++;
+		if (node.health === "none") node.health = null;
 		server.emit("monitor:node-create", undefined, node);
 	});
 
@@ -41,11 +43,17 @@ export function bindMonitorEvents(server: RpcServer) {
 	});
 
 	emitter.on("node-health", (node, isTemp) => {
+		if (node.health === "none") node.health = null;
 		server.emit("monitor:node-health", undefined, { node, isTemp });
 	});
 
 	emitter.on("interface-update", (node, isTemp) => {
 		server.emit("monitor:interface-update", undefined, { node, isTemp });
+		evaluator.emitSource(
+			node.id,
+			"node-interface.interfaces-ip",
+			node.interfaces,
+		);
 	});
 
 	init();

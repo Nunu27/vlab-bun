@@ -1,4 +1,4 @@
-import { Type as t } from "@sinclair/typebox";
+import { type StaticDecode, Type as t } from "@sinclair/typebox";
 import { DateRange, NonEmptyString } from "./common";
 import { DeviceTemplateResourcesSchema } from "./device-template";
 
@@ -84,7 +84,7 @@ export const LabRequestSchema = t.Object({
 	),
 });
 
-export type LabRequest = typeof LabRequestSchema.static;
+export type LabRequest = StaticDecode<typeof LabRequestSchema>;
 export type LabDeviceNode = typeof LabDeviceNodeSchema.static;
 export type LabGroupNode = typeof LabGroupNodeSchema.static;
 export type LabNoteNode = typeof LabNoteNodeSchema.static;

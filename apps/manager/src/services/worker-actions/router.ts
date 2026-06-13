@@ -1,11 +1,15 @@
+import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import { connectedWorkers } from "@manager/services/grpc";
 import { encode } from "@msgpack/msgpack";
 
+const logger = baseLogger.child({ name: "worker-action" });
+
 type ActionHandler<P> = (workerId: string, payload: P) => Promise<void>;
 
 export class WorkerActionRouter<
-	T extends Record<string, unknown> = Record<string, never>,
+	// biome-ignore lint/complexity/noBannedTypes: We need {} for precise intersection
+	T extends Record<string, unknown> = {},
 > {
 	private handlers = new Map<string, ActionHandler<unknown>>();
 
@@ -23,15 +27,23 @@ export class WorkerActionRouter<
 		payload: T[K],
 	) {
 		if (connectedWorkers.has(workerId)) {
+			logger.debug(
+				{ actionName, workerId, payload },
+				`Executing action ${actionName} locally for worker ${workerId}`,
+			);
 			this.handlers
 				.get(actionName)?.(workerId, payload)
 				.catch((err) => {
-					console.error(
+					logger.error(
+						{ err },
 						`Worker action ${actionName} failed for ${workerId}:`,
-						err,
 					);
 				});
 		} else {
+			logger.debug(
+				{ actionName, workerId, payload },
+				`Forwarding action ${actionName} via Redis to worker ${workerId}`,
+			);
 			await redis.client.publish(
 				`vlab:worker-action:${workerId}`,
 				Buffer.from(encode({ actionName, payload })),
@@ -39,11 +51,15 @@ export class WorkerActionRouter<
 		}
 	}
 
-	async handleForwarded(
-		actionName: string,
+	async handleForwarded<K extends keyof T & string>(
+		actionName: K,
 		workerId: string,
-		payload: unknown,
+		payload: T[K],
 	) {
+		logger.debug(
+			{ actionName, workerId, payload },
+			`Executing forwarded action ${actionName} for worker ${workerId}`,
+		);
 		const handler = this.handlers.get(actionName);
 		if (handler && connectedWorkers.has(workerId)) {
 			await handler(workerId, payload);

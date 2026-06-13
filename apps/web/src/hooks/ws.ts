@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox";
 import type { WSDataRoutes, WSParamsOf, WSRpcRoutes } from "@vlab/ws";
 import ws, { socket } from "@web/lib/ws";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useWSConnectionState() {
 	const [connected, setConnected] = useState(socket.connected);
@@ -34,17 +34,21 @@ export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
 		options.initialData,
 	);
 
+	const paramsString = JSON.stringify(options.params);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: custom memoization
+	const memoizedParams = useMemo(() => options.params, [paramsString]);
+
 	useEffect(() => {
 		if (options.enabled === false) return;
 
-		const dispose = ws.onData(name as any, options.params as any, (newData) => {
-			setData(newData as any);
+		const dispose = ws.onData(name, memoizedParams as any, (newData) => {
+			setData(newData);
 		});
 
 		return () => {
 			dispose();
 		};
-	}, [name, options.params, options.enabled]);
+	}, [name, memoizedParams, options.enabled]);
 
 	return data;
 }
@@ -56,17 +60,25 @@ export function useWSEvent<Name extends Extract<keyof WSDataRoutes, string>>(
 		handler: (data: Static<WSDataRoutes[Name]>) => void;
 	},
 ) {
+	const handlerRef = useRef(options.handler);
+
 	useEffect(() => {
-		const dispose = ws.onData(
-			name as any,
-			options.params as any,
-			options.handler as any,
-		);
+		handlerRef.current = options.handler;
+	}, [options.handler]);
+
+	const paramsString = JSON.stringify(options.params);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: custom memoization
+	const memoizedParams = useMemo(() => options.params, [paramsString]);
+
+	useEffect(() => {
+		const dispose = ws.onData(name, memoizedParams as any, (data) => {
+			handlerRef.current(data);
+		});
 
 		return () => {
 			dispose();
 		};
-	}, [name, options.handler, options.params]);
+	}, [name, memoizedParams]);
 }
 
 export function useWSAction<Name extends Extract<keyof WSRpcRoutes, string>>(
@@ -93,7 +105,7 @@ export function useWSAction<Name extends Extract<keyof WSRpcRoutes, string>>(
 			const dispose = ws.rpc(
 				name as any,
 				args.params as any,
-				args.data as any,
+				args.data,
 				callbacks,
 			);
 			disposeRef.current = dispose;

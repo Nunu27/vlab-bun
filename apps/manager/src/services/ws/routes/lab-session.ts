@@ -1,7 +1,7 @@
 import db from "@manager/db";
 import { labSessions } from "@manager/db/schema";
-import { workerActions } from "@manager/services/actions";
 import { getAvailableWorkerId } from "@manager/services/grpc";
+import { workerActions } from "@manager/services/worker-actions";
 import ws from "@manager/services/ws";
 import { eq } from "drizzle-orm";
 

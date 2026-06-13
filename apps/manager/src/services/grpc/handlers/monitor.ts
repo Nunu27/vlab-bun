@@ -70,6 +70,28 @@ export function attachMonitorHandlers(
 ) {
 	client.onData("monitor:snapshot", undefined, async (event) => {
 		const { sessions, nodes } = event;
+		const sessionIds = sessions.map((s) => s.id);
+
+		const staleSessions = await db.query.labSessions.findMany({
+			columns: { id: true },
+			where: (labSessions, { eq, isNull, notInArray, and }) => {
+				const conditions = [
+					eq(labSessions.workerId, workerId),
+					isNull(labSessions.submittedAt),
+				];
+
+				if (sessionIds.length) {
+					conditions.push(notInArray(labSessions.id, sessionIds));
+				}
+
+				return and(...conditions);
+			},
+		});
+
+		for (const { id } of staleSessions) {
+			await sessionThrottle.run(id, () => submitActiveSession(id));
+		}
+
 		for (const node of nodes) {
 			await db
 				.update(labSessionNodes)
@@ -143,7 +165,6 @@ export function attachMonitorHandlers(
 		const { node, isTemp } = event;
 		const health = node.health as NodeHealth | null;
 
-		if (!isTemp) ws.server.emit("node:[id]:health", { id: node.id }, health);
 		await sessionThrottle.wait(node.labSessionId, {
 			id: "health",
 			execute: async () => {
@@ -158,15 +179,14 @@ export function attachMonitorHandlers(
 	});
 
 	client.onData("monitor:interface-update", undefined, async (event) => {
-		const { node, isTemp } = event;
-		if (!isTemp) {
-			for (const [iface, ips] of Object.entries(node.interfaces)) {
-				ws.server.emit(
-					"node:[id]:interfaces:[interface]",
-					{ id: node.id, interface: iface },
-					ips,
-				);
-			}
+		const { node } = event;
+
+		for (const [iface, ips] of Object.entries(node.interfaces)) {
+			ws.server.emit(
+				"node:[id]:interfaces:[interface]",
+				{ id: node.id, interface: iface },
+				ips,
+			);
 		}
 
 		interfaceDebounce.run(node.id, async () => {

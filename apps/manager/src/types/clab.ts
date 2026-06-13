@@ -8,8 +8,8 @@ export interface LabNode {
 	kind: string;
 	env: Record<string, string>;
 	resources: {
-		cpu?: number;
-		memory?: string;
+		cpu?: number | null;
+		memory?: string | null;
 	};
 	deviceId?: string;
 }
