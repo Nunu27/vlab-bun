@@ -1,5 +1,8 @@
 ### A. Skenario & Topologi
 
+> [!NOTE]
+> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
+
 Anda mengelola infrastruktur jaringan yang terdiri dari dua router (**R1** dan **R2**) serta dua klien (**PC1** dan **PC2**). PC1 dan PC2 berada pada jaringan terisolasi yang berbeda. Tugas Anda adalah membangun konfigurasi *static routing* agar PC1 dapat bertukar data dengan PC2 secara *end-to-end*.
 
 **Addressing Table:**

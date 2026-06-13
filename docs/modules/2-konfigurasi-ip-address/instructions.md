@@ -1,5 +1,8 @@
 ### A. Skenario & Topologi
 
+> [!NOTE]
+> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
+
 Terdapat sebuah topologi sederhana yang menghubungkan **PC1** secara langsung ke router **R1** melalui satu kabel fisik. Tugas Anda adalah mengonfigurasi IP Address secara statis pada kedua perangkat agar berada dalam segmen jaringan yang sama, sehingga mereka dapat saling berkomunikasi.
 
 **Addressing Table:**
