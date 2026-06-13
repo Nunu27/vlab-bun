@@ -29,6 +29,7 @@ The database is built around a few central concepts:
 3. **Lab Sessions (`lab_session`):** Active instances of a Lab Template. Tracks which Worker node the session is assigned to, due dates, and the current score. The status of individual checks is tracked in the related `lab_session_check` table.
 4. **Workers (`worker`):** Tracks the active Worker daemons across the cluster, including their current resource utilization (CPU, memory, storage) and health status.
 5. **Device Templates (`device_template`):** Configurations for specific network devices (e.g., MikroTik RouterOS, Linux hosts) that can be used to build lab topologies.
+6. **File Storage Tracking (`file`, `lab_attachments`, `lab_embedded_file`):** Rather than using manual reference counting, file storage is managed through direct relational links. A BullMQ worker runs an "Orphan Search" query to find files no longer referenced by a lab cover, attachment, or embedded inside markdown, and safely garbage collects them from S3.
 
 ## Entity Relationship Diagram (ERD)
 
