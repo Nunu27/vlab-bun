@@ -33,7 +33,6 @@ export function bindMonitorEvents(server: RpcServer) {
 
 	emitter.on("node-create", (node) => {
 		monitorState.activeNodes++;
-		if (node.health === "none") node.health = null;
 		server.emit("monitor:node-create", undefined, node);
 	});
 
@@ -43,7 +42,6 @@ export function bindMonitorEvents(server: RpcServer) {
 	});
 
 	emitter.on("node-health", (node, isTemp) => {
-		if (node.health === "none") node.health = null;
 		server.emit("monitor:node-health", undefined, { node, isTemp });
 	});
 
