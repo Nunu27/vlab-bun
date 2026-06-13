@@ -93,10 +93,12 @@ export function attachMonitorHandlers(
 		}
 
 		for (const node of nodes) {
+			const health =
+				node.health === "none" ? null : (node.health as NodeHealth | null);
 			await db
 				.update(labSessionNodes)
 				.set({
-					health: node.health as NodeHealth | null,
+					health,
 					interfaces: node.interfaces,
 					containerId: node.containerId,
 				})
@@ -142,6 +144,8 @@ export function attachMonitorHandlers(
 
 	client.onData("monitor:node-create", undefined, async (event) => {
 		const { labSessionId, labNodeId, deviceTemplateId, ...node } = event;
+		const health =
+			node.health === "none" ? null : (node.health as NodeHealth | null);
 
 		if (labNodeId && deviceTemplateId) {
 			await sessionThrottle.wait(labSessionId);
@@ -150,20 +154,18 @@ export function attachMonitorHandlers(
 				labNodeId,
 				deviceTemplateId,
 				...node,
-				health: node.health as NodeHealth | null,
+				health,
 			});
 		} else {
-			tempNodeEvents.emit(
-				`${node.id}:health`,
-				node.health as NodeHealth | null,
-			);
+			tempNodeEvents.emit(`${node.id}:health`, health);
 			tempNodeEvents.emit(`${node.id}:ip`, node.ip);
 		}
 	});
 
 	client.onData("monitor:node-health", undefined, async (event) => {
 		const { node, isTemp } = event;
-		const health = node.health as NodeHealth | null;
+		const health =
+			node.health === "none" ? null : (node.health as NodeHealth | null);
 
 		await sessionThrottle.wait(node.labSessionId, {
 			id: "health",

@@ -46,11 +46,9 @@ We use the `kanban-markdown` extension for project management.
 
 ### Environment Setup
 
-Because the agent runs commands in a non-interactive shell, custom binaries like `bun` or `rtk` may not be in the `PATH`. If you encounter a `command not found` error, try sourcing the bash profile or using absolute paths:
+Because the agent runs commands in a non-interactive shell, custom binaries like `bun` or `rtk` may not be in the `PATH`. If you encounter a `command not found` error, try proactively look for the executable path on common places, for example below:
 
 ```bash
-source ~/.bashrc && rtk bun run typecheck
-# OR use absolute paths if needed:
 ~/.local/bin/rtk ~/.bun/bin/bun run typecheck
 ```
 

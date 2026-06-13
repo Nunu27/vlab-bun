@@ -5,8 +5,10 @@ import {
 	Type as t,
 } from "@sinclair/typebox";
 
-export const Nullable = <T extends TSchema>(schema: T) =>
-	t.Union([schema, t.Null()]);
+export const Nullable = <T extends TSchema>(
+	schema: T,
+	options?: Parameters<typeof t.Union>[1],
+) => t.Union([schema, t.Null()], options);
 
 export const RequestWithId = <const TKeys extends string = "id">(
 	entries?: TKeys[],

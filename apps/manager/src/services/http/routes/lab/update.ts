@@ -32,6 +32,8 @@ export default createRouter()
 						.update(labs)
 						.set({
 							...labData,
+							cover: labData.cover ?? null,
+							maxAttempt: labData.maxAttempt ?? null,
 							startAt: new Date(date.from),
 							endAt: new Date(date.to),
 						})

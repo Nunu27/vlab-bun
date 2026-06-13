@@ -1,5 +1,5 @@
 import { type StaticDecode, Type as t } from "@sinclair/typebox";
-import { DateRange, NonEmptyString } from "./common";
+import { DateRange, NonEmptyString, Nullable } from "./common";
 import { DeviceTemplateResourcesSchema } from "./device-template";
 
 const BaseNodeSchema = t.Object({
@@ -68,11 +68,11 @@ export type LabChecksMap = typeof LabChecksMapSchema.static;
 export const LabRequestSchema = t.Object({
 	name: NonEmptyString(),
 	content: NonEmptyString(),
-	cover: t.Optional(t.String()),
+	cover: t.Optional(Nullable(t.String(), { default: null })),
 	isPublished: t.Boolean(),
 	date: DateRange,
 	sessionDuration: t.Integer({ min: 1, default: 180 }),
-	maxAttempt: t.Optional(t.Integer({ min: 1 })),
+	maxAttempt: t.Optional(Nullable(t.Integer({ min: 1 }), { default: null })),
 	topology: LabTopologySchema,
 	instructions: NonEmptyString(),
 	checks: LabChecksMapSchema,

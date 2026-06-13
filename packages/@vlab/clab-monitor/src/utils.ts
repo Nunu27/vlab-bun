@@ -6,7 +6,7 @@ import {
 	type ResolvedMapping,
 } from "./types";
 
-export const healthyStatus = new Set([null, "healthy"]);
+export const healthyStatus = new Set([null, "none", "healthy"]);
 
 export function isKey<T extends object>(
 	key: PropertyKey,

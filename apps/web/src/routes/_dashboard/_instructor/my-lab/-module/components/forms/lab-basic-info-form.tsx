@@ -43,9 +43,8 @@ export const LabBasicInfoForm = withFieldGroup({
 
 							<group.AppField name="sessionDuration">
 								{(field) => (
-									<field.TextField
+									<field.NumberField
 										label="Duration (min)"
-										type="number"
 										placeholder="e.g., 180"
 										min={1}
 										required
@@ -55,9 +54,8 @@ export const LabBasicInfoForm = withFieldGroup({
 
 							<group.AppField name="maxAttempt">
 								{(field) => (
-									<field.TextField
+									<field.NumberField
 										label="Max Attempt"
-										type="number"
 										placeholder="e.g., 3"
 										min={1}
 									/>
