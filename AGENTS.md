@@ -62,6 +62,15 @@ rtk bun run check
 - **Minimal comments** — only for non-obvious logic, special cases, or workarounds.
 - **TODOs** — mark unimplemented/mocked sections and architectural workarounds with `// TODO`.
 - **Imports** — use path aliases (`@manager/...`) and workspace imports (`"@vlab/shared": "workspace:*"`), not relative paths.
+- **No non-lazy dynamic imports** — `import()` is only permitted for React lazy-loading patterns (e.g., `React.lazy(() => import(...))` or `lazy(() => import(...))`). Never use `await import(...)` inside functions or conditionally at runtime to defer or split module loading — use a static top-level `import` instead.
+
+  ```ts
+  // ✅ Allowed — React lazy loading
+  const MyPage = lazy(() => import("@web/pages/my-page"));
+
+  // ❌ Forbidden — deferred/conditional runtime import
+  const { something } = await import("./some-module");
+  ```
 
 ---
 
