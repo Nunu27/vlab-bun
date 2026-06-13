@@ -2,6 +2,7 @@ import EventEmitter from "node:events";
 import db from "@manager/db";
 import { labSessionNodes, labSessions } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
+import { labSessionQueue } from "@manager/services/queue/lab-session";
 import ws from "@manager/services/ws";
 import type { TempNodeEvents } from "@manager/types/clab";
 import type { TypedEventEmitter } from "@manager/types/events";
@@ -130,9 +131,6 @@ export function attachMonitorHandlers(
 					.onConflictDoNothing();
 
 				const delay = Math.max(0, dueDate.getTime() - Date.now());
-				const { labSessionQueue } = await import(
-					"@manager/services/queue/lab-session"
-				);
 				await labSessionQueue.add(
 					"cleanup",
 					{ sessionId: id, workerId },

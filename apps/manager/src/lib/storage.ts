@@ -1,9 +1,10 @@
 import path from "node:path";
 import db from "@manager/db";
 import { files } from "@manager/db/schema/file";
+import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema/lab";
 import env from "@manager/env";
 import logger from "@manager/lib/logger";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lt, notExists } from "drizzle-orm";
 import { S3mini } from "s3mini";
 
 const storage = new S3mini({
@@ -64,18 +65,11 @@ export async function storageCleanup() {
 			Date.now() - 1000 * 60 * 60 * env.STORAGE_CLEANUP_WINDOW_HOURS,
 		);
 
-		const { labs, labAttachments, labEmbeddedFiles } = await import(
-			"@manager/db/schema/lab"
-		);
-		const { notExists, and, lt, isNotNull, eq, sql } = await import(
-			"drizzle-orm"
-		);
-
 		const filesToDelete = await tx.query.files.findMany({
 			columns: { name: true },
 			where: (f) =>
 				and(
-					lt(sql`COALESCE(${f.updatedAt}, ${f.createdAt})`, cutoff),
+					lt(f.updatedAt, cutoff),
 					notExists(
 						tx
 							.select()
