@@ -51,6 +51,8 @@ export async function deployLab(
 		resources,
 		deviceId,
 		labNodeId,
+		credentials,
+		env: nodeEnv,
 		...rest
 	} of config.nodes) {
 		const kebabName = toKebabCase(name);
@@ -65,8 +67,19 @@ export async function deployLab(
 			nodeNames[labNodeId] = kebabName;
 		}
 
+		const env = { ...nodeEnv };
+		if (rest.kind === "linux" && credentials) {
+			if (credentials.username) {
+				env.CLAB_USERNAME = credentials.username;
+			}
+			if (credentials.password) {
+				env.CLAB_PASSWORD = credentials.password;
+			}
+		}
+
 		nodes[kebabName] = {
 			...rest,
+			env,
 			cpu: resources.cpu ?? undefined,
 			memory: resources.memory ?? undefined,
 			labels,
