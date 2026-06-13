@@ -174,17 +174,8 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 						| GrpcDataMessage;
 
 					if ("data" in msg) {
-						logger.debug(
-							{ ...msg, workerId },
-							"Received data message from worker",
-						);
-
 						client.handleData(msg);
 					} else {
-						logger.debug(
-							{ ...msg, workerId },
-							"Received reply message from worker",
-						);
 						client.handleReply(msg);
 					}
 				}

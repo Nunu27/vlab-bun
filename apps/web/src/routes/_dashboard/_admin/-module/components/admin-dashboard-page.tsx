@@ -24,10 +24,10 @@ import api from "@web/lib/api";
 import { cn } from "@web/lib/utils";
 import { useAuthStore } from "@web/stores/auth-store";
 import {
-	ActivityIcon,
 	BoxIcon,
 	CpuIcon,
 	DatabaseIcon,
+	FlaskConicalIcon,
 	HardDriveIcon,
 	ServerIcon,
 } from "lucide-react";
@@ -161,7 +161,7 @@ function AdminDashboardPage() {
 				<StatCard
 					title="Active Labs"
 					value={activeLabs}
-					icon={<ActivityIcon className="h-4 w-4 text-emerald-400" />}
+					icon={<FlaskConicalIcon className="h-4 w-4 text-emerald-400" />}
 				/>
 				<StatCard
 					title="Total Nodes"
@@ -178,7 +178,14 @@ function AdminDashboardPage() {
 				/>
 				<RadialStatCard
 					title="Total Memory"
-					value={formatMemory(totalMemoryMB)}
+					value={
+						<div className="flex items-baseline gap-1.5">
+							<span>{formatMemory(usedMemoryMB)}</span>
+							<span className="font-medium text-base text-muted-foreground">
+								/ {formatMemory(totalMemoryMB)}
+							</span>
+						</div>
+					}
 					description={`${memoryUsagePercent.toFixed(1)}% Used`}
 					icon={<DatabaseIcon className="h-4 w-4 text-emerald-400" />}
 					progress={memoryUsagePercent}
@@ -186,7 +193,14 @@ function AdminDashboardPage() {
 				/>
 				<RadialStatCard
 					title="Total Storage"
-					value={formatMemory(totalStorageMB)}
+					value={
+						<div className="flex items-baseline gap-1.5">
+							<span>{formatMemory(usedStorageMB)}</span>
+							<span className="font-medium text-base text-muted-foreground">
+								/ {formatMemory(totalStorageMB)}
+							</span>
+						</div>
+					}
 					description={`${storageUsagePercent.toFixed(1)}% Used`}
 					icon={<HardDriveIcon className="h-4 w-4 text-yellow-400" />}
 					progress={storageUsagePercent}
@@ -201,7 +215,7 @@ function AdminDashboardPage() {
 						Monitor real-time status and resource usage of lab workers.
 					</CardDescription>
 				</CardHeader>
-				<Table className="table-fixed">
+				<Table className="min-w-[1050px] table-fixed">
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow
@@ -213,8 +227,7 @@ function AdminDashboardPage() {
 										key={header.id}
 										className="font-semibold text-muted-foreground text-xs"
 										style={{
-											width:
-												header.getSize() !== 150 ? header.getSize() : undefined,
+											width: header.getSize(),
 										}}
 									>
 										{header.isPlaceholder
@@ -242,10 +255,7 @@ function AdminDashboardPage() {
 										<TableCell
 											key={cell.id}
 											style={{
-												width:
-													cell.column.columnDef.size !== 150
-														? cell.column.getSize()
-														: undefined,
+												width: cell.column.getSize(),
 											}}
 											className={
 												cell.column.id === "id" ? "font-medium" : undefined
