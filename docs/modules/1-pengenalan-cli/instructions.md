@@ -1,5 +1,8 @@
 ### A. Skenario & Topologi
 
+> [!NOTE]
+> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
+
 Pada lab pengenalan ini, Anda diberikan akses ke dua jenis perangkat: sebuah klien berbasis Linux (**PC1**) dan sebuah router MikroTik (**R1**). Tugas Anda adalah mengeksplorasi antarmuka *Command Line Interface* (CLI) pada masing-masing perangkat untuk membiasakan diri dengan lingkungan kerjanya, dan melakukan sedikit konfigurasi dasar.
 
 

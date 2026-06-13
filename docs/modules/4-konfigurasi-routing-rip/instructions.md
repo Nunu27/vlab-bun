@@ -1,5 +1,8 @@
 ### A. Skenario & Topologi
 
+> [!NOTE]
+> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
+
 Dua jaringan kantor yang berbeda dihubungkan menggunakan dua buah router (**R1** dan **R2**). Jika dikonfigurasi secara statis, setiap perubahan jaringan akan merepotkan. Oleh karena itu, tugas Anda adalah mengotomatiskan pertukaran tabel *routing* antar kedua router menggunakan protokol **RIP** (*Routing Information Protocol*).
 
 **Addressing Table:**

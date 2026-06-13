@@ -1,5 +1,8 @@
 ### A. Skenario & Topologi
 
+> [!NOTE]
+> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
+
 Dua router (**R1** dan **R2**) digunakan untuk menginterkoneksikan dua segmen LAN lokal. Anda diminta untuk membangun sistem *Dynamic Routing* level *Enterprise* menggunakan protokol *Link-State* **OSPF**. Seluruh router akan dimasukkan ke dalam konfigurasi *Single Area* (Area 0 Backbone).
 
 **Addressing Table:**

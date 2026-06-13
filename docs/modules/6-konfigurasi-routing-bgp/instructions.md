@@ -1,5 +1,8 @@
 ### A. Skenario & Topologi
 
+> [!NOTE]
+> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
+
 Pada lab ini, **R1** dan **R2** diandaikan berada di luar batas operasional institusi yang sama, dan keduanya merepresentasikan dua jaringan internet yang terpisah (Beda *Autonomous System*). Tugas Anda adalah menghubungkan kedua institusi tersebut menggunakan sesi **eBGP** (External Border Gateway Protocol).
 
 **Addressing Table:**
