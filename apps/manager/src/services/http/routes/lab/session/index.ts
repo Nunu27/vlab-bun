@@ -4,8 +4,6 @@ import detail from "./detail";
 import list from "./list";
 import node from "./node";
 
-import "./cron";
-
 const labSessionRoutes = createRouter({
 	prefix: "/:labId/session",
 	tags: ["Lab Session"],

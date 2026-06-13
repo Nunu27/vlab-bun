@@ -10,6 +10,7 @@ import grpcServer from "./services/grpc";
 import guacamoleLite from "./services/guacamole-lite";
 import httpHandler from "./services/http";
 import { cache } from "./services/http/middlewares/caching";
+import { labSessionQueue, labSessionWorker } from "./services/queue";
 import ws from "./services/ws";
 
 import "./services/ws/routes";
@@ -32,6 +33,9 @@ async function shutdown() {
 	await ws.io.close();
 
 	guacamoleLite.shutdown();
+
+	await labSessionWorker.close();
+	await labSessionQueue.close();
 
 	await redis.client.quit();
 	await db.$client.end();

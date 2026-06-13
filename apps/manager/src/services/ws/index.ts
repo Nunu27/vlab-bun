@@ -3,7 +3,7 @@ import redis from "@manager/lib/redis";
 import { sessions } from "@manager/services/http/middlewares/auth";
 import type { WSContext } from "@manager/types/ws";
 import { Server as Engine } from "@socket.io/bun-engine";
-import { createAdapter } from "@socket.io/redis-adapter";
+import { createAdapter } from "@socket.io/redis-streams-adapter";
 import appRouter, {
 	type ClientToServerEvents,
 	type ServerToClientEvents,
@@ -18,7 +18,7 @@ const io = new Server<
 	WSContext
 >({
 	parser,
-	adapter: createAdapter(redis.client, redis.subscriber),
+	adapter: createAdapter(redis.client),
 });
 
 const engine = new Engine({ path: "/ws" });

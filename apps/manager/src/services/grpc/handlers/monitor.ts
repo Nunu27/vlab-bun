@@ -19,7 +19,7 @@ export const tempNodeEvents: TypedEventEmitter<TempNodeEvents> =
 const sessionThrottle = new Throttler(1000);
 const interfaceDebounce = new Debouncer(750);
 
-async function submitActiveSession(id: string) {
+export async function submitActiveSession(id: string) {
 	const now = new Date();
 	const session = await db.transaction(async (tx) => {
 		const session = await tx.query.labSessions.findFirst({
@@ -128,6 +128,16 @@ export function attachMonitorHandlers(
 						updatedAt: now,
 					})
 					.onConflictDoNothing();
+
+				const delay = Math.max(0, dueDate.getTime() - Date.now());
+				const { labSessionQueue } = await import(
+					"@manager/services/queue/lab-session"
+				);
+				await labSessionQueue.add(
+					"cleanup",
+					{ sessionId: id, workerId },
+					{ delay, jobId: id },
+				);
 			});
 		}
 	});

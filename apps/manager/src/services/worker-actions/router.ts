@@ -39,12 +39,14 @@ export class WorkerActionRouter<
 						`Worker action ${actionName} failed for ${workerId}:`,
 					);
 				});
+
+			return 1;
 		} else {
 			logger.debug(
 				{ actionName, workerId, payload },
 				`Forwarding action ${actionName} via Redis to worker ${workerId}`,
 			);
-			await redis.client.publish(
+			return await redis.client.publish(
 				`vlab:worker-action:${workerId}`,
 				Buffer.from(encode({ actionName, payload })),
 			);
