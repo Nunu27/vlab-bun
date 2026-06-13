@@ -58,6 +58,10 @@ export async function handleTestInit(
 							kind: data.kind,
 							env: data.env,
 							resources: data.resources,
+							credentials: {
+								username: data.connection.data.username,
+								password: data.connection.data.password,
+							},
 						},
 					],
 				},

@@ -9,7 +9,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@web/components/ui/alert-dialog";
-import { Button } from "@web/components/ui/button";
 import { useModalState } from "@web/hooks/state/use-modal-state";
 import api from "@web/lib/api";
 import { useDeviceTemplateModalStore } from "../../stores/device-template-modal-store";
@@ -32,13 +31,13 @@ export function DeleteDeviceTemplateModal() {
 		},
 	});
 
-	if (!data) return;
+	if (!data) return null;
 
 	return (
 		<AlertDialog open={open} onOpenChange={actions.delete.close}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+					<AlertDialogTitle>Delete Device Template</AlertDialogTitle>
 					<AlertDialogDescription>
 						This action cannot be undone. This will permanently delete the
 						device template "{data.name}" and remove its association from the
@@ -47,14 +46,15 @@ export function DeleteDeviceTemplateModal() {
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-					<AlertDialogAction asChild>
-						<Button
-							variant="destructive"
-							disabled={isPending}
-							onClick={() => mutate()}
-						>
-							{isPending ? "Deleting..." : "Delete"}
-						</Button>
+					<AlertDialogAction
+						variant="destructive"
+						onClick={(e) => {
+							e.preventDefault();
+							mutate();
+						}}
+						disabled={isPending}
+					>
+						{isPending ? "Deleting..." : "Delete"}
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

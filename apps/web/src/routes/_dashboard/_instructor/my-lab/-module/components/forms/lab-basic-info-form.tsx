@@ -1,17 +1,19 @@
+import type { LabRequest } from "@vlab/shared/schemas";
 import { withFieldGroup } from "@web/hooks/form/use-app-form";
 import { LabAttachmentForm } from "./lab-attachment-form";
 
 export const LabBasicInfoForm = withFieldGroup({
-	defaultValues: {
-		cover: undefined as string | undefined,
-		name: "",
-		content: "",
-		isPublished: false,
-		date: { from: new Date(), to: new Date() },
-		sessionDuration: 180,
-		maxAttempt: undefined as number | undefined,
-		attachments: [] as { name: string; file: string }[],
-	},
+	defaultValues: {} as Pick<
+		LabRequest,
+		| "cover"
+		| "name"
+		| "content"
+		| "isPublished"
+		| "date"
+		| "sessionDuration"
+		| "maxAttempt"
+		| "attachments"
+	>,
 	render: ({ group }) => {
 		return (
 			<div className="space-y-4">

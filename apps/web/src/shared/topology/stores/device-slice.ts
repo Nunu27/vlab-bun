@@ -58,6 +58,7 @@ export const createDeviceSlice: StateCreator<
 			edges: {},
 			groupIds: [],
 			resources: {},
+			credentials: {},
 			x: snapToGrid(pos.x - DEVICE_WIDTH / 2),
 			y: snapToGrid(pos.y - DEVICE_HEIGHT / 2),
 		};
@@ -65,18 +66,7 @@ export const createDeviceSlice: StateCreator<
 		set({
 			deviceNames: newDeviceNames,
 			deviceCounts: newDeviceCounts,
-			devices: {
-				...devices,
-				[id]: {
-					name,
-					deviceId,
-					edges: {},
-					groupIds: [],
-					resources: {},
-					x: snapToGrid(pos.x - DEVICE_WIDTH / 2),
-					y: snapToGrid(pos.y - DEVICE_HEIGHT / 2),
-				},
-			},
+			devices: newDevices,
 		});
 	},
 	updateDevice: (id, update) => {

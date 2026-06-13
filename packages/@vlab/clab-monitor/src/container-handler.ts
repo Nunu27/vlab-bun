@@ -71,7 +71,7 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 
 async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
 	ctx: Context<TFullMapping>,
-	event: ContainerEvent,
+	event: Extract<ContainerEvent, { Action: "die" }>,
 ) {
 	const { logger, sessionIds, eventEmitter } = ctx;
 	logger.debug("Container removed: %s", event.Actor.ID);
@@ -81,11 +81,6 @@ async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
 
 	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
 
-	if (!isTemp && sessionIds.has(resolved.sessionId)) {
-		eventEmitter.emit("session-remove", resolved.sessionId);
-		sessionIds.delete(resolved.sessionId);
-	}
-
 	networkMonitor.stop(ctx, {
 		id: resolved.nodeId,
 		labSessionId: resolved.sessionId,
@@ -94,6 +89,12 @@ async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
 		ip: "",
 		isTemp,
 	});
+
+	if (!isTemp && sessionIds.has(resolved.sessionId)) {
+		eventEmitter.emit("session-remove", resolved.sessionId);
+		sessionIds.delete(resolved.sessionId);
+	}
+
 	eventEmitter.emit("node-remove", resolved.nodeId, isTemp);
 }
 

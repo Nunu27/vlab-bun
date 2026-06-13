@@ -95,6 +95,12 @@ export async function handleInitLabSession(
 					cpu: device.resources?.cpu || template.resources.cpu,
 					memory: device.resources?.memory || template.resources.memory,
 				},
+				credentials: {
+					username:
+						device.credentials?.username || template.connection.data.username,
+					password:
+						device.credentials?.password || template.connection.data.password,
+				},
 				deviceId: device.deviceId,
 			};
 		});

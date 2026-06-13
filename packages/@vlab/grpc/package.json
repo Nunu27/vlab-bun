@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"@sinclair/typebox": "^0.34.49",
+		"@vlab/shared": "workspace:*",
 		"long": "^5.3.2",
 		"nice-grpc": "^2.1.16",
 		"nice-grpc-common": "^2.0.3",

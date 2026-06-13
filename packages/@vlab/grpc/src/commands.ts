@@ -1,4 +1,5 @@
 import { Type as t } from "@sinclair/typebox";
+import { DeviceTemplateResourcesSchema } from "@vlab/shared/schemas/device-template";
 import { Router } from "waycast";
 
 export const LabNodeSchema = t.Object({
@@ -8,10 +9,13 @@ export const LabNodeSchema = t.Object({
 	image: t.String(),
 	kind: t.String(),
 	env: t.Record(t.String(), t.String()),
-	resources: t.Object({
-		cpu: t.Optional(t.Union([t.Number(), t.Null()])),
-		memory: t.Optional(t.Union([t.String(), t.Null()])),
-	}),
+	resources: DeviceTemplateResourcesSchema,
+	credentials: t.Optional(
+		t.Object({
+			username: t.Optional(t.String()),
+			password: t.Optional(t.String()),
+		}),
+	),
 	deviceId: t.Optional(t.String()),
 });
 

@@ -13,6 +13,7 @@ import { FieldGroup } from "@web/components/ui/field";
 import { useApiForm } from "@web/hooks/form/use-api-form";
 import { useModalState } from "@web/hooks/state/use-modal-state";
 import api from "@web/lib/api";
+import { useEffect } from "react";
 import { useStudentModalStore } from "../../stores/student-modal-store";
 
 const validator = Compile(UpdateStudentRequest);
@@ -44,9 +45,16 @@ export function EditStudentModal() {
 		},
 	});
 
+	useEffect(() => {
+		if (!data) form.reset();
+	}, [data, form]);
+
 	return (
 		<Dialog open={open} onOpenChange={actions.update.close}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto">
+			<DialogContent
+				className="max-h-[90vh] overflow-y-auto"
+				onOpenAutoFocus={(e) => e.preventDefault()}
+			>
 				<DialogHeader>
 					<DialogTitle>Edit Student</DialogTitle>
 					<DialogDescription>

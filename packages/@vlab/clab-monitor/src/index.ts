@@ -41,7 +41,8 @@ async function handleDockerEvent<TFullMapping extends FullMappingConstraint>(
 
 	try {
 		logger.debug("Handling docker event: %s", event.Action);
-		await containerHandler[key](ctx, event);
+		// biome-ignore lint/suspicious/noExplicitAny: generic event handler mapping
+		await containerHandler[key](ctx, event as any);
 	} catch (error) {
 		logger.error({ error }, "Error handling docker event");
 	}
