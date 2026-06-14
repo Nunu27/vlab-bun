@@ -6,7 +6,6 @@ on:
       - main
     paths-ignore:
       - "docs/**"
-      - "scripts/**"
       - "**.md"
       - "docker-compose.yml"
       - ".agents/**"
@@ -70,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        component: [manager, worker]
+        component: [manager, worker, installer]
     permissions:
       contents: read
       packages: write

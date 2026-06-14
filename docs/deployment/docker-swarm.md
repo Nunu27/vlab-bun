@@ -42,42 +42,56 @@ curl -fsSL https://raw.githubusercontent.com/nunu27/vlab-bun/main/scripts/deploy
 The script will:
 1. Initialize Docker Swarm if it's not active.
 2. Prompt for database credentials, proxy domain, and secrets.
-3. Automatically configure `.env.manager` and `.env.worker`.
+3. Automatically configure `.env.manager`.
 4. Download the `docker-compose.yml` and `nginx.tmpl` files.
 5. Deploy the `vlab` stack.
 
 ### Adding Worker Nodes
 
-After the script finishes, it will provide a `docker swarm join` command. On **every worker node**, you must install Docker and Containerlab, then run that join command.
+After the deploy script finishes, it will output a `docker swarm join` command. On each **worker node**, install Docker and join the Swarm — that's it:
+
+```bash
+# 1. Install Docker
+curl -fsSL https://get.docker.com | sh
+
+# 2. Join the Swarm
+docker swarm join --token <WORKER_TOKEN> --advertise-addr <WORKER_PUBLIC_IP> <MANAGER_PUBLIC_IP>:2377
+```
+
+The `worker-installer` Swarm service (`mode: global`) automatically runs on every node. Once the node joins, Swarm schedules the installer on it. The installer:
+1. Resolves the manager's address via Swarm DNS.
+2. Discovers the local guacd IP on the `clab-mgmt` overlay.
+3. Creates the `vlab-topologies` volume on the node.
+4. Starts the vLab worker as a standalone `--privileged` container.
+5. Monitors the worker — if it exits, the installer exits too, triggering a Swarm restart that relaunches the worker.
+
+> [!NOTE]
+> The worker runs as a standalone `docker run --privileged` container (not a Swarm service) because containerlab requires `--privileged` to configure kernel networking parameters, which Docker Swarm does not support for managed services.
 
 > [!CAUTION]
 > **Multi-Cloud & Firewall Requirements**
-> 
+>
 > If your worker nodes are in a different cloud provider or network than your manager (e.g., Manager in Azure, Worker in Oracle Cloud), Docker Swarm's overlay networking will fail silently if firewall ports are blocked. This causes critical errors like `Name resolution failed for target dns:manager:50051`.
-> 
+>
 > You MUST explicitly configure your firewalls (e.g., AWS Security Groups, Azure NSG, Oracle Security Lists) to allow the following traffic:
 > - **TCP 2377**: Cluster management. **Inbound** on Manager, **Outbound** from Workers.
 > - **TCP & UDP 7946**: Node communication and Gossip (DNS discovery). **Inbound & Outbound** on all nodes.
 > - **UDP 4789**: Overlay network traffic (VXLAN). **Inbound & Outbound** on all nodes.
-> 
+>
 > Additionally, when joining a node across the public internet, you must force Swarm to use public IPs by passing the `--advertise-addr` flag.
 
-```bash
-# On the worker node:
-curl -fsSL https://get.docker.com | sh
-bash -c "$(curl -sL https://get.containerlab.dev)"
-
-# Join the swarm using the token from the manager
-# (Include --advertise-addr if joining across different cloud networks)
-docker swarm join --token <WORKER_TOKEN> --advertise-addr <WORKER_PUBLIC_IP> <MANAGER_PUBLIC_IP>:2377
-```
 
 ## Managing the Stack
 
 - **Check status:** `docker stack services vlab`
 - **View manager logs:** `docker service logs -f vlab_manager`
+- **View installer logs (per node):** `docker service logs -f vlab_worker-installer`
+- **View worker logs (on a node):** `docker logs -f vlab-worker`
 - **View proxy logs:** `docker service logs -f vlab_nginx-proxy`
 - **Remove stack:** `docker stack rm vlab`
 
 > [!WARNING]
-> Removing the stack (`docker stack rm vlab`) stops all containers but **preserves** the named volumes (e.g., `postgres-data`, `rustfs-data`). Your data is safe. To truly wipe data, you would need to manually remove the volumes using `docker volume rm`.
+> Removing the stack (`docker stack rm vlab`) stops all containers but **preserves** the named volumes (e.g., `postgres-data`, `rustfs-data`, `vlab-topologies`). Your data is safe. To truly wipe data, you would need to manually remove the volumes using `docker volume rm`.
+
+> [!NOTE]
+> The `vlab-worker` container is managed by the `worker-installer` Swarm service, not by Swarm directly. To restart the worker on a specific node, restart the installer task: `docker service update --force vlab_worker-installer`.
