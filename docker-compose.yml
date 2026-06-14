@@ -2,6 +2,7 @@ version: "3.8"
 
 networks:
   vlab-network:
+    name: vlab-network
     driver: overlay
     attachable: true
   clab-mgmt:
@@ -10,7 +11,6 @@ networks:
     attachable: true
 
 volumes:
-  vlab-topologies:
   postgres-data:
   redis-data:
   rustfs-data:
@@ -44,18 +44,14 @@ services:
       restart_policy:
         condition: any
 
-  worker:
-    image: ghcr.io/nunu27/vlab-bun-worker:latest
-    env_file:
-      - .env.worker
-    environment:
-      - NODE_ENV=production
-      - WORKER_ID={{.Node.Hostname}}
-      - CLAB_CLI_PATH=/app/containerlab
-      - CLAB_TOPOLOGIES_PATH=/app/lab
+  worker-installer:
+    image: ghcr.io/nunu27/vlab-bun-installer:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - vlab-topologies:/app/lab
+    environment:
+      - WORKER_ID={{.Node.Hostname}}
+      - WORKER_IMAGE=ghcr.io/nunu27/vlab-bun-worker:latest
+      - LOG_LEVEL=${LOG_LEVEL:-info}
     networks:
       - vlab-network
       - clab-mgmt
