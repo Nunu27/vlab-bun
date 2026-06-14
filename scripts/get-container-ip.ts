@@ -1,13 +1,19 @@
+import { intro, log, outro, spinner } from "@clack/prompts";
 import { $ } from "bun";
 
 const containers = process.argv.slice(2);
 
+intro("vLab Container IP Finder");
+
 if (containers.length === 0) {
-	console.error(
+	log.error(
 		"Usage: bun run scripts/get-container-ip.ts <container-name1> [container-name2] ...",
 	);
 	process.exit(1);
 }
+
+const s = spinner();
+s.start("Fetching container IPs...");
 
 for (const container of containers) {
 	try {
@@ -23,15 +29,16 @@ for (const container of containers) {
 			.filter(Boolean);
 
 		if (results.length > 0) {
-			console.log(`${container}: ${results.join(", ")}`);
+			log.success(`${container}: ${results.join(", ")}`);
 		} else {
-			console.log(
+			log.warn(
 				`${container}: No IP found (container might be stopped or using host network)`,
 			);
 		}
 	} catch (_err) {
-		console.error(
-			`Failed to get IP for container ${container}. Does it exist?`,
-		);
+		log.error(`Failed to get IP for container ${container}. Does it exist?`);
 	}
 }
+
+s.stop("Finished fetching IPs");
+outro("Done!");
