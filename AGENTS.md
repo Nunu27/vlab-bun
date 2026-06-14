@@ -21,10 +21,13 @@ When modifying shared types or communication protocols (gRPC protos, WebSocket/W
 ## 2. Planning Guardrails
 
 - **Never** begin implementation, run modifying commands, or edit files until the user explicitly approves the plan (e.g., "yes", "proceed", "approve").
+- Approval must be **explicit and unambiguous** — phrases like "looks good", "that makes sense", or "interesting" do **not** constitute approval.
 - If any requirement is ambiguous, **ask the user** — do not guess or assume.
 - Group all questions upfront alongside the plan; do not drip-feed them.
 - If you need to deviate from the approved plan mid-implementation, **stop immediately**, explain what changed and why, and wait for re-approval before continuing.
 - Use available planning tools/artifacts when they exist — do not write plans as plain chat.
+- **Stay in scope** — do not refactor, rename, or touch files outside the approved plan, even if you notice improvements. Note them as suggestions instead.
+- **No speculative changes** — do not add "while I'm here" improvements unless explicitly asked.
 
 ---
 
@@ -58,7 +61,7 @@ rtk bun run check
 
 ## 5. Coding Conventions
 
-- **No `any`/`never` casts or schema** unless absolutely necessary.
+- **No `any` type** — avoid `as any`, `z.any()`, or untyped parameters. If genuinely unavoidable, add an inline comment explaining why.
 - **Minimal comments** — only for non-obvious logic, special cases, or workarounds.
 - **TODOs** — mark unimplemented/mocked sections and architectural workarounds with `// TODO`.
 - **Imports** — use path aliases (`@manager/...`) and workspace imports (`"@vlab/shared": "workspace:*"`), not relative paths.
@@ -97,4 +100,25 @@ rtk bun run typecheck
 rtk bun run check
 ```
 
-Do not present changes that fail either check without explicitly noting remaining errors and justification.
+- Skip verification **only** for documentation-only changes (`.md` files, comments). Always run for any `.ts`, `.tsx`, or config file changes.
+- If checks fail, **fix the errors before presenting** — do not ask the user to run the checks themselves.
+- Do not present changes that still fail either check without explicitly noting the remaining errors and justification.
+
+---
+
+## 8. Git Operations
+
+Git operations that modify history or the remote are **never** performed autonomously.
+
+- **Never** run `git commit`, `git push`, `git rebase`, `git reset`, `git merge`, `git add`, `git stash`, `git clean`, `git tag`, or `git rm` unless the user **explicitly confirms that specific operation in the current message** (e.g., "commit now", "push it", "go ahead and commit").
+- A prior approval in the same session does **not** carry over. Each git operation requires its own fresh confirmation.
+- After completing implementation and verification, **suggest** the git command(s) the user should run, including a ready-to-copy **conventional commit message** (e.g., `git commit -m "feat(manager): add X"`) — do not run them yourself.
+- If the user asks you to "commit" or "push" as part of a larger task description (e.g., "implement X and commit"), treat it as intent, not immediate authorization. Finish the implementation, then **ask for explicit confirmation** before proceeding.
+
+---
+
+## 9. File Safety
+
+- **Never** delete or overwrite a file unless the user explicitly asks for it.
+- Before replacing a large or critical file wholesale, confirm intent if the operation is destructive and irreversible.
+- Prefer targeted edits (replacing specific blocks) over full-file rewrites.
