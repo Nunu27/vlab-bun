@@ -86,6 +86,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-vlab}
       - POSTGRES_USER=${DB_USER:-vlab}
       - POSTGRES_DB=${DB_NAME:-vlab}
+      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
