@@ -15,8 +15,8 @@ WORKER_CONTAINER="${WORKER_CONTAINER:-vlab-worker}"
 WORKER_IMAGE="${WORKER_IMAGE:-ghcr.io/nunu27/vlab-bun-worker:latest}"
 WORKER_ID="${WORKER_ID:-$(hostname)}"
 LOG_LEVEL="${LOG_LEVEL:-info}"
-VLAB_NETWORK="vlab-network"
-CLAB_MGMT_NETWORK="clab-mgmt"
+VLAB_NETWORK="vlab_vlab-network"
+CLAB_MGMT_NETWORK="vlab_clab-mgmt"
 TOPOLOGIES_VOLUME="vlab-topologies"
 
 log() { echo "[installer] $*"; }
@@ -117,9 +117,12 @@ docker network connect "$VLAB_NETWORK" "$WORKER_CONTAINER"
 log "Worker started. Monitoring (docker wait)..."
 
 # =============================================================================
-# 7 — Block until the worker exits. When it does, this process exits too,
-#     causing Swarm to restart the installer service task — which restarts
-#     the worker. This is the self-healing loop.
+# 7 — Block until the worker exits. `docker wait` runs in the background so
+#     bash's `wait` builtin is used instead — unlike a foreground blocking call,
+#     `wait` IS interruptible by signals, allowing the SIGTERM trap to fire
+#     immediately when Swarm stops this installer task.
 # =============================================================================
-docker wait "$WORKER_CONTAINER"
+docker wait "$WORKER_CONTAINER" &
+WAIT_PID=$!
+wait $WAIT_PID
 log "Worker exited. Installer will restart and relaunch worker."
