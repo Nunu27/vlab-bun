@@ -2,11 +2,9 @@ version: "3.8"
 
 networks:
   vlab-network:
-    name: vlab-network
     driver: overlay
     attachable: true
   clab-mgmt:
-    name: clab-mgmt
     driver: overlay
     attachable: true
 
