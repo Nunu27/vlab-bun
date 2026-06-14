@@ -305,20 +305,6 @@
         "dotenv": "^17.4.2",
       },
     },
-    "scripts/db": {
-      "name": "db",
-      "dependencies": {
-        "@vlab/shared": "workspace:*",
-        "drizzle-orm": "^0.45.1",
-        "s3mini": "^0.9.5",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^6.0.3",
-      },
-    },
     "tests/evaluator-e2e": {
       "name": "evaluator-e2e",
       "dependencies": {
@@ -1490,8 +1476,6 @@
     "date-fns-jalali": ["date-fns-jalali@4.1.0-0", "", {}, "sha512-hTIP/z+t+qKwBDcmmsnmjWTduxCg+5KfdqWQvb2X/8C9+knYY6epN/pfxdDuyVlSVeFz0sM5eEfwIUQ70U4ckg=="],
 
     "dayjs": ["dayjs@1.11.21", "", {}, "sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA=="],
-
-    "db": ["db@workspace:scripts/db"],
 
     "debug": ["debug@4.3.7", "", { "dependencies": { "ms": "^2.1.3" }, "peerDependencies": { "supports-color": "*" }, "optionalPeers": ["supports-color"] }, "sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ=="],
 
