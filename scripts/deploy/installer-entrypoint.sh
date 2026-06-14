@@ -22,6 +22,16 @@ TOPOLOGIES_VOLUME="vlab-topologies"
 log() { echo "[installer] $*"; }
 die() { echo "[installer] ERROR: $*" >&2; exit 1; }
 
+# When Swarm stops this installer (SIGTERM on stack rm / node leave),
+# also stop and remove the worker so it doesn't linger as an orphan.
+cleanup() {
+  log "Installer stopping — shutting down worker..."
+  docker stop "$WORKER_CONTAINER" 2>/dev/null || true
+  docker rm -f "$WORKER_CONTAINER" 2>/dev/null || true
+  exit 0
+}
+trap cleanup SIGTERM SIGINT
+
 # =============================================================================
 # 1 — Resolve manager VIP via Swarm DNS
 #     This works because worker-installer IS a Swarm service task.
