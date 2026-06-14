@@ -343,10 +343,12 @@ $DOCKER_CMD stack services "$STACK_NAME"
 # =============================================================================
 echo
 info "Initializing RustFS 'vlab' bucket ..."
-if $DOCKER_CMD run --rm --network "${STACK_NAME}_vlab-network" --entrypoint sh minio/mc -c "mc alias set rustfs http://rustfs:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY} >/dev/null 2>&1 && mc mb --ignore-existing rustfs/vlab >/dev/null 2>&1"; then
+if MC_OUTPUT=$($DOCKER_CMD run --rm --network "${STACK_NAME}_vlab-network" --entrypoint sh minio/mc -c "mc alias set rustfs http://rustfs:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY} && mc mb --ignore-existing rustfs/vlab" 2>&1); then
   success "RustFS bucket 'vlab' is ready."
 else
   warn "Failed to automatically create the RustFS bucket. You may need to create it manually via the Web Console on port 9001."
+  warn "Error details:"
+  echo "$MC_OUTPUT"
 fi
 
 echo
@@ -363,9 +365,16 @@ echo "  Remove stack:         docker stack rm ${STACK_NAME}"
 
 WORKER_TOKEN=$($DOCKER_CMD swarm join-token worker -q 2>/dev/null || true)
 MANAGER_IP=$($DOCKER_CMD info --format '{{.Swarm.NodeAddr}}' 2>/dev/null || true)
+PUBLIC_IP=$(curl -s ifconfig.me || true)
+
 if [[ -n "$WORKER_TOKEN" && -n "$MANAGER_IP" ]]; then
   echo
   echo "  To add a worker node, run this on the new machine:"
-  echo "  docker swarm join --token ${WORKER_TOKEN} ${MANAGER_IP}:2377"
+  if [[ -n "$PUBLIC_IP" && "$MANAGER_IP" != "$PUBLIC_IP" ]]; then
+    echo "  docker swarm join --token ${WORKER_TOKEN} ${PUBLIC_IP}:2377 (Public IP)"
+    echo "  docker swarm join --token ${WORKER_TOKEN} ${MANAGER_IP}:2377 (Internal IP)"
+  else
+    echo "  docker swarm join --token ${WORKER_TOKEN} ${MANAGER_IP}:2377"
+  fi
 fi
 echo
