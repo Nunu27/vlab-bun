@@ -173,19 +173,42 @@ info "Checking Docker Swarm status ..."
 
 SWARM_STATE=$($DOCKER_CMD info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null || echo "inactive")
 
-if [[ "$SWARM_STATE" == "active" ]]; then
-  success "Swarm is already active."
-else
-  warn "Swarm is not active on this node."
+# Try to get public IP first
+DETECTED_IP=$(curl -sS --max-time 3 ifconfig.me || curl -sS --max-time 3 api.ipify.org || true)
+if [[ -z "$DETECTED_IP" ]]; then
   DETECTED_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
-  prompt ADVERTISE_IP "Advertise IP for swarm init" "${DETECTED_IP:-}"
-  [[ -n "$ADVERTISE_IP" ]] || die "Advertise IP is required to initialize the swarm."
-  info "Initializing swarm with advertise-addr $ADVERTISE_IP ..."
-  $DOCKER_CMD swarm init --advertise-addr "$ADVERTISE_IP"
+fi
+
+init_swarm() {
+  local advertise_ip="$1"
+  info "Initializing swarm with advertise-addr $advertise_ip ..."
+  if ! $DOCKER_CMD swarm init --advertise-addr "$advertise_ip" 2>/dev/null; then
+    warn "Failed to initialize swarm with only --advertise-addr. Retrying with --listen-addr 0.0.0.0:2377 ..."
+    $DOCKER_CMD swarm init --advertise-addr "$advertise_ip" --listen-addr 0.0.0.0:2377 || die "Failed to initialize swarm."
+  fi
   success "Swarm initialized."
   echo
   warn "To add worker nodes, run the following on each worker:"
   $DOCKER_CMD swarm join-token worker
+}
+
+if [[ "$SWARM_STATE" == "active" ]]; then
+  CURRENT_ADVERTISE_IP=$($DOCKER_CMD info --format '{{.Swarm.NodeAddr}}' 2>/dev/null || true)
+  if [[ "$CURRENT_ADVERTISE_IP" == "$DETECTED_IP" ]]; then
+    success "Swarm is already active and advertising the correct IP ($DETECTED_IP)."
+  else
+    warn "Swarm is active but advertising $CURRENT_ADVERTISE_IP instead of $DETECTED_IP."
+    info "Leaving current swarm and re-initializing ..."
+    $DOCKER_CMD swarm leave --force
+    prompt ADVERTISE_IP "Advertise IP for swarm init" "${DETECTED_IP:-}"
+    [[ -n "$ADVERTISE_IP" ]] || die "Advertise IP is required to initialize the swarm."
+    init_swarm "$ADVERTISE_IP"
+  fi
+else
+  warn "Swarm is not active on this node."
+  prompt ADVERTISE_IP "Advertise IP for swarm init" "${DETECTED_IP:-}"
+  [[ -n "$ADVERTISE_IP" ]] || die "Advertise IP is required to initialize the swarm."
+  init_swarm "$ADVERTISE_IP"
 fi
 
 # =============================================================================

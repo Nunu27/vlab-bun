@@ -51,9 +51,6 @@ services:
     environment:
       - NODE_ENV=production
       - WORKER_ID={{.Node.Hostname}}
-      - MANAGER_GRPC_URL=http://manager:50051
-      - GUACD_HOST=guacd
-      - GUACD_PORT=4822
       - CLAB_CLI_PATH=/app/containerlab
       - CLAB_TOPOLOGIES_PATH=/app/lab
     volumes:

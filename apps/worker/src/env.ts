@@ -23,8 +23,8 @@ const EnvSchema = t.Object({
 	),
 
 	WORKER_ID: t.String({ minLength: 1 }),
-	MANAGER_GRPC_URL: t.String({ default: "dns:///manager:50051" }),
-	GUACD_HOST: t.String(),
+	MANAGER_GRPC_URL: t.String({ default: "manager:50051" }),
+	GUACD_HOST: t.String({ default: "guacd" }),
 	// GUACD_IP will be automatically inferred from GUACD_HOST if not provided
 	GUACD_IP: t.String({ default: "" }),
 	GUACD_PORT: t.Number({ default: 4822 }),
