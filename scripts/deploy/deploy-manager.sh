@@ -131,9 +131,6 @@ GUACD_SECRET=${GUACD_SECRET}
 # Manager fallback (Workers provide their own guacd routing via gRPC)
 GUACD_HOST=127.0.0.1
 GUACD_PORT=4822
-PORT=3000
-GRPC_PORT=50051
-DISPLAY_PORT=8080
 EOF
 
 success "Saved $MANAGER_ENV_FILE"

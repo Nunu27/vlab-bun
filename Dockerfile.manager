@@ -29,6 +29,7 @@ RUN cd apps/web && bun run build
 FROM gcr.io/distroless/cc
 WORKDIR /app
 ENV NODE_ENV=production
+EXPOSE 3000 8080 50051
 
 COPY --from=manager-builder /app/out/manager/app /app/app
 COPY --from=manager-builder /app/out/manager/migrations /app/migrations

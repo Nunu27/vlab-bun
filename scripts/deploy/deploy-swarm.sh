@@ -226,14 +226,11 @@ prompt LETSENCRYPT_EMAIL "LETSENCRYPT_EMAIL" "$(read_env LETSENCRYPT_EMAIL "$MAN
 [[ -n "$LETSENCRYPT_EMAIL" ]] || die "LETSENCRYPT_EMAIL is required."
 
 # Auto-derive multi-port mapping for nginx-proxy constraint
-PORT=3000
-DISPLAY_PORT=8080
-VIRTUAL_HOST_MULTIPORTS="{\"${VIRTUAL_HOST}\":{\"/\":{\"port\":${PORT}},\"/display\":{\"port\":${DISPLAY_PORT},\"dest\":\"/\"}}}"
+VIRTUAL_HOST_MULTIPORTS="{\"${VIRTUAL_HOST}\":{\"/\":{\"port\":3000},\"/display\":{\"port\":8080,\"dest\":\"/\"}}}"
 LETSENCRYPT_HOST="$VIRTUAL_HOST"
 BASE_URL="https://${VIRTUAL_HOST}"
 
-echo -e "\n${BLD}── Ports & Logging ──────────────────────${RST}"
-prompt GRPC_PORT    "GRPC_PORT"    "$(read_env GRPC_PORT "$MANAGER_ENV_FILE" || echo "50051")"
+echo -e "\n${BLD}── Logging ──────────────────────────────${RST}"
 prompt LOG_LEVEL    "LOG_LEVEL"    "$(read_env LOG_LEVEL "$MANAGER_ENV_FILE" || echo "info")"
 
 # Write .env.manager
@@ -266,11 +263,6 @@ VIRTUAL_HOST=${VIRTUAL_HOST}
 VIRTUAL_HOST_MULTIPORTS=${VIRTUAL_HOST_MULTIPORTS}
 LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
 LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-
-# Ports
-PORT=${PORT}
-GRPC_PORT=${GRPC_PORT}
-DISPLAY_PORT=${DISPLAY_PORT}
 
 # Logging
 LOG_LEVEL=${LOG_LEVEL}
@@ -351,7 +343,7 @@ $DOCKER_CMD stack services "$STACK_NAME"
 # =============================================================================
 echo
 info "Initializing RustFS 'vlab' bucket ..."
-if $DOCKER_CMD run --rm --network "${STACK_NAME}_vlab-network" minio/mc sh -c "mc alias set rustfs http://rustfs:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY} >/dev/null 2>&1 && mc mb --ignore-existing rustfs/vlab >/dev/null 2>&1"; then
+if $DOCKER_CMD run --rm --network "${STACK_NAME}_vlab-network" --entrypoint sh minio/mc -c "mc alias set rustfs http://rustfs:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY} >/dev/null 2>&1 && mc mb --ignore-existing rustfs/vlab >/dev/null 2>&1"; then
   success "RustFS bucket 'vlab' is ready."
 else
   warn "Failed to automatically create the RustFS bucket. You may need to create it manually via the Web Console on port 9001."
