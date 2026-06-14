@@ -97,6 +97,7 @@ log "Starting worker container..."
 docker run -d \
   --name "$WORKER_CONTAINER" \
   --privileged \
+  --pid host \
   --network "$CLAB_MGMT_NETWORK" \
   -e NODE_ENV=production \
   -e WORKER_ID="$WORKER_ID" \
@@ -107,6 +108,7 @@ docker run -d \
   -e CLAB_MGMT_NETWORK="$CLAB_MGMT_NETWORK" \
   -e LOG_LEVEL="$LOG_LEVEL" \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/run/docker/netns:/var/run/docker/netns:ro \
   -v "$TOPOLOGIES_VOLUME":/app/lab \
   "$WORKER_IMAGE"
 
