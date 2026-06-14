@@ -3,10 +3,12 @@
 	"module": "index.ts",
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.14",
+		"@clack/prompts": "^1.5.1",
 		"@types/bun": "^1.3.14",
 		"concurrently": "^9.2.1",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.4.0",
+		"node-ssh": "^13.2.1",
 		"typescript": "^6.0.3"
 	},
 	"lint-staged": {
@@ -17,7 +19,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "concurrently -n web,manager,worker -c cyan,magenta,yellow \"bun web dev\" \"bun manager dev\" \"bun worker dev\"",
-		"dev:tmux": "bun run scripts/dev.ts",
+		"scripts:tmux": "bun run scripts/dev.ts",
+		"scripts:db-transfer": "bun run scripts/db-transfer.ts",
 		"web": "bun --filter @vlab/web",
 		"manager": "bun --filter @vlab/manager",
 		"worker": "bun --filter @vlab/worker",

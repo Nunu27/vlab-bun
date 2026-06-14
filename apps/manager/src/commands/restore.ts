@@ -14,6 +14,7 @@ import {
 import baseLogger from "@manager/lib/logger";
 import storage from "@manager/lib/storage";
 import { decode } from "@msgpack/msgpack";
+import { eq } from "drizzle-orm";
 
 const logger = baseLogger.child({ service: "restore" });
 
@@ -69,6 +70,7 @@ export async function runRestore() {
 			for (const row of data.users) {
 				row.createdAt = new Date(row.createdAt);
 				row.updatedAt = row.updatedAt ? new Date(row.updatedAt) : null;
+				await tx.delete(users).where(eq(users.email, row.email));
 				await tx
 					.insert(users)
 					.values(row)
