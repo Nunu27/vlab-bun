@@ -15,7 +15,7 @@ The **Manager** is the central orchestrator and API server. It is built with [El
 - **Key Responsibilities:** Database management (PostgreSQL via Drizzle ORM), user authentication, serving the HTTP API, and dispatching tasks to Workers.
 - **Notable Locations:**
   - `src/db/`: Drizzle ORM schemas and the main database connection instance.
-  - `src/services/`: The core business logic, including HTTP routes (`http/`), Waycast WebSockets (`ws/`), and gRPC handlers (`grpc/`).
+  - `src/services/`: The core business logic, including HTTP routes (`http/`), Waycast WebSockets (`ws/`), gRPC handlers (`grpc/`), background task queues (`queue/`), and remote desktop proxying (`guacamole-lite/`).
   - `src/seeders/`: Scripts to populate the database with initial data (Admin, Departments, etc.).
 
 ### `apps/worker`

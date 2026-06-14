@@ -23,13 +23,13 @@ export const labSessions = pgTable("lab_session", {
 	...base,
 	labId: uuid()
 		.notNull()
-		.references(() => labs.id, { onDelete: "restrict" }),
+		.references(() => labs.id, { onDelete: "cascade" }),
 	studentId: uuid()
 		.notNull()
-		.references(() => students.id, { onDelete: "restrict" }),
+		.references(() => students.id, { onDelete: "cascade" }),
 	workerId: text()
 		.notNull()
-		.references(() => workers.id, { onDelete: "restrict" }),
+		.references(() => workers.id, { onDelete: "cascade" }),
 	clientId: text(),
 	score: numeric().notNull().default("0"),
 	submittedAt: timestamp({ withTimezone: true }),
@@ -44,6 +44,10 @@ export const labSessionsRelations = relations(labSessions, ({ one, many }) => ({
 	student: one(students, {
 		fields: [labSessions.studentId],
 		references: [students.id],
+	}),
+	worker: one(workers, {
+		fields: [labSessions.workerId],
+		references: [workers.id],
 	}),
 	checks: many(labSessionChecks),
 	nodes: many(labSessionNodes),

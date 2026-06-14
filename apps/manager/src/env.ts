@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-import dns from "node:dns/promises";
 import { Value } from "@sinclair/typebox/value";
 import { TypeCompiler, t } from "elysia/type-system";
 
@@ -51,10 +50,6 @@ const EnvSchema = t.Object(
 		COOKIE_SECRET: t.String({ minLength: 32, maxLength: 64 }),
 
 		// Labs
-		// GUACD_IP will be automatically inferred from GUACD_HOST if not provided
-		GUACD_IP: t.String({ default: "" }),
-		GUACD_HOST: t.String(),
-		GUACD_PORT: t.Number({ default: 4822 }),
 		GUACD_SECRET: t.String({ minLength: 32, maxLength: 64 }),
 	},
 	{ additionalProperties: false },
@@ -78,9 +73,3 @@ const env = validator.Decode(casted);
 
 export default env;
 export const inProduction = env.NODE_ENV === "production";
-export async function populateEnv() {
-	if (!env.GUACD_IP) {
-		const data = await dns.lookup(env.GUACD_HOST, { family: 4 });
-		env.GUACD_IP = data.address;
-	}
-}

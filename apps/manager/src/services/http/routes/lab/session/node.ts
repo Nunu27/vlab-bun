@@ -28,7 +28,12 @@ export default createRouter()
 							columns: { id: true, name: true, health: true, ip: true },
 							with: {
 								deviceTemplate: { columns: { connection: true } },
-								labSession: { columns: { id: true, labId: true } },
+								labSession: {
+									columns: { id: true, labId: true },
+									with: {
+										worker: { columns: { guacdHost: true, guacdPort: true } },
+									},
+								},
 							},
 						});
 						if (!node) {
@@ -46,11 +51,17 @@ export default createRouter()
 							data: { port, username, password },
 						} = deviceTemplate.connection;
 
+						if (!labSession.worker) {
+							return status(500, failure({ message: "Worker not found" }));
+						}
+
 						return success({
 							data: {
 								...nodeData,
 								token: guacamole.generateToken({
 									type,
+									guacdHost: labSession.worker.guacdHost,
+									guacdPort: labSession.worker.guacdPort,
 									settings: {
 										hostname: ip,
 										port: port.toString(),

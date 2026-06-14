@@ -12,7 +12,7 @@ import type {
 	GrpcRpcRoutes,
 } from "@vlab/grpc";
 import { AsyncQueue, appRouter, WorkerProto } from "@vlab/grpc";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { attachMonitorHandlers } from "./monitor";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
@@ -22,14 +22,26 @@ export const connectedWorkers = new Map<
 	ReturnType<typeof appRouter.buildClient>
 >();
 
-export async function getAvailableWorkerId(): Promise<string> {
+export async function getAvailableWorkerId() {
 	const worker = await db.query.workers.findFirst({
 		columns: { id: true },
 		where: (w, { eq }) => eq(w.status, "online"),
 		orderBy: (w, { desc }) => [desc(w.score)],
 	});
-	if (!worker) throw new Error("No online workers available");
+	if (!worker) {
+		throw new Error("No online workers available, please contact admin");
+	}
+
 	return worker.id;
+}
+
+export async function resetStaleWorkers() {
+	await db
+		.update(workers)
+		.set({ status: "offline" })
+		.where(
+			and(eq(workers.managerId, env.MANAGER_ID), eq(workers.status, "online")),
+		);
 }
 
 type ExtractReplyType<T> = T extends TSchema ? Static<T> : never;
@@ -88,6 +100,8 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				cpuCores: workerSpec.cpuCores,
 				memoryMB: workerSpec.memoryMb,
 				storageMB: workerSpec.storageMb,
+				guacdHost: workerSpec.guacdHost,
+				guacdPort: workerSpec.guacdPort,
 				cpuUsagePercent: "0",
 				memoryUsagePercent: "0",
 				storageUsagePercent: "0",
@@ -102,6 +116,8 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 					cpuCores: workerSpec.cpuCores,
 					memoryMB: workerSpec.memoryMb,
 					storageMB: workerSpec.storageMb,
+					guacdHost: workerSpec.guacdHost,
+					guacdPort: workerSpec.guacdPort,
 				},
 			})
 			.returning({

@@ -6,7 +6,7 @@ import type { Server } from "bun";
 import { Elysia } from "elysia";
 import redis from "./lib/redis";
 
-import grpcServer from "./services/grpc";
+import grpcServer, { resetStaleWorkers } from "./services/grpc";
 import guacamoleLite from "./services/guacamole-lite";
 import httpHandler from "./services/http";
 import { cache } from "./services/http/middlewares/caching";
@@ -60,6 +60,7 @@ export async function startServer() {
 	await cache.clear();
 
 	await checkAndRunMigration();
+	await resetStaleWorkers();
 
 	guacamoleLite.init();
 

@@ -24,11 +24,6 @@ const websocketOptions: WSServerOptions = {
 	host: "0.0.0.0",
 };
 
-const guacdOptions = {
-	host: env.GUACD_HOST,
-	port: env.GUACD_PORT,
-};
-
 const clientOptions = {
 	crypt: {
 		cypher: "AES-256-CBC",
@@ -135,12 +130,7 @@ function initGuacamole(server?: Server) {
 
 	const options = server ? { server } : websocketOptions;
 
-	guacServer = new GuacamoleLite(
-		options,
-		guacdOptions,
-		clientOptions,
-		callbacks,
-	);
+	guacServer = new GuacamoleLite(options, {}, clientOptions, callbacks);
 
 	guacServer.on("open", (clientConnection) => {
 		logger.debug(
@@ -200,6 +190,8 @@ interface GuacamoleProtocol {
 type GuacamoleConnectionConfig<TType extends keyof GuacamoleProtocol> = {
 	type: TType;
 	settings: GuacamoleProtocol[TType];
+	guacdHost: string;
+	guacdPort: number;
 };
 
 function generateToken<TType extends keyof GuacamoleProtocol>(

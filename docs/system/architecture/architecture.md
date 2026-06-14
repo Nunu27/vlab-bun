@@ -17,6 +17,7 @@ The Manager is the "brain" of the vLab system. It is a centralized Elysia.js API
 - **State Coordination:** The Manager tracks which Worker is running which lab session, ensuring no port conflicts or resource overallocation occurs across the cluster.
 - **Background Task Processing:** Heavy or scheduled tasks (such as Lab Session auto-expiration or File Storage Garbage Collection) are managed cluster-wide via BullMQ, guaranteeing they execute reliably and exactly once regardless of how many Manager replicas are running.
 - **User Management:** All authentication and authorization are handled centrally before any action is passed to a Worker.
+- **Remote Access Proxy (Guacamole):** The Manager acts as a secure proxy for student terminal connections (SSH, VNC, RDP, Telnet) into lab containers using `guacamole-lite`, hiding the Worker's direct IP from the end-user.
 
 ## 2. The Worker (`apps/worker`)
 
