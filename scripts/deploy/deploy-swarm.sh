@@ -53,30 +53,42 @@ prompt() {
 }
 
 prompt_secret() {
-  local var="$1" label="$2" default="${3:-}"
+  local var="$1" label="$2" default="${3:-}" min_len="${4:-0}"
   local answer=""
   
-  if [[ -t 0 ]]; then
-    if [[ -n "$default" ]]; then
-      read -rsp "  ${label} [leave blank to keep existing]: " answer || true
-      echo
-      answer="${answer:-$default}"
+  while true; do
+    if [[ -t 0 ]]; then
+      if [[ -n "$default" ]]; then
+        read -rsp "  ${label} [leave blank to keep existing]: " answer || true
+        echo
+        answer="${answer:-$default}"
+      else
+        read -rsp "  ${label}: " answer || true
+        echo
+      fi
+    elif (true < /dev/tty) 2>/dev/null; then
+      if [[ -n "$default" ]]; then
+        read -rsp "  ${label} [leave blank to keep existing]: " answer </dev/tty || true
+        echo
+        answer="${answer:-$default}"
+      else
+        read -rsp "  ${label}: " answer </dev/tty || true
+        echo
+      fi
     else
-      read -rsp "  ${label}: " answer || true
-      echo
+      answer="$default"
     fi
-  elif (true < /dev/tty) 2>/dev/null; then
-    if [[ -n "$default" ]]; then
-      read -rsp "  ${label} [leave blank to keep existing]: " answer </dev/tty || true
-      echo
-      answer="${answer:-$default}"
+
+    if [[ ${#answer} -lt $min_len ]]; then
+      echo "  [!] ${label} must be at least ${min_len} characters long." >&2
+      # If not interactive, we can't retry, so abort.
+      if [[ ! -t 0 ]] && ! (true < /dev/tty) 2>/dev/null; then
+        exit 1
+      fi
     else
-      read -rsp "  ${label}: " answer </dev/tty || true
-      echo
+      break
     fi
-  else
-    answer="$default"
-  fi
+  done
 
   printf -v "$var" '%s' "$answer"
 }
@@ -196,7 +208,7 @@ DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}"
 
 echo -e "\n${BLD}── S3 / RustFS ──────────────────────────${RST}"
 prompt S3_ACCESS_KEY "S3_ACCESS_KEY" "$(read_env S3_ACCESS_KEY "$MANAGER_ENV_FILE" || echo "rustfsadmin")"
-prompt_secret S3_SECRET_KEY "S3_SECRET_KEY" "$(read_env S3_SECRET_KEY "$MANAGER_ENV_FILE" || echo "rustfsadmin")"
+prompt_secret S3_SECRET_KEY "S3_SECRET_KEY" "$(read_env S3_SECRET_KEY "$MANAGER_ENV_FILE" || echo "rustfsadmin")" 8
 S3_ENDPOINT="http://rustfs:9000/vlab"
 
 echo -e "\n${BLD}── Auth ─────────────────────────────────${RST}"

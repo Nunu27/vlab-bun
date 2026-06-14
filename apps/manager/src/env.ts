@@ -37,7 +37,7 @@ const EnvSchema = t.Object(
 
 		S3_ENDPOINT: t.String(),
 		S3_ACCESS_KEY: t.String(),
-		S3_SECRET_KEY: t.String(),
+		S3_SECRET_KEY: t.String({ minLength: 8 }),
 		STORAGE_CLEANUP_WINDOW_HOURS: t.Number({ default: 24 }),
 
 		// Auth
