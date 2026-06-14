@@ -407,10 +407,10 @@ if [[ -n "$WORKER_TOKEN" && -n "$MANAGER_IP" ]]; then
   echo
   echo "  To add a worker node, run this on the new machine:"
   if [[ -n "$PUBLIC_IP" && "$MANAGER_IP" != "$PUBLIC_IP" ]]; then
-    echo "  docker swarm join --token ${WORKER_TOKEN} ${PUBLIC_IP}:2377 (Public IP)"
-    echo "  docker swarm join --token ${WORKER_TOKEN} ${MANAGER_IP}:2377 (Internal IP)"
+    echo "  docker swarm join --token ${WORKER_TOKEN} --advertise-addr <accessible_ip> ${PUBLIC_IP}:2377 (Public IP)"
+    echo "  docker swarm join --token ${WORKER_TOKEN} --advertise-addr <accessible_ip> ${MANAGER_IP}:2377 (Internal IP)"
   else
-    echo "  docker swarm join --token ${WORKER_TOKEN} ${MANAGER_IP}:2377"
+    echo "  docker swarm join --token ${WORKER_TOKEN} --advertise-addr <accessible_ip> ${MANAGER_IP}:2377"
   fi
 fi
 echo
