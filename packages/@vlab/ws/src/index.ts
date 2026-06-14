@@ -13,7 +13,7 @@ import { deviceTemplateRouter } from "./device-template";
 import { labSessionRouter } from "./lab-session";
 import type { WSMeta } from "./types";
 
-const appRouter = new Router<WSMeta>()
+const appRouter = new Router<WSMeta>({ maxDisconnectionDuration: 60000 })
 	.merge(adminRouter)
 	.merge(deviceTemplateRouter)
 	.merge(labSessionRouter);
