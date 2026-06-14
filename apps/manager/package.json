@@ -4,6 +4,8 @@
 	"scripts": {
 		"dev": "bun run --watch src/index.ts serve | pino-pretty",
 		"seed": "bun run src/index.ts seed | pino-pretty",
+		"backup": "bun run src/index.ts backup | pino-pretty",
+		"restore": "bun run src/index.ts restore | pino-pretty",
 		"build": "bun build src/index.ts --compile --minify --outfile ../../out/manager/app && cp -r migrations ../../out/manager/migrations",
 		"typecheck": "tsc --noEmit",
 		"drizzle:generate": "drizzle-kit generate",
