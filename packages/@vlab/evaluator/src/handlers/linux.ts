@@ -498,7 +498,11 @@ export default new EvaluationHandler("linux")
 
 			try {
 				const exec = await container.exec({
-					Cmd: ["tail", "-F", "/etc/passwd"],
+					Cmd: [
+						"sh",
+						"-c",
+						"inotifywait -m -q -e close_write,moved_to,modify --format '%f' /etc | grep --line-buffered '^passwd$'",
+					],
 					AttachStdout: true,
 					AttachStderr: true,
 					Tty: false,

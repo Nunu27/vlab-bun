@@ -1,16 +1,16 @@
 ---
 id: "evaluation-for-routing-module-2026-04-13"
-status: "todo"
+status: "done"
 priority: "medium"
 assignee: null
+epic: null
 dueDate: null
 created: "2026-04-13T03:29:39.890Z"
-modified: "2026-06-11T05:22:00.000Z"
-completedAt: null
+modified: "2026-06-14T06:01:33.488Z"
+completedAt: "2026-06-14T06:01:33.488Z"
 labels: ["evaluation", "bgp"]
-order: "a8"
+order: "Zu"
 ---
-
 # Evaluation for Routing Module
 
 Implement evaluation checks for BGP routing protocol.

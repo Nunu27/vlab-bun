@@ -116,7 +116,7 @@ export interface Events<TFullMapping extends FullMappingConstraint> {
 
 export interface BaseContext {
 	docker: Dockerode;
-	logger: Logger;
+	logger: Pick<Logger, "info" | "error" | "debug" | "warn">;
 	nodeInterfaceMap: Map<string, Record<string, string[]>>;
 	sessionIds: Set<string>;
 	emitInterfaceUpdate: (

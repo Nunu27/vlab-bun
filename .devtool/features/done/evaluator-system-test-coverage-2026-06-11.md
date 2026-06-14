@@ -1,16 +1,16 @@
 ---
 id: "evaluator-system-test-coverage-2026-06-11"
-status: "backlog"
+status: "done"
 priority: "low"
 assignee: null
+epic: null
 dueDate: null
 created: "2026-06-11T05:22:00.000Z"
-modified: "2026-06-11T05:22:00.000Z"
-completedAt: null
+modified: "2026-06-14T06:01:29.046Z"
+completedAt: "2026-06-14T06:01:29.046Z"
 labels: ["testing", "backend"]
-order: "a1"
+order: "Zv"
 ---
-
 # Evaluator System Test Coverage
 
 Implement comprehensive unit and integration tests for the `@vlab/evaluator` package.

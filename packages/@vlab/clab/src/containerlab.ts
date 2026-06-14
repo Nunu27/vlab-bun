@@ -71,9 +71,20 @@ export class Containerlab {
 			const isRoot = process.geteuid?.() === 0;
 			const isSuidRoot = (stats.mode & 0o4000) !== 0 && stats.uid === 0;
 
-			if (!isRoot && !isSuidRoot) {
+			const inClabAdmins = (() => {
+				try {
+					return require("node:child_process")
+						.execSync("groups")
+						.toString()
+						.includes("clab_admins");
+				} catch {
+					return false;
+				}
+			})();
+
+			if (!isRoot && !isSuidRoot && !inClabAdmins) {
 				throw new Error(
-					`Containerlab requires root privileges. Please run the worker as root, or grant the executable root SUID permissions.\nTo grant SUID, run exactly: 'sudo chown root:root ${resolvedPath} && sudo chmod u+s ${resolvedPath}' (do not change 'root:root' to your username).`,
+					`Containerlab requires root privileges. Please run the worker as root, grant the executable root SUID permissions, or add the user to 'clab_admins' group.\nTo grant SUID, run exactly: 'sudo chown root:root ${resolvedPath} && sudo chmod u+s ${resolvedPath}'.`,
 				);
 			}
 		} catch (error) {

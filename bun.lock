@@ -305,6 +305,24 @@
         "dotenv": "^17.4.2",
       },
     },
+    "tests/evaluator-e2e": {
+      "name": "evaluator-e2e",
+      "dependencies": {
+        "@sinclair/typebox": "^0.34.49",
+        "@vlab/clab": "workspace:*",
+        "@vlab/clab-monitor": "workspace:*",
+        "@vlab/evaluator": "workspace:*",
+        "dockerode": "^5.0.0",
+        "mikro-routeros": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/dockerode": "^4.0.1",
+      },
+      "peerDependencies": {
+        "typescript": "^6.0.3",
+      },
+    },
   },
   "packages": {
     "@acemir/cssom": ["@acemir/cssom@0.9.31", "", {}, "sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA=="],
@@ -1586,6 +1604,8 @@
     "estree-walker": ["estree-walker@3.0.3", "", { "dependencies": { "@types/estree": "^1.0.0" } }, "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g=="],
 
     "etag": ["etag@1.8.1", "", {}, "sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg=="],
+
+    "evaluator-e2e": ["evaluator-e2e@workspace:tests/evaluator-e2e"],
 
     "event-emitter": ["event-emitter@0.3.5", "", { "dependencies": { "d": "1", "es5-ext": "~0.10.14" } }, "sha512-D9rRn9y7kLPnJ+hMq7S/nhvoKwwvVJahBi2BPmx3bvbsEdK3W9ii8cBSGjP+72/LnM4n6fo3+dkCX5FeTQruXA=="],
 

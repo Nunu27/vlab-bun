@@ -774,11 +774,18 @@ export default new EvaluationHandler("mikrotik")
 				"/system/identity/print",
 			);
 
-			const listener = await client.stream("/system/identity/listen");
+			const listener = await client.stream("/log/listen");
 
-			listener.on("data", (data) => {
-				list[0] = data;
-				notify(list);
+			listener.on("data", async (data) => {
+				if (data.message?.includes("system identity changed")) {
+					try {
+						const newList = await client.runQuery("/system/identity/print");
+						list[0] = newList[0];
+						notify(list);
+					} catch (e) {
+						console.error("Failed to update identity", e);
+					}
+				}
 			});
 
 			return listener.cancel;
@@ -798,7 +805,7 @@ export default new EvaluationHandler("mikrotik")
 			}),
 		},
 		handler: (_, params, data) => {
-			return data.length > 0 && data[0].name === params.name;
+			return data.length > 0 && data[0]?.name === params.name;
 		},
 	})
 	// Users
