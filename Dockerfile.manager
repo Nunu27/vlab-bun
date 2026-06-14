@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y python3 make g++ \
 
 # --- Dependencies ---
 FROM base AS deps
-COPY --parents package.json bun.lock tsconfig.json apps/*/package.json packages/*/*/package.json ./
+COPY --parents package.json bun.lock tsconfig.json apps/*/package.json packages/*/*/package.json tests/*/package.json ./
 RUN HUSKY=0 bun install --frozen-lockfile
 
 # --- Manager Builder ---

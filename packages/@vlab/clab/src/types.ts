@@ -65,8 +65,13 @@ export interface ContainerlabNodeStageExec extends ContainerlabUnknownFields {
 	phase?: string;
 }
 
+export interface ContainerlabNodeStageWaitFor {
+	node: string;
+	stage: string;
+}
+
 export interface ContainerlabNodeStage extends ContainerlabUnknownFields {
-	"wait-for"?: string[];
+	"wait-for"?: ContainerlabNodeStageWaitFor[];
 	exec?: (string | ContainerlabNodeStageExec)[];
 	"host-exec"?: (string | ContainerlabNodeStageExec)[];
 }
@@ -211,7 +216,9 @@ export interface ContainerlabInspectNode {
 	ipv4Address?: string;
 	ipv6Address?: string;
 	owner?: string;
-	raw: Record<string, unknown>;
+	group?: string;
+	role?: string;
+	raw?: Record<string, unknown>;
 }
 
 export type ContainerlabScalar = string | number | boolean | null;

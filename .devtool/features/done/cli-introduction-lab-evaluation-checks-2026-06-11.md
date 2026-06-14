@@ -1,16 +1,16 @@
 ---
 id: "cli-introduction-lab-evaluation-checks-2026-06-11"
-status: "todo"
+status: "done"
 priority: "medium"
 assignee: null
+epic: null
 dueDate: null
 created: "2026-06-11T05:22:00.000Z"
-modified: "2026-06-11T05:22:00.000Z"
-completedAt: null
+modified: "2026-06-14T06:01:38.183Z"
+completedAt: "2026-06-14T06:01:38.183Z"
 labels: ["evaluation", "cli"]
-order: "a9"
+order: "Zt"
 ---
-
 # CLI Introduction Lab Evaluation Checks
 
 Implement evaluation checks specifically for the "CLI Introduction" lab.

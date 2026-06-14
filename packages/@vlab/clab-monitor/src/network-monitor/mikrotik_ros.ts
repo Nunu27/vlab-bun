@@ -12,7 +12,14 @@ const nodeInterfaceIdMapping = new Map<
 
 const getApi = async (
 	id: string,
-	{ logger, ...options }: { host: string; port: number; logger: Logger },
+	{
+		logger,
+		...options
+	}: {
+		host: string;
+		port: number;
+		logger: Pick<Logger, "info" | "error" | "debug" | "warn">;
+	},
 ) => {
 	const client = connections.get(id);
 
