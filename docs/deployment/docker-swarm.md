@@ -50,13 +50,26 @@ The script will:
 
 After the script finishes, it will provide a `docker swarm join` command. On **every worker node**, you must install Docker and Containerlab, then run that join command.
 
+> [!CAUTION]
+> **Multi-Cloud & Firewall Requirements**
+> 
+> If your worker nodes are in a different cloud provider or network than your manager (e.g., Manager in Azure, Worker in Oracle Cloud), Docker Swarm's overlay networking will fail silently if firewall ports are blocked. This causes critical errors like `Name resolution failed for target dns:manager:50051`.
+> 
+> You MUST explicitly configure your firewalls (e.g., AWS Security Groups, Azure NSG, Oracle Security Lists) to allow the following traffic:
+> - **TCP 2377**: Cluster management. **Inbound** on Manager, **Outbound** from Workers.
+> - **TCP & UDP 7946**: Node communication and Gossip (DNS discovery). **Inbound & Outbound** on all nodes.
+> - **UDP 4789**: Overlay network traffic (VXLAN). **Inbound & Outbound** on all nodes.
+> 
+> Additionally, when joining a node across the public internet, you must force Swarm to use public IPs by passing the `--advertise-addr` flag.
+
 ```bash
 # On the worker node:
 curl -fsSL https://get.docker.com | sh
 bash -c "$(curl -sL https://get.containerlab.dev)"
 
 # Join the swarm using the token from the manager
-docker swarm join --token <WORKER_TOKEN> <MANAGER_IP>:2377
+# (Include --advertise-addr if joining across different cloud networks)
+docker swarm join --token <WORKER_TOKEN> --advertise-addr <WORKER_PUBLIC_IP> <MANAGER_PUBLIC_IP>:2377
 ```
 
 ## Managing the Stack
