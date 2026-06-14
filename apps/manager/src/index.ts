@@ -1,12 +1,21 @@
-import { runSeeder } from "./seeders";
-import { startServer } from "./server";
+export {};
 
 const commands: Record<string, () => Promise<void>> = {
 	serve: async () => {
+		const { startServer } = await import("./server");
 		await startServer();
 	},
 	seed: async () => {
+		const { runSeeder } = await import("./seeders");
 		await runSeeder();
+	},
+	backup: async () => {
+		const { runBackup } = await import("./commands/backup");
+		await runBackup();
+	},
+	restore: async () => {
+		const { runRestore } = await import("./commands/restore");
+		await runRestore();
 	},
 };
 
@@ -19,6 +28,12 @@ if (!handler) {
 	console.error("Usage:");
 	console.error("  bun run src/index.ts [serve]  Start the API server");
 	console.error("  bun run src/index.ts seed     Run database seeders");
+	console.error(
+		"  bun run src/index.ts backup   Backup database and S3 to lab_backup/",
+	);
+	console.error(
+		"  bun run src/index.ts restore  Restore database and S3 from lab_backup/",
+	);
 	process.exit(1);
 }
 
