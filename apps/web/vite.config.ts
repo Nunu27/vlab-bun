@@ -17,6 +17,9 @@ const config = defineConfig({
 		outDir: "../../out/manager/public",
 		emptyOutDir: true,
 	},
+	esbuild: {
+		drop: ["console", "debugger"],
+	},
 	server: {
 		proxy: {
 			"/ws": { target: "http://localhost:3000", ws: true },

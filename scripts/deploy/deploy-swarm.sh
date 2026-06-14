@@ -312,6 +312,7 @@ success "nginx.tmpl updated."
 # =============================================================================
 echo
 info "Deploying stack '${STACK_NAME}' ..."
+export DB_PASSWORD DB_USER DB_NAME S3_ACCESS_KEY S3_SECRET_KEY LETSENCRYPT_EMAIL
 $DOCKER_CMD stack deploy -c "$SETUP_DIR/docker-compose.yml" "$STACK_NAME"
 success "Stack deployment issued."
 
