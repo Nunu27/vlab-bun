@@ -30,18 +30,18 @@ const EnvSchema = t.Object(
 		GRPC_PORT: t.Number({ default: 50051 }),
 		DISPLAY_PORT: t.Number({ default: 8080 }),
 
-		DATABASE_URL: t.String({ format: "uri" }),
-		REDIS_URL: t.String({ format: "uri" }),
+		DATABASE_URL: t.String(),
+		REDIS_URL: t.String(),
 
 		SESSION_TTL: t.Number({ default: 60 * 60 * 3 }),
 
-		S3_ENDPOINT: t.String({ format: "uri" }),
+		S3_ENDPOINT: t.String(),
 		S3_ACCESS_KEY: t.String(),
 		S3_SECRET_KEY: t.String(),
 		STORAGE_CLEANUP_WINDOW_HOURS: t.Number({ default: 24 }),
 
 		// Auth
-		BASE_URL: t.String({ format: "uri" }),
+		BASE_URL: t.String(),
 		CAS_BASE_URL: t.String({
 			format: "uri",
 			default: "https://login.pens.ac.id",
