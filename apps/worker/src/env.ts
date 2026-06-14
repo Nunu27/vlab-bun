@@ -35,7 +35,21 @@ const EnvSchema = t.Object({
 });
 
 const validator = TypeCompiler.Compile(EnvSchema);
-const value = Value.Default(EnvSchema, process.env);
+
+const cleanEnv = { ...process.env };
+for (const key in cleanEnv) {
+	const val = cleanEnv[key];
+	if (typeof val === "string" && val.length >= 2) {
+		if (
+			(val.startsWith('"') && val.endsWith('"')) ||
+			(val.startsWith("'") && val.endsWith("'"))
+		) {
+			cleanEnv[key] = val.slice(1, -1);
+		}
+	}
+}
+
+const value = Value.Default(EnvSchema, cleanEnv);
 const converted = Value.Convert(EnvSchema, value);
 const casted = Value.Cast(EnvSchema, converted);
 const errors = [...validator.Errors(casted)];
