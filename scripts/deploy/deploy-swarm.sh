@@ -82,7 +82,7 @@ prompt_secret() {
 }
 
 gen_secret() {
-  LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*' </dev/urandom | head -c 32
+  LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*' </dev/urandom 2>/dev/null | head -c 32 || true
 }
 
 read_env() {
