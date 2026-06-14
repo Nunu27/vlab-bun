@@ -769,26 +769,16 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "system-identity",
 		data: SystemIdentitySchema,
-		listen: async ({ client }, notify) => {
-			const list: typeof SystemIdentitySchema.static = await client.runQuery(
-				"/system/identity/print",
-			);
+		listen: async ({ client }, notify, subscribe) => {
+			const doUpdate = debounce(async () => {
+				const data = await client.runQuery("/system/identity/print");
+				notify(data);
+			}, 500);
 
-			const listener = await client.stream("/log/listen");
-
-			listener.on("data", async (data) => {
-				if (data.message?.includes("system identity changed")) {
-					try {
-						const newList = await client.runQuery("/system/identity/print");
-						list[0] = newList[0];
-						notify(list);
-					} catch (e) {
-						console.error("Failed to update identity", e);
-					}
-				}
+			return subscribe("log", async (data) => {
+				if (!data.includes("system identity changed")) return;
+				doUpdate();
 			});
-
-			return listener.cancel;
 		},
 		read: async ({ client }) => {
 			return await client.runQuery("/system/identity/print");

@@ -39,3 +39,8 @@ Standard operations—such as user login, fetching the list of available lab tem
 Just as the Worker streams telemetry to the Manager, the Manager proxies that telemetry down to the Web UI using the exact same Waycast protocol.
 
 - **Usage:** When a user opens a running lab session in the Web UI, their browser establishes a WebSocket connection to the Manager. The Manager multiplexes the telemetry stream arriving from the Worker and broadcasts it to the appropriate authenticated web clients.
+
+### WebSockets (Guacamole Remote Access)
+Terminal access (SSH, VNC, RDP) to the individual nodes in a lab is also handled via WebSockets, completely separate from the Waycast telemetry stream.
+
+- **Usage:** The Web UI utilizes a Guacamole client that connects to the Manager via a dedicated WebSocket connection. The Manager (`apps/manager/src/services/guacamole-lite/`) validates the connection token and proxies the raw remote desktop protocol frames back and forth to the `guacd` daemon, keeping the actual Worker IP hidden.

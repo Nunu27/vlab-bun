@@ -13,6 +13,8 @@ import { monitorState } from "./monitor";
 
 const logger = baseLogger.child({ service: "grpc" });
 
+import env from "../env";
+
 async function* createReplyStream(
 	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
 ): AsyncIterable<WorkerProto.CommandPayload> {
@@ -21,6 +23,8 @@ async function* createReplyStream(
 			cpuCores: os.cpus().length,
 			memoryMb: Math.round(os.totalmem() / 1024 / 1024),
 			storageMb: Math.round(getStorageInfo().totalMb),
+			guacdHost: env.GUACD_HOST,
+			guacdPort: env.GUACD_PORT,
 		},
 	};
 

@@ -1,3 +1,4 @@
+import db from "@manager/db";
 import { sendCommandToWorker, tempNodeEvents } from "@manager/services/grpc";
 import guacamole from "@manager/services/guacamole-lite";
 import ws from "@manager/services/ws";
@@ -93,8 +94,18 @@ export async function handleTestInit(
 		}
 
 		reply("info", "Generating access token...");
+
+		const worker = await db.query.workers.findFirst({
+			columns: { guacdHost: true, guacdPort: true },
+			where: (w, { eq }) => eq(w.id, workerId),
+		});
+
+		if (!worker) throw new Error("Worker not found");
+
 		const token = guacamole.generateToken({
 			type: data.connection.type,
+			guacdHost: worker.guacdHost,
+			guacdPort: worker.guacdPort,
 			settings: {
 				hostname: ip,
 				port: data.connection.data.port.toString(),

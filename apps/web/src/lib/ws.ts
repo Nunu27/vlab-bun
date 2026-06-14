@@ -36,7 +36,6 @@ socket.on("connect_error", (err) => {
 
 socket.on("connect", () => {
 	console.log("[WebSocket] Connected");
-	ws.resubscribe();
 });
 
 useAuthStore.subscribe((state) => {
@@ -46,6 +45,7 @@ useAuthStore.subscribe((state) => {
 	else socket.disconnect();
 });
 
+socket.io.on("reconnect", () => ws.resubscribe());
 socket.on("data", (msg) => ws.handleData(msg));
 socket.on("reply", (msg) => ws.handleReply(msg));
 socket.on("disconnect", (reason) => {

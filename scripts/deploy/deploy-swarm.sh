@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # =============================================================================
-# vLab Deploy Script
-# Usage: curl -fsSL https://raw.githubusercontent.com/nunu27/vlab-bun/main/scripts/deploy.sh | bash
+# vLab Deploy Script (Swarm All-in-One)
+# Usage: curl -fsSL https://raw.githubusercontent.com/nunu27/vlab-bun/main/scripts/deploy-swarm.sh | bash
 # =============================================================================
 
 set -euo pipefail
 
 REPO_RAW="https://raw.githubusercontent.com/nunu27/vlab-bun/main"
 COMPOSE_URL="$REPO_RAW/docker-compose.yml"
+NGINX_TMPL_URL="https://raw.githubusercontent.com/nginx-proxy/nginx-proxy/main/nginx.tmpl"
 STACK_NAME="vlab"
 DEFAULT_SETUP_DIR="/opt/vlab"
 MIN_DOCKER_VERSION=24
@@ -27,7 +28,6 @@ error()   { echo -e "${RED}${BLD}[✗]${RST} $*" >&2; }
 die()     { error "$*"; exit 1; }
 
 prompt() {
-  # prompt <VAR_NAME> <label> <default>
   local var="$1" label="$2" default="$3"
   local answer
   if [[ -n "$default" ]]; then
@@ -40,7 +40,6 @@ prompt() {
 }
 
 prompt_secret() {
-  # prompt_secret <VAR_NAME> <label> <default>
   local var="$1" label="$2" default="$3"
   local answer
   if [[ -n "$default" ]]; then
@@ -55,11 +54,9 @@ prompt_secret() {
 }
 
 gen_secret() {
-  # Generate a random 32-char alphanumeric secret
   LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*' </dev/urandom | head -c 32
 }
 
-# Read a value from an existing .env file, returns empty string if not found
 read_env() {
   local key="$1" file="$2"
   if [[ -f "$file" ]]; then
@@ -72,7 +69,7 @@ read_env() {
 # =============================================================================
 echo
 echo -e "${BLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${BLD}        vLab Deployment Setup            ${RST}"
+echo -e "${BLD}        vLab Swarm Deployment            ${RST}"
 echo -e "${BLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 echo
 
@@ -105,29 +102,22 @@ success "Working directory: $(pwd)"
 echo
 info "Running preflight checks ..."
 
-# OS check
 [[ "$(uname -s)" == "Linux" ]] || die "This script only supports Linux."
 
-# Docker
 if ! command -v docker &>/dev/null; then
   warn "Docker not found. Installing via get.docker.com ..."
   curl -fsSL https://get.docker.com | sh
-  # Add current user to docker group so subsequent commands work without sudo
   if ! groups "$USER" | grep -q '\bdocker\b'; then
     sudo usermod -aG docker "$USER"
     warn "You have been added to the 'docker' group."
-    warn "You may need to log out and back in for this to take effect."
     warn "For this session, the script will use 'sudo docker' where needed."
     DOCKER_CMD="sudo docker"
   fi
 fi
 
 DOCKER_CMD="${DOCKER_CMD:-docker}"
-
-# Daemon running?
 $DOCKER_CMD info &>/dev/null || die "Docker daemon is not running. Start it with: sudo systemctl start docker"
 
-# Version check
 DOCKER_VERSION=$($DOCKER_CMD version --format '{{.Server.Version}}' | cut -d. -f1)
 if [[ "$DOCKER_VERSION" -lt "$MIN_DOCKER_VERSION" ]]; then
   die "Docker >= ${MIN_DOCKER_VERSION}.x is required (found ${DOCKER_VERSION}.x). Please upgrade."
@@ -147,7 +137,6 @@ if [[ "$SWARM_STATE" == "active" ]]; then
   success "Swarm is already active."
 else
   warn "Swarm is not active on this node."
-  # Detect primary non-loopback IP
   DETECTED_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
   prompt ADVERTISE_IP "Advertise IP for swarm init" "${DETECTED_IP:-}"
   [[ -n "$ADVERTISE_IP" ]] || die "Advertise IP is required to initialize the swarm."
@@ -168,22 +157,21 @@ WORKER_ENV_FILE="$SETUP_DIR/.env.worker"
 
 if [[ -f "$MANAGER_ENV_FILE" ]]; then
   info "Existing .env.manager found — using current values as defaults."
-else
-  info "No .env.manager found — starting fresh configuration."
 fi
 
-echo -e "\n${BLD}── Database ─────────────────────────────${RST}"
-prompt DATABASE_URL "DATABASE_URL (PostgreSQL)" "$(read_env DATABASE_URL "$MANAGER_ENV_FILE")"
+echo -e "\n${BLD}── Database (Postgres) ──────────────────${RST}"
+prompt DB_USER "DB_USER" "$(read_env DB_USER "$MANAGER_ENV_FILE" || echo "vlab")"
+prompt DB_NAME "DB_NAME" "$(read_env DB_NAME "$MANAGER_ENV_FILE" || echo "vlab")"
+prompt_secret DB_PASSWORD "DB_PASSWORD" "$(read_env DB_PASSWORD "$MANAGER_ENV_FILE" || echo "vlab")"
+# Derive DATABASE_URL for manager
+DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}"
 
-prompt REDIS_URL "REDIS_URL" "$(read_env REDIS_URL "$MANAGER_ENV_FILE")"
-
-echo -e "\n${BLD}── S3 / MinIO ───────────────────────────${RST}"
-prompt S3_ENDPOINT   "S3_ENDPOINT"   "$(read_env S3_ENDPOINT "$MANAGER_ENV_FILE")"
-prompt S3_ACCESS_KEY "S3_ACCESS_KEY" "$(read_env S3_ACCESS_KEY "$MANAGER_ENV_FILE")"
-prompt_secret S3_SECRET_KEY "S3_SECRET_KEY" "$(read_env S3_SECRET_KEY "$MANAGER_ENV_FILE")"
+echo -e "\n${BLD}── S3 / RustFS ──────────────────────────${RST}"
+prompt S3_ACCESS_KEY "S3_ACCESS_KEY" "$(read_env S3_ACCESS_KEY "$MANAGER_ENV_FILE" || echo "rustfsadmin")"
+prompt_secret S3_SECRET_KEY "S3_SECRET_KEY" "$(read_env S3_SECRET_KEY "$MANAGER_ENV_FILE" || echo "rustfsadmin")"
+S3_ENDPOINT="http://rustfs:9000/vlab"
 
 echo -e "\n${BLD}── Auth ─────────────────────────────────${RST}"
-prompt BASE_URL     "BASE_URL (public URL, e.g. http://1.2.3.4)" "$(read_env BASE_URL "$MANAGER_ENV_FILE")"
 prompt CAS_BASE_URL "CAS_BASE_URL" "$(read_env CAS_BASE_URL "$MANAGER_ENV_FILE" || echo "https://login.pens.ac.id")"
 
 EXISTING_COOKIE_SECRET="$(read_env COOKIE_SECRET "$MANAGER_ENV_FILE")"
@@ -202,10 +190,22 @@ else
   prompt_secret GUACD_SECRET "GUACD_SECRET" "$EXISTING_GUACD_SECRET"
 fi
 
+echo -e "\n${BLD}── Reverse Proxy (nginx-proxy) ──────────${RST}"
+prompt VIRTUAL_HOST "Hostname (e.g. vlab.example.com)" "$(read_env VIRTUAL_HOST "$MANAGER_ENV_FILE")"
+prompt LETSENCRYPT_EMAIL "LETSENCRYPT_EMAIL" "$(read_env LETSENCRYPT_EMAIL "$MANAGER_ENV_FILE")"
+
+[[ -n "$VIRTUAL_HOST" ]] || die "Hostname is required."
+[[ -n "$LETSENCRYPT_EMAIL" ]] || die "LETSENCRYPT_EMAIL is required."
+
+# Auto-derive multi-port mapping for nginx-proxy constraint
+PORT=3000
+DISPLAY_PORT=8080
+VIRTUAL_HOST_MULTIPORTS="{\"${VIRTUAL_HOST}\":{\"/\":{\"port\":${PORT}},\"/display\":{\"port\":${DISPLAY_PORT},\"dest\":\"/\"}}}"
+LETSENCRYPT_HOST="$VIRTUAL_HOST"
+BASE_URL="https://${VIRTUAL_HOST}"
+
 echo -e "\n${BLD}── Ports & Logging ──────────────────────${RST}"
-prompt PORT         "PORT"         "$(read_env PORT "$MANAGER_ENV_FILE" || echo "3000")"
 prompt GRPC_PORT    "GRPC_PORT"    "$(read_env GRPC_PORT "$MANAGER_ENV_FILE" || echo "50051")"
-prompt DISPLAY_PORT "DISPLAY_PORT" "$(read_env DISPLAY_PORT "$MANAGER_ENV_FILE" || echo "8080")"
 prompt LOG_LEVEL    "LOG_LEVEL"    "$(read_env LOG_LEVEL "$MANAGER_ENV_FILE" || echo "info")"
 
 # Write .env.manager
@@ -214,10 +214,13 @@ cat > "$MANAGER_ENV_FILE" <<EOF
 # Generated by vLab deploy script on $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Database
+DB_USER="${DB_USER}"
+DB_NAME="${DB_NAME}"
+DB_PASSWORD="${DB_PASSWORD}"
 DATABASE_URL="${DATABASE_URL}"
-REDIS_URL="${REDIS_URL}"
+REDIS_URL="redis://redis:6379"
 
-# S3 / MinIO
+# S3 / RustFS
 S3_ENDPOINT="${S3_ENDPOINT}"
 S3_ACCESS_KEY="${S3_ACCESS_KEY}"
 S3_SECRET_KEY="${S3_SECRET_KEY}"
@@ -229,6 +232,12 @@ COOKIE_SECRET="${COOKIE_SECRET}"
 
 # Guacamole
 GUACD_SECRET="${GUACD_SECRET}"
+
+# Proxy / Nginx
+VIRTUAL_HOST="${VIRTUAL_HOST}"
+VIRTUAL_HOST_MULTIPORTS=${VIRTUAL_HOST_MULTIPORTS}
+LETSENCRYPT_HOST="${LETSENCRYPT_HOST}"
+LETSENCRYPT_EMAIL="${LETSENCRYPT_EMAIL}"
 
 # Ports
 PORT="${PORT}"
@@ -253,110 +262,7 @@ chmod 600 "$WORKER_ENV_FILE"
 success ".env.worker written."
 
 # =============================================================================
-# STEP 3.5 — nginx-proxy configuration (optional)
-# =============================================================================
-echo
-echo -e "\n${BLD}── Reverse Proxy ────────────────────────${RST}"
-
-USE_PROXY=false
-PROXY_COMPOSE_FILE=""
-PROXY_STATE_FILE="$SETUP_DIR/.proxy-state"
-
-read -rp "  Use nginx-proxy for reverse proxying? [y/N]: " _proxy_answer
-if [[ "${_proxy_answer,,}" == "y" ]]; then
-  USE_PROXY=true
-
-  info "Note: nginx-proxy will route to PORT=${PORT} (main) and DISPLAY_PORT=${DISPLAY_PORT} (display) internally."
-
-  prompt PROXY_NETWORK    "Proxy network name"               "$(read_env PROXY_NETWORK "$PROXY_STATE_FILE" || echo "nginx-proxy")"
-  prompt VIRTUAL_HOST     "Hostname (e.g. vlab.example.com)" "$(read_env VIRTUAL_HOST "$PROXY_STATE_FILE")"
-  prompt LETSENCRYPT_EMAIL "LETSENCRYPT_EMAIL"               "$(read_env LETSENCRYPT_EMAIL "$PROXY_STATE_FILE")"
-
-  [[ -n "$VIRTUAL_HOST" ]]     || die "Hostname is required."
-  [[ -n "$LETSENCRYPT_EMAIL" ]] || die "LETSENCRYPT_EMAIL is required."
-
-  # Auto-derive
-  LETSENCRYPT_HOST="$VIRTUAL_HOST"
-  VIRTUAL_HOST_MULTIPORTS="{\"${VIRTUAL_HOST}\":{\"/\":{\"port\":${PORT}},\"/display\":{\"port\":${DISPLAY_PORT},\"dest\":\"/\"}}}"
-
-  # ── Network detection ──────────────────────────────────────────────────────
-  NET_DRIVER=$($DOCKER_CMD network inspect "$PROXY_NETWORK" --format '{{.Driver}}' 2>/dev/null || echo "missing")
-
-  if [[ "$NET_DRIVER" == "missing" ]]; then
-    warn "Network '$PROXY_NETWORK' does not exist."
-    read -rp "  Create it as an attachable overlay? [Y/n]: " _create_net
-    if [[ "${_create_net,,}" != "n" ]]; then
-      $DOCKER_CMD network create --driver overlay --attachable "$PROXY_NETWORK"
-      success "Created overlay network '$PROXY_NETWORK'."
-    else
-      die "Cannot proceed without a proxy network."
-    fi
-    echo
-    warn "Connect your nginx-proxy and acme-companion containers to this network:"
-    echo "  docker network connect ${PROXY_NETWORK} <nginx-proxy-container>"
-    echo "  docker network connect ${PROXY_NETWORK} <acme-companion-container>"
-    echo
-    read -rp "  Press Enter once done (or Ctrl+C to abort) ..."
-
-  elif [[ "$NET_DRIVER" == "bridge" ]]; then
-    warn "Network '$PROXY_NETWORK' is a bridge network."
-    warn "Swarm services cannot join bridge networks — an attachable overlay is needed."
-    NEW_NET="${PROXY_NETWORK}-overlay"
-    read -rp "  Create overlay network '${NEW_NET}' and use it instead? [Y/n]: " _migrate
-    if [[ "${_migrate,,}" != "n" ]]; then
-      $DOCKER_CMD network create --driver overlay --attachable "$NEW_NET"
-      success "Created overlay network '$NEW_NET'."
-      PROXY_NETWORK="$NEW_NET"
-    else
-      die "Cannot proceed: bridge network is not compatible with Swarm services."
-    fi
-    echo
-    warn "Connect your nginx-proxy and acme-companion containers to the new network:"
-    echo "  docker network connect ${PROXY_NETWORK} <nginx-proxy-container>"
-    echo "  docker network connect ${PROXY_NETWORK} <acme-companion-container>"
-    echo
-    read -rp "  Press Enter once done (or Ctrl+C to abort) ..."
-
-  else
-    success "Network '$PROXY_NETWORK' found (driver: ${NET_DRIVER})."
-  fi
-
-  # Save proxy state for re-run defaults (separate from .env — never seen by Docker)
-  cat > "$PROXY_STATE_FILE" <<STATEEOF
-# vLab proxy state — used by deploy.sh for re-run defaults only, not loaded by Docker
-PROXY_NETWORK="${PROXY_NETWORK}"
-VIRTUAL_HOST="${VIRTUAL_HOST}"
-LETSENCRYPT_EMAIL="${LETSENCRYPT_EMAIL}"
-STATEEOF
-  chmod 600 "$PROXY_STATE_FILE"
-
-  # Generate docker-compose.proxy.yml
-  PROXY_COMPOSE_FILE="$SETUP_DIR/docker-compose.proxy.yml"
-  info "Generating docker-compose.proxy.yml ..."
-  cat > "$PROXY_COMPOSE_FILE" <<PROXYEOF
-version: "3.8"
-
-networks:
-  proxy-net:
-    external: true
-    name: ${PROXY_NETWORK}
-
-services:
-  manager:
-    ports: []
-    networks:
-      - vlab-network
-      - proxy-net
-    environment:
-      - VIRTUAL_HOST_MULTIPORTS=${VIRTUAL_HOST_MULTIPORTS}
-      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-PROXYEOF
-  success "docker-compose.proxy.yml generated."
-fi
-
-# =============================================================================
-# STEP 4 — Fetch docker-compose.yml
+# STEP 4 — Fetch files (Compose + Nginx Template)
 # =============================================================================
 echo
 info "Fetching latest docker-compose.yml from GitHub (main) ..."
@@ -364,19 +270,17 @@ curl -fsSL "$COMPOSE_URL" -o "$SETUP_DIR/docker-compose.yml" \
   || die "Failed to download docker-compose.yml from $COMPOSE_URL"
 success "docker-compose.yml updated."
 
+info "Fetching latest nginx.tmpl for docker-gen ..."
+curl -fsSL "$NGINX_TMPL_URL" -o "$SETUP_DIR/nginx.tmpl" \
+  || die "Failed to download nginx.tmpl from $NGINX_TMPL_URL"
+success "nginx.tmpl updated."
+
 # =============================================================================
 # STEP 5 — Deploy the stack
 # =============================================================================
 echo
 info "Deploying stack '${STACK_NAME}' ..."
-if [[ "$USE_PROXY" == true && -n "$PROXY_COMPOSE_FILE" ]]; then
-  $DOCKER_CMD stack deploy \
-    -c "$SETUP_DIR/docker-compose.yml" \
-    -c "$PROXY_COMPOSE_FILE" \
-    "$STACK_NAME"
-else
-  $DOCKER_CMD stack deploy -c "$SETUP_DIR/docker-compose.yml" "$STACK_NAME"
-fi
+$DOCKER_CMD stack deploy -c "$SETUP_DIR/docker-compose.yml" "$STACK_NAME"
 success "Stack deployment issued."
 
 # =============================================================================
@@ -390,7 +294,6 @@ INTERVAL=5
 ELAPSED=0
 
 while [[ $ELAPSED -lt $TIMEOUT ]]; do
-  # Count services where replicas running == replicas desired (e.g. "1/1")
   TOTAL=$($DOCKER_CMD stack services "$STACK_NAME" --format '{{.Replicas}}' 2>/dev/null | wc -l)
   READY=$($DOCKER_CMD stack services "$STACK_NAME" --format '{{.Replicas}}' 2>/dev/null \
     | awk -F'/' '$1 == $2 && $1 != "0"' | wc -l)
@@ -415,18 +318,34 @@ fi
 echo
 $DOCKER_CMD stack services "$STACK_NAME"
 
+# =============================================================================
+# STEP 7 — Initialize RustFS Bucket
+# =============================================================================
+echo
+info "Initializing RustFS 'vlab' bucket ..."
+if $DOCKER_CMD run --rm --network vlab-network minio/mc sh -c "mc alias set rustfs http://rustfs:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY} >/dev/null 2>&1 && mc mb --ignore-existing rustfs/vlab >/dev/null 2>&1"; then
+  success "RustFS bucket 'vlab' is ready."
+else
+  warn "Failed to automatically create the RustFS bucket. You may need to create it manually via the Web Console on port 9001."
+fi
+
 echo
 echo -e "${GRN}${BLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${GRN}${BLD}  vLab is deployed!${RST}"
-if [[ "$USE_PROXY" == true ]]; then
-  echo -e "${GRN}${BLD}  URL: https://${VIRTUAL_HOST}${RST}"
-else
-  echo -e "${GRN}${BLD}  URL: ${BASE_URL}${RST}"
-fi
+echo -e "${GRN}${BLD}  vLab Swarm is deployed!${RST}"
+echo -e "${GRN}${BLD}  URL: ${BASE_URL}${RST}"
 echo -e "${GRN}${BLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 echo
 info "Useful commands:"
-echo "  View logs:    docker service logs -f ${STACK_NAME}_manager"
-echo "  Status:       docker stack services ${STACK_NAME}"
-echo "  Remove stack: docker stack rm ${STACK_NAME}"
+echo "  View manager logs:    docker service logs -f ${STACK_NAME}_manager"
+echo "  View proxy logs:      docker service logs -f ${STACK_NAME}_nginx-proxy"
+echo "  Status:               docker stack services ${STACK_NAME}"
+echo "  Remove stack:         docker stack rm ${STACK_NAME}"
+
+WORKER_TOKEN=$($DOCKER_CMD swarm join-token worker -q 2>/dev/null || true)
+MANAGER_IP=$($DOCKER_CMD info --format '{{.Swarm.NodeAddr}}' 2>/dev/null || true)
+if [[ -n "$WORKER_TOKEN" && -n "$MANAGER_IP" ]]; then
+  echo
+  echo "  To add a worker node, run this on the new machine:"
+  echo "  docker swarm join --token ${WORKER_TOKEN} ${MANAGER_IP}:2377"
+fi
 echo

@@ -11,6 +11,8 @@ message WorkerSpec {
   int32 cpu_cores = 1;
   int32 memory_mb = 2;
   int32 storage_mb = 3;
+  string guacd_host = 4;
+  int32 guacd_port = 5;
 }
 
 message CommandPayload {
