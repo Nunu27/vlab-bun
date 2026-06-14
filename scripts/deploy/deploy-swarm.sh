@@ -28,28 +28,56 @@ error()   { echo -e "${RED}${BLD}[✗]${RST} $*" >&2; }
 die()     { error "$*"; exit 1; }
 
 prompt() {
-  local var="$1" label="$2" default="$3"
-  local answer
-  if [[ -n "$default" ]]; then
-    read -rp "  ${label} [${default}]: " answer
-    answer="${answer:-$default}"
+  local var="$1" label="$2" default="${3:-}"
+  local answer=""
+  
+  if [[ -t 0 ]]; then
+    if [[ -n "$default" ]]; then
+      read -rp "  ${label} [${default}]: " answer || true
+      answer="${answer:-$default}"
+    else
+      read -rp "  ${label}: " answer || true
+    fi
+  elif (true < /dev/tty) 2>/dev/null; then
+    if [[ -n "$default" ]]; then
+      read -rp "  ${label} [${default}]: " answer </dev/tty || true
+      answer="${answer:-$default}"
+    else
+      read -rp "  ${label}: " answer </dev/tty || true
+    fi
   else
-    read -rp "  ${label}: " answer
+    answer="$default"
   fi
+
   printf -v "$var" '%s' "$answer"
 }
 
 prompt_secret() {
-  local var="$1" label="$2" default="$3"
-  local answer
-  if [[ -n "$default" ]]; then
-    read -rsp "  ${label} [leave blank to keep existing]: " answer
-    echo
-    answer="${answer:-$default}"
+  local var="$1" label="$2" default="${3:-}"
+  local answer=""
+  
+  if [[ -t 0 ]]; then
+    if [[ -n "$default" ]]; then
+      read -rsp "  ${label} [leave blank to keep existing]: " answer || true
+      echo
+      answer="${answer:-$default}"
+    else
+      read -rsp "  ${label}: " answer || true
+      echo
+    fi
+  elif (true < /dev/tty) 2>/dev/null; then
+    if [[ -n "$default" ]]; then
+      read -rsp "  ${label} [leave blank to keep existing]: " answer </dev/tty || true
+      echo
+      answer="${answer:-$default}"
+    else
+      read -rsp "  ${label}: " answer </dev/tty || true
+      echo
+    fi
   else
-    read -rsp "  ${label}: " answer
-    echo
+    answer="$default"
   fi
+
   printf -v "$var" '%s' "$answer"
 }
 
