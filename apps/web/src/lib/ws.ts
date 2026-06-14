@@ -48,6 +48,15 @@ useAuthStore.subscribe((state) => {
 
 socket.on("data", (msg) => ws.handleData(msg));
 socket.on("reply", (msg) => ws.handleReply(msg));
+socket.on("disconnect", (reason) => {
+	console.log("[WebSocket] Disconnected:", reason);
+
+	if (reason === "io client disconnect") {
+		ws.clear();
+	} else {
+		ws.handleDisconnect();
+	}
+});
 
 export { socket };
 export default ws;

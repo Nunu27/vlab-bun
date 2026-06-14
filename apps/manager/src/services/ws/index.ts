@@ -1,6 +1,7 @@
 import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import { sessions } from "@manager/services/http/middlewares/auth";
+import { wsDisposalQueue } from "@manager/services/queue/ws-disposal";
 import type { WSContext } from "@manager/types/ws";
 import { Server as Engine } from "@socket.io/bun-engine";
 import { createAdapter } from "@socket.io/redis-streams-adapter";
@@ -39,6 +40,19 @@ const server = appRouter.buildServer<WSContext>({
 			for (const t of topics) socket.leave(t);
 		},
 	},
+	disposal: {
+		schedule: async (connectionId, topic, duration) => {
+			await wsDisposalQueue.add(
+				"dispose",
+				{ connectionId, topic },
+				{ delay: duration, jobId: `dispose:${topic}` },
+			);
+		},
+		cancel: async (topic) => {
+			const job = await wsDisposalQueue.getJob(`dispose:${topic}`);
+			await job?.remove();
+		},
+	},
 	emit: (topic, message) => io.to(topic).emit("data", message),
 	reply: (topic, message) => io.to(topic).emit("reply", message),
 });
@@ -55,7 +69,7 @@ io.use(async (socket, next) => {
 });
 
 io.of("/").adapter.on("leave-room", (room, id) => {
-	if (room.endsWith("|reply")) server.handleDispose(id, room);
+	if (room.endsWith("|reply")) server.handleUnsubscribe(id, room);
 });
 
 io.on("connection", (socket) => {

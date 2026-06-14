@@ -33,9 +33,7 @@ export const labSessionWorker = new Worker<
 		const received = await workerActions.dispatch(
 			"lab:submitSession",
 			workerId,
-			{
-				sessionId,
-			},
+			{ sessionId },
 		);
 
 		if (received === 0) {
