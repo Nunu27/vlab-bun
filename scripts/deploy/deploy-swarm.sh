@@ -351,7 +351,7 @@ $DOCKER_CMD stack services "$STACK_NAME"
 # =============================================================================
 echo
 info "Initializing RustFS 'vlab' bucket ..."
-if $DOCKER_CMD run --rm --network vlab-network minio/mc sh -c "mc alias set rustfs http://rustfs:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY} >/dev/null 2>&1 && mc mb --ignore-existing rustfs/vlab >/dev/null 2>&1"; then
+if $DOCKER_CMD run --rm --network "${STACK_NAME}_vlab-network" minio/mc sh -c "mc alias set rustfs http://rustfs:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY} >/dev/null 2>&1 && mc mb --ignore-existing rustfs/vlab >/dev/null 2>&1"; then
   success "RustFS bucket 'vlab' is ready."
 else
   warn "Failed to automatically create the RustFS bucket. You may need to create it manually via the Web Console on port 9001."
