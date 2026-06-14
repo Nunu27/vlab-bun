@@ -64,9 +64,12 @@ export async function startServer() {
 
 	guacamoleLite.init();
 
-	app.listen({ port: env.PORT, ...ws.engine.handler() }, ({ url }) => {
-		logger.info(`Server running on ${url}`);
-	});
+	app.listen(
+		{ hostname: "0.0.0.0", port: env.PORT, ...ws.engine.handler() },
+		({ url }) => {
+			logger.info(`Server running on ${url}`);
+		},
+	);
 
 	const grpcPort = env.GRPC_PORT;
 	await grpcServer.listen(`0.0.0.0:${grpcPort}`);
