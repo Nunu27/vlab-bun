@@ -72,7 +72,30 @@ done
 [[ -n "$GUACD_IP" ]] || die "Could not find guacd on $CLAB_MGMT_NETWORK after 120s."
 
 # =============================================================================
-# 3 — Ensure the topologies named volume exists
+# 3 — Wait for guacd and discover its IP on vlab-network
+#     We pass this to the worker as GUACD_HOST so the manager connects
+#     DIRECTLY to the node-local guacd task IP, bypassing Swarm VIP balancing
+#     (which prevents RDP/VXLAN MTU fragmentation across nodes).
+# =============================================================================
+log "Waiting for guacd on $VLAB_NETWORK..."
+GUACD_VLAB_IP=""
+for i in $(seq 1 24); do
+  GUACD_VLAB_IP=$(docker network inspect "$VLAB_NETWORK" 2>/dev/null \
+    | grep -A5 '"Name":.*guacd' \
+    | grep -oE '"IPv4Address": "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+    | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+    | head -1 || true)
+  if [[ -n "$GUACD_VLAB_IP" ]]; then
+    log "guacd found on vlab-network at $GUACD_VLAB_IP"
+    break
+  fi
+  log "Waiting for guacd... ($i/24)"
+  sleep 5
+done
+[[ -n "$GUACD_VLAB_IP" ]] || die "Could not find guacd on $VLAB_NETWORK after 120s."
+
+# =============================================================================
+# 4 — Ensure the topologies named volume exists
 # =============================================================================
 log "Ensuring volume $TOPOLOGIES_VOLUME..."
 docker volume create "$TOPOLOGIES_VOLUME" >/dev/null 2>&1 || true
@@ -102,6 +125,7 @@ docker run -d \
   -e NODE_ENV=production \
   -e WORKER_ID="$WORKER_ID" \
   -e MANAGER_GRPC_URL="$MANAGER_GRPC_URL" \
+  -e GUACD_HOST="$GUACD_VLAB_IP" \
   -e GUACD_IP="$GUACD_IP" \
   -e CLAB_CLI_PATH=/app/containerlab \
   -e CLAB_TOPOLOGIES_PATH=/app/lab \
