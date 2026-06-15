@@ -16,18 +16,18 @@ WORKER_IMAGE="${WORKER_IMAGE:-ghcr.io/nunu27/vlab-bun-worker:latest}"
 WORKER_ID="${WORKER_ID:-$(hostname)}"
 LOG_LEVEL="${LOG_LEVEL:-info}"
 VLAB_NETWORK="vlab_vlab-network"
-CLAB_MGMT_NETWORK="vlab_clab-mgmt"
+CLAB_MGMT_NETWORK="clab-mgmt"
 TOPOLOGIES_VOLUME="vlab-topologies"
 
 log() { echo "[installer] $*"; }
 die() { echo "[installer] ERROR: $*" >&2; exit 1; }
 
 # When Swarm stops this installer (SIGTERM on stack rm / node leave),
-# also stop and remove the worker so it doesn't linger as an orphan.
+# also stop and remove the standalone containers so they don't linger.
 cleanup() {
-  log "Installer stopping — shutting down worker..."
-  docker stop "$WORKER_CONTAINER" 2>/dev/null || true
-  docker rm -f "$WORKER_CONTAINER" 2>/dev/null || true
+  log "Installer stopping — shutting down standalone containers..."
+  docker stop "$WORKER_CONTAINER" guacd 2>/dev/null || true
+  docker rm -f "$WORKER_CONTAINER" guacd 2>/dev/null || true
   exit 0
 }
 trap cleanup SIGTERM SIGINT
@@ -51,69 +51,70 @@ done
 MANAGER_GRPC_URL="${MANAGER_IP}:50051"
 
 # =============================================================================
-# 2 — Wait for guacd and discover its IP on clab-mgmt
-#     guacd runs mode:global on clab-mgmt — one instance per node.
+# 2 — Ensure the local bridge network and named volume exist
 # =============================================================================
-log "Waiting for guacd on $CLAB_MGMT_NETWORK..."
-GUACD_IP=""
-for i in $(seq 1 24); do
-  GUACD_IP=$(docker network inspect "$CLAB_MGMT_NETWORK" 2>/dev/null \
-    | grep -A5 '"Name":.*guacd' \
-    | grep -oE '"IPv4Address": "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
-    | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
-    | head -1 || true)
-  if [[ -n "$GUACD_IP" ]]; then
-    log "guacd found at $GUACD_IP"
-    break
-  fi
-  log "Waiting for guacd... ($i/24)"
-  sleep 5
-done
-[[ -n "$GUACD_IP" ]] || die "Could not find guacd on $CLAB_MGMT_NETWORK after 120s."
+log "Ensuring local bridge network $CLAB_MGMT_NETWORK..."
+docker network create -d bridge "$CLAB_MGMT_NETWORK" >/dev/null 2>&1 || true
 
-# =============================================================================
-# 3 — Wait for guacd and discover its IP on vlab-network
-#     We pass this to the worker as GUACD_HOST so the manager connects
-#     DIRECTLY to the node-local guacd task IP, bypassing Swarm VIP balancing
-#     (which prevents RDP/VXLAN MTU fragmentation across nodes).
-# =============================================================================
-log "Waiting for guacd on $VLAB_NETWORK..."
-GUACD_VLAB_IP=""
-for i in $(seq 1 24); do
-  GUACD_VLAB_IP=$(docker network inspect "$VLAB_NETWORK" 2>/dev/null \
-    | grep -A5 '"Name":.*guacd' \
-    | grep -oE '"IPv4Address": "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
-    | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
-    | head -1 || true)
-  if [[ -n "$GUACD_VLAB_IP" ]]; then
-    log "guacd found on vlab-network at $GUACD_VLAB_IP"
-    break
-  fi
-  log "Waiting for guacd... ($i/24)"
-  sleep 5
-done
-[[ -n "$GUACD_VLAB_IP" ]] || die "Could not find guacd on $VLAB_NETWORK after 120s."
-
-# =============================================================================
-# 4 — Ensure the topologies named volume exists
-# =============================================================================
 log "Ensuring volume $TOPOLOGIES_VOLUME..."
 docker volume create "$TOPOLOGIES_VOLUME" >/dev/null 2>&1 || true
 
 # =============================================================================
-# 4 — Pull latest worker image
+# 3 — Start standalone guacd
+#     Attached to both vlab-network (for manager) and clab-mgmt (for lab)
+# =============================================================================
+log "Starting standalone guacd container..."
+docker rm -f guacd 2>/dev/null || true
+docker run -d --name guacd \
+  --network "$VLAB_NETWORK" \
+  guacamole/guacd:1.6.0
+docker network connect "$CLAB_MGMT_NETWORK" guacd
+
+# =============================================================================
+# 4 — Discover guacd IPs
+#     We pass GUACD_VLAB_IP to the worker as GUACD_HOST so the manager connects
+#     DIRECTLY to the node-local guacd task IP, bypassing Swarm VIP balancing.
+# =============================================================================
+log "Discovering guacd IPs..."
+GUACD_VLAB_IP=""
+GUACD_IP=""
+
+for i in $(seq 1 12); do
+  GUACD_VLAB_IP=$(docker network inspect "$VLAB_NETWORK" 2>/dev/null \
+    | grep -A5 '"Name": "guacd"' \
+    | grep -oE '"IPv4Address": "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+    | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+    | head -1 || true)
+    
+  GUACD_IP=$(docker network inspect "$CLAB_MGMT_NETWORK" 2>/dev/null \
+    | grep -A5 '"Name": "guacd"' \
+    | grep -oE '"IPv4Address": "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+    | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+    | head -1 || true)
+    
+  if [[ -n "$GUACD_VLAB_IP" ]] && [[ -n "$GUACD_IP" ]]; then
+    log "guacd found: vlab-network=$GUACD_VLAB_IP, clab-mgmt=$GUACD_IP"
+    break
+  fi
+  log "Waiting for guacd network attachment... ($i/12)"
+  sleep 5
+done
+[[ -n "$GUACD_VLAB_IP" ]] || die "Could not find guacd on $VLAB_NETWORK"
+
+
+# 5 — Pull latest worker image
 # =============================================================================
 log "Pulling $WORKER_IMAGE..."
 docker pull "$WORKER_IMAGE"
 
 # =============================================================================
-# 5 — Remove any stale worker container from a previous run
+# 6 — Remove any stale worker container from a previous run
 # =============================================================================
 log "Removing stale worker container (if any)..."
 docker rm -f "$WORKER_CONTAINER" 2>/dev/null || true
 
 # =============================================================================
-# 6 — Start the worker on clab-mgmt (--privileged lets containerlab write
+# 7 — Start the worker on clab-mgmt (--privileged lets containerlab write
 #     to /proc/sys/net/ipv4/conf/all/rp_filter in its own network namespace)
 # =============================================================================
 log "Starting worker container..."
@@ -143,7 +144,7 @@ docker network connect "$VLAB_NETWORK" "$WORKER_CONTAINER"
 log "Worker started. Monitoring (docker wait)..."
 
 # =============================================================================
-# 7 — Block until the worker exits. `docker wait` runs in the background so
+# 8 — Block until the worker exits. `docker wait` runs in the background so
 #     bash's `wait` builtin is used instead — unlike a foreground blocking call,
 #     `wait` IS interruptible by signals, allowing the SIGTERM trap to fire
 #     immediately when Swarm stops this installer task.

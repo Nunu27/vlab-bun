@@ -4,9 +4,6 @@ networks:
   vlab-network:
     driver: overlay
     attachable: true
-  clab-mgmt:
-    driver: overlay
-    attachable: true
 
 volumes:
   postgres-data:
@@ -52,17 +49,6 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
     networks:
       - vlab-network
-      - clab-mgmt
-    deploy:
-      mode: global
-      restart_policy:
-        condition: any
-
-  guacd:
-    image: linuxserver/guacd:1.4.0-ls145
-    networks:
-      - vlab-network
-      - clab-mgmt
     deploy:
       mode: global
       restart_policy:
