@@ -14,9 +14,9 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.resolve(({ params: { id }, entity: { key } }) => ({
-					cacheKey: `${key}:${id}`,
-				}))
+				.resolve(({ params: { id }, entity: { key }, cache }) =>
+					cache.set(`${key}:${id}`),
+				)
 				.get("/:id", async ({ params: { id }, status, entity: { label } }) => {
 					const data = await db.query.deviceCategories.findFirst({
 						where: (dc, { eq }) => eq(dc.id, id),

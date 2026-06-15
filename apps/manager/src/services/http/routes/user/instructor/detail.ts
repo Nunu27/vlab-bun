@@ -14,9 +14,9 @@ export default createRouter()
 		},
 		(app) =>
 			app
-				.resolve(({ params: { id }, entity: { key } }) => ({
-					cacheKey: `${key}:${id}`,
-				}))
+				.resolve(({ params: { id }, entity: { key }, cache }) =>
+					cache.set(`${key}:${id}`),
+				)
 				.get("/:id", async ({ params: { id }, status, entity: { label } }) => {
 					const instructor = await db.query.instructors.findFirst({
 						with: { user: { columns: { name: true, email: true } } },

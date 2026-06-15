@@ -7,6 +7,6 @@ export default createRouter()
 	.use(caching)
 	.guard({ cached: true, protected: true }, (app) => {
 		return app
-			.resolve(({ entity: { key } }) => ({ cacheKey: `${key}:list` }))
+			.resolve(({ entity: { key }, cache }) => cache.set(`${key}:list`))
 			.get("/list", () => success({ data: evaluator.getChecks() }));
 	});

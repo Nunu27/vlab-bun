@@ -100,9 +100,13 @@ export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 						}
 					},
 					afterHandle({ set, responseValue }) {
+						const status = set.status ?? 200;
+						const isSuccess =
+							typeof status === "number" && status >= 200 && status < 300;
+
 						if (set.headers["cache-control"]) {
 							set.headers["x-cache"] = "HIT";
-						} else {
+						} else if (isSuccess) {
 							set.headers["x-cache"] = "MISS";
 							set.headers["cache-control"] = `no-cache`;
 							set.headers.etag = useETag
@@ -115,8 +119,9 @@ export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 					},
 					async afterResponse({ set, cache, responseValue }) {
 						const cacheKey = cache?.get();
+						const status = set.status ?? 200;
 
-						if (set.headers["x-cache"] === "HIT" || set.status !== 200) return;
+						if (set.headers["x-cache"] === "HIT" || status !== 200) return;
 						if (!cacheKey || !set.headers.etag) return;
 
 						logger?.debug(

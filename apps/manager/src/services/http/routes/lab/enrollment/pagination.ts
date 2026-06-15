@@ -24,9 +24,7 @@ export default createRouter()
 			return app
 				.resolve(({ body, cache, entity: { key } }) => {
 					cache.addSuffix(md5(body));
-					return {
-						cacheKey: `${key}:enrollment:pagination`,
-					};
+					cache.set(`${key}:enrollment:pagination`);
 				})
 				.post("/pagination", async ({ params: { labId }, body }) => {
 					const { items, pageInfo } = await paginate(body, {
