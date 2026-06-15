@@ -2,7 +2,6 @@ import { success } from "@jawit/common";
 import db from "@manager/db";
 import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
-import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { extractEmbeddedFiles } from "@manager/utils/file";
 import { LabRequestSchema } from "@vlab/shared/schemas/lab";
@@ -11,7 +10,7 @@ export default createRouter()
 	.use(auth)
 	.post(
 		"/",
-		async ({ body, session, entity: { label, key } }) => {
+		async ({ body, session, entity: { label } }) => {
 			const { attachments, date, ...labData } = body;
 
 			const id = await db.transaction(async (tx) => {
@@ -49,7 +48,6 @@ export default createRouter()
 
 				return id;
 			});
-			await cache.delete(`${key}:pagination:*`);
 
 			return success({ message: `${label} created`, data: { id } });
 		},

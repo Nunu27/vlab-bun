@@ -64,15 +64,9 @@ function RouteComponent() {
 		},
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["device-template", "pagination"],
-				});
-				queryClient.invalidateQueries({
-					queryKey: ["device-template", "list"],
-				});
-				queryClient.invalidateQueries({
-					queryKey: ["device-template", { id }, "get"],
-				});
+				api["device-template"].pagination.post.invalidateQuery(queryClient);
+				api["device-template"].list.get.invalidateQuery(queryClient);
+				api["device-template"]({ id }).get.invalidateQuery(queryClient);
 				navigate({ to: "/lab-data/device-template", replace: true });
 			},
 		},

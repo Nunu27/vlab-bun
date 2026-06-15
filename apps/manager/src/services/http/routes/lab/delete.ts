@@ -31,11 +31,7 @@ export default createRouter()
 			});
 
 			if (deleted) {
-				await cache.delete(
-					`${key}:pagination:*`,
-					`${key}:${id}:*`,
-					`${key}:${id}`,
-				);
+				await cache.delete(`${key}:${id}:*`, `${key}:${id}`);
 
 				return success({ message: `${label} deleted` });
 			} else return status(404, failure({ message: `${label} not found` }));

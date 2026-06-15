@@ -36,9 +36,7 @@ export function CreateStudentModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "student", "pagination"],
-				});
+				api.user.student.pagination.post.invalidateQuery(queryClient);
 				actions.create.close();
 				form.reset();
 			},

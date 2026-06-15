@@ -31,9 +31,7 @@ export function CreateAdminModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "admin", "pagination"],
-				});
+				api.user.admin.pagination.post.invalidateQuery(queryClient);
 				actions.create.close();
 				form.reset();
 			},

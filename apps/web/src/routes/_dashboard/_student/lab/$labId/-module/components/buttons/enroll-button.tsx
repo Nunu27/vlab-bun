@@ -24,7 +24,7 @@ export function EnrollButton({ labId, enrolled }: EnrollButtonProps) {
 	const { mutate, isPending } = api
 		.lab({ labId })
 		.enrollment[enrolled ? "delete" : "post"].useMutation({
-			onSuccess: () => queryClient.invalidateQueries({ queryKey: ["lab"] }),
+			onSuccess: () => api.lab.invalidateQuery(queryClient),
 		});
 
 	if (!enrolled) {

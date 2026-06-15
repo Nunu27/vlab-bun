@@ -37,9 +37,7 @@ export function EditStudentModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "student", "pagination"],
-				});
+				api.user.student.pagination.post.invalidateQuery(queryClient);
 				actions.update.close();
 			},
 		},

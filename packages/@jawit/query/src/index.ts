@@ -66,7 +66,7 @@ function dispatchHook(
 				? createEnsureQueryData(target, key, clientOptions)
 				: undefined;
 		case "invalidateQuery":
-			return isQueryMethod ? createInvalidateQuery(key) : undefined;
+			return createInvalidateQuery(key);
 		case "setQueryData":
 			return isQueryMethod ? createSetQueryData(key) : undefined;
 		case "useMutation":

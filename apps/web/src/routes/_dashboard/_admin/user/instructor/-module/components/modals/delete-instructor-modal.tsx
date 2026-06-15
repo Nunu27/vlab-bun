@@ -25,9 +25,7 @@ export function DeleteInstructorModal() {
 		})
 		.delete.useMutation({
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "instructor", "pagination"],
-				});
+				api.user.instructor.pagination.post.invalidateQuery(queryClient);
 				actions.delete.close();
 			},
 		});

@@ -1,24 +1,20 @@
 import { success } from "@jawit/common";
 import db from "@manager/db";
-import caching from "@manager/services/http/middlewares/caching";
+import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { RequestWithId } from "@vlab/shared/schemas/common";
 
 export default createRouter()
-	.use(caching)
+	.use(auth)
 	.guard(
 		{
-			cached: true,
-			personalized: true,
 			private: ["student"],
 			params: RequestWithId(["labId"]),
 		},
 		(app) => {
-			return app
-				.resolve(({ params: { labId }, cache }) =>
-					cache.set(`lab:${labId}:lab-session:list`),
-				)
-				.get("/", async ({ params: { labId }, session: { data: user } }) => {
+			return app.get(
+				"/",
+				async ({ params: { labId }, session: { data: user } }) => {
 					const history = await db.query.labSessions.findMany({
 						where: (sessions, { eq, and }) => {
 							return and(
@@ -36,6 +32,7 @@ export default createRouter()
 					});
 
 					return success({ data: history });
-				});
+				},
+			);
 		},
 	);

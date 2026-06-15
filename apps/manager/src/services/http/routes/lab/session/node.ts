@@ -25,7 +25,7 @@ export default createRouter()
 							where: (n, { eq }) => eq(n.id, id),
 							columns: { id: true, name: true, health: true, ip: true },
 							with: {
-								deviceTemplate: { columns: { connection: true } },
+								deviceTemplate: { columns: { connection: true, kind: true } },
 								labSession: {
 									columns: { id: true, labId: true },
 									with: {
@@ -46,11 +46,15 @@ export default createRouter()
 
 						const {
 							type,
-							data: { port, username, password },
+							data: { port, ...credentials },
 						} = deviceTemplate.connection;
 
 						if (!labSession.worker) {
 							return status(500, failure({ message: "Worker not found" }));
+						}
+
+						if (deviceTemplate.kind === "mikrotik_ros") {
+							credentials.username += "t";
 						}
 
 						return success({
@@ -63,8 +67,7 @@ export default createRouter()
 									settings: {
 										hostname: ip,
 										port: port.toString(),
-										username,
-										password,
+										...credentials,
 									},
 								}),
 							},

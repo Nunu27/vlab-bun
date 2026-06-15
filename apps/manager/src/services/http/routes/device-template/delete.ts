@@ -31,12 +31,7 @@ export default createRouter()
 						`lab:${n.labSession.labId}:lab-session:${n.labSessionId}:node:${n.id}`,
 				);
 
-				await cache.delete(
-					`${key}:list`,
-					`${key}:pagination:*`,
-					`${key}:${id}`,
-					...nodeKeys,
-				);
+				await cache.delete(`${key}:list`, `${key}:${id}`, ...nodeKeys);
 
 				return success({ message: `${label} deleted` });
 			} else {

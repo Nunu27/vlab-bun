@@ -33,9 +33,7 @@ export function EditInstructorModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "instructor", "pagination"],
-				});
+				api.user.instructor.pagination.post.invalidateQuery(queryClient);
 				actions.update.close();
 			},
 		},

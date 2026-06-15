@@ -25,11 +25,7 @@ export default createRouter()
 						})
 						.onConflictDoNothing();
 
-					await cache.delete(
-						"lab:pagination:*",
-						`lab:${labId}:enrollment:pagination:*`,
-						`lab:${labId}:${session.data.id}`,
-					);
+					await cache.delete(`lab:${labId}:${session.data.id}`);
 
 					return success({ message: "Successfully enrolled" });
 				})
@@ -43,11 +39,7 @@ export default createRouter()
 							),
 						);
 
-					await cache.delete(
-						"lab:pagination:*",
-						`lab:${labId}:enrollment:pagination:*`,
-						`lab:${labId}:${session.data.id}`,
-					);
+					await cache.delete(`lab:${labId}:${session.data.id}`);
 
 					return success({ message: "Successfully unenrolled" });
 				});
