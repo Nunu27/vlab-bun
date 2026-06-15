@@ -33,9 +33,7 @@ export default createRouter()
 						cache.addSuffix(data.id);
 					}
 
-					return {
-						cacheKey: `${key}:pagination`,
-					};
+					cache.set(`${key}:pagination`);
 				})
 				.post(
 					"/pagination",

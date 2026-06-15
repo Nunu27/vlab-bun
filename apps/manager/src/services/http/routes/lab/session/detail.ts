@@ -15,9 +15,8 @@ export default createRouter()
 		(app) => {
 			return app
 				.resolve(
-					({ params: { labSessionId: id, labId }, entity: { key } }) => ({
-						cacheKey: `lab:${labId}:${key}:${id}`,
-					}),
+					({ params: { labSessionId: id, labId }, entity: { key }, cache }) =>
+						cache.set(`lab:${labId}:${key}:${id}`),
 				)
 				.get(
 					"/:labSessionId",

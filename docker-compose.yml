@@ -59,7 +59,7 @@ services:
         condition: any
 
   guacd:
-    image: linuxserver/guacd:latest
+    image: linuxserver/guacd:1.4.0-ls145
     networks:
       - vlab-network
       - clab-mgmt

@@ -20,9 +20,9 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.resolve(({ body, entity: { key } }) => ({
-					cacheKey: `${key}:pagination:${md5(body)}`,
-				}))
+				.resolve(({ body, entity: { key }, cache }) =>
+					cache.set(`${key}:pagination:${md5(body)}`),
+				)
 				.post("/pagination", async ({ body }) => {
 					const data = await paginate(body, {
 						columns: {

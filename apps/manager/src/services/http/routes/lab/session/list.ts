@@ -15,11 +15,9 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.resolve(({ params: { labId }, entity: { key } }) => {
-					return {
-						cacheKey: `lab:${labId}:${key}:list`,
-					};
-				})
+				.resolve(({ params: { labId }, entity: { key }, cache }) =>
+					cache.set(`lab:${labId}:${key}:list`),
+				)
 				.get("/", async ({ params: { labId }, session: { data: user } }) => {
 					const history = await db.query.labSessions.findMany({
 						where: (sessions, { eq, and }) => {

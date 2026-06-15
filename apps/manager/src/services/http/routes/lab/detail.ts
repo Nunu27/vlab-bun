@@ -27,9 +27,7 @@ export default createRouter()
 							cache.addPrefix(user.id);
 						}
 
-						return {
-							cacheKey: key,
-						};
+						cache.set(key);
 					},
 				)
 				.get(
