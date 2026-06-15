@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@web/components/ui/button";
 import api from "@web/lib/api";
 import { Send } from "lucide-react";
@@ -5,11 +6,15 @@ import { Send } from "lucide-react";
 import { toast } from "sonner";
 
 export function SessionSubmitButton({ sessionId }: { sessionId: string }) {
+	const queryClient = useQueryClient();
+
 	const { mutate: emit, isPending: isSubmitting } = api.dashboard.student[
 		"lab-sessions"
 	]({ sessionId }).submit.post.useMutation({
 		onSuccess: () => {
 			toast.success("Session submitted successfully");
+			queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+			queryClient.invalidateQueries({ queryKey: ["lab"] });
 		},
 		onError: (err) => {
 			console.error(err);
