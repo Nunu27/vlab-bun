@@ -24,9 +24,7 @@ export function DeleteDeviceTemplateModal() {
 		id: data?.id ?? "",
 	}).delete.useMutation({
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["device-template", "pagination"],
-			});
+			api["device-template"].pagination.post.invalidateQuery(queryClient);
 			actions.delete.close();
 		},
 	});

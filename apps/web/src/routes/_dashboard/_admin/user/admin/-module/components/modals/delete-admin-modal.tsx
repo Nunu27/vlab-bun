@@ -25,9 +25,7 @@ export function DeleteAdminModal() {
 		})
 		.delete.useMutation({
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "admin", "pagination"],
-				});
+				api.user.admin.pagination.post.invalidateQuery(queryClient);
 				actions.delete.close();
 			},
 		});

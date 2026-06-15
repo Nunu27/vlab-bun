@@ -27,9 +27,7 @@ export function CreateDepartmentModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["department", "pagination"],
-				});
+				api.department.pagination.post.invalidateQuery(queryClient);
 				actions.create.close();
 				form.reset();
 			},

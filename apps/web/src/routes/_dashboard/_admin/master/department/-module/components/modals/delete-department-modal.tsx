@@ -23,9 +23,7 @@ export function DeleteDepartmentModal() {
 		.department({ id: data?.id ?? "" })
 		.delete.useMutation({
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["department", "pagination"],
-				});
+				api.department.pagination.post.invalidateQuery(queryClient);
 				actions.delete.close();
 			},
 		});

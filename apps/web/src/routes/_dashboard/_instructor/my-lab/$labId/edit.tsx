@@ -65,8 +65,8 @@ function RouteComponent() {
 		},
 		mutation: {
 			onSuccess: () => {
-				client.invalidateQueries({ queryKey: ["lab", "pagination"] });
-				client.invalidateQueries({ queryKey: ["lab", { labId }, "get"] });
+				api.lab.pagination.post.invalidateQuery(client);
+				api.lab({ labId }).get.invalidateQuery(client);
 				navigate({ to: "..", replace: true });
 			},
 		},

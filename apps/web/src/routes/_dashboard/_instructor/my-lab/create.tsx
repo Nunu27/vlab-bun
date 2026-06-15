@@ -56,9 +56,7 @@ function RouteComponent() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: ({ id }) => {
-				queryClient.invalidateQueries({
-					queryKey: ["lab", "pagination"],
-				});
+				api.lab.pagination.post.invalidateQuery(queryClient);
 				navigate({
 					to: "/my-lab/$labId",
 					params: { labId: id },

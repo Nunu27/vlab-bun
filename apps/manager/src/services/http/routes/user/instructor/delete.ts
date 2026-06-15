@@ -12,7 +12,7 @@ export default createRouter()
 	.use(auth)
 	.delete(
 		"/:id",
-		async ({ params: { id }, status, entity: { label, key } }) => {
+		async ({ params: { id }, status, entity: { label } }) => {
 			const relatedLabs = await db.query.labs.findMany({
 				where: (l, { eq }) => eq(l.instructorId, id),
 				columns: { id: true },
@@ -31,13 +31,7 @@ export default createRouter()
 					`lab:${l.id}:*`,
 				]);
 
-				await cache.delete(
-					`${key}:pagination:*`,
-					`${key}:${id}`,
-					`me:${id}`,
-					"lab:pagination:*",
-					...labKeys,
-				);
+				await cache.delete(`me:${id}`, ...labKeys);
 				await sessions.delete(id);
 
 				return success({ message: `${label} deleted` });

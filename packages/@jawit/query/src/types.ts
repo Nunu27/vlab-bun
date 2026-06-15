@@ -239,6 +239,8 @@ type MutationHooks<TFn> = {
 				ExtractTreatyError<Extract<TFn, (...a: any[]) => any>>
 			>
 		: never;
+
+	invalidateQuery(queryClient: QueryClient): Promise<void>;
 };
 
 // ---------------------------------------------------------------------------
@@ -270,10 +272,10 @@ export type TreatyQueryProxy<T> =
 			: ((...args: A) => TreatyQueryProxy<R>) & {
 					// biome-ignore lint/complexity/noBannedTypes: intentionally loose typing for proxy internals
 					[K in Exclude<keyof T, keyof Function>]: InjectHooks<K, T[K]>;
-				}
+				} & { invalidateQuery(queryClient: QueryClient): Promise<void> }
 		: {
 				[K in keyof T]: InjectHooks<K, T[K]>;
-			};
+			} & { invalidateQuery(queryClient: QueryClient): Promise<void> };
 
 // ---------------------------------------------------------------------------
 // Public config + client types

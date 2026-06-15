@@ -27,9 +27,7 @@ export function CreateDeviceCategoryModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["device-category", "pagination"],
-				});
+				api["device-category"].pagination.post.invalidateQuery(queryClient);
 				actions.create.close();
 				form.reset();
 			},

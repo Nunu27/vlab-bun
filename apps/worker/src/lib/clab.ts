@@ -84,6 +84,7 @@ export async function deployLab(
 			memory: resources.memory ?? undefined,
 			labels,
 			"auto-remove": true,
+			credentials,
 			stages: {
 				configure: {
 					exec: startupExecs[rest.kind]?.map((command) => ({

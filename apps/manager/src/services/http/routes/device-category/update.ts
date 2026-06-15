@@ -13,7 +13,7 @@ export default createRouter()
 	.use(auth)
 	.put(
 		"/:id",
-		async ({ params: { id }, body, status, entity: { label, key } }) => {
+		async ({ params: { id }, body, status, entity: { label } }) => {
 			const relatedTemplates = await db.query.deviceTemplates.findMany({
 				where: (t, { eq }) => eq(t.deviceCategoryId, id),
 				columns: { id: true },
@@ -32,13 +32,7 @@ export default createRouter()
 					(t) => `device-template:${t.id}`,
 				);
 
-				await cache.delete(
-					`${key}:pagination:*`,
-					`${key}:${id}`,
-					"device-template:list",
-					"device-template:pagination:*",
-					...templateKeys,
-				);
+				await cache.delete("device-template:list", ...templateKeys);
 
 				return success({ message: `${label} updated` });
 			} else return status(404, failure({ message: `${label} not found` }));

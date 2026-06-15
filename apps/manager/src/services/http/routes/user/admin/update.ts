@@ -13,12 +13,12 @@ export default createRouter()
 	.use(auth)
 	.put(
 		"/:id",
-		async ({ params: { id }, body, status, entity: { label, key } }) => {
+		async ({ params: { id }, body, status, entity: { label } }) => {
 			const rowCount = await getAffectedCount(
 				db.update(users).set(body).where(eq(users.id, id)).$dynamic(),
 			);
 			if (rowCount) {
-				await cache.delete(`${key}:pagination:*`, `${key}:${id}`, `me:${id}`);
+				await cache.delete(`me:${id}`);
 
 				return success({ message: `${label} updated` });
 			} else return status(404, failure({ message: `${label} not found` }));

@@ -13,8 +13,8 @@ export function SessionSubmitButton({ sessionId }: { sessionId: string }) {
 	]({ sessionId }).submit.post.useMutation({
 		onSuccess: () => {
 			toast.success("Session submitted successfully");
-			queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-			queryClient.invalidateQueries({ queryKey: ["lab"] });
+			api.dashboard.invalidateQuery(queryClient);
+			api.lab.invalidateQuery(queryClient);
 		},
 		onError: (err) => {
 			console.error(err);

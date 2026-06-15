@@ -30,9 +30,7 @@ export function EditStudyProgramModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["study-program", "pagination"],
-				});
+				api["study-program"].pagination.post.invalidateQuery(queryClient);
 				actions.update.close();
 			},
 		},

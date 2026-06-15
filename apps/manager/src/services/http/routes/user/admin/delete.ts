@@ -12,7 +12,7 @@ export default createRouter()
 	.use(auth)
 	.delete(
 		"/:id",
-		async ({ session, params: { id }, status, entity: { label, key } }) => {
+		async ({ session, params: { id }, status, entity: { label } }) => {
 			if (id === session.data.id) {
 				return status(400, failure({ message: "You cannot delete yourself" }));
 			}
@@ -25,7 +25,7 @@ export default createRouter()
 			);
 
 			if (rowCount) {
-				await cache.delete(`${key}:pagination:*`, `${key}:${id}`, `me:${id}`);
+				await cache.delete(`me:${id}`);
 				await sessions.delete(id);
 
 				return success({ message: `${label} deleted` });

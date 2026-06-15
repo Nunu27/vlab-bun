@@ -32,9 +32,7 @@ export function EditAdminModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "admin", "pagination"],
-				});
+				api.user.admin.pagination.post.invalidateQuery(queryClient);
 				actions.update.close();
 			},
 		},

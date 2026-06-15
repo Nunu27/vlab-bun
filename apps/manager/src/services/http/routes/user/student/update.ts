@@ -13,12 +13,7 @@ export default createRouter()
 	.use(auth)
 	.put(
 		"/:id",
-		async ({ params: { id }, body, status, entity: { label, key } }) => {
-			const relatedEnrollments = await db.query.labEnrollments.findMany({
-				where: (e, { eq }) => eq(e.studentId, id),
-				columns: { labId: true },
-			});
-
+		async ({ params: { id }, body, status, entity: { label } }) => {
 			const updated = await db.transaction(async (tx) => {
 				const uc = await getAffectedCount(
 					tx.update(users).set(body).where(eq(users.id, id)).$dynamic(),
@@ -30,16 +25,7 @@ export default createRouter()
 				return true;
 			});
 			if (updated) {
-				const enrollmentKeys = relatedEnrollments.map(
-					(e) => `lab:${e.labId}:enrollment:pagination:*`,
-				);
-
-				await cache.delete(
-					`${key}:pagination:*`,
-					`${key}:${id}`,
-					`me:${id}`,
-					...enrollmentKeys,
-				);
+				await cache.delete(`me:${id}`);
 
 				return success({ message: `${label} updated` });
 			} else return status(404, failure({ message: `${label} not found` }));

@@ -23,9 +23,7 @@ export function DeleteStudentModal() {
 		.student({ id: data?.id ?? "" })
 		.delete.useMutation({
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["user", "student", "pagination"],
-				});
+				api.user.student.pagination.post.invalidateQuery(queryClient);
 				actions.delete.close();
 			},
 		});

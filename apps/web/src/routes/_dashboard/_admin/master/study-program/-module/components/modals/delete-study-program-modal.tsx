@@ -23,9 +23,7 @@ export function DeleteStudyProgramModal() {
 		id: data?.id ?? "",
 	}).delete.useMutation({
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["study-program", "pagination"],
-			});
+			api["study-program"].pagination.post.invalidateQuery(queryClient);
 			actions.delete.close();
 		},
 	});

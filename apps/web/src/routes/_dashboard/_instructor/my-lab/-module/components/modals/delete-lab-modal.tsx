@@ -23,9 +23,7 @@ export function DeleteLabModal() {
 		.lab({ labId: data?.id ?? "" })
 		.delete.useMutation({
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["lab", "pagination"],
-				});
+				api.lab.pagination.post.invalidateQuery(queryClient);
 				actions.delete.close();
 			},
 		});

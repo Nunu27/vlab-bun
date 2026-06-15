@@ -15,7 +15,7 @@ export default createRouter()
 				.insert(deviceTemplates)
 				.values(body)
 				.returning({ id: deviceTemplates.id });
-			await cache.delete(`${key}:list`, `${key}:pagination:*`);
+			await cache.delete(`${key}:list`);
 
 			return success({ message: `${label} created`, data: { id } });
 		},

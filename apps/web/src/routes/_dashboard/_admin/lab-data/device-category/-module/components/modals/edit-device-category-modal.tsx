@@ -32,9 +32,7 @@ export function EditDeviceCategoryModal() {
 		validators: { onSubmit: validator },
 		mutation: {
 			onSuccess: () => {
-				queryClient.invalidateQueries({
-					queryKey: ["device-category", "pagination"],
-				});
+				api["device-category"].pagination.post.invalidateQuery(queryClient);
 				actions.update.close();
 			},
 		},

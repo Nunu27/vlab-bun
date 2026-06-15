@@ -2,7 +2,6 @@ import { success } from "@jawit/common";
 import db from "@manager/db";
 import { instructors, users } from "@manager/db/schema/auth";
 import auth from "@manager/services/http/middlewares/auth";
-import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { CreateInstructorRequest } from "@vlab/shared/schemas/instructor";
 
@@ -10,7 +9,7 @@ export default createRouter()
 	.use(auth)
 	.post(
 		"/",
-		async ({ body, entity: { label, key } }) => {
+		async ({ body, entity: { label } }) => {
 			const id = await db.transaction(async (tx) => {
 				const [{ id }] = await tx
 					.insert(users)
@@ -24,8 +23,6 @@ export default createRouter()
 
 				return id;
 			});
-			await cache.delete(`${key}:pagination:*`);
-
 			return success({ message: `${label} created`, data: { id } });
 		},
 		{
