@@ -13,6 +13,11 @@ export default createRouter()
 	.delete(
 		"/:id",
 		async ({ params: { id }, status, entity: { label, key } }) => {
+			const relatedEnrollments = await db.query.labEnrollments.findMany({
+				where: (e, { eq }) => eq(e.studentId, id),
+				columns: { labId: true },
+			});
+
 			const rowCount = await getAffectedCount(
 				db
 					.delete(users)
@@ -21,7 +26,16 @@ export default createRouter()
 			);
 
 			if (rowCount) {
-				await cache.delete(`${key}:pagination:*`, `${key}:${id}`, `me:${id}`);
+				const enrollmentKeys = relatedEnrollments.map(
+					(e) => `lab:${e.labId}:enrollment:pagination:*`,
+				);
+
+				await cache.delete(
+					`${key}:pagination:*`,
+					`${key}:${id}`,
+					`me:${id}`,
+					...enrollmentKeys,
+				);
 				await sessions.delete(id);
 
 				return success({ message: `${label} deleted` });

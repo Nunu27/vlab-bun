@@ -14,6 +14,14 @@ export default createRouter()
 	.put(
 		"/:id",
 		async ({ params: { id }, body, status, entity: { label, key } }) => {
+			const relatedNodes = await db.query.labSessionNodes.findMany({
+				where: (n, { eq }) => eq(n.deviceTemplateId, id),
+				columns: { id: true, labSessionId: true },
+				with: {
+					labSession: { columns: { labId: true } },
+				},
+			});
+
 			const rowCount = await getAffectedCount(
 				db
 					.update(deviceTemplates)
@@ -23,10 +31,16 @@ export default createRouter()
 			);
 
 			if (rowCount) {
+				const nodeKeys = relatedNodes.map(
+					(n) =>
+						`lab:${n.labSession.labId}:lab-session:${n.labSessionId}:node:${n.id}`,
+				);
+
 				await cache.delete(
 					`${key}:list`,
 					`${key}:pagination:*`,
 					`${key}:${id}`,
+					...nodeKeys,
 				);
 
 				return success({ message: `${label} updated` });

@@ -14,6 +14,11 @@ export default createRouter()
 	.put(
 		"/:id",
 		async ({ params: { id }, body, status, entity: { label, key } }) => {
+			const relatedLabs = await db.query.labs.findMany({
+				where: (l, { eq }) => eq(l.instructorId, id),
+				columns: { id: true },
+			});
+
 			const updated = await db.transaction(async (tx) => {
 				const uc = await getAffectedCount(
 					tx.update(users).set(body).where(eq(users.id, id)).$dynamic(),
@@ -26,7 +31,18 @@ export default createRouter()
 			});
 
 			if (updated) {
-				await cache.delete(`${key}:pagination:*`, `${key}:${id}`);
+				const labKeys = relatedLabs.flatMap((l) => [
+					`lab:${l.id}`,
+					`lab:${l.id}:*`,
+				]);
+
+				await cache.delete(
+					`${key}:pagination:*`,
+					`${key}:${id}`,
+					`me:${id}`,
+					"lab:pagination:*",
+					...labKeys,
+				);
 
 				return success({ message: `${label} updated` });
 			} else return status(404, failure({ message: `${label} not found` }));

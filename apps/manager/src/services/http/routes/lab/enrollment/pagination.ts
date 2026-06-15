@@ -22,9 +22,9 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.resolve(({ body, cache, entity: { key } }) => {
+				.resolve(({ params: { labId }, body, cache }) => {
 					cache.addSuffix(md5(body));
-					cache.set(`${key}:enrollment:pagination`);
+					cache.set(`lab:${labId}:enrollment:pagination`);
 				})
 				.post("/pagination", async ({ params: { labId }, body }) => {
 					const { items, pageInfo } = await paginate(body, {

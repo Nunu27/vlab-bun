@@ -2,6 +2,7 @@ import EventEmitter from "node:events";
 import db from "@manager/db";
 import { labSessionNodes, labSessions } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
+import { cache } from "@manager/services/http/middlewares/caching";
 import { labSessionQueue } from "@manager/services/queue/lab-session";
 import ws from "@manager/services/ws";
 import type { TempNodeEvents } from "@manager/types/clab";
@@ -24,7 +25,7 @@ export async function submitActiveSession(id: string) {
 	const now = new Date();
 	const session = await db.transaction(async (tx) => {
 		const session = await tx.query.labSessions.findFirst({
-			columns: { labId: true, studentId: true },
+			columns: { id: true, labId: true, studentId: true },
 			where: (labSessions, { eq, and, isNull }) =>
 				and(eq(labSessions.id, id), isNull(labSessions.submittedAt)),
 			with: {
@@ -62,6 +63,12 @@ export async function submitActiveSession(id: string) {
 		return session;
 	});
 	if (!session) return;
+
+	await cache.delete(
+		`lab:${session.labId}:lab-session:${session.id}`,
+		`lab:${session.labId}:lab-session:list:${session.studentId}`,
+	);
+
 	logger.debug({ id }, "Session removed and submitted");
 }
 
@@ -93,18 +100,32 @@ export function attachMonitorHandlers(
 			await sessionThrottle.run(id, () => submitActiveSession(id));
 		}
 
+		const updatedSessionIds = new Set<string>();
+
 		for (const node of nodes) {
 			const health =
 				node.health === "none" ? null : (node.health as NodeHealth | null);
-			await db
+			const updated = await db
 				.update(labSessionNodes)
 				.set({
 					health,
 					interfaces: node.interfaces,
 					containerId: node.containerId,
 				})
-				.where(eq(labSessionNodes.id, node.id));
+				.where(eq(labSessionNodes.id, node.id))
+				.returning({ labSessionId: labSessionNodes.labSessionId });
+
+			if (updated.length) {
+				updatedSessionIds.add(updated[0].labSessionId);
+			}
 		}
+
+		if (updatedSessionIds.size > 0) {
+			await cache.delete(
+				...Array.from(updatedSessionIds).map((id) => `lab:*:lab-session:${id}`),
+			);
+		}
+
 		logger.info(
 			{ sessions: sessions.length, nodes: nodes.length },
 			"Synchronized containerlab state",
@@ -136,6 +157,8 @@ export function attachMonitorHandlers(
 					{ sessionId: id, workerId },
 					{ delay, jobId: id },
 				);
+
+				await cache.delete(`lab:${labId}:lab-session:list:${ownerId}`);
 			});
 		}
 	});
@@ -164,6 +187,8 @@ export function attachMonitorHandlers(
 				...node,
 				health,
 			});
+
+			await cache.delete(`lab:*:lab-session:${labSessionId}`);
 		} else {
 			tempNodeEvents.emit(`${node.id}:health`, health);
 			tempNodeEvents.emit(`${node.id}:ip`, node.ip);
@@ -182,6 +207,8 @@ export function attachMonitorHandlers(
 					.update(labSessionNodes)
 					.set({ health })
 					.where(eq(labSessionNodes.id, node.id));
+
+				await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
 			},
 		});
 		if (!isTemp) ws.server.emit("node:[id]:health", { id: node.id }, health);
@@ -204,6 +231,8 @@ export function attachMonitorHandlers(
 				.update(labSessionNodes)
 				.set({ interfaces: node.interfaces })
 				.where(eq(labSessionNodes.id, node.id));
+
+			await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
 		});
 	});
 

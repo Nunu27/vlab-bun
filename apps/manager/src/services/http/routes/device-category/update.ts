@@ -14,6 +14,11 @@ export default createRouter()
 	.put(
 		"/:id",
 		async ({ params: { id }, body, status, entity: { label, key } }) => {
+			const relatedTemplates = await db.query.deviceTemplates.findMany({
+				where: (t, { eq }) => eq(t.deviceCategoryId, id),
+				columns: { id: true },
+			});
+
 			const rowCount = await getAffectedCount(
 				db
 					.update(deviceCategories)
@@ -23,10 +28,16 @@ export default createRouter()
 			);
 
 			if (rowCount) {
+				const templateKeys = relatedTemplates.map(
+					(t) => `device-template:${t.id}`,
+				);
+
 				await cache.delete(
-					"device:list",
 					`${key}:pagination:*`,
 					`${key}:${id}`,
+					"device-template:list",
+					"device-template:pagination:*",
+					...templateKeys,
 				);
 
 				return success({ message: `${label} updated` });

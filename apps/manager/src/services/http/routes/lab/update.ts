@@ -98,7 +98,11 @@ export default createRouter()
 			});
 
 			if (updated) {
-				await cache.delete(`${key}:pagination:*`, `${key}:${id}`);
+				await cache.delete(
+					`${key}:pagination:*`,
+					`${key}:${id}`,
+					`${key}:${id}:*`,
+				);
 
 				return success({ message: `${label} updated` });
 			} else return status(404, failure({ message: `${label} not found` }));
