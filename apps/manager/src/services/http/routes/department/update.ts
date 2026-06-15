@@ -14,6 +14,11 @@ export default createRouter()
 	.put(
 		"/:id",
 		async ({ params: { id }, body, status, entity: { key, label } }) => {
+			const relatedStudyPrograms = await db.query.studyPrograms.findMany({
+				where: (sp, { eq }) => eq(sp.departmentId, id),
+				columns: { id: true },
+			});
+
 			const rowCount = await getAffectedCount(
 				db
 					.update(departments)
@@ -23,7 +28,16 @@ export default createRouter()
 			);
 
 			if (rowCount) {
-				await cache.delete(`${key}:pagination:*`, `${key}:${id}`);
+				const studyProgramKeys = relatedStudyPrograms.map(
+					(sp) => `study-program:${sp.id}`,
+				);
+
+				await cache.delete(
+					`${key}:pagination:*`,
+					`${key}:${id}`,
+					"study-program:pagination:*",
+					...studyProgramKeys,
+				);
 
 				return success({ message: `${label} updated` });
 			} else return status(404, failure({ message: `${label} not found` }));

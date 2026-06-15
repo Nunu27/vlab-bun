@@ -14,6 +14,11 @@ export default createRouter()
 	.put(
 		"/:id",
 		async ({ params: { id }, body, status, entity: { label, key } }) => {
+			const relatedStudents = await db.query.students.findMany({
+				where: (s, { eq }) => eq(s.studyProgramId, id),
+				columns: { id: true },
+			});
+
 			const rowCount = await getAffectedCount(
 				db
 					.update(studyPrograms)
@@ -23,7 +28,17 @@ export default createRouter()
 			);
 
 			if (rowCount) {
-				await cache.delete(`${key}:pagination:*`, `${key}:${id}`);
+				const studentKeys = relatedStudents.flatMap((s) => [
+					`student:${s.id}`,
+					`me:${s.id}`,
+				]);
+
+				await cache.delete(
+					`${key}:pagination:*`,
+					`${key}:${id}`,
+					"student:pagination:*",
+					...studentKeys,
+				);
 
 				return success({ message: `${label} updated` });
 			} else return status(404, failure({ message: `${label} not found` }));

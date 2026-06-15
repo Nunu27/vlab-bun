@@ -15,7 +15,7 @@ export default createRouter()
 				.insert(deviceCategories)
 				.values(body)
 				.returning({ id: deviceCategories.id });
-			await cache.delete("device:list", `${key}:pagination:*`);
+			await cache.delete("device-template:list", `${key}:pagination:*`);
 
 			return success({ message: `${label} created`, data: { id } });
 		},

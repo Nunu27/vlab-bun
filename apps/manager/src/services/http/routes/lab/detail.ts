@@ -24,7 +24,7 @@ export default createRouter()
 					}) => {
 						cache.addSuffix(labId);
 						if (user.role === "student") {
-							cache.addPrefix(user.id);
+							cache.addSuffix(user.id);
 						}
 
 						cache.set(key);

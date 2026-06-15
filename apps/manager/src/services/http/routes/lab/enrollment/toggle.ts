@@ -16,7 +16,7 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.post("/", async ({ params: { labId }, session, entity: { key } }) => {
+				.post("/", async ({ params: { labId }, session }) => {
 					await db
 						.insert(labEnrollments)
 						.values({
@@ -26,33 +26,30 @@ export default createRouter()
 						.onConflictDoNothing();
 
 					await cache.delete(
-						`${key}:pagination:*`,
-						`${key}:${labId}:*`,
-						`${key}:${labId}`,
+						"lab:pagination:*",
+						`lab:${labId}:enrollment:pagination:*`,
+						`lab:${labId}:${session.data.id}`,
 					);
 
 					return success({ message: "Successfully enrolled" });
 				})
-				.delete(
-					"/",
-					async ({ params: { labId }, session, entity: { key } }) => {
-						await db
-							.delete(labEnrollments)
-							.where(
-								and(
-									eq(labEnrollments.labId, labId),
-									eq(labEnrollments.studentId, session.data.id),
-								),
-							);
-
-						await cache.delete(
-							`${key}:pagination:*`,
-							`${key}:${labId}:*`,
-							`${key}:${labId}`,
+				.delete("/", async ({ params: { labId }, session }) => {
+					await db
+						.delete(labEnrollments)
+						.where(
+							and(
+								eq(labEnrollments.labId, labId),
+								eq(labEnrollments.studentId, session.data.id),
+							),
 						);
 
-						return success({ message: "Successfully unenrolled" });
-					},
-				);
+					await cache.delete(
+						"lab:pagination:*",
+						`lab:${labId}:enrollment:pagination:*`,
+						`lab:${labId}:${session.data.id}`,
+					);
+
+					return success({ message: "Successfully unenrolled" });
+				});
 		},
 	);

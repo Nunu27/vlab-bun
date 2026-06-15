@@ -13,6 +13,11 @@ export default createRouter()
 	.delete(
 		"/:id",
 		async ({ params: { id }, status, entity: { label, key } }) => {
+			const relatedTemplates = await db.query.deviceTemplates.findMany({
+				where: (t, { eq }) => eq(t.deviceCategoryId, id),
+				columns: { id: true },
+			});
+
 			const rowCount = await getAffectedCount(
 				db
 					.delete(deviceCategories)
@@ -21,10 +26,16 @@ export default createRouter()
 			);
 
 			if (rowCount) {
+				const templateKeys = relatedTemplates.map(
+					(t) => `device-template:${t.id}`,
+				);
+
 				await cache.delete(
-					"device-template:*",
 					`${key}:pagination:*`,
 					`${key}:${id}`,
+					"device-template:list",
+					"device-template:pagination:*",
+					...templateKeys,
 				);
 
 				return success({ message: `${label} deleted` });
