@@ -67,6 +67,7 @@ export async function submitActiveSession(id: string) {
 	await cache.delete(
 		`lab:${session.labId}:lab-session:${session.id}`,
 		`lab:${session.labId}:lab-session:list:${session.studentId}`,
+		`lab:${session.labId}:lab-session:${session.id}:node:*`,
 	);
 
 	logger.debug({ id }, "Session removed and submitted");
