@@ -32,7 +32,7 @@ export const createEdgeSlice: StateCreator<
 
 		if (connectDeviceId) {
 			set({ connectDeviceId: null });
-		} else if (connectSource) {
+		} else {
 			set({ connectSource: null });
 		}
 	},

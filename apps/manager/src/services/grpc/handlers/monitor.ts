@@ -70,7 +70,6 @@ export async function submitActiveSession(id: string) {
 	await cache.delete(
 		`lab:${session.labId}:lab-session:${session.id}`,
 		`lab:${session.labId}:lab-session:list:${session.studentId}`,
-		`lab:${session.labId}:lab-session:${session.id}:node:*`,
 	);
 
 	logger.debug({ id }, "Session removed and submitted");
@@ -296,10 +295,7 @@ export function attachMonitorHandlers(
 						.set({ health })
 						.where(eq(labSessionNodes.id, node.id));
 
-					await cache.delete(
-						`lab:*:lab-session:${node.labSessionId}`,
-						`lab:*:lab-session:${node.labSessionId}:node:${node.id}`,
-					);
+					await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
 				},
 			});
 

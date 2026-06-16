@@ -140,16 +140,17 @@ export const createNodeSelectSlice: StateCreator<
 		const { mode, groups: groupsData, notes: notesData, editingNoteId } = get();
 		if (mode !== "select") return;
 
+		const selectedDevices = new Set(devices);
 		groups.forEach((groupId) => {
 			const group = groupsData[groupId];
 			if (!group) return;
 
-			devices.push(...group.members);
+			for (const id of group.members) selectedDevices.add(id);
 		});
 
 		set({
 			notes: checkNote(notesData, editingNoteId),
-			selectedDevices: new Set(devices),
+			selectedDevices,
 			selectedGroups: new Set(groups),
 			selectedNotes: new Set(notes),
 			selectedEdges: new Set(edges),
@@ -163,6 +164,7 @@ export const createNodeSelectSlice: StateCreator<
 			selectedGroups,
 			selectedNotes,
 			selectedEdges,
+			groups: groupsData,
 			notes: notesData,
 			editingNoteId,
 		} = get();
@@ -178,6 +180,10 @@ export const createNodeSelectSlice: StateCreator<
 		});
 		groups.forEach((id) => {
 			newSelectedGroups.add(id);
+			const group = groupsData[id];
+			if (group) {
+				for (const memberId of group.members) newSelectedDevices.add(memberId);
+			}
 		});
 		notes.forEach((id) => {
 			newSelectedNotes.add(id);
@@ -202,6 +208,8 @@ export const createNodeSelectSlice: StateCreator<
 			selectedGroups,
 			selectedNotes,
 			selectedEdges,
+			groups: groupsData,
+			devices: devicesData,
 			notes: notesData,
 			editingNoteId,
 		} = get();
@@ -214,9 +222,21 @@ export const createNodeSelectSlice: StateCreator<
 
 		devices.forEach((id) => {
 			newSelectedDevices.delete(id);
+			// If this device belongs to a selected group, that group is no longer
+			// fully selected — remove it to keep the invariant intact.
+			const device = devicesData[id];
+			if (device) {
+				for (const groupId of device.groupIds)
+					newSelectedGroups.delete(groupId);
+			}
 		});
 		groups.forEach((id) => {
 			newSelectedGroups.delete(id);
+			const group = groupsData[id];
+			if (group) {
+				for (const memberId of group.members)
+					newSelectedDevices.delete(memberId);
+			}
 		});
 		notes.forEach((id) => {
 			newSelectedNotes.delete(id);

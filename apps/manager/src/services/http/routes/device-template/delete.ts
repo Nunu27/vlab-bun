@@ -13,25 +13,12 @@ export default createRouter()
 	.delete(
 		"/:id",
 		async ({ params: { id }, status, ENTITY: { LABEL: label, KEY: key } }) => {
-			const relatedNodes = await db.query.labSessionNodes.findMany({
-				where: (n, { eq }) => eq(n.deviceTemplateId, id),
-				columns: { id: true, labSessionId: true },
-				with: {
-					labSession: { columns: { labId: true } },
-				},
-			});
-
 			const rowCount = await getAffectedCount(
 				db.delete(deviceTemplates).where(eq(deviceTemplates.id, id)).$dynamic(),
 			);
 
 			if (rowCount) {
-				const nodeKeys = relatedNodes.map(
-					(n) =>
-						`lab:${n.labSession.labId}:lab-session:${n.labSessionId}:node:${n.id}`,
-				);
-
-				await cache.delete(`${key}:list`, `${key}:${id}`, ...nodeKeys);
+				await cache.delete(`${key}:list`, `${key}:${id}`);
 
 				return responses.deleted(label);
 			} else {

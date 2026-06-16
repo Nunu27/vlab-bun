@@ -77,6 +77,16 @@ function InterfaceLabel({
 }
 
 function Edge({ id }: { id: string }) {
+	const edge = useTopologyEdge(id);
+
+	const pathRef = useRef<SVGPathElement>(null) as RefObject<SVGPathElement>;
+	useTopologyNodeInteraction({
+		identifier: { id, type: "edge" },
+		elementRef: pathRef,
+	});
+
+	if (!edge) return null;
+
 	const {
 		source,
 		sourceDevice,
@@ -89,15 +99,7 @@ function Edge({ id }: { id: string }) {
 		index,
 		parallelCount,
 		selected,
-	} = useTopologyEdge(id);
-
-	const pathRef = useRef<SVGPathElement>(null) as RefObject<SVGPathElement>;
-	useTopologyNodeInteraction({
-		identifier: { id, type: "edge" },
-		elementRef: pathRef,
-	});
-
-	if (!sourceDevice || !targetDevice) return null;
+	} = edge;
 
 	const sx = sourceDevice.x + DEVICE_WIDTH / 2;
 	const sy = sourceDevice.y + DEVICE_HEIGHT / 2;

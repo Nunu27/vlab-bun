@@ -8,6 +8,7 @@ interface UseTopologyHotkeysProps {
 
 export const useTopologyHotkeys = ({ canvasRef }: UseTopologyHotkeysProps) => {
 	const store = useTopologyStore();
+	const isEditor = store.use.isEditor();
 	const {
 		toggleMode,
 		group,
@@ -17,11 +18,11 @@ export const useTopologyHotkeys = ({ canvasRef }: UseTopologyHotkeysProps) => {
 		zoomOut,
 	} = store.use.actions();
 
-	useHotkey("C", () => toggleMode("connect"));
-	useHotkey("G", group);
-	useHotkey("U", ungroup);
-	useHotkey("T", () => toggleMode("note"));
-	useHotkey("Delete", deleteSelected);
+	useHotkey("C", () => toggleMode("connect"), { enabled: isEditor });
+	useHotkey("G", group, { enabled: isEditor });
+	useHotkey("U", ungroup, { enabled: isEditor });
+	useHotkey("T", () => toggleMode("note"), { enabled: isEditor });
+	useHotkey("Delete", deleteSelected, { enabled: isEditor });
 	useHotkey("Mod+=", () => {
 		const rect = canvasRef.current?.getBoundingClientRect();
 		if (rect) zoomIn(rect);

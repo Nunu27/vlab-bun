@@ -9,6 +9,7 @@ import { useTopologyText } from "../hooks/helper/use-topology-text";
 import { useTopologyWheel } from "../hooks/helper/use-topology-wheel";
 import { useTopologyStore } from "../stores";
 import Background from "./background";
+import ConnectionStatus from "./connection-status";
 import Controls from "./controls";
 import TopologyLayers from "./layers";
 import Toolbar from "./toolbar";
@@ -69,6 +70,7 @@ function TopologyCanvas() {
 		<div
 			id={TOPOLOGY_ID.CANVAS}
 			data-sessionid={sessionId}
+			data-editor={isEditor || undefined}
 			ref={canvasRef}
 			className="relative flex-1 select-none overflow-hidden"
 			onDragOver={(e) => e.preventDefault()}
@@ -79,6 +81,7 @@ function TopologyCanvas() {
 			<Controls canvasRef={canvasRef} />
 
 			{isEditor && <Toolbar />}
+			{isEditor && <ConnectionStatus />}
 		</div>
 	);
 }

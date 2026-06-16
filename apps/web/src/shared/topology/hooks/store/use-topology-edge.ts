@@ -1,18 +1,18 @@
 import { useShallow } from "zustand/shallow";
 import { useTopologyStore } from "../../stores";
 
-export default (id: string) => {
+function useTopologyEdge(id: string) {
 	const store = useTopologyStore();
 
 	return store(
 		useShallow(({ edges, devices, selectedEdges, nodesData }) => {
 			const [source, target] = edges[id] ?? [];
-			if (!source || !target) throw new Error("Edge not found");
+			if (!source || !target) return null;
 
 			const sourceDevice = devices[source.deviceId];
 			const targetDevice = devices[target.deviceId];
 
-			if (!sourceDevice || !targetDevice) throw new Error("Edge not found");
+			if (!sourceDevice || !targetDevice) return null;
 
 			let index = -1;
 			let parallelCount = 0;
@@ -43,4 +43,6 @@ export default (id: string) => {
 			};
 		}),
 	);
-};
+}
+
+export default useTopologyEdge;
