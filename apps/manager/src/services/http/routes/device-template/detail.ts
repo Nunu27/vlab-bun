@@ -14,18 +14,15 @@ export default createRouter()
 		},
 		(app) =>
 			app
-				.resolve(({ params: { id }, ENTITY: { KEY: key }, cache }) =>
-					cache.set(`${key}:${id}`),
+				.resolve(({ params: { id }, ENTITY: { KEY }, cache }) =>
+					cache.set(`${KEY}:${id}`),
 				)
-				.get(
-					"/:id",
-					async ({ params: { id }, status, ENTITY: { LABEL: label } }) => {
-						const data = await db.query.deviceTemplates.findFirst({
-							where: (dt, { eq }) => eq(dt.id, id),
-						});
+				.get("/:id", async ({ params: { id }, status, ENTITY: { LABEL } }) => {
+					const data = await db.query.deviceTemplates.findFirst({
+						where: (dt, { eq }) => eq(dt.id, id),
+					});
 
-						if (data) return success({ data });
-						else return status(404, responses.notFound(label));
-					},
-				),
+					if (data) return success({ data });
+					else return status(404, responses.notFound(LABEL));
+				}),
 	);

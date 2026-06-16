@@ -20,14 +20,13 @@ export default createRouter()
 						session: { data: user },
 						cache,
 						params: { labId },
-						ENTITY: { KEY: key },
+						ENTITY: { KEY },
 					}) => {
+						cache.addSuffix(KEY);
 						cache.addSuffix(labId);
 						if (user.role === "student") {
 							cache.addSuffix(user.id);
 						}
-
-						cache.set(key);
 					},
 				)
 				.get(
@@ -36,7 +35,7 @@ export default createRouter()
 						params: { labId },
 						session: { data: user },
 						status,
-						ENTITY: { LABEL: label },
+						ENTITY: { LABEL },
 					}) => {
 						const data = await db.query.labs.findFirst({
 							columns: { instructorId: false },
@@ -85,7 +84,7 @@ export default createRouter()
 									},
 								},
 							});
-						} else return status(404, responses.notFound(label));
+						} else return status(404, responses.notFound(LABEL));
 					},
 				);
 		},

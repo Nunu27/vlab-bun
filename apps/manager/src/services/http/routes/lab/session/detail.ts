@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses, success } from "@jawit/common";
 import db from "@manager/db";
 import caching from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
@@ -25,7 +25,7 @@ export default createRouter()
 							data: { id: userId },
 						},
 						status,
-						ENTITY,
+						ENTITY: { LABEL },
 					}) => {
 						const session = await db.query.labSessions.findFirst({
 							columns: {
@@ -81,10 +81,7 @@ export default createRouter()
 								},
 							});
 						}
-						return status(
-							404,
-							failure({ message: `${ENTITY.LABEL} not found` }),
-						);
+						return status(404, responses.notFound(LABEL));
 					},
 				);
 		},

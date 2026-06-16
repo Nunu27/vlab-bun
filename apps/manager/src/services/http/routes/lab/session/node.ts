@@ -32,9 +32,7 @@ export default createRouter()
 
 			return success({ data: { ...nodeData, token } });
 		},
-
 		{
-			cached: true,
 			private: ["student"],
 			params: RequestWithId(["labId", "labSessionId", "id"]),
 		},
