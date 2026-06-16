@@ -2,7 +2,7 @@ import { shallow } from "zustand/shallow";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 import { useTopologyStore } from "../../stores";
 
-export default () => {
+function useTopologyConnectInterfaces() {
 	const store = useTopologyStore();
 
 	return useStoreWithEqualityFn(
@@ -25,4 +25,6 @@ export default () => {
 			return Object.is(a.interfaces, b.interfaces) && shallow(a.used, b.used);
 		},
 	);
-};
+}
+
+export default useTopologyConnectInterfaces;

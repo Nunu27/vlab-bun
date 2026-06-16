@@ -1,7 +1,7 @@
 import { useShallow } from "zustand/shallow";
 import { useTopologyStore } from "../../stores";
 
-export default (id: string) => {
+function useTopologyDevice(id: string) {
 	const store = useTopologyStore();
 
 	return store(
@@ -13,4 +13,6 @@ export default (id: string) => {
 				state.connectDeviceId === id || state.connectSource?.deviceId === id,
 		})),
 	);
-};
+}
+
+export default useTopologyDevice;

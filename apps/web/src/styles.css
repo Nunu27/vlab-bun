@@ -195,12 +195,20 @@
 }
 
 #topology-canvas {
-	&[data-mode="note"] {
+	&[data-editor][data-mode="note"] {
 		@apply cursor-text;
 	}
 
-	&[data-mode="connect"] #device-layer .node {
-		@apply cursor-pointer hover:ring-2 hover:ring-green-400;
+	&[data-editor][data-mode="connect"] {
+		@apply cursor-crosshair;
+	}
+
+	&[data-editor][data-mode="connect"] .node:not([data-connect-source]) {
+		@apply cursor-pointer hover:ring-2 hover:ring-green-400/70;
+	}
+
+	&[data-editor][data-mode="connect"] .node[data-connect-source] {
+		@apply cursor-default;
 	}
 
 	&[data-sessionid] .node {
@@ -211,11 +219,11 @@
 		@apply pointer-events-auto;
 	}
 
-	&[data-mode="select"]:not([data-sessionid]) .node {
+	&[data-editor][data-mode="select"] .node {
 		@apply pointer-events-auto cursor-move;
 	}
 
-	&[data-mode="select"]:not([data-sessionid]) .edge-path {
+	&[data-editor][data-mode="select"] .edge-path {
 		@apply pointer-events-auto cursor-pointer;
 	}
 }

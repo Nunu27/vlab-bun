@@ -26,9 +26,10 @@ export const checkNote = (
 	if (!id) return notes;
 	const note = notes[id];
 	if (!note || note.content.trim()) return notes;
-	delete notes[id];
 
-	return notes;
+	const newNotes = { ...notes };
+	delete newNotes[id];
+	return newNotes;
 };
 
 export const createNoteSlice: StateCreator<
@@ -45,12 +46,10 @@ export const createNoteSlice: StateCreator<
 		const id = crypto.randomUUID();
 		actions.clearSelection();
 
-		position.x -= 15;
-		position.y -= 25;
-
 		const newNotes = { ...notes };
 		newNotes[id] = {
-			...position,
+			x: position.x - 15,
+			y: position.y - 25,
 			content: "",
 		};
 
@@ -65,7 +64,7 @@ export const createNoteSlice: StateCreator<
 		if (mode !== "note") return;
 
 		set({
-			notes: checkNote({ ...notes }, editingNoteId),
+			notes: checkNote(notes, editingNoteId),
 			editingNoteId: id,
 			selectedNotes: id ? new Set([id]) : new Set(),
 		});

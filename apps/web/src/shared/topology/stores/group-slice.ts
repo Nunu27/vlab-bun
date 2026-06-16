@@ -40,7 +40,7 @@ export const createGroupSlice: StateCreator<
 	group: () => {
 		const { selectedDevices, devices, groups } = get();
 
-		if (!selectedDevices.size) return;
+		if (selectedDevices.size < 2) return;
 
 		const id = crypto.randomUUID();
 		const members = Array.from(selectedDevices);
@@ -71,14 +71,8 @@ export const createGroupSlice: StateCreator<
 		});
 	},
 	ungroup: () => {
-		const {
-			selectedDevices,
-			selectedGroups,
-			selectedNotes,
-			selectedEdges,
-			groups,
-			devices,
-		} = get();
+		const { selectedGroups, selectedNotes, selectedEdges, groups, devices } =
+			get();
 
 		const selectCount =
 			selectedGroups.size + selectedNotes.size + selectedEdges.size;
@@ -91,12 +85,6 @@ export const createGroupSlice: StateCreator<
 
 		const group = groups[groupId];
 		if (!group) return;
-
-		const allDeviceSelected = group.members.every((deviceId) =>
-			selectedDevices.has(deviceId),
-		);
-
-		if (!allDeviceSelected) return;
 
 		const newDevices = { ...devices };
 		const newGroups = { ...groups };
