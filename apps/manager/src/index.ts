@@ -17,6 +17,10 @@ const commands: Record<string, () => Promise<void>> = {
 		const { runRestore } = await import("./commands/restore");
 		await runRestore();
 	},
+	"reset-sessions": async () => {
+		const { runResetSessions } = await import("./commands/reset-sessions");
+		await runResetSessions();
+	},
 };
 
 const command = process.argv[2] ?? "serve";
@@ -32,7 +36,10 @@ if (!handler) {
 		"  bun run src/index.ts backup   Backup database and S3 to lab_backup/",
 	);
 	console.error(
-		"  bun run src/index.ts restore  Restore database and S3 from lab_backup/",
+		"  bun run src/index.ts restore         Restore database and S3 from lab_backup/",
+	);
+	console.error(
+		"  bun run src/index.ts reset-sessions  Clear all lab sessions from the database",
 	);
 	process.exit(1);
 }
