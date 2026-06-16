@@ -72,9 +72,9 @@ export const createViewSlice: StateCreator<
 	},
 
 	recenter: (rect) => {
-		const { deviceNames, devices } = get();
+		const { devices } = get();
 
-		if (!deviceNames.size) {
+		if (!Object.keys(devices).length) {
 			set({ view: { x: 0, y: 0, scale: 1 } });
 			return;
 		}
