@@ -118,6 +118,9 @@ docker rm -f "$WORKER_CONTAINER" 2>/dev/null || true
 #     to /proc/sys/net/ipv4/conf/all/rp_filter in its own network namespace)
 # =============================================================================
 log "Starting worker container..."
+if [ ! -e /dev/kvm ]; then
+  log "WARNING: KVM (/dev/kvm) not found — VM-based nodes (e.g. mikrotik_ros) will not work on this host."
+fi
 docker run -d \
   --name "$WORKER_CONTAINER" \
   --privileged \
