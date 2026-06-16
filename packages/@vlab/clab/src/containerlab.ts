@@ -9,6 +9,7 @@ import {
 import {
 	ContainerlabCliNotFoundError,
 	ContainerlabCommandError,
+	ContainerlabKvmRequiredError,
 } from "./errors";
 import { parseInspectOutput } from "./inspect";
 import { validateLabId } from "./lab-id";
@@ -118,12 +119,24 @@ export class Containerlab {
 		await this.ready();
 		await this.#writeTopology(id, config);
 
-		await this.#run([
-			"deploy",
-			"--topo",
-			topologyPath,
-			...buildDeployArgs(options),
-		]);
+		try {
+			await this.#run([
+				"deploy",
+				"--topo",
+				topologyPath,
+				...buildDeployArgs(options),
+			]);
+		} catch (error) {
+			if (error instanceof ContainerlabCommandError) {
+				const kvmMatch = error.stderr.match(
+					/Cpu virtualization support is required for node "([^"]+)" \(([^)]+)\)/,
+				);
+				if (kvmMatch) {
+					throw new ContainerlabKvmRequiredError(kvmMatch[1], kvmMatch[2]);
+				}
+			}
+			throw error;
+		}
 
 		return this.inspect(id);
 	}
