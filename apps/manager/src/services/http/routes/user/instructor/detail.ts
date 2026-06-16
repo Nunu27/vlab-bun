@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses, success } from "@jawit/common";
 import db from "@manager/db";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
@@ -12,16 +12,19 @@ export default createRouter()
 			params: RequestWithId(),
 		},
 		(app) =>
-			app.get("/:id", async ({ params: { id }, status, entity: { label } }) => {
-				const instructor = await db.query.instructors.findFirst({
-					with: { user: { columns: { name: true, email: true } } },
-					where: (i, { eq }) => eq(i.id, id),
-				});
+			app.get(
+				"/:id",
+				async ({ params: { id }, status, ENTITY: { LABEL: label } }) => {
+					const instructor = await db.query.instructors.findFirst({
+						with: { user: { columns: { name: true, email: true } } },
+						where: (i, { eq }) => eq(i.id, id),
+					});
 
-				if (instructor) {
-					const { user, ...data } = instructor;
+					if (instructor) {
+						const { user, ...data } = instructor;
 
-					return success({ data: { ...data, ...user } });
-				} else return status(404, failure({ message: `${label} not found` }));
-			}),
+						return success({ data: { ...data, ...user } });
+					} else return status(404, responses.notFound(label));
+				},
+			),
 	);

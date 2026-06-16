@@ -8,7 +8,7 @@ export default createRouter()
 	.use(auth)
 	.post(
 		"/upload",
-		async ({ body: { file }, entity: { label } }) => {
+		async ({ body: { file }, ENTITY: { LABEL: label } }) => {
 			return success({
 				message: `${label} uploaded`,
 				data: await uploadFile(file),

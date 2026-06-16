@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses, success } from "@jawit/common";
 import db from "@manager/db";
 import caching from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
@@ -14,15 +14,18 @@ export default createRouter()
 		},
 		(app) =>
 			app
-				.resolve(({ params: { id }, entity: { key }, cache }) =>
+				.resolve(({ params: { id }, ENTITY: { KEY: key }, cache }) =>
 					cache.set(`${key}:${id}`),
 				)
-				.get("/:id", async ({ params: { id }, status, entity: { label } }) => {
-					const data = await db.query.deviceTemplates.findFirst({
-						where: (dt, { eq }) => eq(dt.id, id),
-					});
+				.get(
+					"/:id",
+					async ({ params: { id }, status, ENTITY: { LABEL: label } }) => {
+						const data = await db.query.deviceTemplates.findFirst({
+							where: (dt, { eq }) => eq(dt.id, id),
+						});
 
-					if (data) return success({ data });
-					else return status(404, failure({ message: `${label} not found` }));
-				}),
+						if (data) return success({ data });
+						else return status(404, responses.notFound(label));
+					},
+				),
 	);

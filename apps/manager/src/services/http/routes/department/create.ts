@@ -1,4 +1,4 @@
-import { success } from "@jawit/common";
+import { responses } from "@jawit/common";
 import db from "@manager/db";
 import { departments } from "@manager/db/schema/auth";
 import auth from "@manager/services/http/middlewares/auth";
@@ -9,13 +9,13 @@ export default createRouter()
 	.use(auth)
 	.post(
 		"/",
-		async ({ body, entity: { label } }) => {
+		async ({ body, ENTITY: { LABEL: label } }) => {
 			const [{ id }] = await db
 				.insert(departments)
 				.values(body)
 				.returning({ id: departments.id });
 
-			return success({ message: `${label} created`, data: { id } });
+			return responses.created(label, { id });
 		},
 		{
 			private: ["admin"],

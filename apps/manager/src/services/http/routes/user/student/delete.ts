@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses } from "@jawit/common";
 import db from "@manager/db";
 import { users } from "@manager/db/schema/auth";
 import auth, { sessions } from "@manager/services/http/middlewares/auth";
@@ -12,7 +12,7 @@ export default createRouter()
 	.use(auth)
 	.delete(
 		"/:id",
-		async ({ params: { id }, status, entity: { label } }) => {
+		async ({ params: { id }, status, ENTITY: { LABEL: label } }) => {
 			const rowCount = await getAffectedCount(
 				db
 					.delete(users)
@@ -24,8 +24,8 @@ export default createRouter()
 				await cache.delete(`me:${id}`);
 				await sessions.delete(id);
 
-				return success({ message: `${label} deleted` });
-			} else return status(404, failure({ message: `${label} not found` }));
+				return responses.deleted(label);
+			} else return status(404, responses.notFound(label));
 		},
 		{
 			private: ["admin"],

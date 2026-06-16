@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses, success } from "@jawit/common";
 import db from "@manager/db";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
@@ -14,13 +14,13 @@ export default createRouter()
 		(app) => {
 			return app.get(
 				"/:id",
-				async ({ params: { id }, status, entity: { label } }) => {
+				async ({ params: { id }, status, ENTITY: { LABEL: label } }) => {
 					const data = await db.query.deviceCategories.findFirst({
 						where: (dc, { eq }) => eq(dc.id, id),
 					});
 
 					if (data) return success({ data });
-					else return status(404, failure({ message: `${label} not found` }));
+					else return status(404, responses.notFound(label));
 				},
 			);
 		},

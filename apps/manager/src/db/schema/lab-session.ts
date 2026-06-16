@@ -83,6 +83,7 @@ export const labSessionNodes = pgTable("lab_session_node", {
 	interfaces: jsonb().$type<Record<string, string[]>>().notNull(),
 	labNodeId: uuid().notNull(),
 	containerId: text().notNull(),
+	token: text().notNull(),
 	labSessionId: uuid()
 		.notNull()
 		.references(() => labSessions.id, { onDelete: "cascade" }),
