@@ -102,12 +102,23 @@ $DOCKER_CMD run -d \
   linuxserver/guacd:latest >/dev/null
 
 info "Starting vLab Worker..."
+KVM_FLAG=""
+if [ -e /dev/kvm ]; then
+  KVM_FLAG="--device /dev/kvm"
+else
+  warn "KVM (/dev/kvm) not found — VM-based nodes (e.g. mikrotik_ros) will not work on this host."
+fi
+
 $DOCKER_CMD run -d \
   --name vlab-worker \
+  --privileged \
+  --pid host \
   --network clab-mgmt \
   --env-file "$WORKER_ENV_FILE" \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/run/docker/netns:/var/run/docker/netns:ro \
   -v vlab-topologies:/app/lab \
+  $KVM_FLAG \
   --restart unless-stopped \
   ghcr.io/nunu27/vlab-bun-worker:latest >/dev/null
 

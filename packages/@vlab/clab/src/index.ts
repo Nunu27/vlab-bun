@@ -2,6 +2,7 @@ export { Containerlab, Containerlab as default } from "./containerlab";
 export {
 	ContainerlabCliNotFoundError,
 	ContainerlabCommandError,
+	ContainerlabKvmRequiredError,
 	InvalidLabIdError,
 } from "./errors";
 export type {

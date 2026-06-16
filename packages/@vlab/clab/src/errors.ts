@@ -35,6 +35,22 @@ export class ContainerlabCommandError extends Error {
 	}
 }
 
+export class ContainerlabKvmRequiredError extends Error {
+	readonly nodeName: string;
+	readonly nodeKind: string;
+
+	constructor(nodeName: string, nodeKind: string) {
+		super(
+			`Node "${nodeName}" (${nodeKind}) requires CPU virtualization (KVM). ` +
+				`Ensure /dev/kvm is available on the host and accessible in the container ` +
+				`(run with --privileged or --device /dev/kvm).`,
+		);
+		this.name = "ContainerlabKvmRequiredError";
+		this.nodeName = nodeName;
+		this.nodeKind = nodeKind;
+	}
+}
+
 export class InvalidLabIdError extends Error {
 	constructor(id: string) {
 		super(`Invalid lab id: ${id}`);
