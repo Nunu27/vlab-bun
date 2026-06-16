@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses } from "@jawit/common";
 import db from "@manager/db";
 import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
@@ -21,7 +21,7 @@ export default createRouter()
 				data: { id: userId },
 			},
 			status,
-			entity: { label, key },
+			ENTITY: { LABEL: label, KEY: key },
 		}) => {
 			const { attachments, date, ...labData } = body;
 
@@ -100,8 +100,8 @@ export default createRouter()
 			if (updated) {
 				await cache.delete(`${key}:${id}`, `${key}:${id}:*`);
 
-				return success({ message: `${label} updated` });
-			} else return status(404, failure({ message: `${label} not found` }));
+				return responses.updated(label);
+			} else return status(404, responses.notFound(label));
 		},
 		{
 			private: ["instructor"],

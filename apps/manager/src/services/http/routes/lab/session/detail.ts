@@ -14,8 +14,8 @@ export default createRouter()
 		},
 		(app) => {
 			return app
-				.resolve(({ params: { labSessionId: id, labId }, cache }) =>
-					cache.set(`lab:${labId}:lab-session:${id}`),
+				.resolve(({ params: { labSessionId: id, labId }, cache, ENTITY }) =>
+					cache.set(`${ENTITY.PARENT?.KEY}:${labId}:${ENTITY.KEY}:${id}`),
 				)
 				.get(
 					"/:labSessionId",
@@ -25,7 +25,7 @@ export default createRouter()
 							data: { id: userId },
 						},
 						status,
-						entity: { label },
+						ENTITY,
 					}) => {
 						const session = await db.query.labSessions.findFirst({
 							columns: {
@@ -81,7 +81,10 @@ export default createRouter()
 								},
 							});
 						}
-						return status(404, failure({ message: `${label} not found` }));
+						return status(
+							404,
+							failure({ message: `${ENTITY.LABEL} not found` }),
+						);
 					},
 				);
 		},

@@ -2,6 +2,14 @@ import { Type as t } from "@sinclair/typebox";
 import { DeviceTemplateResourcesSchema } from "@vlab/shared/schemas/device-template";
 import { Router } from "waycast";
 
+const WorkerResolvedFields = {
+	ownerId: t.String(),
+	labId: t.Optional(t.String()),
+	labDue: t.Optional(t.String()),
+	labNodeId: t.Optional(t.String()),
+	deviceTemplateId: t.Optional(t.String()),
+};
+
 export const LabNodeSchema = t.Object({
 	labNodeId: t.Optional(t.String()),
 	id: t.String(),
@@ -58,13 +66,17 @@ export const appRouter = new Router()
 	.data(
 		"monitor:snapshot",
 		t.Object({
-			sessions: t.Array(t.Object({ id: t.String() })),
+			sessions: t.Array(t.Object({ id: t.String(), ...WorkerResolvedFields })),
 			nodes: t.Array(
 				t.Object({
 					id: t.String(),
+					name: t.String(),
 					health: t.Union([t.String(), t.Null()]),
+					ip: t.String(),
 					interfaces: t.Record(t.String(), t.Array(t.String())),
 					containerId: t.String(),
+					labSessionId: t.String(),
+					...WorkerResolvedFields,
 				}),
 			),
 		}),
@@ -73,9 +85,7 @@ export const appRouter = new Router()
 		"monitor:session-create",
 		t.Object({
 			id: t.String(),
-			ownerId: t.String(),
-			labId: t.Optional(t.String()),
-			labDue: t.Optional(t.Union([t.String(), t.Number()])),
+			...WorkerResolvedFields,
 		}),
 	)
 	.data(
@@ -87,15 +97,14 @@ export const appRouter = new Router()
 	.data(
 		"monitor:node-create",
 		t.Object({
-			labSessionId: t.String(),
-			labNodeId: t.Optional(t.String()),
-			deviceTemplateId: t.Optional(t.String()),
 			id: t.String(),
 			name: t.String(),
+			health: t.Union([t.String(), t.Null()]),
 			ip: t.String(),
 			interfaces: t.Record(t.String(), t.Array(t.String())),
-			health: t.Union([t.String(), t.Null()]),
 			containerId: t.String(),
+			labSessionId: t.String(),
+			...WorkerResolvedFields,
 		}),
 	)
 	.data(

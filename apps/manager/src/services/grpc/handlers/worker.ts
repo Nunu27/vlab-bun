@@ -171,7 +171,10 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			);
 		}
 
-		attachMonitorHandlers(workerId, client);
+		attachMonitorHandlers(workerId, client, {
+			guacdHost: workerSpec.guacdHost,
+			guacdPort: workerSpec.guacdPort,
+		});
 
 		connectedWorkers.set(workerId, client);
 

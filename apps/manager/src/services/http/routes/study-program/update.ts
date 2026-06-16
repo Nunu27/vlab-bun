@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses } from "@jawit/common";
 import db from "@manager/db";
 import { studyPrograms } from "@manager/db/schema/auth";
 import auth from "@manager/services/http/middlewares/auth";
@@ -13,7 +13,7 @@ export default createRouter()
 	.use(auth)
 	.put(
 		"/:id",
-		async ({ params: { id }, body, status, entity: { label } }) => {
+		async ({ params: { id }, body, status, ENTITY: { LABEL: label } }) => {
 			const relatedStudents = await db.query.students.findMany({
 				where: (s, { eq }) => eq(s.studyProgramId, id),
 				columns: { id: true },
@@ -33,8 +33,8 @@ export default createRouter()
 					await cache.delete(...studentKeys);
 				}
 
-				return success({ message: `${label} updated` });
-			} else return status(404, failure({ message: `${label} not found` }));
+				return responses.updated(label);
+			} else return status(404, responses.notFound(label));
 		},
 		{
 			private: ["admin"],

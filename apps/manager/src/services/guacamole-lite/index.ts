@@ -4,6 +4,7 @@ import { format } from "node:util";
 import env from "@manager/env";
 import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
+import type { DeviceTemplateConnection } from "@vlab/shared/schemas/device-template";
 import GuacamoleLite, {
 	type Callbacks,
 	type ClientOptions,
@@ -218,9 +219,32 @@ function generateToken<TType extends keyof GuacamoleProtocol>(
 	return Buffer.from(json).toString("base64");
 }
 
+function generateNodeToken(
+	connection: DeviceTemplateConnection,
+	kind: string,
+	ip: string,
+	guacdHost: string,
+	guacdPort: number,
+) {
+	const {
+		type,
+		data: { port, ...credentials },
+	} = connection;
+	if (kind === "mikrotik_ros" && credentials.username !== undefined) {
+		credentials.username += "t";
+	}
+	return generateToken({
+		type,
+		guacdHost,
+		guacdPort,
+		settings: { hostname: ip, port: port.toString(), ...credentials },
+	});
+}
+
 export default {
 	init: initGuacamole,
 	get: getGuacamoleServer,
 	shutdown: shutdownGuacamole,
 	generateToken,
+	generateNodeToken,
 };

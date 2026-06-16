@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { failure, responses } from "@jawit/common";
 import db from "@manager/db";
 import { users } from "@manager/db/schema/auth";
 import auth, { sessions } from "@manager/services/http/middlewares/auth";
@@ -12,7 +12,7 @@ export default createRouter()
 	.use(auth)
 	.delete(
 		"/:id",
-		async ({ session, params: { id }, status, entity: { label } }) => {
+		async ({ session, params: { id }, status, ENTITY: { LABEL: label } }) => {
 			if (id === session.data.id) {
 				return status(400, failure({ message: "You cannot delete yourself" }));
 			}
@@ -28,8 +28,8 @@ export default createRouter()
 				await cache.delete(`me:${id}`);
 				await sessions.delete(id);
 
-				return success({ message: `${label} deleted` });
-			} else return status(404, failure({ message: `${label} not found` }));
+				return responses.deleted(label);
+			} else return status(404, responses.notFound(label));
 		},
 		{
 			private: ["admin"],

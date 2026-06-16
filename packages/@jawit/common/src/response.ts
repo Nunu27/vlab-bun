@@ -21,3 +21,11 @@ export function failure<
 		...(options?.errors !== undefined ? { errors: options.errors } : {}),
 	} as FailureResponse<E, M>;
 }
+
+export const responses = {
+	notFound: (label: string) => failure({ message: `${label} not found` }),
+	deleted: (label: string) => success({ message: `${label} deleted` }),
+	created: <const T>(label: string, data: T) =>
+		success({ message: `${label} created`, data }),
+	updated: (label: string) => success({ message: `${label} updated` }),
+};

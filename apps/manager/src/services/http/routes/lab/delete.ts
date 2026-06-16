@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses } from "@jawit/common";
 import db from "@manager/db";
 import { labs } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
@@ -16,7 +16,7 @@ export default createRouter()
 			params: { labId: id },
 			session,
 			status,
-			entity: { label, key },
+			ENTITY: { LABEL: label, KEY: key },
 		}) => {
 			const deleted = await db.transaction(async (tx) => {
 				const rowCount = await getAffectedCount(
@@ -33,8 +33,8 @@ export default createRouter()
 			if (deleted) {
 				await cache.delete(`${key}:${id}:*`, `${key}:${id}`);
 
-				return success({ message: `${label} deleted` });
-			} else return status(404, failure({ message: `${label} not found` }));
+				return responses.deleted(label);
+			} else return status(404, responses.notFound(label));
 		},
 		{
 			private: ["instructor"],
