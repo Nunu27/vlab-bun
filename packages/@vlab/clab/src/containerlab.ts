@@ -131,7 +131,7 @@ export class Containerlab {
 				const kvmMatch = error.stderr.match(
 					/Cpu virtualization support is required for node "([^"]+)" \(([^)]+)\)/,
 				);
-				if (kvmMatch) {
+				if (kvmMatch?.[1] && kvmMatch?.[2]) {
 					throw new ContainerlabKvmRequiredError(kvmMatch[1], kvmMatch[2]);
 				}
 			}
