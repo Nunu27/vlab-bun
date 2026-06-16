@@ -6,7 +6,7 @@ import node from "./node";
 
 const labSessionRoutes = createRouter({
 	prefix: `/:labId/session`,
-	tags: ["Session"],
+	detail: { tags: ["Lab Session"] },
 })
 	.use(detail)
 	.use(list)

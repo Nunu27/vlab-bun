@@ -4,7 +4,7 @@ import toggle from "./toggle";
 
 const labEnrollmentRoutes = createRouter({
 	prefix: "/:labId/enrollment",
-	tags: ["Lab Enrollment"],
+	detail: { tags: ["Lab Enrollment"] },
 })
 	.use(pagination)
 	.use(toggle);
