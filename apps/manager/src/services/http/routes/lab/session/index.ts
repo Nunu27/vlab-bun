@@ -5,8 +5,8 @@ import list from "./list";
 import node from "./node";
 
 const labSessionRoutes = createRouter({
-	prefix: "/:labId/session",
-	tags: ["Lab Session"],
+	prefix: `/:labId/session`,
+	tags: ["Session"],
 })
 	.use(detail)
 	.use(list)

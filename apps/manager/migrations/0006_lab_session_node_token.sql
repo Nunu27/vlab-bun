@@ -1,0 +1,1 @@
+ALTER TABLE "lab_session_node" ADD COLUMN "token" text NOT NULL;

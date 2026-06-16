@@ -102,17 +102,13 @@ export async function handleTestInit(
 
 		if (!worker) throw new Error("Worker not found");
 
-		const token = guacamole.generateToken({
-			type: data.connection.type,
-			guacdHost: worker.guacdHost,
-			guacdPort: worker.guacdPort,
-			settings: {
-				hostname: ip,
-				port: data.connection.data.port.toString(),
-				username: data.connection.data.username,
-				password: data.connection.data.password,
-			},
-		});
+		const token = guacamole.generateNodeToken(
+			data.connection,
+			data.kind,
+			ip,
+			worker.guacdHost,
+			worker.guacdPort,
+		);
 
 		reply("info", "Access token generated.");
 		ws.server.replyResponse("device-template:test", executionId, token);

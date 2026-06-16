@@ -1,4 +1,4 @@
-import { success } from "@jawit/common";
+import { responses } from "@jawit/common";
 import db from "@manager/db";
 import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
@@ -10,7 +10,7 @@ export default createRouter()
 	.use(auth)
 	.post(
 		"/",
-		async ({ body, session, entity: { label } }) => {
+		async ({ body, session, ENTITY: { LABEL: label } }) => {
 			const { attachments, date, ...labData } = body;
 
 			const id = await db.transaction(async (tx) => {
@@ -49,7 +49,7 @@ export default createRouter()
 				return id;
 			});
 
-			return success({ message: `${label} created`, data: { id } });
+			return responses.created(label, { id });
 		},
 		{
 			private: ["instructor"],

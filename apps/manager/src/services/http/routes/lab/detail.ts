@@ -1,4 +1,4 @@
-import { failure, success } from "@jawit/common";
+import { responses, success } from "@jawit/common";
 import db from "@manager/db";
 import caching from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
@@ -20,7 +20,7 @@ export default createRouter()
 						session: { data: user },
 						cache,
 						params: { labId },
-						entity: { key },
+						ENTITY: { KEY: key },
 					}) => {
 						cache.addSuffix(labId);
 						if (user.role === "student") {
@@ -36,7 +36,7 @@ export default createRouter()
 						params: { labId },
 						session: { data: user },
 						status,
-						entity: { label },
+						ENTITY: { LABEL: label },
 					}) => {
 						const data = await db.query.labs.findFirst({
 							columns: { instructorId: false },
@@ -85,8 +85,7 @@ export default createRouter()
 									},
 								},
 							});
-						} else
-							return status(404, failure({ message: `${label} not found` }));
+						} else return status(404, responses.notFound(label));
 					},
 				);
 		},
