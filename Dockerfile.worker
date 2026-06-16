@@ -51,10 +51,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     iptables \
     iproute2 \
     procps \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 
 COPY --from=worker-builder /app/out/worker/app /app/app
 COPY --from=clab-downloader /containerlab /app/containerlab
