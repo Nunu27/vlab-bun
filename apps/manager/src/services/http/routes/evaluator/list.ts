@@ -1,10 +1,11 @@
 import { success } from "@jawit/common";
-import auth from "@manager/services/http/middlewares/auth";
+import caching from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
 import evaluator from "@vlab/evaluator";
 
 export default createRouter()
-	.use(auth)
-	.guard({ protected: true }, (app) => {
-		return app.get("/list", () => success({ data: evaluator.getChecks() }));
+	.use(caching)
+	.get("/list", () => success({ data: evaluator.getChecks() }), {
+		cached: { key: "evaluator:list" },
+		protected: true,
 	});

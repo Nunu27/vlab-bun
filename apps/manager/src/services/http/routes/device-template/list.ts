@@ -7,7 +7,7 @@ export default createRouter()
 	.use(caching)
 	.guard({ cached: true, protected: true }, (app) => {
 		return app
-			.resolve(({ ENTITY: { KEY: key }, cache }) => cache.set(`${key}:list`))
+			.resolve(({ ENTITY: { KEY }, cache }) => cache.set(`${KEY}:list`))
 			.get("/list", async () => {
 				const data = await db.query.deviceCategories.findMany({
 					columns: { id: true, name: true, color: true },
