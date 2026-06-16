@@ -231,7 +231,7 @@ function generateNodeToken(
 		data: { port, ...credentials },
 	} = connection;
 	if (kind === "mikrotik_ros" && credentials.username !== undefined) {
-		credentials.username += "t";
+		credentials.username += "+t";
 	}
 	return generateToken({
 		type,
