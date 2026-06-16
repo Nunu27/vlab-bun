@@ -39,13 +39,14 @@ export const createNoteSlice: StateCreator<
 	TopologyNoteActions
 > = (set, get) => ({
 	addNote: (position) => {
-		const { notes, mode, actions } = get();
+		const { mode, actions } = get();
 
 		if (mode !== "note") return;
 
 		const id = crypto.randomUUID();
 		actions.clearSelection();
 
+		const { notes } = get();
 		const newNotes = { ...notes };
 		newNotes[id] = {
 			x: position.x - 15,
