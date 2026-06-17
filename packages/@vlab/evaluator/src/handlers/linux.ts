@@ -116,15 +116,6 @@ const UserSchema = t.Array(
 	}),
 );
 
-const SystemdServiceSchema = t.Array(
-	t.Object({
-		unit: t.String(),
-		load: t.String(),
-		active: t.String(),
-		sub: t.String(),
-	}),
-);
-
 const RouteNextHopSchema = t.Object(
 	{
 		gateway: t.Optional(t.String()),
@@ -248,85 +239,6 @@ async function getUsers(container: Container) {
 				},
 			);
 		});
-	} catch (error) {
-		if (
-			error instanceof Error &&
-			"statusCode" in error &&
-			typeof error.statusCode === "number" &&
-			[404, 409].includes(error.statusCode)
-		) {
-			return [];
-		}
-		throw error;
-	}
-}
-
-async function getServices(container: Container) {
-	try {
-		const exec = await container.exec({
-			Cmd: [
-				"systemctl",
-				"list-units",
-				"--type=service",
-				"--all",
-				"--no-pager",
-				"--no-legend",
-			],
-			AttachStdout: true,
-			AttachStderr: true,
-			Tty: false,
-		});
-
-		return new Promise<typeof SystemdServiceSchema.static>(
-			(resolve, reject) => {
-				exec.start(
-					{ Detach: false, Tty: false },
-					(err: Error | null, stream?: NodeJS.ReadableStream) => {
-						if (err) return reject(err);
-						if (!stream)
-							return reject(new Error("No stream returned from exec.start"));
-
-						let output = "";
-						const stdout = new PassThrough();
-						const stderr = new PassThrough();
-
-						getModem(container).demuxStream(stream, stdout, stderr);
-
-						stdout.on("data", (chunk: Buffer) => {
-							output += chunk.toString();
-						});
-
-						stderr.on("data", (chunk: Buffer) => {
-							console.error("Container Error:", chunk.toString());
-						});
-
-						stream.on("end", () => {
-							try {
-								const services = output
-									.split("\n")
-									.map((line) => line.trim())
-									.filter(Boolean)
-									.map((line) => {
-										// Example: systemd-networkd.service loaded active running Network Service
-										const parts = line.split(/\s+/);
-										return {
-											unit: parts[0] || "",
-											load: parts[1] || "",
-											active: parts[2] || "",
-											sub: parts[3] || "",
-										};
-									});
-								resolve(services);
-							} catch (parseError) {
-								reject(
-									new Error(`Failed to parse systemctl output: ${parseError}`),
-								);
-							}
-						});
-					},
-				);
-			},
-		);
 	} catch (error) {
 		if (
 			error instanceof Error &&
@@ -561,92 +473,5 @@ export default new EvaluationHandler("linux")
 		},
 		handler: (_, params, data) => {
 			return data.some((user) => user.username === params.username);
-		},
-	})
-	.addSource({
-		id: "systemd-services",
-		data: SystemdServiceSchema,
-		listen: async ({ container, docker }, notify) => {
-			const doUpdate = debounce(async () => {
-				try {
-					const data = await getServices(container);
-					notify(data);
-				} catch (error) {
-					console.error("Failed to update services:", error);
-				}
-			}, 500);
-
-			try {
-				const exec = await container.exec({
-					Cmd: ["systemctl", "subscribe"],
-					AttachStdout: true,
-					AttachStderr: true,
-					Tty: false,
-				});
-
-				const stdout = new PassThrough();
-				const stderr = new PassThrough();
-				const rawStream = await exec.start({ Detach: false, Tty: false });
-				docker.modem.demuxStream(rawStream, stdout, stderr);
-
-				const cleanup = () => {
-					rawStream.destroy();
-				};
-
-				stdout.on("data", async (chunk: Buffer) => {
-					const text = chunk.toString();
-					if (!text.trim()) return;
-					await doUpdate();
-				});
-
-				stderr.on("data", (chunk: Buffer) => {
-					const text = chunk.toString();
-					if (text.includes("OCI runtime exec failed")) {
-						cleanup();
-					} else {
-						console.error("Services Monitor Error:", text);
-					}
-				});
-
-				return cleanup;
-			} catch (error) {
-				if (
-					error instanceof Error &&
-					"statusCode" in error &&
-					typeof error.statusCode === "number" &&
-					[404, 409].includes(error.statusCode)
-				) {
-					return () => {};
-				}
-				throw error;
-			}
-		},
-		read: async ({ container }) => {
-			return await getServices(container);
-		},
-	})
-	.addCheck({
-		id: "service-status",
-		name: "Service Status",
-		text: "Service {service} should be {status}",
-		source: "systemd-services",
-		params: {
-			service: t.String({
-				title: "Service Name",
-				description: "e.g., systemd-networkd or systemd-networkd.service",
-			}),
-			status: t.String({
-				title: "Status",
-				description: "e.g., active, inactive, failed",
-			}),
-		},
-		handler: (_, params, data) => {
-			const serviceName = params.service.endsWith(".service")
-				? params.service
-				: `${params.service}.service`;
-			return data.some(
-				(service) =>
-					service.unit === serviceName && service.active === params.status,
-			);
 		},
 	});

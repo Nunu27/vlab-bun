@@ -5,12 +5,14 @@ import type {
 import type api from "@web/lib/api";
 
 type LabPaginationRequest = (typeof api)["lab"]["pagination"];
-type LabEnrollmentPaginationRequest = ReturnType<
+type LabEnrollmentListRequest = ReturnType<
 	(typeof api)["lab"]
->["enrollment"]["pagination"];
+>["enrollment"]["get"];
 type LabDetailRequest = ReturnType<(typeof api)["lab"]>["get"];
 
 export type LabItem = ExtractTreatyPaginationData<LabPaginationRequest>;
 export type LabEnrollmentItem =
-	ExtractTreatyPaginationData<LabEnrollmentPaginationRequest>;
+	ExtractTreatyData<LabEnrollmentListRequest>[number] & {
+		index: number;
+	};
 export type LabDetail = ExtractTreatyData<LabDetailRequest>;
