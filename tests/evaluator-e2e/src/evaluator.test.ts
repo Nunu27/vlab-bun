@@ -160,6 +160,24 @@ const checks: SessionCheckPayload<typeof evaluator.handlers>[] = [
 		checkId: "node-interface.check-ip",
 		params: { interface: "ether2", ip: "10.0.0.1/24" },
 	},
+	{
+		id: "router1-ospf-neighbor",
+		nodeId: "router1",
+		checkId: "mikrotik.ospf-neighbor-exist",
+		params: { interface: "ether2", state: "Full" },
+	},
+	{
+		id: "router1-bgp-connection",
+		nodeId: "router1",
+		checkId: "mikrotik.bgp-connection-exist",
+		params: { name: "vlab-bgp-to-r2", "remote.as": "65001" },
+	},
+	{
+		id: "router1-bgp-session",
+		nodeId: "router1",
+		checkId: "mikrotik.bgp-session-established",
+		params: { "remote.address": "10.0.0.2" },
+	},
 ];
 
 const checkPromises: Record<string, () => void> = {};
