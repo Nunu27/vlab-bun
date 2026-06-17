@@ -33,7 +33,7 @@ graph TD
 ### 1. `EvaluationHandler`
 Handlers define *how* to extract state (Sources) and *what* to evaluate (Checks) for a specific kind of node (e.g., Linux, MikroTik).
 - **Context Builder**: Establishes the connection to the node. For a Linux node, it attaches via Docker modem; for a MikroTik router, it connects to the RouterOS API.
-- **Sources**: Represents raw, typed state from the system (e.g., routing tables, OSPF instances, users). A Source defines a `read` method for polling and a `listen` method to hook into real-time streaming (like `ip monitor` in Linux or `/log/listen` in MikroTik).
+- **Sources**: Represents raw, typed state from the system (e.g., routing tables, OSPF instances, users). A Source defines a `read` method for reading the current value and a `listen` method to hook into real-time streaming (like `ip monitor` in Linux or `/log/listen` in MikroTik).
 - **Checks**: Declarative evaluation rules that bind to a specific Source. They contain a handler function that returns `true` or `false` based on user-provided parameters and the current Source data. Checks can be marked as `oneTime` to stop listening once they pass.
 
 ### 2. `Evaluator`

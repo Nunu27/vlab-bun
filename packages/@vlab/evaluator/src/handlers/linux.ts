@@ -325,7 +325,7 @@ export default new EvaluationHandler("linux")
 				} catch (error) {
 					console.error("Failed to update routes:", error);
 				}
-			}, 500);
+			}, 100);
 
 			try {
 				const exec = await container.exec({
@@ -406,7 +406,7 @@ export default new EvaluationHandler("linux")
 				} catch (error) {
 					console.error("Failed to update users:", error);
 				}
-			}, 500);
+			}, 100);
 
 			try {
 				const exec = await container.exec({

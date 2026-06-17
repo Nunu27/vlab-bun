@@ -79,4 +79,62 @@ export function testMikrotik(getCtx: () => TestContext) {
 		});
 		await waitForCheck("router1-bgp-instance", 35000);
 	}, 35000);
+
+	it("mikrotik: ospf-neighbor-exist", async () => {
+		const { router1Client, router2Client, waitForCheck } = getCtx();
+		// Configure OSPF on router2 matching router1's existing instance/area
+		await router2Client.runQuery("/routing/ospf/instance/add", {
+			name: "vlab-ospf",
+			version: "2",
+			"router-id": "2.2.2.2",
+		});
+		await router2Client.runQuery("/routing/ospf/area/add", {
+			name: "backbone",
+			instance: "vlab-ospf",
+			"area-id": "0.0.0.0",
+		});
+		await router2Client.runQuery("/routing/ospf/interface-template/add", {
+			interfaces: "ether2",
+			area: "backbone",
+		});
+		// Add ether2 template on router1 so both sides participate on the shared link
+		await router1Client.runQuery("/routing/ospf/interface-template/add", {
+			interfaces: "ether2",
+			area: "backbone",
+		});
+		// OSPF convergence requires hello exchange (default 10s interval); allow up to 60s
+		await waitForCheck("router1-ospf-neighbor", 60000);
+	}, 60000);
+
+	it("mikrotik: bgp-connection-exist", async () => {
+		const { router1Client, waitForCheck } = getCtx();
+		// RouterOS 7.x requires explicit `instance` referencing the BGP instance name
+		await router1Client.runQuery("/routing/bgp/connection/add", {
+			name: "vlab-bgp-to-r2",
+			instance: "vlab-bgp",
+			"remote.as": "65001",
+			"local.role": "ebgp",
+			"remote.address": "10.0.0.2",
+		});
+		await waitForCheck("router1-bgp-connection", 35000);
+	}, 35000);
+
+	it("mikrotik: bgp-session-established", async () => {
+		const { router2Client, waitForCheck } = getCtx();
+		// Set up router2 as the BGP peer so the session can establish
+		await router2Client.runQuery("/routing/bgp/instance/add", {
+			name: "vlab-bgp",
+			as: "65001",
+			"router-id": "2.2.2.2",
+		});
+		await router2Client.runQuery("/routing/bgp/connection/add", {
+			name: "vlab-bgp-to-r1",
+			instance: "vlab-bgp",
+			"remote.as": "65000",
+			"local.role": "ebgp",
+			"remote.address": "10.0.0.1",
+		});
+		// BGP session establishment can take up to 60s in container environment
+		await waitForCheck("router1-bgp-session", 60000);
+	}, 60000);
 }
