@@ -251,15 +251,10 @@ export function attachMonitorHandlers(
 		}
 	});
 
-	client.onData("monitor:session-remove", undefined, async (event) => {
-		const id = event.sessionId;
-
-		await sessionThrottle.run(id, () => submitActiveSession(id));
-		ws.server.emit(
-			"lab-session:[sessionId]:ended",
-			{ sessionId: id },
-			undefined,
-		);
+	client.onData("monitor:session-remove", undefined, async ({ sessionId }) => {
+		await sessionThrottle.run(sessionId, () => submitActiveSession(sessionId));
+		ws.server.emit("lab-session:[sessionId]:ended", { sessionId }, undefined);
+		labSessionQueue.remove(sessionId);
 	});
 
 	client.onData("monitor:node-create", undefined, async (event) => {
