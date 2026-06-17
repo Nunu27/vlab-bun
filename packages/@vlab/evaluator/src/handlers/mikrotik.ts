@@ -224,7 +224,7 @@ export default new EvaluationHandler("mikrotik")
 				} catch {
 					// Client closed during cleanup — ignore
 				}
-			}, 500);
+			}, 100);
 
 			const cancels: (() => void)[] = [];
 
@@ -503,7 +503,7 @@ export default new EvaluationHandler("mikrotik")
 				} catch (_e) {
 					// ignore
 				}
-			}, 200);
+			}, 100);
 
 			const listener = await client.stream(
 				"/routing/ospf/interface-template/listen",
@@ -929,7 +929,7 @@ export default new EvaluationHandler("mikrotik")
 				} catch {
 					// Client closed during cleanup — ignore
 				}
-			}, 500);
+			}, 100);
 
 			const cancels: (() => void)[] = [];
 
@@ -988,7 +988,7 @@ export default new EvaluationHandler("mikrotik")
 			const doUpdate = debounce(async () => {
 				const data = await client.runQuery("/system/identity/print");
 				notify(data);
-			}, 500);
+			}, 100);
 
 			return subscribe("log", async (data) => {
 				if (!data.includes("system identity changed")) return;
