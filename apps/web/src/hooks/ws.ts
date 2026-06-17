@@ -35,7 +35,6 @@ export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
 	);
 
 	const paramsString = JSON.stringify(options.params);
-	// biome-ignore lint/correctness/useExhaustiveDependencies: custom memoization
 	const memoizedParams = useMemo(() => options.params, [paramsString]);
 
 	useEffect(() => {
@@ -67,7 +66,6 @@ export function useWSEvent<Name extends Extract<keyof WSDataRoutes, string>>(
 	}, [options.handler]);
 
 	const paramsString = JSON.stringify(options.params);
-	// biome-ignore lint/correctness/useExhaustiveDependencies: custom memoization
 	const memoizedParams = useMemo(() => options.params, [paramsString]);
 
 	useEffect(() => {

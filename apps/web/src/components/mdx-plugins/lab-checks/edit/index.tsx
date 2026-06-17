@@ -107,11 +107,10 @@ export const labCheckEditorDescriptor: JsxComponentDescriptor = {
 			[updateValue],
 		);
 
-		// biome-ignore lint/correctness/useExhaustiveDependencies: first time only
 		useEffect(() => {
 			if (isOpen || ids.length) return;
 			open({ ids, addCheck, removeCheck, removeSelf });
-		}, []);
+		}, [isOpen, ids, addCheck, removeCheck, removeSelf, open]);
 
 		return (
 			<Badge

@@ -26,7 +26,6 @@ export const useGuacamoleClient = ({
 	const store = useGuacamoleConnectionStore();
 	const actions = store.use.actions();
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: other dependencies are stable
 	useEffect(() => {
 		const { setState, setError, setConnected, reset } = actions;
 		if (!connected) return setError("Server not connected");
