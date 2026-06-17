@@ -21,6 +21,10 @@ const commands: Record<string, () => Promise<void>> = {
 		const { runResetSessions } = await import("./commands/reset-sessions");
 		await runResetSessions();
 	},
+	"sync-modules": async () => {
+		const { runSyncModules } = await import("./commands/sync-modules");
+		await runSyncModules();
+	},
 };
 
 const command = process.argv[2] ?? "serve";
@@ -40,6 +44,9 @@ if (!handler) {
 	);
 	console.error(
 		"  bun run src/index.ts reset-sessions  Clear all lab sessions from the database",
+	);
+	console.error(
+		"  bun run src/index.ts sync-modules    Sync lab modules from docs/modules to the database",
 	);
 	process.exit(1);
 }
