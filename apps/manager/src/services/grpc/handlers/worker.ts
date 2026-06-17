@@ -137,7 +137,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			});
 
 		if (updatedAt?.getTime() === createdAt.getTime()) {
-			ws.server.emit("admin:worker:new", { data: worker as any });
+			ws.server.emit("admin:worker:new", { data: worker });
 		} else {
 			ws.server.emit("admin:worker:status", {
 				data: {

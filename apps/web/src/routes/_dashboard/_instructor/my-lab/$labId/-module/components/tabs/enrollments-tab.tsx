@@ -31,8 +31,8 @@ function useClientPagination(
 		const lowerSearch = search.toLowerCase();
 		return data.filter(
 			(item) =>
-				item.student.name.toLowerCase().includes(lowerSearch) ||
-				item.student.nrp.toLowerCase().includes(lowerSearch),
+				item.name.toLowerCase().includes(lowerSearch) ||
+				item.nrp.toLowerCase().includes(lowerSearch),
 		);
 	}, [data, search]);
 
@@ -100,20 +100,43 @@ function EnrollmentsTabContent({ labId }: { labId: string }) {
 		.lab({ labId })
 		.enrollment.get.useSuspenseQuery();
 
-	useWSEvent("lab:[labId]:enrollment:update", {
+	useWSEvent("lab:[labId]:enrollment:new", {
 		params: { labId },
 		handler: (enrollment) => {
 			api.lab({ labId }).enrollment.get.setQueryData(queryClient, (oldData) => {
 				if (!oldData) return oldData;
-				const exists = oldData.some(
-					(e) => e.studentId === enrollment.studentId,
-				);
-				if (exists) {
-					return oldData.map((e) =>
-						e.studentId === enrollment.studentId ? enrollment : e,
-					);
-				}
+				const exists = oldData.some((e) => e.id === enrollment.id);
+				if (exists) return oldData;
 				return [enrollment, ...oldData];
+			});
+		},
+	});
+
+	useWSEvent("lab:[labId]:enrollment:update", {
+		params: { labId },
+		handler: (updateData) => {
+			api.lab({ labId }).enrollment.get.setQueryData(queryClient, (oldData) => {
+				if (!oldData) return oldData;
+				return oldData.map((e) => {
+					if (e.id === updateData.id) {
+						let newScore = e.score;
+						if (updateData.score !== undefined) {
+							if (
+								e.score == null ||
+								Number(updateData.score) > Number(e.score)
+							) {
+								newScore = updateData.score;
+							}
+						}
+						return {
+							...e,
+							status: updateData.status,
+							score: newScore,
+							lastUpdated: updateData.lastUpdated || e.lastUpdated,
+						};
+					}
+					return e;
+				});
 			});
 		},
 	});
@@ -123,7 +146,7 @@ function EnrollmentsTabContent({ labId }: { labId: string }) {
 		handler: ({ studentId }) => {
 			api.lab({ labId }).enrollment.get.setQueryData(queryClient, (oldData) => {
 				if (!oldData) return oldData;
-				return oldData.filter((e) => e.studentId !== studentId);
+				return oldData.filter((e) => e.id !== studentId);
 			});
 		},
 	});
@@ -140,19 +163,14 @@ function EnrollmentsTabContent({ labId }: { labId: string }) {
 	const pagination = useClientPagination(items, isLoading, isFetching, refetch);
 
 	const handleExportCsv = () => {
-		const headers = ["NRP", "Name", "Status", "Score", "Submitted At"];
+		const headers = ["NRP", "Name", "Status", "Score", "Last Updated"];
 		const rows = items.map((item) => {
-			const session = item.session;
-			const status = !session
-				? "Not Started"
-				: session.submittedAt
-					? "Submitted"
-					: "In Progress";
-			const score = session?.score ?? "-";
-			const submittedAt = session?.submittedAt
-				? new Date(session.submittedAt).toLocaleString()
-				: "-";
-			return [item.student.nrp, item.student.name, status, score, submittedAt];
+			const score = item.score ?? "-";
+			const lastUpdated =
+				item.status !== "Not Started"
+					? new Date(item.lastUpdated).toLocaleString()
+					: "-";
+			return [item.nrp, item.name, item.status, score, lastUpdated];
 		});
 
 		const csvContent = [

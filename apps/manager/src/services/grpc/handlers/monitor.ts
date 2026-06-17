@@ -24,40 +24,7 @@ export const tempNodeEvents: TypedEventEmitter<TempNodeEvents> =
 const sessionThrottle = new Throttler(1000);
 const interfaceDebounce = new Debouncer(750);
 
-async function emitEnrollmentUpdate(labId: string, studentId: string) {
-	const studentData = await db.query.students.findFirst({
-		where: (student, { eq }) => eq(student.id, studentId),
-		with: {
-			user: { columns: { id: true, name: true } },
-			sessions: {
-				where: (session, { eq }) => eq(session.labId, labId),
-				orderBy: (session, { desc }) => [desc(session.score)],
-				limit: 1,
-			},
-		},
-	});
-	const enrollment = await db.query.labEnrollments.findFirst({
-		where: (enrollment, { eq, and }) =>
-			and(eq(enrollment.labId, labId), eq(enrollment.studentId, studentId)),
-	});
-
-	if (studentData && enrollment) {
-		const { user, sessions, ...restStudent } = studentData;
-		const session = sessions.length > 0 ? sessions[0] : null;
-
-		ws.server.emit("lab:[labId]:enrollment:update", {
-			params: { labId },
-			data: {
-				...enrollment,
-				student: {
-					...user,
-					...restStudent,
-				},
-				session,
-			},
-		});
-	}
-}
+// emitEnrollmentUpdate removed
 
 export async function submitActiveSession(id: string) {
 	const now = new Date();
@@ -88,17 +55,21 @@ export async function submitActiveSession(id: string) {
 			completedWeight += checksObj[checkId]?.weight ?? 0;
 		});
 
+		const scoreStr = Math.round(
+			(completedWeight / totalWeight) * 100,
+		).toString();
+
 		await tx
 			.update(labSessions)
 			.set({
-				score: Math.round((completedWeight / totalWeight) * 100).toString(),
+				score: scoreStr,
 				submittedAt: now,
 			})
 			.where(eq(labSessions.id, id));
 		await tx
 			.delete(labSessionNodes)
 			.where(eq(labSessionNodes.labSessionId, id));
-		return session;
+		return { ...session, score: scoreStr };
 	});
 	if (!session) return;
 
@@ -108,7 +79,15 @@ export async function submitActiveSession(id: string) {
 	);
 
 	logger.debug({ id }, "Session removed and submitted");
-	await emitEnrollmentUpdate(session.labId, session.studentId);
+	ws.server.emit("lab:[labId]:enrollment:update", {
+		params: { labId: session.labId },
+		data: {
+			id: session.studentId,
+			status: "Submitted",
+			score: session.score ?? undefined,
+			lastUpdated: now,
+		},
+	});
 }
 
 export function attachMonitorHandlers(
@@ -256,7 +235,14 @@ export function attachMonitorHandlers(
 					);
 
 					await cache.delete(`lab:${labId}:lab-session:list:${ownerId}`);
-					await emitEnrollmentUpdate(labId, ownerId);
+					ws.server.emit("lab:[labId]:enrollment:update", {
+						params: { labId },
+						data: {
+							id: ownerId,
+							status: "In Progress",
+							lastUpdated: now,
+						},
+					});
 				});
 			}
 		},
