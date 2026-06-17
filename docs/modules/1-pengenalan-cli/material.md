@@ -1,7 +1,7 @@
 # Pengenalan Command Line Interface (CLI)
 
 ## Konsep Dasar CLI
-Command Line Interface (CLI) adalah antarmuka teks di mana pengguna berinteraksi dengan sistem menggunakan perintah teks. Di dunia jaringan, CLI lebih disukai daripada Graphical User Interface (GUI) karena sangat efisien, cepat, ringan, dan sangat stabil ketika digunakan untuk *remote access* lewat koneksi dengan *bandwidth* yang sangat rendah (misalnya via SSH atau Telnet).
+Command Line Interface (CLI) adalah antarmuka teks di mana pengguna berinteraksi dengan sistem menggunakan perintah teks. Di dunia jaringan, CLI lebih disukai daripada Graphical User Interface (GUI) karena sangat efisien, cepat, ringan, dan sangat stabil ketika digunakan untuk *remote access* lewat koneksi dengan *bandwidth* yang sangat rendah (misalnya via SSH). Hindari penggunaan Telnet karena protokol ini mengirimkan seluruh data — termasuk *password* — dalam bentuk teks mentah yang bisa disadap.
 
 ## Mengapa Administrator Menggunakan CLI?
 Meskipun GUI terlihat lebih modern dan mudah digunakan, seorang *Network Engineer* profesional lebih sering berhadapan dengan CLI karena beberapa alasan krusial:
@@ -22,6 +22,7 @@ Meskipun sama-sama CLI, kedua sistem operasi ini memiliki filosofi penggunaan ya
 Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Faktanya, menghafal seluruh perintah tidaklah perlu. Gunakan fitur bantuan bawaan:
 *   **Tombol `?` (Tanya):** Tekan tombol tanda tanya kapan saja pada MikroTik untuk melihat daftar perintah atau parameter apa saja yang tersedia di posisi saat ini.
 *   **Tombol `Tab` (Auto-Complete):** Jangan mengetik `interface`. Cukup ketik `int` lalu tekan `Tab`, sistem akan melengkapinya secara otomatis. Ini mencegah *typo* (salah ketik) dan mempercepat pekerjaan.
+*   **Safe Mode (`CTRL + X`):** Fitur penyelamat paling krusial! Tekan `CTRL + X` sebelum melakukan perubahan berisiko. Jika koneksi Anda terputus (misal karena salah konfigurasi IP), router akan otomatis membatalkan (*rollback*) perubahan tersebut. Tekan `CTRL + X` lagi untuk menyimpan perubahan secara permanen.
 
 ## Referensi Perintah
 ### Linux (Ubuntu)
@@ -32,9 +33,8 @@ Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Fak
 | `pwd` | (*Print Working Directory*) Mengecek lokasi direktori saat ini. |
 | `ls -la` | Menampilkan file detail & hidden files. |
 | `uname -a` | Menampilkan info OS & Kernel. |
+| `ps aux` | Menampilkan seluruh proses yang sedang berjalan di sistem. |
 | `useradd <nama>` | Membuat akun pengguna baru pada sistem. |
-| `systemctl start <service>` | Menyalakan (start) sebuah layanan daemon (misal: systemd-networkd). |
-| `systemctl status <service>` | Melihat status dari sebuah layanan daemon. |
 
 ### MikroTik RouterOS
 
@@ -47,3 +47,5 @@ Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Fak
 | `ip address print` | Mengecek daftar IP router. |
 | `system identity set name=<name>` | Mengubah nama/identitas dari router. |
 | `user add name=<nama>` | Menambahkan akun pengguna baru. |
+| `interface print` | Mengecek daftar antarmuka (interface) yang tersedia. |
+| `/export` | Menampilkan seluruh konfigurasi router dalam format teks (skrip). |

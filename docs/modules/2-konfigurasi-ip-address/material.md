@@ -17,10 +17,10 @@ Di dalam satu segmen jaringan (misal `192.168.10.0/24`), tidak semua alamat IP b
 *   **IP Host / Valid (`192.168.10.1` hingga `.254`):** Alamat di antara Network dan Broadcast inilah yang dapat dipasangkan pada interface PC atau Router.
 
 ## Memahami Output Troubleshooting (Ping)
-Administrator jaringan menggunakan utilitas `ping` (protokol ICMP) untuk menguji apakah alamat IP lawan bisa dijangkau. Pemahaman dalam membaca *output* ping sangat diperlukan untuk mengetahui letak masalahnya:
+Administrator jaringan menggunakan utilitas `ping` (protokol ICMP) untuk menguji apakah alamat IP tujuan bisa dijangkau. Pemahaman dalam membaca *output* ping sangat diperlukan untuk mengetahui letak masalahnya:
 *   **Reply dari tujuan:** Jaringan sehat, kabel terhubung, dan routing benar.
 *   **Request Timed Out (RTO):** Paket berhasil dikirim, tetapi tujuan tidak membalas dalam batas waktu. Sering kali disebabkan oleh *Firewall* yang memblokir ICMP di sisi penerima.
-*   **Destination Host Unreachable:** Router atau PC tidak tahu jalan ke tujuan, atau PC tujuan sama sekali tidak terhubung di segmen lokal.
+*   **Destination Host Unreachable:** Router atau PC tidak mengetahui rute ke tujuan, atau PC tujuan sama sekali tidak terhubung di segmen lokal.
 
 ## Referensi Perintah
 ### MikroTik RouterOS
@@ -32,6 +32,8 @@ Administrator jaringan menggunakan utilitas `ping` (protokol ICMP) untuk menguji
 | Menguji Konektivitas (Ping) | `/ping <alamat-ip> count=4` | - |
 
 ### Linux (Ubuntu)
+
+> **Catatan Produksi:** Perintah `ip addr add` pada Linux bersifat *sementara* (volatile). Jika sistem direstart, alamat IP tersebut akan hilang. Di lingkungan produksi (seperti Ubuntu 24.04), konfigurasi IP permanen umumnya dikelola menggunakan file konfigurasi YAML melalui layanan **Netplan**. Namun untuk kebutuhan simulasi lab interaktif, konfigurasi sementara sudah mencukupi.
 
 | Aksi / Fungsi | Perintah | Keterangan |
 |---|---|---|

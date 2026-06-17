@@ -19,6 +19,17 @@ RIP menggunakan berbagai trik untuk mencegah paket data berputar-putar dalam lin
 *   **Split Horizon:** Aturan emas RIP yang mengatakan, "Jangan pernah mengirimkan informasi tentang sebuah rute, kembali melalui *interface* yang sama dari mana informasi rute tersebut pertama kali diterima."
 *   **Poison Reverse:** Modifikasi dari Split Horizon, di mana rute tetap dikirimkan kembali ke *interface* asal, namun metrik rutenya "diracun" menjadi 16 hop (*Unreachable*).
 
+## Catatan Produksi & Keamanan (Best Practices)
+
+> [!WARNING]
+> **Status Legacy:** Di lingkungan *Enterprise* atau ISP modern, RIP praktis sudah ditinggalkan dan digantikan oleh OSPF atau BGP karena konvergensinya yang lambat. Namun, RIP tetap menjadi standar akademik wajib untuk memahami cara kerja algoritma *Distance-Vector*.
+
+> [!CAUTION]
+> **Bahaya Redistribute Connected:** Pada lab ini, kita menggunakan `redistribute=connected`. Di dunia nyata, praktik ini berbahaya karena router akan secara membabi buta mengiklankan *seluruh* alamat IP miliknya ke jaringan. Solusi amannya adalah menggunakan *Routing Filter* secara spesifik.
+
+> [!TIP]
+> **Default RIPv2 & Keamanan (Autentikasi):** Pada RouterOS v7, *Interface Template* secara otomatis mengirim paket menggunakan **RIPv2** sehingga subnet `/30` bisa langsung berfungsi tanpa dikonfigurasi. Namun, router secara default tetap mendengarkan update RIPv1. Di jaringan produksi, selalu gunakan parameter tambahan `receive=v2 auth=md5 auth-key=<rahasia>` untuk mengamankan router dari injeksi rute palsu.
+
 ## Referensi Perintah
 ### MikroTik RouterOS v7
 
@@ -26,6 +37,6 @@ Pada RouterOS v7, RIP telah didesain ulang untuk menggunakan arsitektur *Instanc
 
 | Aksi / Fungsi | Perintah | Keterangan |
 |---|---|---|
-| Membuat RIP Instance | `/routing rip instance add name=<nama-instance>` | Menjalankan proses RIP di background. |
-| Menambah Interface Template | `/routing rip interface-template add instance=<nama-instance> interfaces=<daftar-interface>` | Mengaktifkan *routing update* RIP pada *port* tertentu. |
-| Mengecek Tabel Rute Dinamis | `/ip route print` | Rute otomatis RIP berstatus **Dr** (Dynamic, RIP). |
+| Membuat RIP Instance | `/routing rip instance add name=<nama-instance> redistribute=connected` | Wajib tambahkan `redistribute=connected` agar jaringan lokal diiklankan ke tetangga. |
+| Menambah Interface Template | `/routing rip interface-template add instance=<nama-instance> interfaces=<daftar-interface>` | Pada v7, perintah dasar ini secara otomatis akan mentransmisikan paket RIPv2. |
+| Mengecek Tabel Rute Dinamis | `/ip route print` | Rute otomatis RIP berstatus **DAr** (Dynamic, Active, RIP). |
