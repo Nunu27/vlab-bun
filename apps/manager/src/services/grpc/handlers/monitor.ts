@@ -45,10 +45,9 @@ async function emitEnrollmentUpdate(labId: string, studentId: string) {
 		const { user, sessions, ...restStudent } = studentData;
 		const session = sessions.length > 0 ? sessions[0] : null;
 
-		ws.server.emit(
-			"lab:[labId]:enrollment:update",
-			{ labId },
-			{
+		ws.server.emit("lab:[labId]:enrollment:update", {
+			params: { labId },
+			data: {
 				...enrollment,
 				student: {
 					...user,
@@ -56,7 +55,7 @@ async function emitEnrollmentUpdate(labId: string, studentId: string) {
 				},
 				session,
 			},
-		);
+		});
 	}
 }
 
@@ -117,250 +116,279 @@ export function attachMonitorHandlers(
 	client: ReturnType<typeof appRouter.buildClient>,
 	guacdConfig: { guacdHost: string; guacdPort: number },
 ) {
-	client.onData("monitor:snapshot", undefined, async (event) => {
-		const { sessions, nodes } = event;
-		const sessionIds = sessions.map((s) => s.id);
+	client.onData("monitor:snapshot", {
+		callback: async (event) => {
+			const { sessions, nodes } = event;
+			const sessionIds = sessions.map((s) => s.id);
 
-		const staleSessions = await db.query.labSessions.findMany({
-			columns: { id: true },
-			where: (labSessions, { eq, isNull, notInArray, and }) => {
-				const conditions = [
-					eq(labSessions.workerId, workerId),
-					isNull(labSessions.submittedAt),
-				];
+			const staleSessions = await db.query.labSessions.findMany({
+				columns: { id: true },
+				where: (labSessions, { eq, isNull, notInArray, and }) => {
+					const conditions = [
+						eq(labSessions.workerId, workerId),
+						isNull(labSessions.submittedAt),
+					];
 
-				if (sessionIds.length) {
-					conditions.push(notInArray(labSessions.id, sessionIds));
-				}
+					if (sessionIds.length) {
+						conditions.push(notInArray(labSessions.id, sessionIds));
+					}
 
-				return and(...conditions);
-			},
-		});
-
-		for (const { id } of staleSessions) {
-			await sessionThrottle.run(id, () => submitActiveSession(id));
-		}
-
-		if (sessions.length && nodes.length) {
-			const templateIds = [
-				...new Set(
-					nodes.map((n) => {
-						assert(n.deviceTemplateId, "Node has no device template ID");
-						return n.deviceTemplateId;
-					}),
-				),
-			];
-			if (templateIds.length === 0) return;
-
-			const templateMap = new Map<
-				string,
-				{
-					connection: DeviceTemplateConnection;
-					kind: string;
-				}
-			>();
-			const templates = await db.query.deviceTemplates.findMany({
-				where: (dt, { inArray }) => inArray(dt.id, templateIds),
-				columns: { id: true, connection: true, kind: true },
+					return and(...conditions);
+				},
 			});
-			for (const t of templates) {
-				templateMap.set(t.id, { connection: t.connection, kind: t.kind });
+
+			for (const { id } of staleSessions) {
+				await sessionThrottle.run(id, () => submitActiveSession(id));
 			}
 
-			const nodeValues = nodes.map((node) => {
-				assert(node.labNodeId, "Snapshot node missing labNodeId");
-				assert(node.deviceTemplateId, "Snapshot node missing deviceTemplateId");
-
-				const health =
-					node.health === "none" ? null : (node.health as NodeHealth | null);
-
-				const template = templateMap.get(node.deviceTemplateId);
-				assert(template, `Template ${node.deviceTemplateId} not found in map`);
-
-				return {
-					id: node.id,
-					name: node.name,
-					ip: node.ip,
-					interfaces: node.interfaces,
-					containerId: node.containerId,
-					health,
-					token: guacamole.generateNodeToken(
-						template.connection,
-						template.kind,
-						node.ip,
-						guacdConfig.guacdHost,
-						guacdConfig.guacdPort,
+			if (sessions.length && nodes.length) {
+				const templateIds = [
+					...new Set(
+						nodes.map((n) => {
+							assert(n.deviceTemplateId, "Node has no device template ID");
+							return n.deviceTemplateId;
+						}),
 					),
-					labSessionId: node.labSessionId,
-					labNodeId: node.labNodeId,
-					deviceTemplateId: node.deviceTemplateId,
-				};
-			});
+				];
+				if (templateIds.length === 0) return;
 
-			await db
-				.insert(labSessionNodes)
-				.values(nodeValues)
-				.onConflictDoUpdate({
-					target: labSessionNodes.id,
-					set: {
-						health: sql`excluded.health`,
-						interfaces: sql`excluded.interfaces`,
-						containerId: sql`excluded.container_id`,
-						token: sql`excluded.token`,
-					},
+				const templateMap = new Map<
+					string,
+					{
+						connection: DeviceTemplateConnection;
+						kind: string;
+					}
+				>();
+				const templates = await db.query.deviceTemplates.findMany({
+					where: (dt, { inArray }) => inArray(dt.id, templateIds),
+					columns: { id: true, connection: true, kind: true },
+				});
+				for (const t of templates) {
+					templateMap.set(t.id, { connection: t.connection, kind: t.kind });
+				}
+
+				const nodeValues = nodes.map((node) => {
+					assert(node.labNodeId, "Snapshot node missing labNodeId");
+					assert(
+						node.deviceTemplateId,
+						"Snapshot node missing deviceTemplateId",
+					);
+
+					const health =
+						node.health === "none" ? null : (node.health as NodeHealth | null);
+
+					const template = templateMap.get(node.deviceTemplateId);
+					assert(
+						template,
+						`Template ${node.deviceTemplateId} not found in map`,
+					);
+
+					return {
+						id: node.id,
+						name: node.name,
+						ip: node.ip,
+						interfaces: node.interfaces,
+						containerId: node.containerId,
+						health,
+						token: guacamole.generateNodeToken(
+							template.connection,
+							template.kind,
+							node.ip,
+							guacdConfig.guacdHost,
+							guacdConfig.guacdPort,
+						),
+						labSessionId: node.labSessionId,
+						labNodeId: node.labNodeId,
+						deviceTemplateId: node.deviceTemplateId,
+					};
 				});
 
-			await cache.delete(...sessionIds.map((id) => `lab:*:lab-session:${id}`));
-		}
-
-		logger.info(
-			{ sessions: sessions.length, nodes: nodes.length, workerId },
-			"Synchronized containerlab state",
-		);
-	});
-
-	client.onData("monitor:session-create", undefined, async (event) => {
-		const { id, ownerId, labId, labDue } = event;
-		if (labId && labDue) {
-			const now = new Date();
-			const dueDate = new Date(Number(labDue));
-			sessionThrottle.run(id, async () => {
 				await db
-					.insert(labSessions)
-					.values({
-						id,
-						labId,
-						studentId: ownerId,
-						workerId,
-						dueDate,
-						createdAt: now,
-						updatedAt: now,
-					})
-					.onConflictDoNothing();
+					.insert(labSessionNodes)
+					.values(nodeValues)
+					.onConflictDoUpdate({
+						target: labSessionNodes.id,
+						set: {
+							health: sql`excluded.health`,
+							interfaces: sql`excluded.interfaces`,
+							containerId: sql`excluded.container_id`,
+							token: sql`excluded.token`,
+						},
+					});
 
-				const delay = Math.max(0, dueDate.getTime() - Date.now());
-				await labSessionQueue.add(
-					"cleanup",
-					{ sessionId: id, workerId },
-					{ delay, jobId: id },
+				await cache.delete(
+					...sessionIds.map((id) => `lab:*:lab-session:${id}`),
 				);
-
-				await cache.delete(`lab:${labId}:lab-session:list:${ownerId}`);
-				await emitEnrollmentUpdate(labId, ownerId);
-			});
-		}
-	});
-
-	client.onData("monitor:session-remove", undefined, async ({ sessionId }) => {
-		await sessionThrottle.run(sessionId, () => submitActiveSession(sessionId));
-		ws.server.emit("lab-session:[sessionId]:ended", { sessionId }, undefined);
-		labSessionQueue.remove(sessionId);
-	});
-
-	client.onData("monitor:node-create", undefined, async (event) => {
-		const {
-			id,
-			name,
-			ip,
-			interfaces,
-			containerId,
-			health: rawHealth,
-			labSessionId,
-			labNodeId,
-			deviceTemplateId,
-		} = event;
-		const health =
-			rawHealth === "none" ? null : (rawHealth as NodeHealth | null);
-
-		if (labNodeId && deviceTemplateId) {
-			await sessionThrottle.wait(labSessionId);
-
-			const template = await db.query.deviceTemplates.findFirst({
-				where: (dt, { eq }) => eq(dt.id, deviceTemplateId),
-				columns: { connection: true, kind: true },
-			});
-			if (!template) {
-				logger.error(
-					{ id, deviceTemplateId },
-					"Device template not found for node, skipping insert",
-				);
-				return;
 			}
 
-			const token = guacamole.generateNodeToken(
-				template.connection,
-				template.kind,
-				ip,
-				guacdConfig.guacdHost,
-				guacdConfig.guacdPort,
+			logger.info(
+				{ sessions: sessions.length, nodes: nodes.length, workerId },
+				"Synchronized containerlab state",
 			);
+		},
+	});
 
-			await db.insert(labSessionNodes).values({
+	client.onData("monitor:session-create", {
+		callback: async (event) => {
+			const { id, ownerId, labId, labDue } = event;
+			if (labId && labDue) {
+				const now = new Date();
+				const dueDate = new Date(Number(labDue));
+				sessionThrottle.run(id, async () => {
+					await db
+						.insert(labSessions)
+						.values({
+							id,
+							labId,
+							studentId: ownerId,
+							workerId,
+							dueDate,
+							createdAt: now,
+							updatedAt: now,
+						})
+						.onConflictDoNothing();
+
+					const delay = Math.max(0, dueDate.getTime() - Date.now());
+					await labSessionQueue.add(
+						"cleanup",
+						{ sessionId: id, workerId },
+						{ delay, jobId: id },
+					);
+
+					await cache.delete(`lab:${labId}:lab-session:list:${ownerId}`);
+					await emitEnrollmentUpdate(labId, ownerId);
+				});
+			}
+		},
+	});
+
+	client.onData("monitor:session-remove", {
+		callback: async ({ sessionId }) => {
+			await sessionThrottle.run(sessionId, () =>
+				submitActiveSession(sessionId),
+			);
+			ws.server.emit("lab-session:[sessionId]:ended", {
+				params: { sessionId },
+				data: undefined,
+			});
+			labSessionQueue.remove(sessionId);
+		},
+	});
+
+	client.onData("monitor:node-create", {
+		callback: async (event) => {
+			const {
 				id,
 				name,
 				ip,
 				interfaces,
 				containerId,
-				health,
-				token,
+				health: rawHealth,
 				labSessionId,
 				labNodeId,
 				deviceTemplateId,
+			} = event;
+			const health =
+				rawHealth === "none" ? null : (rawHealth as NodeHealth | null);
+
+			if (labNodeId && deviceTemplateId) {
+				await sessionThrottle.wait(labSessionId);
+
+				const template = await db.query.deviceTemplates.findFirst({
+					where: (dt, { eq }) => eq(dt.id, deviceTemplateId),
+					columns: { connection: true, kind: true },
+				});
+				if (!template) {
+					logger.error(
+						{ id, deviceTemplateId },
+						"Device template not found for node, skipping insert",
+					);
+					return;
+				}
+
+				const token = guacamole.generateNodeToken(
+					template.connection,
+					template.kind,
+					ip,
+					guacdConfig.guacdHost,
+					guacdConfig.guacdPort,
+				);
+
+				await db.insert(labSessionNodes).values({
+					id,
+					name,
+					ip,
+					interfaces,
+					containerId,
+					health,
+					token,
+					labSessionId,
+					labNodeId,
+					deviceTemplateId,
+				});
+			} else {
+				tempNodeEvents.emit(`${id}:health`, health);
+				tempNodeEvents.emit(`${id}:ip`, ip);
+			}
+		},
+	});
+
+	client.onData("monitor:node-health", {
+		callback: async (event) => {
+			const { node, isTemp } = event;
+			const health =
+				node.health === "none" ? null : (node.health as NodeHealth | null);
+
+			if (isTemp) tempNodeEvents.emit(`${node.id}:health`, health);
+			else {
+				await sessionThrottle.wait(node.labSessionId, {
+					id: "health",
+					execute: async () => {
+						await db
+							.update(labSessionNodes)
+							.set({ health })
+							.where(eq(labSessionNodes.id, node.id));
+
+						await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
+					},
+				});
+
+				ws.server.emit("node:[id]:health", {
+					params: { id: node.id },
+					data: health,
+				});
+			}
+		},
+	});
+
+	client.onData("monitor:interface-update", {
+		callback: async (event) => {
+			const { node } = event;
+
+			for (const [iface, ips] of Object.entries(node.interfaces)) {
+				ws.server.emit("node:[id]:interfaces:[interface]", {
+					params: { id: node.id, interface: iface },
+					data: ips,
+				});
+			}
+
+			interfaceDebounce.run(node.id, async () => {
+				await db
+					.update(labSessionNodes)
+					.set({ interfaces: node.interfaces })
+					.where(eq(labSessionNodes.id, node.id));
+
+				await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
 			});
-		} else {
-			tempNodeEvents.emit(`${id}:health`, health);
-			tempNodeEvents.emit(`${id}:ip`, ip);
-		}
+		},
 	});
 
-	client.onData("monitor:node-health", undefined, async (event) => {
-		const { node, isTemp } = event;
-		const health =
-			node.health === "none" ? null : (node.health as NodeHealth | null);
+	client.onData("monitor:node-remove", {
+		callback: async (event) => {
+			const { id, isTemp } = event;
+			if (!isTemp) return;
 
-		if (isTemp) tempNodeEvents.emit(`${node.id}:health`, health);
-		else {
-			await sessionThrottle.wait(node.labSessionId, {
-				id: "health",
-				execute: async () => {
-					await db
-						.update(labSessionNodes)
-						.set({ health })
-						.where(eq(labSessionNodes.id, node.id));
-
-					await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
-				},
-			});
-
-			ws.server.emit("node:[id]:health", { id: node.id }, health);
-		}
-	});
-
-	client.onData("monitor:interface-update", undefined, async (event) => {
-		const { node } = event;
-
-		for (const [iface, ips] of Object.entries(node.interfaces)) {
-			ws.server.emit(
-				"node:[id]:interfaces:[interface]",
-				{ id: node.id, interface: iface },
-				ips,
-			);
-		}
-
-		interfaceDebounce.run(node.id, async () => {
-			await db
-				.update(labSessionNodes)
-				.set({ interfaces: node.interfaces })
-				.where(eq(labSessionNodes.id, node.id));
-
-			await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
-		});
-	});
-
-	client.onData("monitor:node-remove", undefined, async (event) => {
-		const { id, isTemp } = event;
-		if (!isTemp) return;
-
-		tempNodeEvents.emit(`${id}:health`, "deleted");
+			tempNodeEvents.emit(`${id}:health`, "deleted");
+		},
 	});
 }

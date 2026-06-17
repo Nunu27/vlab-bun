@@ -44,10 +44,9 @@ export default createRouter()
 
 					if (studentData && enrollment) {
 						const { user, ...restStudent } = studentData;
-						ws.server.emit(
-							"lab:[labId]:enrollment:update",
-							{ labId },
-							{
+						ws.server.emit("lab:[labId]:enrollment:update", {
+							params: { labId },
+							data: {
 								...enrollment,
 								student: {
 									...user,
@@ -55,7 +54,7 @@ export default createRouter()
 								},
 								session: null,
 							},
-						);
+						});
 					}
 
 					return success({ message: "Successfully enrolled" });
@@ -72,11 +71,10 @@ export default createRouter()
 
 					await cache.delete(`lab:${labId}:${session.data.id}`);
 
-					ws.server.emit(
-						"lab:[labId]:enrollment:remove",
-						{ labId },
-						{ studentId: session.data.id },
-					);
+					ws.server.emit("lab:[labId]:enrollment:remove", {
+						params: { labId },
+						data: { studentId: session.data.id },
+					});
 
 					return success({ message: "Successfully unenrolled" });
 				});
