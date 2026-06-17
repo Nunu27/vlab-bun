@@ -1,11 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { DataTable } from "@web/components/data-table/data-table";
+import LoadingPage from "@web/components/pages/loading-page";
 import { Button } from "@web/components/ui/button";
 import type { UseApiPaginationReturn } from "@web/hooks/pagination/use-api-pagination";
 import { useWSEvent } from "@web/hooks/ws";
 import api from "@web/lib/api";
 import { DownloadIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import type { LabEnrollmentItem } from "../../../../-module/types";
 import { enrollmentColumns } from "../../columns";
 
@@ -93,7 +94,7 @@ function useClientPagination(
 	} as unknown as UseApiPaginationReturn<LabEnrollmentItem>;
 }
 
-function EnrollmentsTab({ labId }: { labId: string }) {
+function EnrollmentsTabContent({ labId }: { labId: string }) {
 	const queryClient = useQueryClient();
 	const { data, refetch, isLoading, isFetching } = api
 		.lab({ labId })
@@ -183,6 +184,14 @@ function EnrollmentsTab({ labId }: { labId: string }) {
 				</Button>
 			}
 		/>
+	);
+}
+
+function EnrollmentsTab({ labId }: { labId: string }) {
+	return (
+		<Suspense fallback={<LoadingPage />}>
+			<EnrollmentsTabContent labId={labId} />
+		</Suspense>
 	);
 }
 
