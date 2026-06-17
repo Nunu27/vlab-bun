@@ -23,8 +23,6 @@ export default createRouter()
 								},
 								sessions: {
 									where: (session, { eq }) => eq(session.labId, labId),
-									orderBy: (session, { desc }) => [desc(session.score)],
-									limit: 1,
 								},
 							},
 						},
@@ -32,17 +30,38 @@ export default createRouter()
 				});
 
 				const formattedItems = items.map((item) => {
-					const { student, ...rest } = item;
+					const { student } = item;
 					const { user, sessions, ...studentData } = student;
-					const session = sessions.length > 0 ? sessions[0] : null;
+
+					// Find the latest session for status
+					const latestSession = [...sessions].sort(
+						(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+					)[0];
+					const status = !latestSession
+						? "Not Started"
+						: latestSession.submittedAt
+							? "Submitted"
+							: "In Progress";
+
+					// Find highest score
+					let highestScore: number | null = null;
+					sessions.forEach((s) => {
+						if (s.score !== null) {
+							const num = Number(s.score);
+							if (highestScore === null || num > highestScore)
+								highestScore = num;
+						}
+					});
 
 					return {
-						...rest,
-						student: {
-							...user,
-							...studentData,
-						},
-						session,
+						id: item.studentId,
+						name: user.name,
+						nrp: studentData.nrp,
+						status,
+						score: highestScore !== null ? String(highestScore) : null,
+						lastUpdated: latestSession
+							? latestSession.updatedAt || latestSession.createdAt
+							: item.createdAt,
 					};
 				});
 

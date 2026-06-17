@@ -88,7 +88,7 @@ export function useWSEvent<Name extends Extract<keyof WSDataRoutes, string>>(
 export function useWSAction<Name extends Extract<keyof WSRpcRoutes, string>>(
 	name: Name,
 ) {
-	const disposeRef = useRef<() => void>(undefined as any);
+	const disposeRef = useRef<() => void>(undefined);
 
 	const send = useCallback(
 		(args: {

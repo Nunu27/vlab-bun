@@ -44,15 +44,15 @@ export default createRouter()
 
 					if (studentData && enrollment) {
 						const { user, ...restStudent } = studentData;
-						ws.server.emit("lab:[labId]:enrollment:update", {
+						ws.server.emit("lab:[labId]:enrollment:new", {
 							params: { labId },
 							data: {
-								...enrollment,
-								student: {
-									...user,
-									...restStudent,
-								},
-								session: null,
+								id: session.data.id,
+								name: user.name,
+								nrp: restStudent.nrp,
+								status: "Not Started",
+								score: null,
+								lastUpdated: new Date(),
 							},
 						});
 					}
