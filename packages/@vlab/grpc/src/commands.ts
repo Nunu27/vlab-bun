@@ -46,6 +46,12 @@ export const EvaluatorNodeInfoSchema = t.Object({
 	id: t.String(),
 	ip: t.String(),
 	containerId: t.String(),
+	credentials: t.Optional(
+		t.Object({
+			username: t.Optional(t.String()),
+			password: t.Optional(t.String()),
+		}),
+	),
 });
 
 export const EvaluatorSessionCheckSchema = t.Object({

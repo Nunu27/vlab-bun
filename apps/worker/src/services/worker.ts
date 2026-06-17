@@ -70,19 +70,36 @@ export async function streamMetrics() {
 		const storageInfo = getStorageInfo();
 		const storageUsagePercent = storageInfo.usedPercent;
 
-		const cpuWeight = 0.35;
-		const memWeight = 0.5;
-		const storageWeight = 0.15;
+		const cpuWeight = 0.3;
+		const memWeight = 0.45;
+		const storageWeight = 0.1;
+		const labWeight = 0.15;
+
+		// Treat 10 concurrent labs as the soft saturation point
+		const LAB_SOFT_CAP = 10;
+		const labPressure = Math.min(monitorState.activeLabs / LAB_SOFT_CAP, 1);
+
+		// Capacity-aware scaling: penalize smaller-than-reference workers more
+		// steeply for the same usage%, and larger workers more leniently.
+		// Reference: 16 GB RAM, 8 cores. Clamped to [0.5, 2.0].
+		const REF_MEM_GB = 16;
+		const REF_CORES = 8;
+		const totalMemGB = os.totalmem() / 1024 ** 3;
+		const totalCores = os.cpus().length;
+		const memScale = Math.min(Math.max(REF_MEM_GB / totalMemGB, 0.5), 2);
+		const cpuScale = Math.min(Math.max(REF_CORES / totalCores, 0.5), 2);
 
 		let score =
 			100 -
-			((cpuUsagePercent / 100) ** 2 * cpuWeight * 100 +
-				(memoryUsagePercent / 100) ** 2 * memWeight * 100 +
-				(storageUsagePercent / 100) ** 2 * storageWeight * 100);
+			((cpuUsagePercent / 100) ** 2 * cpuWeight * 100 * cpuScale +
+				(memoryUsagePercent / 100) ** 2 * memWeight * 100 * memScale +
+				(storageUsagePercent / 100) ** 2 * storageWeight * 100 +
+				labPressure ** 2 * labWeight * 100);
 
-		if (memoryUsagePercent > 90 || storageUsagePercent > 90) {
-			score -= 50;
-		}
+		// Applied independently so a worker critical on both takes -60
+		if (memoryUsagePercent > 90) score -= 30;
+		// 85% threshold — image pulls can fail before disk is completely full
+		if (storageUsagePercent > 85) score -= 30;
 
 		score = Math.max(0, Math.min(100, Math.round(score)));
 

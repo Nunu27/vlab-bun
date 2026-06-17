@@ -15,13 +15,16 @@ export async function handleStartLabEvaluation(
 	const { sessionId, labId } = payload;
 	const lab = await db.query.labs.findFirst({
 		where: eq(labs.id, labId),
-		columns: { checks: true },
+		columns: { checks: true, topology: true },
 	});
 	if (!lab) return;
 
 	const nodes = await db.query.labSessionNodes.findMany({
 		columns: { id: true, ip: true, containerId: true, labNodeId: true },
 		where: eq(labSessionNodes.labSessionId, sessionId),
+		with: {
+			deviceTemplate: { columns: { connection: true } },
+		},
 	});
 
 	const checks = await db.query.labSessionChecks.findMany({
@@ -39,7 +42,17 @@ export async function handleStartLabEvaluation(
 
 	nodes.forEach((n) => {
 		nodeIdMap[n.labNodeId] = n.id;
-		nodeMap[n.id] = n;
+		const topologyCredentials = lab.topology.devices[n.labNodeId]?.credentials;
+		const templateCredentials = n.deviceTemplate.connection.data;
+		nodeMap[n.id] = {
+			id: n.id,
+			ip: n.ip,
+			containerId: n.containerId,
+			credentials: {
+				username: topologyCredentials?.username || templateCredentials.username,
+				password: topologyCredentials?.password || templateCredentials.password,
+			},
+		};
 	});
 
 	const sessionChecks = Object.entries(lab.checks).map(([id, check]) => ({
