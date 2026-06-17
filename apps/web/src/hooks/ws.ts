@@ -40,8 +40,11 @@ export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
 	useEffect(() => {
 		if (options.enabled === false) return;
 
-		const dispose = ws.onData(name, memoizedParams as any, (newData) => {
-			setData(newData);
+		const dispose = ws.onData(name, {
+			params: memoizedParams as any,
+			callback: (newData) => {
+				setData(newData);
+			},
 		});
 
 		return () => {
@@ -69,8 +72,11 @@ export function useWSEvent<Name extends Extract<keyof WSDataRoutes, string>>(
 	const memoizedParams = useMemo(() => options.params, [paramsString]);
 
 	useEffect(() => {
-		const dispose = ws.onData(name, memoizedParams as any, (data) => {
-			handlerRef.current(data);
+		const dispose = ws.onData(name, {
+			params: memoizedParams as any,
+			callback: (data) => {
+				handlerRef.current(data);
+			},
 		});
 
 		return () => {
@@ -100,12 +106,11 @@ export function useWSAction<Name extends Extract<keyof WSRpcRoutes, string>>(
 			if (args.onError) callbacks.error = args.onError;
 			if (args.onResponse) callbacks.response = args.onResponse;
 
-			const dispose = ws.rpc(
-				name as any,
-				args.params as any,
-				args.data,
+			const dispose = ws.rpc(name as any, {
+				params: args.params as any,
+				payload: args.data as any,
 				callbacks,
-			);
+			});
 			disposeRef.current = dispose;
 
 			return dispose;

@@ -137,12 +137,14 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			});
 
 		if (updatedAt?.getTime() === createdAt.getTime()) {
-			ws.server.emit("admin:worker:new", undefined, worker);
+			ws.server.emit("admin:worker:new", { data: worker as any });
 		} else {
-			ws.server.emit("admin:worker:status", undefined, {
-				id: worker.id,
-				status: "online",
-				lastSeen: worker.lastSeen,
+			ws.server.emit("admin:worker:status", {
+				data: {
+					id: worker.id,
+					status: "online",
+					lastSeen: worker.lastSeen,
+				},
 			});
 		}
 
@@ -233,10 +235,12 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				})
 				.where(eq(workers.id, workerId));
 
-			ws.server.emit("admin:worker:status", undefined, {
-				id: workerId,
-				status: "offline",
-				lastSeen: now,
+			ws.server.emit("admin:worker:status", {
+				data: {
+					id: workerId,
+					status: "offline",
+					lastSeen: now,
+				},
 			});
 		}
 	},
@@ -259,13 +263,15 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			})
 			.where(eq(workers.id, workerId));
 
-		ws.server.emit("admin:worker:metrics", undefined, {
-			id: workerId,
-			cpuUsagePercent: request.cpuUsagePercent.toString(),
-			memoryUsagePercent: request.memoryUsagePercent.toString(),
-			storageUsagePercent: request.storageUsagePercent.toString(),
-			activeLabs: request.activeLabs,
-			activeNodes: request.activeNodes,
+		ws.server.emit("admin:worker:metrics", {
+			data: {
+				id: workerId,
+				cpuUsagePercent: request.cpuUsagePercent.toString(),
+				memoryUsagePercent: request.memoryUsagePercent.toString(),
+				storageUsagePercent: request.storageUsagePercent.toString(),
+				activeLabs: request.activeLabs,
+				activeNodes: request.activeNodes,
+			},
 		});
 
 		return { success: true };

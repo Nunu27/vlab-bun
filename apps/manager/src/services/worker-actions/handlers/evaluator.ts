@@ -87,11 +87,10 @@ export async function handleStartLabEvaluation(
 						},
 					});
 
-				ws.server.emit(
-					"lab-session:[sessionId]:checks",
-					{ sessionId },
-					{ id, completed },
-				);
+				ws.server.emit("lab-session:[sessionId]:checks", {
+					params: { sessionId },
+					data: { id, completed },
+				});
 			},
 		},
 	);

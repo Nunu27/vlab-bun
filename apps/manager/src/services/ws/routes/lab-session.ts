@@ -42,11 +42,10 @@ ws.server.on(
 			return true;
 		}
 
-		ws.server.emit(
-			"lab-session:[sessionId]:client-change",
-			{ sessionId },
-			connectionId,
-		);
+		ws.server.emit("lab-session:[sessionId]:client-change", {
+			params: { sessionId },
+			data: connectionId,
+		});
 
 		await db
 			.update(labSessions)
@@ -70,11 +69,10 @@ ws.server.onDispose("lab-session:[sessionId]:connect", async (connectionId) => {
 		.returning({ id: labSessions.id, workerId: labSessions.workerId });
 	if (!data) return;
 
-	ws.server.emit(
-		"lab-session:[sessionId]:client-change",
-		{ sessionId: data.id },
-		null,
-	);
+	ws.server.emit("lab-session:[sessionId]:client-change", {
+		params: { sessionId: data.id },
+		data: null,
+	});
 
 	await workerActions.dispatch("evaluator:stop", data.workerId, {
 		sessionId: data.id,

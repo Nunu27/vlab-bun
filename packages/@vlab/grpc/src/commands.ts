@@ -147,42 +147,28 @@ export const appRouter = new Router()
 			sessionId: t.String(),
 			config: LabConfigSchema,
 		}),
-		replies: {},
-		response: t.Void(),
-		meta: {},
 	})
 	.rpc("clab:destroyLab", {
 		payload: t.Object({
 			sessionId: t.String(),
 		}),
-		replies: {},
-		response: t.Void(),
-		meta: {},
 	})
 	.rpc("evaluator:start", {
 		payload: StartEvaluationPayloadSchema,
 		replies: {
 			checkChanged: t.Object({ id: t.String(), completed: t.Boolean() }),
 		},
-		response: t.Void(),
-		meta: {},
 	})
 	.rpc("docker:pullImage", {
 		payload: t.Object({
 			image: t.String(),
 		}),
-		replies: {},
-		response: t.Void(),
-		meta: {},
 	})
 	.rpc("evaluator:stop", {
 		payload: t.Object({
 			sessionId: t.String(),
 			immediate: t.Optional(t.Boolean()),
 		}),
-		replies: {},
-		response: t.Void(),
-		meta: {},
 	});
 
 export type AppRouter = typeof appRouter;
