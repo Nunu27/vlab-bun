@@ -77,6 +77,7 @@ const OSPFInterfaceTemplateSchema = t.Array(
 		"dead-interval": t.String(),
 		priority: t.String(),
 		cost: t.String(),
+		passive: t.Optional(t.String()),
 		disabled: t.Optional(t.String()),
 		inactive: t.Optional(t.String()),
 	}),
@@ -108,6 +109,7 @@ const RIPInstanceSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		name: t.String(),
+		redistribute: t.Optional(t.String()),
 		disabled: t.Optional(t.String()),
 	}),
 );
@@ -122,6 +124,29 @@ const RIPInterfaceTemplateSchema = t.Array(
 );
 
 // BGP Schema
+
+const BGPConnectionSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		"local.role": t.Optional(t.String()),
+		"remote.as": t.Optional(t.String()),
+		as: t.Optional(t.String()),
+		"output.redistribute": t.Optional(t.String()),
+		disabled: t.Optional(t.String()),
+		inactive: t.Optional(t.String()),
+	}),
+);
+
+const BGPSessionSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		"remote.address": t.Optional(t.String()),
+		state: t.Optional(t.String()),
+		established: t.Optional(t.String()),
+	}),
+);
 
 const BGPInstanceSchema = t.Array(
 	t.Object({
@@ -154,7 +179,10 @@ export default new EvaluationHandler("mikrotik")
 			const client = new RouterOSClient(node.ip);
 
 			await client.connect();
-			await client.login("admin", "admin");
+			await client.login(
+				node.credentials?.username ?? "admin",
+				node.credentials?.password ?? "admin",
+			);
 
 			return { client };
 		},
@@ -188,46 +216,44 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "routing-table",
 		data: IPRouteSchema,
-		listen: ({ client }, notify, subscribe) => {
-			// Example data
-			// [
-			//   {
-			//     ".id": "*80000002",
-			//     "dst-address": "10.10.10.0/30",
-			//     "routing-table": "main",
-			//     gateway: "192.168.10.1",
-			//     "immediate-gw": "",
-			//     distance: "1",
-			//     scope: "30",
-			//     "target-scope": "10",
-			//     dynamic: "false",
-			//     inactive: "true",
-			//     static: "true",
-			//   }, {
-			//     ".id": "*20183020",
-			//     "dst-address": "172.31.255.28/30",
-			//     "routing-table": "main",
-			//     gateway: "ether1",
-			//     "immediate-gw": "ether1",
-			//     distance: "0",
-			//     scope: "10",
-			//     "target-scope": "5",
-			//     "local-address": "172.31.255.30%ether1",
-			//     dynamic: "true",
-			//     inactive: "false",
-			//     active: "true",
-			//     connect: "true",
-			//   }
-			// ]
+		listen: async ({ client }, notify) => {
 			const doUpdate = debounce(async () => {
-				const data = await client.runQuery("/ip/route/print");
-				notify(data);
+				try {
+					const data = await client.runQuery("/ip/route/print");
+					notify(data);
+				} catch {
+					// Client closed during cleanup — ignore
+				}
 			}, 500);
 
-			return subscribe("log", async (message) => {
-				if (!message.startsWith("route")) return;
-				await doUpdate();
-			});
+			const cancels: (() => void)[] = [];
+
+			// /ip/route/listen fires when static routes are added/removed via API.
+			const routeListener = await client.stream("/ip/route/listen");
+			routeListener.on("data", () => doUpdate());
+			routeListener.on("error", () => {});
+			cancels.push(routeListener.cancel);
+
+			// Dynamic protocol routes (RIP/OSPF/BGP) don't trigger /ip/route/listen.
+			// Use protocol-specific neighbor/session streams as secondary triggers.
+			for (const endpoint of [
+				"/routing/rip/neighbor/listen",
+				"/routing/ospf/neighbor/listen",
+				"/routing/bgp/session/listen",
+			]) {
+				try {
+					const listener = await client.stream(endpoint);
+					listener.on("data", () => doUpdate());
+					listener.on("error", () => {});
+					cancels.push(listener.cancel);
+				} catch {
+					// Protocol not configured on this node — skip silently
+				}
+			}
+
+			return () => {
+				for (const c of cancels) c();
+			};
 		},
 		read: async ({ client }) => {
 			return await client.runQuery("/ip/route/print");
@@ -242,14 +268,18 @@ export default new EvaluationHandler("mikrotik")
 			dst: t.String({
 				title: "Destination",
 			}),
-			gateway: t.String({
-				title: "Gateway",
-			}),
-			flag: t.String({
-				title: "Flag",
-				description:
-					"D - DYNAMIC; X - DISABLED, I - INACTIVE, A - ACTIVE; c - CONNECT, s - STATIC, r - RIP, b - BGP, o - OSPF, i - IS-IS, d - DHCP, v - VPN, m - MODEM, y - BGP-MPLS-VPN; H - HW-OFFLOADED; + - ECMP",
-			}),
+			gateway: t.Optional(
+				t.String({
+					title: "Gateway",
+				}),
+			),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description:
+						"D - DYNAMIC; X - DISABLED, I - INACTIVE, A - ACTIVE; c - CONNECT, s - STATIC, r - RIP, b - BGP, o - OSPF, i - IS-IS, d - DHCP, v - VPN, m - MODEM, y - BGP-MPLS-VPN; H - HW-OFFLOADED; + - ECMP",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag?.split("") ?? []);
@@ -258,7 +288,7 @@ export default new EvaluationHandler("mikrotik")
 				return (
 					route.active &&
 					route["dst-address"] === params.dst &&
-					route.gateway === params.gateway &&
+					(!params.gateway || route.gateway === params.gateway) &&
 					compareFlag(flags, "D", route.dynamic) &&
 					compareFlag(flags, "X", route.disabled) &&
 					compareFlag(flags, "I", route.inactive) &&
@@ -333,16 +363,20 @@ export default new EvaluationHandler("mikrotik")
 			name: t.String({
 				title: "Instance Name",
 			}),
-			version: t.String({
-				title: "OSPF Version",
-			}),
+			version: t.Optional(
+				t.String({
+					title: "OSPF Version",
+				}),
+			),
 			routerId: t.String({
 				title: "Router ID",
 			}),
-			flag: t.String({
-				title: "Flag",
-				description: "X - DISABLED, I - INACTIVE",
-			}),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description: "X - DISABLED, I - INACTIVE",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag?.split("") ?? []);
@@ -350,7 +384,7 @@ export default new EvaluationHandler("mikrotik")
 			return data.some((instance) => {
 				return (
 					instance.name === params.name &&
-					instance.version === params.version &&
+					(!params.version || instance.version === params.version) &&
 					instance["router-id"] === params.routerId &&
 					compareFlag(flags, "X", instance.disabled) &&
 					compareFlag(flags, "I", instance.inactive)
@@ -429,11 +463,13 @@ export default new EvaluationHandler("mikrotik")
 			areaId: t.String({
 				title: "Area ID",
 			}),
-			flag: t.String({
-				title: "Flag",
-				description:
-					"D - DYNAMIC; X - DISABLED, I - INACTIVE, T - TRANSIT-CAPABLE",
-			}),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description:
+						"D - DYNAMIC; X - DISABLED, I - INACTIVE, T - TRANSIT-CAPABLE",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag?.split("") ?? []);
@@ -456,28 +492,27 @@ export default new EvaluationHandler("mikrotik")
 		id: "ospf-interface-template",
 		data: OSPFInterfaceTemplateSchema,
 		listen: async ({ client }, notify) => {
-			const list: typeof OSPFInterfaceTemplateSchema.static =
-				await client.runQuery("/routing/ospf/interface-template/print");
+			const list: typeof OSPFInterfaceTemplateSchema.static = [];
+			const doUpdate = debounce(async () => {
+				try {
+					const currentList: typeof OSPFInterfaceTemplateSchema.static =
+						await client.runQuery("/routing/ospf/interface-template/print");
+					list.length = 0;
+					list.push(...currentList);
+					notify(list);
+				} catch (_e) {
+					// ignore
+				}
+			}, 200);
 
 			const listener = await client.stream(
 				"/routing/ospf/interface-template/listen",
 			);
 
-			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
+			listener.on("data", () => doUpdate());
 
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
-				notify(list);
-			});
+			// Initial evaluation
+			doUpdate();
 
 			return listener.cancel;
 		},
@@ -497,10 +532,24 @@ export default new EvaluationHandler("mikrotik")
 			area: t.String({
 				title: "Area",
 			}),
-			flag: t.String({
-				title: "Flag",
-				description: "X - DISABLED, I - INACTIVE",
-			}),
+			type: t.Optional(
+				t.String({
+					title: "Network Type",
+					description: "e.g., broadcast, ptp, ptmp, nbma",
+				}),
+			),
+			passive: t.Optional(
+				t.String({
+					title: "Passive",
+					description: "yes, no",
+				}),
+			),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description: "X - DISABLED, I - INACTIVE",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag?.split("") ?? []);
@@ -509,6 +558,13 @@ export default new EvaluationHandler("mikrotik")
 				return (
 					template.interfaces === params.interfaces &&
 					template.area === params.area &&
+					(!params.type || template.type === params.type) &&
+					(!params.passive ||
+						(params.passive === "yes" &&
+							(template.passive === "true" || template.passive === "")) ||
+						(params.passive === "no" &&
+							(template.passive === undefined ||
+								template.passive === "false"))) &&
 					compareFlag(flags, "X", template.disabled) &&
 					compareFlag(flags, "I", template.inactive)
 				);
@@ -554,9 +610,11 @@ export default new EvaluationHandler("mikrotik")
 		text: "Should have {interface} as OSPF neighbor in area {area} with state {state}",
 		source: "ospf-neighbor",
 		params: {
-			area: t.String({
-				title: "Area",
-			}),
+			area: t.Optional(
+				t.String({
+					title: "Area",
+				}),
+			),
 			interface: t.String({
 				title: "Interface",
 			}),
@@ -567,7 +625,7 @@ export default new EvaluationHandler("mikrotik")
 		handler: (_, params, data) => {
 			return data.some((neighbor) => {
 				return (
-					neighbor.area === params.area &&
+					(!params.area || neighbor.area === params.area) &&
 					neighbor.interface === params.interface &&
 					neighbor.state === params.state
 				);
@@ -618,10 +676,19 @@ export default new EvaluationHandler("mikrotik")
 			name: t.String({
 				title: "Name",
 			}),
-			flag: t.String({
-				title: "Flag",
-				description: "X - DISABLED",
-			}),
+			redistribute: t.Optional(
+				t.String({
+					title: "Redistribute",
+					description:
+						"Comma-separated route types to redistribute (e.g. connected,static)",
+				}),
+			),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description: "X - DISABLED",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag?.split("") ?? []);
@@ -629,6 +696,8 @@ export default new EvaluationHandler("mikrotik")
 			return data.some((instance) => {
 				return (
 					instance.name === params.name &&
+					(!params.redistribute ||
+						instance.redistribute === params.redistribute) &&
 					compareFlag(flags, "X", instance.disabled)
 				);
 			});
@@ -680,10 +749,12 @@ export default new EvaluationHandler("mikrotik")
 			interfaces: t.String({
 				title: "Interfaces",
 			}),
-			flag: t.String({
-				title: "Flag",
-				description: "X - DISABLED",
-			}),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description: "X - DISABLED",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag?.split("") ?? []);
@@ -746,10 +817,12 @@ export default new EvaluationHandler("mikrotik")
 			routerId: t.String({
 				title: "Router ID",
 			}),
-			flag: t.String({
-				title: "Flag",
-				description: "X - DISABLED, I - INACTIVE",
-			}),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description: "X - DISABLED, I - INACTIVE",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
 			const flags = new Set(params.flag?.split("") ?? []);
@@ -761,6 +834,148 @@ export default new EvaluationHandler("mikrotik")
 					instance["router-id"] === params.routerId &&
 					compareFlag(flags, "X", instance.disabled) &&
 					compareFlag(flags, "I", instance.inactive)
+				);
+			});
+		},
+	})
+	// Connection
+	.addSource({
+		id: "bgp-connection",
+		data: BGPConnectionSchema,
+		listen: async ({ client }, notify) => {
+			const list: typeof BGPConnectionSchema.static = await client.runQuery(
+				"/routing/bgp/connection/print",
+			);
+
+			const listener = await client.stream("/routing/bgp/connection/listen");
+
+			listener.on("data", (data) => {
+				const index = list.findIndex((item) => item[".id"] === data[".id"]);
+				const isDead = data[".dead"] === "true";
+
+				if (index === -1) {
+					if (isDead) return;
+					list.push(data);
+				} else if (isDead) {
+					removeItemFromArrayByIndex(list, index);
+				} else {
+					list[index] = data;
+				}
+
+				notify(list);
+			});
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/routing/bgp/connection/print");
+		},
+	})
+	.addCheck({
+		id: "bgp-connection-exist",
+		name: "BGP Connection Exist",
+		text: "Should have BGP connection named {name}",
+		source: "bgp-connection",
+		params: {
+			name: t.String({
+				title: "Name",
+			}),
+			"local.role": t.Optional(
+				t.String({
+					title: "Local Role",
+				}),
+			),
+			"remote.as": t.Optional(
+				t.String({
+					title: "Remote AS",
+				}),
+			),
+			as: t.Optional(
+				t.String({
+					title: "AS",
+				}),
+			),
+			"output.redistribute": t.Optional(
+				t.String({
+					title: "Output Redistribute",
+					description:
+						"Comma-separated route types to redistribute into BGP (e.g. connected,static)",
+				}),
+			),
+		},
+		handler: (_, params, data) => {
+			return data.some((conn) => {
+				return (
+					conn.name === params.name &&
+					(!params["local.role"] ||
+						conn["local.role"] === params["local.role"]) &&
+					(!params["remote.as"] || conn["remote.as"] === params["remote.as"]) &&
+					(!params.as || conn.as === params.as) &&
+					(!params["output.redistribute"] ||
+						conn["output.redistribute"] === params["output.redistribute"])
+				);
+			});
+		},
+	})
+	// Session
+	.addSource({
+		id: "bgp-session",
+		data: BGPSessionSchema,
+		listen: async ({ client }, notify) => {
+			const doUpdate = debounce(async () => {
+				try {
+					const data = await client.runQuery("/routing/bgp/session/print");
+					notify(data);
+				} catch {
+					// Client closed during cleanup — ignore
+				}
+			}, 500);
+
+			const cancels: (() => void)[] = [];
+
+			for (const endpoint of [
+				"/routing/bgp/session/listen",
+				"/routing/bgp/connection/listen",
+			]) {
+				try {
+					const listener = await client.stream(endpoint);
+					listener.on("data", () => doUpdate());
+					listener.on("error", () => {});
+					cancels.push(listener.cancel);
+				} catch {
+					// Protocol not configured yet — skip silently
+				}
+			}
+
+			// Initial query — session may already be established when check begins.
+			doUpdate();
+
+			return () => {
+				for (const c of cancels) c();
+			};
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/routing/bgp/session/print");
+		},
+	})
+	.addCheck({
+		id: "bgp-session-established",
+		name: "BGP Session Established",
+		text: "Should have established BGP session to {remote.address}",
+		source: "bgp-session",
+		params: {
+			"remote.address": t.String({
+				title: "Remote Address",
+			}),
+		},
+		handler: (_, params, data) => {
+			return data.some((session) => {
+				const isEstablished =
+					session.established === "true" ||
+					session.state?.toLowerCase() === "established";
+				return (
+					session["remote.address"] === params["remote.address"] &&
+					isEstablished
 				);
 			});
 		},
