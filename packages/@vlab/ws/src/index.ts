@@ -10,13 +10,15 @@ import {
 } from "waycast";
 import { adminRouter } from "./admin";
 import { deviceTemplateRouter } from "./device-template";
+import { labRouter } from "./lab";
 import { labSessionRouter } from "./lab-session";
 import type { WSMeta } from "./types";
 
 const appRouter = new Router<WSMeta>({ maxDisconnectionDuration: 60000 })
 	.merge(adminRouter)
 	.merge(deviceTemplateRouter)
-	.merge(labSessionRouter);
+	.merge(labSessionRouter)
+	.merge(labRouter);
 
 export type AppRouter = typeof appRouter;
 export default appRouter;

@@ -57,8 +57,6 @@ Monitors state inside Docker containers using `dockerode` and lightweight Linux 
   - **Check: `route-exist`**: Validates a specific route exists. Parameters: `dst` (Destination), `gateway` (Gateway IP).
 - **Source: `users`** (Listens via `inotifywait` on `/etc/passwd`)
   - **Check: `user-exist`**: Validates a user exists on the system. Parameters: `username`.
-- **Source: `systemd-services`** (Listens via `systemctl subscribe`)
-  - **Check: `service-status`**: Validates the running status of a systemd service. Parameters: `service` (Name), `status` (e.g., active, inactive).
 
 ### 2. MikroTik Handler (`mikrotik`)
 Monitors MikroTik RouterOS devices via the `mikro-routeros` API. It uses the API's `/listen` commands for reactive, event-driven updates.

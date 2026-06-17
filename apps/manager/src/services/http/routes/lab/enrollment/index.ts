@@ -1,12 +1,12 @@
 import { createRouter } from "@manager/services/http/plugins/system";
-import pagination from "./pagination";
+import list from "./list";
 import toggle from "./toggle";
 
 const labEnrollmentRoutes = createRouter({
 	prefix: "/:labId/enrollment",
 	detail: { tags: ["Lab Enrollment"] },
 })
-	.use(pagination)
+	.use(list)
 	.use(toggle);
 
 export default labEnrollmentRoutes;
