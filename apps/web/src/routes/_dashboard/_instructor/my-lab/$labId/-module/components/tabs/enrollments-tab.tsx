@@ -1,8 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { DataTable } from "@web/components/data-table/data-table";
+import { Button } from "@web/components/ui/button";
 import type { UseApiPaginationReturn } from "@web/hooks/pagination/use-api-pagination";
 import { useWSEvent } from "@web/hooks/ws";
 import api from "@web/lib/api";
+import { DownloadIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { LabEnrollmentItem } from "../../../../-module/types";
 import { enrollmentColumns } from "../../columns";
@@ -136,11 +138,50 @@ function EnrollmentsTab({ labId }: { labId: string }) {
 
 	const pagination = useClientPagination(items, isLoading, isFetching, refetch);
 
+	const handleExportCsv = () => {
+		const headers = ["NRP", "Name", "Status", "Score", "Submitted At"];
+		const rows = items.map((item) => {
+			const session = item.session;
+			const status = !session
+				? "Not Started"
+				: session.submittedAt
+					? "Submitted"
+					: "In Progress";
+			const score = session?.score ?? "-";
+			const submittedAt = session?.submittedAt
+				? new Date(session.submittedAt).toLocaleString()
+				: "-";
+			return [item.student.nrp, item.student.name, status, score, submittedAt];
+		});
+
+		const csvContent = [
+			headers.join(","),
+			...rows.map((row) =>
+				row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+			),
+		].join("\n");
+
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.setAttribute("download", `enrollments-${labId}.csv`);
+		document.body.appendChild(link);
+		link.click();
+		link.remove();
+	};
+
 	return (
 		<DataTable
 			pagination={pagination}
 			columns={enrollmentColumns}
 			searchPlaceholder="Search by name or NRP..."
+			filters={
+				<Button variant="outline" onClick={handleExportCsv}>
+					<DownloadIcon />
+					Export CSV
+				</Button>
+			}
 		/>
 	);
 }
