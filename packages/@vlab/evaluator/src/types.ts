@@ -8,6 +8,10 @@ export interface NodeInfo {
 	id: string;
 	ip: string;
 	containerId: string;
+	credentials?: {
+		username?: string;
+		password?: string;
+	};
 }
 
 export interface BaseContext {
