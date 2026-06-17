@@ -40,7 +40,7 @@ Dua jaringan kantor yang berbeda dihubungkan menggunakan dua buah router (**R1**
 ### B. Langkah-Langkah Konfigurasi
 
 #### Tahap I: Konfigurasi IP
-1. Konfigurasikan seluruh IP Address pada Router (R1 & R2) dan Klien (PC1 & PC2) sesuai dengan *Tabel Pengalamatan* di atas.
+1. Konfigurasikan seluruh IP Address pada Router (R1 & R2) dan Klien (PC1 & PC2) sesuai dengan *Tabel Pengalamatan* di atas. <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R2" id="node-interface.check-ip" /> <LabCheck node="PC1" id="node-interface.check-ip" /> <LabCheck node="PC2" id="node-interface.check-ip" /> <LabCheck node="PC1" id="linux.route-exist" /> <LabCheck node="PC2" id="linux.route-exist" />
 2. Pastikan kedua router dapat saling *ping* melalui interkoneksi di `ether3` (`10.10.10.1` dan `10.10.10.2`).
 
 #### Tahap II: Konfigurasi RIP pada R1
