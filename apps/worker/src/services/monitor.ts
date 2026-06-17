@@ -18,35 +18,35 @@ export function bindMonitorEvents(server: RpcServer) {
 	emitter.on("snapshot", (snapshot) => {
 		monitorState.activeLabs = snapshot.sessions.length;
 		monitorState.activeNodes = snapshot.nodes.length;
-		server.emit("monitor:snapshot", undefined, snapshot);
+		server.emit("monitor:snapshot", { data: snapshot });
 	});
 
 	emitter.on("session-create", (session) => {
 		monitorState.activeLabs++;
-		server.emit("monitor:session-create", undefined, session);
+		server.emit("monitor:session-create", { data: session });
 	});
 
 	emitter.on("session-remove", (sessionId) => {
 		monitorState.activeLabs = Math.max(0, monitorState.activeLabs - 1);
-		server.emit("monitor:session-remove", undefined, { sessionId });
+		server.emit("monitor:session-remove", { data: { sessionId } });
 	});
 
 	emitter.on("node-create", (node) => {
 		monitorState.activeNodes++;
-		server.emit("monitor:node-create", undefined, node);
+		server.emit("monitor:node-create", { data: node });
 	});
 
 	emitter.on("node-remove", (id, isTemp) => {
 		monitorState.activeNodes = Math.max(0, monitorState.activeNodes - 1);
-		server.emit("monitor:node-remove", undefined, { id, isTemp });
+		server.emit("monitor:node-remove", { data: { id, isTemp } });
 	});
 
 	emitter.on("node-health", (node, isTemp) => {
-		server.emit("monitor:node-health", undefined, { node, isTemp });
+		server.emit("monitor:node-health", { data: { node, isTemp } });
 	});
 
 	emitter.on("interface-update", (node, isTemp) => {
-		server.emit("monitor:interface-update", undefined, { node, isTemp });
+		server.emit("monitor:interface-update", { data: { node, isTemp } });
 		evaluator.emitSource(
 			node.id,
 			"node-interface.interfaces-ip",
