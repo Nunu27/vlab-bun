@@ -14,14 +14,14 @@ Tabel routing pada dasarnya adalah "Peta Navigasi". Setiap entri rute minimal be
 *   **Kapan harus menggunakan Static Route?**
     *   Topologi jaringan sangat kecil (hanya 1-3 router).
     *   Menginginkan keamanan absolut (tidak ada paket *routing update* yang dikirimkan ke jaringan).
-    *   *Stub Network* (jaringan ujung yang hanya punya satu jalan keluar, misalnya dari router kantor menuju router ISP Telkom).
+    *   *Stub Network* (jaringan ujung yang hanya memiliki satu jalur keluar, misalnya dari router kantor menuju router ISP Telkom).
 *   **Kekurangan Utama:**
     *   Tingkat kesulitan konfigurasi (*administrative overhead*) sangat tinggi jika jaringan membesar.
-    *   Tidak memiliki mekanisme *failover*. Jika kabel utama putus, rute statis tidak bisa mencari jalan memutar secara otomatis.
+    *   Tidak memiliki mekanisme *failover* secara otomatis layaknya routing dinamis. Jika kabel utama putus, rute statis tidak bisa mencari jalur alternatif. Namun di lingkungan produksi, hal ini dapat diatasi dengan menambahkan parameter `check-gateway=ping` agar rute otomatis non-aktif jika gateway tujuan terputus.
 
 ## Fenomena Asymmetric Routing & Rute Balikan
 Prinsip terpenting dalam routing adalah: **Routing itu satu arah (Unidirectional)**.
-Jika Router 1 berhasil dikonfigurasi dengan jalan menuju LAN Router 2, paket dari R1 akan sampai ke R2. Namun, saat R2 mencoba *membalas* (Reply), paket tersebut akan dibuang (*dropped*) jika Router 2 belum dikonfigurasi dengan jalan pulang menuju LAN Router 1. Inilah mengapa dalam konfigurasi Static Route antarkedua situs, pembuatan rute bolak-balik selalu diwajibkan.
+Jika Router 1 berhasil dikonfigurasi dengan rute menuju LAN Router 2, paket dari R1 akan sampai ke R2. Namun, saat R2 mencoba *membalas* (Reply), paket tersebut akan dibuang (*dropped*) jika Router 2 belum dikonfigurasi dengan rute kembali (*return route*) menuju LAN Router 1. Inilah mengapa dalam konfigurasi Static Route antarkedua jaringan, pembuatan rute bolak-balik selalu diwajibkan.
 
 ## Referensi Perintah
 ### Linux (Ubuntu) - End Device
@@ -36,6 +36,6 @@ Jika Router 1 berhasil dikonfigurasi dengan jalan menuju LAN Router 2, paket dar
 
 | Aksi / Fungsi | Perintah | Keterangan |
 |---|---|---|
-| Menambahkan Rute Statis | `/ip route add dst-address=<network-tujuan/prefix> gateway=<ip-next-hop>` | - |
+| Menambahkan Rute Statis | `/ip route add dst-address=<network-tujuan/prefix> gateway=<ip-next-hop>` | Gunakan `check-gateway=ping` untuk fitur deteksi kegagalan. |
 | Menambahkan Default Route | `/ip route add dst-address=0.0.0.0/0 gateway=<ip-isp>` | - |
 | Mengecek Tabel Routing | `/ip route print` | Pastikan flag rute **AS** (Active Static). |
