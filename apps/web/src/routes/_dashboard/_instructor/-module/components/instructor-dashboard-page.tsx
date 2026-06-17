@@ -21,7 +21,7 @@ function InstructorDashboardPage() {
 	const user = useAuthStore.use.user();
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-6">
 			<PageHeading
 				title={`Welcome back, ${user?.name}`}
 				subtitle="Statistics for your virtual lab content."
@@ -40,8 +40,6 @@ function InstructorDashboardPage() {
 					value={data.sessions.active}
 					description="Currently running in your labs"
 					icon={<ActivityIcon className="h-4 w-4" />}
-					trend={data.sessions.active > 0 ? "LIVE" : undefined}
-					highlight={data.sessions.active > 0}
 				/>
 				<StatCard
 					title="Total Students"
@@ -57,9 +55,9 @@ function InstructorDashboardPage() {
 				/>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+			<div className="grid gap-4">
 				{/* Expanded Lab & Session Details */}
-				<Card className="lg:col-span-7">
+				<Card className="border-border/50 bg-card">
 					<CardHeader>
 						<CardTitle>Content & Execution</CardTitle>
 						<CardDescription>
