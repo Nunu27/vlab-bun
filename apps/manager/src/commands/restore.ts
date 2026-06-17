@@ -53,6 +53,8 @@ export async function runRestore() {
 	logger.info("Restoring data to database...");
 
 	await db.transaction(async (tx) => {
+		const idMapping = new Map<string, string>();
+
 		if (data.files?.length) {
 			logger.info(`Restoring ${data.files.length} files...`);
 			for (const row of data.files) {
@@ -70,7 +72,23 @@ export async function runRestore() {
 			for (const row of data.users) {
 				row.createdAt = new Date(row.createdAt);
 				row.updatedAt = row.updatedAt ? new Date(row.updatedAt) : null;
-				await tx.delete(users).where(eq(users.email, row.email));
+
+				const existing = await tx
+					.select()
+					.from(users)
+					.where(eq(users.email, row.email))
+					.limit(1);
+
+				if (existing.length > 0) {
+					if (existing[0].id !== row.id) {
+						logger.info(
+							`Email conflict for ${row.email}: Mapping dump ID (${row.id}) to existing DB ID (${existing[0].id})`,
+						);
+						idMapping.set(row.id, existing[0].id);
+						row.id = existing[0].id;
+					}
+				}
+
 				await tx
 					.insert(users)
 					.values(row)
@@ -81,6 +99,10 @@ export async function runRestore() {
 		if (data.instructors?.length) {
 			logger.info(`Restoring ${data.instructors.length} instructors...`);
 			for (const row of data.instructors) {
+				if (idMapping.has(row.id)) {
+					row.id = idMapping.get(row.id) as string;
+				}
+
 				row.createdAt = new Date(row.createdAt);
 				row.updatedAt = row.updatedAt ? new Date(row.updatedAt) : null;
 				await tx
@@ -121,6 +143,10 @@ export async function runRestore() {
 		if (data.labs?.length) {
 			logger.info(`Restoring ${data.labs.length} labs...`);
 			for (const row of data.labs) {
+				if (idMapping.has(row.instructorId)) {
+					row.instructorId = idMapping.get(row.instructorId) as string;
+				}
+
 				row.createdAt = new Date(row.createdAt);
 				row.updatedAt = row.updatedAt ? new Date(row.updatedAt) : null;
 				row.startAt = new Date(row.startAt);
