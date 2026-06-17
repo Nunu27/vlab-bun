@@ -26,9 +26,7 @@ export const enrollmentColumns: ColumnDef<LabEnrollmentItem>[] = [
 			label: "Name",
 			isGrow: true,
 		},
-		cell: ({ row }) => (
-			<span className="font-medium">{row.original.student.name}</span>
-		),
+		cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
 	},
 	{
 		accessorKey: "nrp",
@@ -37,7 +35,7 @@ export const enrollmentColumns: ColumnDef<LabEnrollmentItem>[] = [
 			label: "NRP",
 		},
 		cell: ({ row }) => (
-			<span className="text-muted-foreground">{row.original.student.nrp}</span>
+			<span className="text-muted-foreground">{row.original.nrp}</span>
 		),
 	},
 	{
@@ -48,11 +46,11 @@ export const enrollmentColumns: ColumnDef<LabEnrollmentItem>[] = [
 			center: true,
 		},
 		cell: ({ row }) => {
-			const { session } = row.original;
-			if (!session) {
+			const { status } = row.original;
+			if (status === "Not Started") {
 				return <Badge variant="secondary">Not Started</Badge>;
 			}
-			if (session.submittedAt) {
+			if (status === "Submitted") {
 				return <Badge variant="default">Submitted</Badge>;
 			}
 			return <Badge variant="outline">In Progress</Badge>;
@@ -66,28 +64,28 @@ export const enrollmentColumns: ColumnDef<LabEnrollmentItem>[] = [
 			center: true,
 		},
 		cell: ({ row }) => {
-			const { session } = row.original;
-			if (!session) return <span className="text-muted-foreground">-</span>;
-			return <span className="font-semibold">{session.score}</span>;
+			const { score } = row.original;
+			if (!score) return <span className="text-muted-foreground">-</span>;
+			return <span className="font-semibold">{score}</span>;
 		},
 	},
 	{
-		id: "submittedAt",
+		id: "lastUpdated",
 		enableSorting: false,
 		meta: {
-			label: "Submitted",
+			label: "Last Updated",
 			center: true,
 		},
 		cell: ({ row }) => {
-			const { session } = row.original;
-			if (session?.submittedAt) {
-				return (
-					<span className="text-muted-foreground">
-						{formatTimeAgo(session.submittedAt)}
-					</span>
-				);
+			const { lastUpdated, status } = row.original;
+			if (status === "Not Started") {
+				return <span className="text-muted-foreground">-</span>;
 			}
-			return <span className="text-muted-foreground">-</span>;
+			return (
+				<span className="text-muted-foreground">
+					{formatTimeAgo(new Date(lastUpdated))}
+				</span>
+			);
 		},
 	},
 ];
