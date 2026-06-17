@@ -31,7 +31,6 @@ Once you have a grasp on the high-level architecture, you can dive into the spec
 ## Additional References
 
 - **[External Libraries](./external-libs/external-libs.md)**: Details on specific vendor integrations (e.g., Mikro-RouterOS).
-- **[Load Testing](./load-testing/load-testing.md)**: System benchmarks, strategies, and performance expectations.
 
 ---
 *Note: Diagrams are stored as `.excalidraw` files and can be viewed or edited directly within VS Code using the [Excalidraw extension](https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor).*

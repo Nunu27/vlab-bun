@@ -325,6 +325,23 @@
         "typescript": "^6.0.3",
       },
     },
+    "tests/modules-e2e": {
+      "name": "modules-e2e",
+      "dependencies": {
+        "@vlab/clab": "workspace:*",
+        "@vlab/clab-monitor": "workspace:*",
+        "@vlab/evaluator": "workspace:*",
+        "dockerode": "^5.0.0",
+        "mikro-routeros": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@types/dockerode": "^4.0.1",
+      },
+      "peerDependencies": {
+        "typescript": "^6.0.3",
+      },
+    },
   },
   "packages": {
     "@acemir/cssom": ["@acemir/cssom@0.9.31", "", {}, "sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA=="],
@@ -2034,6 +2051,8 @@
     "minizlib": ["minizlib@3.1.0", "", { "dependencies": { "minipass": "^7.1.2" } }, "sha512-KZxYo1BUkWD2TVFLr0MQoM8vUUigWD3LlD83a/75BqC+4qE0Hb1Vo5v1FgcfaNXvfXzr+5EhQ6ing/CaBijTlw=="],
 
     "mkdirp-classic": ["mkdirp-classic@0.5.3", "", {}, "sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A=="],
+
+    "modules-e2e": ["modules-e2e@workspace:tests/modules-e2e"],
 
     "mri": ["mri@1.2.0", "", {}, "sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA=="],
 

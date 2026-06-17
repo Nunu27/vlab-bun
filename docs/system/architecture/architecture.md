@@ -33,6 +33,65 @@ The Web UI is a React 19 application. It is a purely presentation layer that com
 
 ---
 
+## 4. Worker Selection & Scoring
+
+When a user starts a lab, the Manager must choose which Worker to dispatch it to. It does this by picking the online Worker with the **highest score** (`ORDER BY score DESC`).
+
+Each Worker computes and streams its own score every 10 seconds from `apps/worker/src/services/worker.ts`. The score is a number from 0 to 100, where 100 means completely idle and 0 means fully saturated or critically loaded.
+
+### Formula
+
+```
+score = 100
+      − (cpu%  / 100)²  × 30 × cpuScale
+      − (mem%  / 100)²  × 45 × memScale
+      − (disk% / 100)²  × 10
+      − (activeLabs / 10)² × 15
+```
+
+**Inputs:**
+
+| Variable | Source | Notes |
+|---|---|---|
+| `cpu%` | Live CPU usage | Sampled on the Worker host |
+| `mem%` | Live RAM usage | Sampled on the Worker host |
+| `disk%` | Live disk usage | Mounted root filesystem |
+| `activeLabs` | containerlab monitor | Running lab sessions on this Worker |
+
+**Weights** (`cpu=0.30, mem=0.45, disk=0.10, labs=0.15`) reflect that RAM is typically the binding constraint for containerlab topologies, while active lab count is the most direct load signal.
+
+The quadratic curve (`x²`) intentionally penalizes high utilization more aggressively than low: going from 80% → 90% hurts the score much more than 10% → 20%.
+
+### Capacity-Aware Scaling
+
+The `cpuScale` and `memScale` factors correct for the fact that two Workers at the same usage percentage may have very different absolute headroom:
+
+```
+memScale = clamp(16 / totalMemGB,  0.5, 2.0)
+cpuScale = clamp(8  / totalCores,  0.5, 2.0)
+```
+
+**Reference baseline:** 16 GB RAM, 8 CPU cores.
+
+- A **smaller** Worker (e.g. 8 GB) gets `memScale = 2.0` — its memory penalty is doubled, so it fills up faster in the ranking.
+- A **larger** Worker (e.g. 32 GB) gets `memScale = 0.5` — its memory penalty is halved, reflecting genuine headroom.
+- The factor is clamped to `[0.5, 2.0]` so neither very large nor very small machines are treated unrealistically.
+
+### Hard Cliffs
+
+On top of the quadratic base, two independent hard penalties are applied:
+
+| Condition | Penalty |
+|---|---|
+| `mem% > 90` | −30 pts |
+| `disk% > 85` | −30 pts |
+
+These fire independently, so a Worker critical on both resources takes −60. The disk threshold is intentionally set at 85% (not 90%) because containerlab image pulls can fail before the disk is completely full.
+
+The final score is clamped to `[0, 100]`.
+
+---
+
 ## Orchestration Lifecycle
 
 To understand how these components interact, let's look at the lifecycle of a typical Lab Provisioning event:
