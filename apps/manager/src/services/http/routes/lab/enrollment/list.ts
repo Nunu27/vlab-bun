@@ -1,14 +1,8 @@
 import { success } from "@jawit/common";
-import { createPaginator } from "@jawit/paginator";
 import db from "@manager/db";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { RequestWithId } from "@vlab/shared/schemas/common";
-
-const { paginate, schema } = createPaginator(db, "labEnrollments", {
-	searchableColumns: ["studentId"],
-	usableColumns: ["createdAt"],
-});
 
 export default createRouter()
 	.use(auth)
@@ -16,11 +10,10 @@ export default createRouter()
 		{
 			private: ["instructor"],
 			params: RequestWithId(["labId"]),
-			body: schema,
 		},
 		(app) => {
-			return app.post("/pagination", async ({ params: { labId }, body }) => {
-				const { items, pageInfo } = await paginate(body, {
+			return app.get("/", async ({ params: { labId } }) => {
+				const items = await db.query.labEnrollments.findMany({
 					where: (enrollment, { eq }) => eq(enrollment.labId, labId),
 					with: {
 						student: {
@@ -54,10 +47,7 @@ export default createRouter()
 				});
 
 				return success({
-					data: {
-						items: formattedItems,
-						pageInfo,
-					},
+					data: formattedItems,
 				});
 			});
 		},
