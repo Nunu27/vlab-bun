@@ -75,6 +75,7 @@ export interface TopologyState
 
 	// Shared states
 	mode: "select" | "connect" | "note";
+	onBeforeDelete?: (deviceIds: string[]) => Promise<boolean> | boolean;
 }
 
 const initialState: TopologyState = {
@@ -104,6 +105,7 @@ export interface TopologyData extends Partial<LabTopology> {
 	isEditor?: boolean;
 
 	categorizedTemplates: CategorizedTemplates[];
+	onBeforeDelete?: (deviceIds: string[]) => Promise<boolean> | boolean;
 }
 
 export interface TopologyActions
@@ -114,6 +116,7 @@ export interface TopologyActions
 		TopologyNoteActions,
 		TopologyViewActions {
 	toggleMode: (mode: TopologyState["mode"]) => void;
+	importTopology: (topology: Partial<LabTopology>) => void;
 }
 
 export type TopologyStore = Store<TopologyState, TopologyActions>;
@@ -122,6 +125,7 @@ const { Provider, useContext } = createScopedStore(
 	({
 		categorizedTemplates,
 		topology,
+		onBeforeDelete,
 		...state
 	}: Omit<TopologyData, keyof LabTopology> & { topology?: LabTopology }) => {
 		const templateCategories = new Map<string, TemplateCategory>();
@@ -152,6 +156,7 @@ const { Provider, useContext } = createScopedStore(
 				deviceNames,
 				...topology,
 				...state,
+				onBeforeDelete,
 				actions: {
 					toggleMode: (mode) => {
 						const { mode: currentMode, notes, editingNoteId, actions } = a[1]();
@@ -165,6 +170,18 @@ const { Provider, useContext } = createScopedStore(
 							connectSource: null,
 							notes: newNotes,
 							editingNoteId: null,
+						});
+					},
+					importTopology: (topology) => {
+						const { actions } = a[1]();
+						actions.clearSelection();
+
+						a[0]({
+							devices: topology.devices ?? {},
+							edges: topology.edges ?? {},
+							groups: topology.groups ?? {},
+							notes: topology.notes ?? {},
+							deviceCounts: topology.deviceCounts ?? {},
 						});
 					},
 					...createNodeSlice(...a),

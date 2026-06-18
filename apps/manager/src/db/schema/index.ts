@@ -3,4 +3,5 @@ export * from "./device-template";
 export * from "./file";
 export * from "./lab";
 export * from "./lab-session";
+export * from "./topology-template";
 export * from "./worker";
