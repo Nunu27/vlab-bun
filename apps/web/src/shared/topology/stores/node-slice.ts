@@ -45,8 +45,14 @@ export const createNodeSlice: StateCreator<
 	[],
 	TopologyNodeActions
 > = (...a) => ({
-	delete: () => {
+	delete: async () => {
 		const state = a[1]();
+		const deviceIds = Array.from(state.selectedDevices);
+
+		if (state.onBeforeDelete && deviceIds.length > 0) {
+			const shouldDelete = await state.onBeforeDelete(deviceIds);
+			if (!shouldDelete) return;
+		}
 
 		const devices = { ...state.devices };
 		const groups = { ...state.groups };

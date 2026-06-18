@@ -75,6 +75,11 @@ export const menuByRole: Record<Role, MenuSection[]> = {
 					url: "/my-lab",
 					icon: FlaskConicalIcon,
 				},
+				{
+					title: "Topology Templates",
+					url: "/topology-template",
+					icon: MonitorIcon,
+				},
 			],
 		},
 	],

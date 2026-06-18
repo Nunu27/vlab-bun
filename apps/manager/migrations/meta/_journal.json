@@ -50,6 +50,13 @@
 			"when": 1781600712459,
 			"tag": "0006_lab_session_node_token",
 			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1781730892923,
+			"tag": "0007_add_topology_template_table",
+			"breakpoints": true
 		}
 	]
 }
