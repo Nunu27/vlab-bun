@@ -17,7 +17,10 @@ export function TopologyTemplateActionsCell({
 				<Link
 					to="/topology-template/$templateId"
 					params={{ templateId: template.id }}
-				/>
+				>
+					<PencilIcon className="size-4" />
+					<span className="sr-only">Edit</span>
+				</Link>
 			</ActionButton>
 			<ActionButton
 				icon={Trash2Icon}

@@ -1,5 +1,5 @@
 import type { LabTopology } from "@vlab/shared/schemas/lab";
-import { Card, CardContent } from "@web/components/ui/card";
+
 import type { useApiForm } from "@web/hooks/form/use-api-form";
 import TopologyCanvas from "@web/shared/topology/components/canvas";
 import DevicePalette from "@web/shared/topology/components/device-palette";
@@ -51,44 +51,36 @@ export function TopologyTemplateForm({
 
 	return (
 		<div className="space-y-6">
-			<Card>
-				<CardContent className="space-y-4 pt-6">
-					<form.AppField name="name">
-						{(field) => (
-							<field.TextField
-								label="Template Name"
-								placeholder="E.g. OSPF Basic Topology"
-								required
-							/>
-						)}
-					</form.AppField>
-				</CardContent>
-			</Card>
+			<form.AppField name="name">
+				{(field) => (
+					<field.TextField
+						label="Template Name"
+						placeholder="E.g. OSPF Basic Topology"
+						required
+					/>
+				)}
+			</form.AppField>
 
-			<Card className="flex flex-col">
-				<CardContent className="p-0">
-					<div
-						ref={ref}
-						className="relative flex h-[600px] w-full bg-background"
-					>
-						<button
-							type="button"
-							onClick={toggleFullscreen}
-							className="absolute top-4 right-4 z-10 rounded-md bg-background/80 p-2 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-accent hover:text-accent-foreground"
-						>
-							{isFullscreen ? (
-								<Minimize2Icon className="h-4 w-4" />
-							) : (
-								<Maximize2Icon className="h-4 w-4" />
-							)}
-						</button>
-						<DevicePalette />
-						<TopologyCanvas />
-						<NodeProperties />
-						<InterfaceSelectModal />
-					</div>
-				</CardContent>
-			</Card>
+			<div
+				ref={ref}
+				className="relative flex h-[600px] w-full overflow-hidden rounded-xl border bg-background shadow-sm"
+			>
+				<button
+					type="button"
+					onClick={toggleFullscreen}
+					className="absolute top-4 right-4 z-10 rounded-md bg-background/80 p-2 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-accent hover:text-accent-foreground"
+				>
+					{isFullscreen ? (
+						<Minimize2Icon className="size-4" />
+					) : (
+						<Maximize2Icon className="size-4" />
+					)}
+				</button>
+				<DevicePalette />
+				<TopologyCanvas />
+				<NodeProperties />
+				<InterfaceSelectModal />
+			</div>
 		</div>
 	);
 }
