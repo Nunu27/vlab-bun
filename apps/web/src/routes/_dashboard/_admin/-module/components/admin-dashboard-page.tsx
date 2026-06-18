@@ -215,7 +215,7 @@ function AdminDashboardPage() {
 						Monitor real-time status and resource usage of lab workers.
 					</CardDescription>
 				</CardHeader>
-				<Table className="min-w-[1050px] table-fixed">
+				<Table className="min-w-262.5 table-fixed">
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow

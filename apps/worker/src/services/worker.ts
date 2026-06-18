@@ -4,8 +4,8 @@ import type { AsyncQueue, GrpcRequestMessage, WorkerProto } from "@vlab/grpc";
 import baseLogger from "@worker/lib/logger";
 import type { RpcServer } from "../handlers/server";
 import {
-	getCpuUsagePercent,
-	getMemoryUsagePercent,
+	getCpuUsage,
+	getMemoryUsage,
 	getStorageInfo,
 } from "../lib/system-metrics";
 import { metadata, workerClient } from "./client";
@@ -22,7 +22,7 @@ async function* createReplyStream(
 		workerSpec: {
 			cpuCores: os.cpus().length,
 			memoryMb: Math.round(os.totalmem() / 1024 / 1024),
-			storageMb: Math.round(getStorageInfo().totalMb),
+			storageMb: Math.round(getStorageInfo().total),
 			guacdHost: env.GUACD_HOST,
 			guacdPort: env.GUACD_PORT,
 		},
@@ -65,49 +65,33 @@ export async function listenToCommands(
 
 export async function streamMetrics() {
 	try {
-		const cpuUsagePercent = getCpuUsagePercent();
-		const memoryUsagePercent = getMemoryUsagePercent();
+		const cpuUsage = getCpuUsage();
+		const memoryUsage = getMemoryUsage();
 		const storageInfo = getStorageInfo();
-		const storageUsagePercent = storageInfo.usedPercent;
 
-		const cpuWeight = 0.3;
-		const memWeight = 0.45;
-		const storageWeight = 0.1;
-		const labWeight = 0.15;
+		const cpuAvailable = 100 - cpuUsage.percentage;
+		const memAvailable = 100 - memoryUsage.percentage;
+		const storageAvailable = 100 - storageInfo.percentage;
 
-		// Treat 10 concurrent labs as the soft saturation point
-		const LAB_SOFT_CAP = 10;
-		const labPressure = Math.min(monitorState.activeLabs / LAB_SOFT_CAP, 1);
+		// Hard-cap: critically low storage means no new labs can start
+		const resourceScore =
+			storageAvailable < 5
+				? 0
+				: cpuAvailable * 0.4 + memAvailable * 0.4 + storageAvailable * 0.2;
 
-		// Capacity-aware scaling: penalize smaller-than-reference workers more
-		// steeply for the same usage%, and larger workers more leniently.
-		// Reference: 16 GB RAM, 8 cores. Clamped to [0.5, 2.0].
-		const REF_MEM_GB = 16;
-		const REF_CORES = 8;
-		const totalMemGB = os.totalmem() / 1024 ** 3;
-		const totalCores = os.cpus().length;
-		const memScale = Math.min(Math.max(REF_MEM_GB / totalMemGB, 0.5), 2);
-		const cpuScale = Math.min(Math.max(REF_CORES / totalCores, 0.5), 2);
+		// Penalize active labs as a tie-breaker between equally healthy workers
+		const labPenalty = Math.min(monitorState.activeLabs * 5, 30);
 
-		let score =
-			100 -
-			((cpuUsagePercent / 100) ** 2 * cpuWeight * 100 * cpuScale +
-				(memoryUsagePercent / 100) ** 2 * memWeight * 100 * memScale +
-				(storageUsagePercent / 100) ** 2 * storageWeight * 100 +
-				labPressure ** 2 * labWeight * 100);
-
-		// Applied independently so a worker critical on both takes -60
-		if (memoryUsagePercent > 90) score -= 30;
-		// 85% threshold — image pulls can fail before disk is completely full
-		if (storageUsagePercent > 85) score -= 30;
-
-		score = Math.max(0, Math.min(100, Math.round(score)));
+		const score = Math.max(
+			0,
+			Math.min(100, Math.round(resourceScore - labPenalty)),
+		);
 
 		await workerClient.sendMetrics(
 			{
-				cpuUsagePercent,
-				memoryUsagePercent,
-				storageUsagePercent,
+				cpuUsagePercent: cpuUsage.percentage,
+				memoryUsagePercent: memoryUsage.percentage,
+				storageUsagePercent: storageInfo.percentage,
 				score,
 				activeLabs: monitorState.activeLabs,
 				activeNodes: monitorState.activeNodes,
