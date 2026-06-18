@@ -114,7 +114,7 @@ export const LabForm = withForm({
 			let instructions = form.getFieldValue("instructions") || "";
 
 			let hasChanges = false;
-			const newChecks: Record<string, any> = {};
+			const newChecks: NonNullable<LabRequest["checks"]> = {};
 			const removedCheckIds = new Set<string>();
 
 			for (const [checkId, check] of Object.entries(checks)) {

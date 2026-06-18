@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import type { TopologyTemplate } from "@vlab/shared/schemas/topology-template";
-import { Badge } from "@web/components/ui/badge";
 import { Button } from "@web/components/ui/button";
 import {
 	Dialog,
@@ -94,7 +93,7 @@ export function ApplyTopologyTemplateModal() {
 				</div>
 
 				<ScrollArea className="mt-2 h-[50vh] pr-4">
-					<div className="grid grid-cols-2 gap-4 pb-4">
+					<div className="flex flex-col gap-4 pb-4">
 						{filteredTemplates.map((template) => {
 							const deviceCount = Object.keys(
 								template.topology?.devices || {},
@@ -106,36 +105,31 @@ export function ApplyTopologyTemplateModal() {
 							return (
 								<div
 									key={template.id}
-									className="group relative flex flex-col justify-between overflow-hidden rounded-xl border bg-card p-5 text-card-foreground shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-md"
+									className="flex flex-col items-start justify-between rounded-xl border bg-card p-4 transition-all duration-300 hover:border-primary/50 hover:shadow-md sm:flex-row sm:items-center"
 								>
-									<div className="absolute -top-4 -right-4 rounded-full bg-primary/5 p-6 opacity-0 transition-all duration-500 group-hover:scale-110 group-hover:opacity-100">
-										<NetworkIcon className="size-12 text-primary/20" />
-									</div>
-									<div className="z-10 mb-6">
-										<h4 className="line-clamp-1 font-semibold text-lg tracking-tight">
-											{template.name}
-										</h4>
-										<p className="mt-1 text-muted-foreground text-xs">
-											Created{" "}
-											{new Date(template.createdAt).toLocaleDateString()}
-										</p>
-
-										<div className="mt-4 flex flex-wrap gap-2">
-											<Badge variant="secondary" className="font-medium">
-												<CpuIcon className="mr-1.5 size-3" />
+									<div className="flex flex-col gap-1.5">
+										<h4 className="font-semibold text-base">{template.name}</h4>
+										<div className="flex flex-wrap items-center gap-3 text-muted-foreground text-sm">
+											<span className="flex items-center gap-1">
+												<CpuIcon className="size-3.5" />
 												{deviceCount} Device{deviceCount !== 1 ? "s" : ""}
-											</Badge>
-											<Badge variant="secondary" className="font-medium">
-												<CableIcon className="mr-1.5 size-3" />
+											</span>
+											<span className="flex items-center gap-1">
+												<CableIcon className="size-3.5" />
 												{edgeCount} Connection{edgeCount !== 1 ? "s" : ""}
-											</Badge>
+											</span>
+											<span>
+												Created{" "}
+												{new Date(template.createdAt).toLocaleDateString()}
+											</span>
 										</div>
 									</div>
 									<Button
-										className="z-10 w-full font-medium"
+										variant="secondary"
+										className="mt-4 w-full font-medium sm:mt-0 sm:w-auto"
 										onClick={() => handleApply(template)}
 									>
-										Apply Template
+										Apply
 									</Button>
 								</div>
 							);
