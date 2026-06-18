@@ -184,7 +184,10 @@ function EnrollmentsTabContent({ labId }: { labId: string }) {
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement("a");
 		link.href = url;
-		link.setAttribute("download", `enrollments-${labId}.csv`);
+		link.setAttribute(
+			"download",
+			`enrollments-${labId}-${new Date().toISOString()}.csv`,
+		);
 		document.body.appendChild(link);
 		link.click();
 		link.remove();
