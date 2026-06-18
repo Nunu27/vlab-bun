@@ -67,7 +67,7 @@ export function ApplyTopologyTemplateModal() {
 				<Button
 					variant="outline"
 					size="sm"
-					className="absolute top-4 right-4 z-10 bg-background/80 shadow-sm backdrop-blur-sm"
+					className="bg-background/80 shadow-sm backdrop-blur-sm"
 				>
 					<FolderIcon className="mr-2 h-4 w-4" />
 					Apply Template
