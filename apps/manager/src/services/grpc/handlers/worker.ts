@@ -65,10 +65,14 @@ export async function sendCommandToWorker<
 
 	return new Promise((resolve, reject) => {
 		// @ts-expect-error: TS intersection of mapped types and spreads is too complex
-		client.rpc(command, undefined, payload, {
-			...replies,
-			response: () => resolve(),
-			error: (err: string) => reject(new Error(err)),
+		client.rpc(command, {
+			params: undefined,
+			payload,
+			callbacks: {
+				...replies,
+				response: () => resolve(),
+				error: (err: string) => reject(new Error(err)),
+			},
 		});
 	});
 }

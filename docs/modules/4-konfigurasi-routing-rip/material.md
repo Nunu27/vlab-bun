@@ -19,7 +19,7 @@ RIP menggunakan berbagai trik untuk mencegah paket data berputar-putar dalam lin
 *   **Split Horizon:** Aturan emas RIP yang mengatakan, "Jangan pernah mengirimkan informasi tentang sebuah rute, kembali melalui *interface* yang sama dari mana informasi rute tersebut pertama kali diterima."
 *   **Poison Reverse:** Modifikasi dari Split Horizon, di mana rute tetap dikirimkan kembali ke *interface* asal, namun metrik rutenya "diracun" menjadi 16 hop (*Unreachable*).
 
-## Catatan Produksi & Keamanan (Best Practices)
+## Catatan (Best Practices)
 
 > [!WARNING]
 > **Status Legacy:** Di lingkungan *Enterprise* atau ISP modern, RIP praktis sudah ditinggalkan dan digantikan oleh OSPF atau BGP karena konvergensinya yang lambat. Namun, RIP tetap menjadi standar akademik wajib untuk memahami cara kerja algoritma *Distance-Vector*.

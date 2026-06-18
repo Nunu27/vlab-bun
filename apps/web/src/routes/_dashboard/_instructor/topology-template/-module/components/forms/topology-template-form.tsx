@@ -1,5 +1,4 @@
 import type { LabTopology } from "@vlab/shared/schemas/lab";
-
 import type { useApiForm } from "@web/hooks/form/use-api-form";
 import TopologyCanvas from "@web/shared/topology/components/canvas";
 import DevicePalette from "@web/shared/topology/components/device-palette";
@@ -63,7 +62,7 @@ export function TopologyTemplateForm({
 
 			<div
 				ref={ref}
-				className="relative flex h-[600px] w-full overflow-hidden rounded-xl border bg-background shadow-sm"
+				className="relative flex h-150 w-full overflow-hidden rounded-xl border bg-background shadow-sm"
 			>
 				<button
 					type="button"

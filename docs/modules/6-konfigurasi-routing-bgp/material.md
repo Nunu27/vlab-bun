@@ -17,7 +17,7 @@ Karena BGP berjalan menggunakan koneksi TCP port 179 yang harus eksplisit, BGP d
 ## Kebijakan Routing (Routing Policy)
 BGP tidak mencari jalur tercepat. BGP mencari **jalur teraman secara ekonomi dan politis**. BGP memungkinkan administrator untuk memanipulasi lalu lintas menggunakan atribut (*BGP Attributes*) seperti Local Preference, MED, atau AS-Path Prepend. Administrator dapat mengonfigurasi contoh kebijakan seperti: "Lewat jalur Telkomsel untuk *download*, tapi lewat jalur Indosat untuk *upload*."
 
-## Catatan Produksi & Keamanan (Best Practices)
+## Catatan (Best Practices)
 
 > [!CAUTION] Ancaman Route Leaks (Kebocoran Rute)
 > Pada lab ini, kita menggunakan `output.redistribute=connected` agar praktis. Di dunia nyata (ISP), konfigurasi ini **sangat tidak disarankan** jika tanpa *Routing Filter*. Jika Anda me-redistribute semua antarmuka lokal ke BGP tanpa filter, Anda berisiko membocorkan IP privat atau manajemen ke tabel routing global internet.

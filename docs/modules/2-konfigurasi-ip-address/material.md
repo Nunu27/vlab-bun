@@ -33,7 +33,7 @@ Administrator jaringan menggunakan utilitas `ping` (protokol ICMP) untuk menguji
 
 ### Linux (Ubuntu)
 
-> **Catatan Produksi:** Perintah `ip addr add` pada Linux bersifat *sementara* (volatile). Jika sistem direstart, alamat IP tersebut akan hilang. Di lingkungan produksi (seperti Ubuntu 24.04), konfigurasi IP permanen umumnya dikelola menggunakan file konfigurasi YAML melalui layanan **Netplan**. Namun untuk kebutuhan simulasi lab interaktif, konfigurasi sementara sudah mencukupi.
+> **Catatan:** Perintah `ip addr add` pada Linux bersifat *sementara* (volatile). Jika sistem direstart, alamat IP tersebut akan hilang. Di lingkungan produksi (seperti Ubuntu 24.04), konfigurasi IP permanen umumnya dikelola menggunakan file konfigurasi YAML melalui layanan **Netplan**. Namun untuk kebutuhan simulasi lab interaktif, konfigurasi sementara sudah mencukupi.
 
 | Aksi / Fungsi | Perintah | Keterangan |
 |---|---|---|
