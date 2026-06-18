@@ -9,4 +9,5 @@ export * from "./lab";
 export * from "./student";
 export * from "./study-program";
 export * from "./toast";
+export * from "./topology-template";
 export * from "./user";

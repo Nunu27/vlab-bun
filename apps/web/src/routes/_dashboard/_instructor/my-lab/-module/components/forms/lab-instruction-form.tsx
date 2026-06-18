@@ -1,3 +1,4 @@
+import { Value } from "@sinclair/typebox/value";
 import type { DeviceKind } from "@vlab/shared/enums";
 import type { LabChecksMap, LabDeviceNode } from "@vlab/shared/schemas";
 import { LabChecksEditorProvider } from "@web/components/mdx-plugins/lab-checks";
@@ -46,6 +47,50 @@ export const LabInstructionForm = withFieldGroup({
 			>
 				<LabChecksModalProvider>
 					<group.AppForm>
+						<group.AppField
+							name="checks"
+							validators={{
+								onChange: ({ value }) => {
+									if (!value) return undefined;
+
+									for (const check of Object.values(value)) {
+										if (!check.nodeId)
+											return `Check configuration is missing a Node ID.`;
+										if (!check.checkId)
+											return `Check configuration is missing a Check ID.`;
+
+										const checkConfig = evaluatorData.checks[check.checkId];
+										if (checkConfig?.params) {
+											const isValid = Value.Check(
+												checkConfig.params,
+												check.params,
+											);
+											if (!isValid) {
+												const errors = [
+													...Value.Errors(checkConfig.params, check.params),
+												];
+												if (errors.length > 0) {
+													const error = errors[0];
+													const fieldName = error.path.replace(/^\//, "");
+													return `Check "${checkConfig.name}" has an invalid or missing value for field "${fieldName}".`;
+												}
+												return `Check "${checkConfig.name}" is missing mandatory fields.`;
+											}
+										}
+									}
+									return undefined;
+								},
+							}}
+						>
+							{(field) =>
+								field.state.meta.errors.length > 0 ? (
+									<div className="border-destructive/20 border-b bg-destructive/10 px-4 py-2 font-medium text-destructive text-sm">
+										{field.state.meta.errors.join(", ")}
+									</div>
+								) : null
+							}
+						</group.AppField>
+
 						<group.AppField name="content">
 							{(field) => (
 								<field.MarkdownField

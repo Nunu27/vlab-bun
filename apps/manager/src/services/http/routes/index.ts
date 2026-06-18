@@ -10,6 +10,7 @@ import evaluator from "./evaluator";
 import file from "./file";
 import lab from "./lab";
 import studyProgram from "./study-program";
+import topologyTemplate from "./topology-template";
 import user from "./user";
 
 export default new Elysia({ prefix: "/api" })
@@ -22,5 +23,6 @@ export default new Elysia({ prefix: "/api" })
 	.use(user)
 	.use(deviceCategory)
 	.use(deviceTemplate)
+	.use(topologyTemplate)
 	.use(evaluator)
 	.use(file);
