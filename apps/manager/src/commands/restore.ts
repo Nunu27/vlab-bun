@@ -160,13 +160,18 @@ export async function runRestore() {
 
 		if (data.labAttachments?.length) {
 			logger.info(`Restoring ${data.labAttachments.length} lab attachments...`);
+			const affectedLabIds = Array.from(
+				new Set<string>(
+					data.labAttachments.map((r: { labId: string }) => r.labId),
+				),
+			);
+			for (const labId of affectedLabIds) {
+				await tx.delete(labAttachments).where(eq(labAttachments.labId, labId));
+			}
 			for (const row of data.labAttachments) {
 				row.createdAt = new Date(row.createdAt);
 				row.updatedAt = row.updatedAt ? new Date(row.updatedAt) : null;
-				await tx
-					.insert(labAttachments)
-					.values(row)
-					.onConflictDoUpdate({ target: labAttachments.id, set: row });
+				await tx.insert(labAttachments).values(row);
 			}
 		}
 
