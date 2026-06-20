@@ -451,14 +451,16 @@ export async function runSyncModules() {
 
 				logger.info(`Updated lab: ${title}`);
 
-				await db.delete(labAttachments).where(eq(labAttachments.labId, lab.id));
 				await db
 					.delete(labEmbeddedFiles)
 					.where(eq(labEmbeddedFiles.labId, lab.id));
 
 				if (attachmentFileName) {
+					await db
+						.delete(labAttachments)
+						.where(eq(labAttachments.labId, lab.id));
 					await db.insert(labAttachments).values({
-						name: "Material",
+						name: title,
 						file: attachmentFileName,
 						labId: lab.id,
 					});
@@ -501,7 +503,7 @@ export async function runSyncModules() {
 
 				if (attachmentFileName && newLab) {
 					await db.insert(labAttachments).values({
-						name: "Material",
+						name: title,
 						file: attachmentFileName,
 						labId: newLab.id,
 					});
