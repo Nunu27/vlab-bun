@@ -256,6 +256,7 @@ export function createMonitor<TFullMapping extends FullMappingConstraint>(
 		id: string,
 		callback: () => MaybePromise<void>,
 		timeoutMs: number = 120000,
+		onTimeout?: (id: string) => void,
 	) => {
 		if (nodeHealths.has(id) && healthyStatus.has(nodeHealths.get(id) || null)) {
 			callback();
@@ -267,6 +268,7 @@ export function createMonitor<TFullMapping extends FullMappingConstraint>(
 		const timer = setTimeout(() => {
 			healthEmitter.off(id, handler);
 			options.logger.warn("Timeout waiting for node %s to become healthy", id);
+			onTimeout?.(id);
 		}, timeoutMs);
 
 		const handler = () => {

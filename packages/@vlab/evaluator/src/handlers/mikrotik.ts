@@ -226,34 +226,11 @@ export default new EvaluationHandler("mikrotik")
 				}
 			}, 100);
 
-			const cancels: (() => void)[] = [];
+			const listener = await client.stream("/ip/route/listen");
+			listener.on("data", () => doUpdate());
+			listener.on("error", () => {});
 
-			// /ip/route/listen fires when static routes are added/removed via API.
-			const routeListener = await client.stream("/ip/route/listen");
-			routeListener.on("data", () => doUpdate());
-			routeListener.on("error", () => {});
-			cancels.push(routeListener.cancel);
-
-			// Dynamic protocol routes (RIP/OSPF/BGP) don't trigger /ip/route/listen.
-			// Use protocol-specific neighbor/session streams as secondary triggers.
-			for (const endpoint of [
-				"/routing/rip/neighbor/listen",
-				"/routing/ospf/neighbor/listen",
-				"/routing/bgp/session/listen",
-			]) {
-				try {
-					const listener = await client.stream(endpoint);
-					listener.on("data", () => doUpdate());
-					listener.on("error", () => {});
-					cancels.push(listener.cancel);
-				} catch {
-					// Protocol not configured on this node — skip silently
-				}
-			}
-
-			return () => {
-				for (const c of cancels) c();
-			};
+			return listener.cancel;
 		},
 		read: async ({ client }) => {
 			return await client.runQuery("/ip/route/print");
@@ -670,7 +647,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "rip-instance-exist",
 		name: "RIP Instance Exist",
-		text: "Should have RIP instance named {name} with flag {flag}",
+		text: "Should have RIP instance named {name}",
 		source: "rip-instance",
 		params: {
 			name: t.String({
@@ -931,28 +908,11 @@ export default new EvaluationHandler("mikrotik")
 				}
 			}, 100);
 
-			const cancels: (() => void)[] = [];
+			const listener = await client.stream("/routing/bgp/session/listen");
+			listener.on("data", () => doUpdate());
+			listener.on("error", () => {});
 
-			for (const endpoint of [
-				"/routing/bgp/session/listen",
-				"/routing/bgp/connection/listen",
-			]) {
-				try {
-					const listener = await client.stream(endpoint);
-					listener.on("data", () => doUpdate());
-					listener.on("error", () => {});
-					cancels.push(listener.cancel);
-				} catch {
-					// Protocol not configured yet — skip silently
-				}
-			}
-
-			// Initial query — session may already be established when check begins.
-			doUpdate();
-
-			return () => {
-				for (const c of cancels) c();
-			};
+			return listener.cancel;
 		},
 		read: async ({ client }) => {
 			return await client.runQuery("/routing/bgp/session/print");

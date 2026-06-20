@@ -34,7 +34,7 @@ Banyak pemula merasa terintimidasi karena harus "menghafal" ribuan perintah. Fak
 | `ls -la` | Menampilkan file detail & hidden files. |
 | `uname -a` | Menampilkan info OS & Kernel. |
 | `ps aux` | Menampilkan seluruh proses yang sedang berjalan di sistem. |
-| `useradd <nama>` | Membuat akun pengguna baru pada sistem. |
+| `sudo useradd <nama>` | Membuat akun pengguna baru pada sistem. |
 
 ### MikroTik RouterOS
 

@@ -40,6 +40,6 @@ Pada lab pengenalan ini, Anda diberikan akses ke dua jenis perangkat: sebuah kli
 9. Uji coba **Safe Mode**. Tekan tombol `CTRL + X` pada keyboard. Perhatikan perubahan pada *prompt* CLI (muncul huruf `<SAFE>`). Tekan `CTRL + X` lagi untuk keluar dari Safe Mode.
 
 #### Tahap III: Konfigurasi Dasar
-1. Pada **R1**, ubah identitas (nama) router menjadi `R1` dengan mengeksekusi perintah `/system identity set name=R1`. <LabCheck node="R1" id="mikrotik.system-identity" />
+1. Pada **R1**, ubah identitas (nama) router menjadi `Lab-R1` dengan mengeksekusi perintah `/system identity set name=Lab-R1`. <LabCheck node="R1" id="mikrotik.system-identity" />
 2. Pada **R1**, buat pengguna baru bernama `siswa` dengan hak akses baca menggunakan perintah `/user add name=siswa password=Lab@12345 group=read`. <LabCheck node="R1" id="mikrotik.user-exist" />
 3. Pada **PC1**, buat pengguna baru bernama `siswa` dengan mengeksekusi perintah `sudo useradd siswa`. <LabCheck node="PC1" id="linux.user-exist" />
