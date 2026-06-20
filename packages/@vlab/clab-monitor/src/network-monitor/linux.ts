@@ -82,7 +82,8 @@ export default {
 			}
 		}
 	},
-	stop(_, { id }) {
+	stop({ nodeInterfaceMap }, { id }) {
+		nodeInterfaceMap.delete(id);
 		const monitor = monitors.get(id);
 
 		if (monitor) {

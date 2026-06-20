@@ -14,7 +14,7 @@
   "groups": {
     "Network A": { "color": "#f472b6", "x": 20, "y": 130, "width": 240, "height": 340, "members": ["R1", "PC1"] },
     "Network B": { "color": "#818cf8", "x": 140, "y": 130, "width": 400, "height": 180, "members": ["R1", "R2"] },
-    "Network C": { "color": "#f472b6", "x": 420, "y": 130, "width": 240, "height": 340, "members": ["R2", "PC2"] }
+    "Network C": { "color": "#4ade80", "x": 420, "y": 130, "width": 240, "height": 340, "members": ["R2", "PC2"] }
   },
   "notes": []
 }
@@ -40,8 +40,8 @@ Anda mengelola infrastruktur jaringan yang terdiri dari dua router (**R1** dan *
 ### B. Langkah-Langkah Konfigurasi
 
 #### Tahap I: Konfigurasi IP
-1. **Router R1:** Konfigurasikan IP `192.168.10.1/24` pada **ether2** dan `10.10.10.1/30` pada **ether3**. <LabCheck node="R1" id="node-interface.check-ip" />
-2. **Router R2:** Konfigurasikan IP `192.168.20.1/24` pada **ether2** dan `10.10.10.2/30` pada **ether3**. <LabCheck node="R2" id="node-interface.check-ip" />
+1. **Router R1:** Konfigurasikan IP `192.168.10.1/24` pada **ether2** dan `10.10.10.1/30` pada **ether3**. <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R1" id="node-interface.check-ip" />
+2. **Router R2:** Konfigurasikan IP `192.168.20.1/24` pada **ether2** dan `10.10.10.2/30` pada **ether3**. <LabCheck node="R2" id="node-interface.check-ip" /> <LabCheck node="R2" id="node-interface.check-ip" />
 3. **Klien PC1:** Konfigurasikan IP `192.168.10.2/24` pada **eth1**, nyalakan interface, lalu atur *Default Gateway* menunjuk ke `192.168.10.1`. <LabCheck node="PC1" id="node-interface.check-ip" /> <LabCheck node="PC1" id="linux.route-exist" />
 4. **Klien PC2:** Konfigurasikan IP `192.168.20.2/24` pada **eth1**, nyalakan interface, lalu atur *Default Gateway* menunjuk ke `192.168.20.1`. <LabCheck node="PC2" id="node-interface.check-ip" /> <LabCheck node="PC2" id="linux.route-exist" />
 5. **Uji Interkoneksi WAN:** Dari R1, *ping* ke IP WAN R2 (`10.10.10.2`). Pastikan terhubung sebelum melanjutkan.

@@ -16,6 +16,19 @@ Di dalam satu segmen jaringan (misal `192.168.10.0/24`), tidak semua alamat IP b
 *   **IP Broadcast (`192.168.10.255`):** Alamat terakhir (Host ID = 1 biner semua) digunakan untuk mengirim paket ke *seluruh penghuni* di jalan tersebut sekaligus. Tidak bisa dipasang ke PC.
 *   **IP Host / Valid (`192.168.10.1` hingga `.254`):** Alamat di antara Network dan Broadcast inilah yang dapat dipasangkan pada interface PC atau Router.
 
+## Menghitung Rentang Alamat
+
+Untuk menentukan rentang alamat dari suatu jaringan, gunakan rumus:
+
+**Jumlah Host = 2^(32 - prefix) - 2**
+
+| Network | Prefix | Jumlah Host | Rentang IP Host |
+|---|---|---|---|
+| 192.168.10.0 | /24 | 2^(32-24) - 2 = **254** | 192.168.10.1 – 192.168.10.254 |
+| 10.10.10.0 | /30 | 2^(32-30) - 2 = **2** | 10.10.10.1 – 10.10.10.2 |
+
+Prefix `/30` sering digunakan pada **link *point-to-point*** antar router karena hanya membutuhkan 2 alamat host, sehingga tidak ada pemborosan IP.
+
 ## Memahami Output Troubleshooting (Ping)
 Administrator jaringan menggunakan utilitas `ping` (protokol ICMP) untuk menguji apakah alamat IP tujuan bisa dijangkau. Pemahaman dalam membaca *output* ping sangat diperlukan untuk mengetahui letak masalahnya:
 *   **Reply dari tujuan:** Jaringan sehat, kabel terhubung, dan routing benar.

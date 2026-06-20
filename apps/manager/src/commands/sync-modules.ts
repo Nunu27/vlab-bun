@@ -402,7 +402,7 @@ export async function runSyncModules() {
 				/<LabCheck\s+node="([^"]+)"\s+id="([^"]+)"\s*\/>/g,
 				(match, node, id) => {
 					const check = appendedCheckUuids.find(
-						(c) => c.targetNode === node && c.checkId === id,
+						(c) => !c.used && c.targetNode === node && c.checkId === id,
 					);
 					if (check) {
 						check.used = true;
