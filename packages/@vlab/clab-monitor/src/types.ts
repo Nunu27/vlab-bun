@@ -131,6 +131,7 @@ export interface BaseContext {
 		id: string,
 		callback: () => MaybePromise<void>,
 		timeoutMs?: number,
+		onTimeout?: (id: string) => void,
 	) => () => void;
 }
 

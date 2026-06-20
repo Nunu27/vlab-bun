@@ -1,0 +1,25 @@
+{
+	"name": "modules-e2e",
+	"module": "src/index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"test": "bun test",
+		"test:module": "VLAB_MODULE=$MODULE bun test"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "^0.34.49",
+		"@vlab/clab": "workspace:*",
+		"@vlab/clab-monitor": "workspace:*",
+		"@vlab/evaluator": "workspace:*",
+		"dockerode": "^5.0.0",
+		"mikro-routeros": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@types/dockerode": "^4.0.1"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	}
+}

@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       evaluator: ${{ steps.filter.outputs.evaluator }}
+      modules: ${{ steps.filter.outputs.modules }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v4
@@ -31,6 +32,10 @@ jobs:
             evaluator:
               - 'packages/@vlab/evaluator/**'
               - 'tests/evaluator-e2e/**'
+            modules:
+              - 'docs/modules/**'
+              - 'packages/@vlab/evaluator/**'
+              - 'tests/modules-e2e/**'
 
   evaluator-test:
     needs: changes
@@ -60,11 +65,45 @@ jobs:
         run: sg clab_admins -c "bun run test"
         working-directory: ./tests/evaluator-e2e
 
+  modules-test:
+    needs: changes
+    if: ${{ needs.changes.outputs.modules == 'true' }}
+    name: Modules E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Containerlab
+        run: bash -c "$(curl -sL https://get.containerlab.dev)"
+
+      - name: Add runner to clab_admins
+        run: sudo usermod -aG clab_admins runner
+
+      - name: Pull container images
+        run: |
+          docker pull ghcr.io/nunu27/vrnetlab/vr-routeros
+          docker pull ghcr.io/nunu27/docker-remote-desktop:ssh-ubuntu-24.04
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./tests/modules-e2e
+
+      - name: Run E2E Tests
+        run: sg clab_admins -c "bun run test"
+        working-directory: ./tests/modules-e2e
+
   build-and-push:
-    needs: [changes, evaluator-test]
+    needs: [changes, evaluator-test, modules-test]
     if: |
       always() &&
       (needs.evaluator-test.result == 'success' || needs.evaluator-test.result == 'skipped') &&
+      (needs.modules-test.result == 'success' || needs.modules-test.result == 'skipped') &&
       needs.changes.result == 'success'
     runs-on: ubuntu-latest
     strategy:
