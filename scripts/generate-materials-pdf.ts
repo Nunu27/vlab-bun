@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readdir } from "node:fs/promises";
+import { mkdir, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { intro, log, outro, spinner } from "@clack/prompts";
 import { $ } from "bun";
@@ -34,7 +34,11 @@ async function main() {
 			const s = spinner();
 			s.start(`Generating PDF for module: ${mod}...`);
 			try {
-				await $`bunx md-to-pdf --stylesheet scripts/pdf-style.css ${materialPath}`.quiet();
+				const content = await readFile(materialPath, "utf-8");
+				const titleMatch = content.match(/^#\s+(.+)$/m);
+				const title = titleMatch ? titleMatch[1].trim() : mod;
+
+				await $`bunx md-to-pdf --stylesheet scripts/pdf-style.css --document-title ${title} ${materialPath}`.quiet();
 				const generatedPdfPath = join(docsDir, mod, "material.pdf");
 				const targetPdfPath = join(outDir, `${mod}.pdf`);
 				await $`mv ${generatedPdfPath} ${targetPdfPath}`;
