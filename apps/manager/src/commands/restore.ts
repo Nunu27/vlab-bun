@@ -16,6 +16,38 @@ import storage from "@manager/lib/storage";
 import { decode } from "@msgpack/msgpack";
 import { eq } from "drizzle-orm";
 
+function detectMimeType(buf: Buffer): string {
+	// PDF: %PDF
+	if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46)
+		return "application/pdf";
+	// PNG: \x89PNG
+	if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47)
+		return "image/png";
+	// JPEG: \xFF\xD8\xFF
+	if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff)
+		return "image/jpeg";
+	// GIF: GIF8
+	if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38)
+		return "image/gif";
+	// WEBP: RIFF....WEBP
+	if (
+		buf[0] === 0x52 &&
+		buf[1] === 0x49 &&
+		buf[2] === 0x46 &&
+		buf[3] === 0x46 &&
+		buf[8] === 0x57 &&
+		buf[9] === 0x45 &&
+		buf[10] === 0x42 &&
+		buf[11] === 0x50
+	)
+		return "image/webp";
+	// SVG: text starting with <svg or <?xml
+	const head = buf.subarray(0, 128).toString("utf8").trimStart();
+	if (head.startsWith("<svg") || head.startsWith("<?xml"))
+		return "image/svg+xml";
+	return "application/octet-stream";
+}
+
 const logger = baseLogger.child({ service: "restore" });
 
 export async function runRestore() {
@@ -38,11 +70,10 @@ export async function runRestore() {
 				continue;
 			}
 			const buffer = await fs.readFile(filePath);
-			// We need to guess mime type or just application/octet-stream
 			const res = await storage.putObject(
 				file.name,
 				buffer,
-				"application/octet-stream",
+				detectMimeType(buffer),
 			);
 			if (!res?.ok) {
 				logger.error(`Failed to upload ${file.name}: ${res?.statusText}`);
