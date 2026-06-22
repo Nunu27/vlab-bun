@@ -33,6 +33,18 @@
 	},
 	"overrides": [
 		{
+			"includes": ["out/**", "tests/modules-e2e/topologies/**"],
+			"formatter": {
+				"enabled": false
+			},
+			"linter": {
+				"enabled": false
+			},
+			"assist": {
+				"enabled": false
+			}
+		},
+		{
 			"includes": ["apps/web/src/routeTree.gen.ts"],
 			"formatter": {
 				"enabled": false
@@ -47,8 +59,7 @@
 		{
 			"includes": [
 				"apps/web/src/components/ui/**",
-				"packages/@vlab/grpc/src/**/*.ts",
-				"out/**"
+				"packages/@vlab/grpc/src/**/*.ts"
 			],
 			"linter": {
 				"enabled": false
