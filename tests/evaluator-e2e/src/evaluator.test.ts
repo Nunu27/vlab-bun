@@ -94,6 +94,12 @@ const checks: SessionCheckPayload<typeof evaluator.handlers>[] = [
 		checkId: "linux.user-exist",
 		params: { username: "vlabtester" },
 	},
+	{
+		id: "linux1-check-ip",
+		nodeId: "linux1",
+		checkId: "node-interface.check-ip",
+		params: { interface: "eth1", ip: "10.0.1.3/24" },
+	},
 	// Mikrotik Checks
 	{
 		id: "router1-route-exist",
@@ -244,6 +250,10 @@ describe("Evaluator E2E", () => {
 
 		await new Promise<void>((resolve) =>
 			clabMonitor.waitForHealth("router2", resolve),
+		);
+
+		await new Promise<void>((resolve) =>
+			clabMonitor.waitForHealth("linux1", resolve),
 		);
 
 		router1Client = new RouterOSClient(nodeMap.router1?.ip || "");

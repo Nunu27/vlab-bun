@@ -1,7 +1,7 @@
 import { Type as t } from "@sinclair/typebox";
 import { RouterOSClient } from "mikro-routeros";
 import { EvaluationHandler } from "../base/evaluation-handler";
-import { debounce, removeItemFromArrayByIndex } from "../utils";
+import { removeItemFromArrayByIndex, throttle } from "../utils";
 
 const compareFlag = (
 	flags: Set<string>,
@@ -217,7 +217,7 @@ export default new EvaluationHandler("mikrotik")
 		id: "routing-table",
 		data: IPRouteSchema,
 		listen: async ({ client }, notify) => {
-			const doUpdate = debounce(async () => {
+			const doUpdate = throttle(async () => {
 				try {
 					const data = await client.runQuery("/ip/route/print");
 					notify(data);
@@ -470,7 +470,7 @@ export default new EvaluationHandler("mikrotik")
 		data: OSPFInterfaceTemplateSchema,
 		listen: async ({ client }, notify) => {
 			const list: typeof OSPFInterfaceTemplateSchema.static = [];
-			const doUpdate = debounce(async () => {
+			const doUpdate = throttle(async () => {
 				try {
 					const currentList: typeof OSPFInterfaceTemplateSchema.static =
 						await client.runQuery("/routing/ospf/interface-template/print");
@@ -899,7 +899,7 @@ export default new EvaluationHandler("mikrotik")
 		id: "bgp-session",
 		data: BGPSessionSchema,
 		listen: async ({ client }, notify) => {
-			const doUpdate = debounce(async () => {
+			const doUpdate = throttle(async () => {
 				try {
 					const data = await client.runQuery("/routing/bgp/session/print");
 					notify(data);
@@ -945,7 +945,7 @@ export default new EvaluationHandler("mikrotik")
 		id: "system-identity",
 		data: SystemIdentitySchema,
 		listen: async ({ client }, notify, subscribe) => {
-			const doUpdate = debounce(async () => {
+			const doUpdate = throttle(async () => {
 				const data = await client.runQuery("/system/identity/print");
 				notify(data);
 			}, 100);

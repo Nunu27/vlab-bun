@@ -2,7 +2,7 @@ import { PassThrough } from "node:stream";
 import { Type as t } from "@sinclair/typebox";
 import type { Container } from "dockerode";
 import { EvaluationHandler } from "../base/evaluation-handler";
-import { debounce, getModem } from "../utils";
+import { getModem, throttle } from "../utils";
 
 // Example route data
 // [
@@ -287,9 +287,7 @@ async function getRoutes(container: Container) {
 						try {
 							resolve(JSON.parse(output));
 						} catch (parseError) {
-							reject(
-								new Error(`Failed to parse ip route output: ${parseError}`),
-							);
+							reject(parseError);
 						}
 					});
 				},
@@ -318,12 +316,12 @@ export default new EvaluationHandler("linux")
 		id: "routing",
 		data: IpRouteSchema,
 		listen: async ({ container, docker }, notify) => {
-			const doUpdate = debounce(async () => {
+			const doUpdate = throttle(async () => {
 				try {
 					const data = await getRoutes(container);
 					notify(data);
-				} catch (error) {
-					console.error("Failed to update routes:", error);
+				} catch {
+					// transient container error (e.g. namespace not ready), ignore
 				}
 			}, 100);
 
@@ -399,7 +397,7 @@ export default new EvaluationHandler("linux")
 		id: "users",
 		data: UserSchema,
 		listen: async ({ container, docker }, notify) => {
-			const doUpdate = debounce(async () => {
+			const doUpdate = throttle(async () => {
 				try {
 					const data = await getUsers(container);
 					notify(data);

@@ -15,6 +15,13 @@ const logger = baseLogger.child({ service: "grpc" });
 
 import env from "../env";
 
+// Nominal cost of a single lab, used to express a worker's free capacity as
+// "how many more labs fit". These are rough averages, not hard limits — they
+// only need to be consistent across workers for the score to rank correctly.
+const LAB_CPU_CORES = 1;
+const LAB_MEM_MB = 1024;
+const LAB_STORAGE_MB = 4096;
+
 async function* createReplyStream(
 	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
 ): AsyncIterable<WorkerProto.CommandPayload> {
@@ -69,22 +76,29 @@ export async function streamMetrics() {
 		const memoryUsage = getMemoryUsage();
 		const storageInfo = getStorageInfo();
 
-		const cpuAvailable = 100 - cpuUsage.percentage;
-		const memAvailable = 100 - memoryUsage.percentage;
-		const storageAvailable = 100 - storageInfo.percentage;
+		// Absolute free capacity per resource. Using absolute values (not
+		// percentages) lets workers of different sizes be compared fairly: a
+		// 64-core worker at 50% idle has far more headroom than a 4-core worker
+		// at 50% idle, even though their percentages are identical.
+		const cpuFreeCores = os.cpus().length * (1 - cpuUsage.percentage / 100);
+		const memFreeMb = memoryUsage.available;
+		const storageFreeMb = storageInfo.available;
 
-		// Hard-cap: critically low storage means no new labs can start
-		const resourceScore =
-			storageAvailable < 5
-				? 0
-				: cpuAvailable * 0.4 + memAvailable * 0.4 + storageAvailable * 0.2;
+		// Express headroom as "how many more labs fit", gated by the scarcest
+		// resource (bottleneck). A single saturated resource caps the score, so
+		// a worker that is out of RAM can't win on spare CPU alone.
+		const fits = Math.min(
+			cpuFreeCores / LAB_CPU_CORES,
+			memFreeMb / LAB_MEM_MB,
+			storageFreeMb / LAB_STORAGE_MB,
+		);
 
-		// Penalize active labs as a tie-breaker between equally healthy workers
-		const labPenalty = Math.min(monitorState.activeLabs * 5, 30);
-
+		// Scale to integer points (10 per lab of headroom) and apply a small
+		// tie-breaker against already-busy workers to spread placements while
+		// metrics catch up. No upper clamp: bigger workers should score higher.
 		const score = Math.max(
 			0,
-			Math.min(100, Math.round(resourceScore - labPenalty)),
+			Math.round(fits * 10) - Math.min(monitorState.activeLabs, 5),
 		);
 
 		await workerClient.sendMetrics(
