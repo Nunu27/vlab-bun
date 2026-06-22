@@ -23,39 +23,52 @@ export function deterministicStringify(obj: unknown): string {
 	return `{${parts.join(",")}}`;
 }
 
-export const debounce = <T extends unknown[], R>(
+// Leading + trailing throttle: fires immediately on first call, then once more
+// at the end of the window if additional calls arrived during the wait period.
+export const throttle = <T extends unknown[], R>(
 	fn: (...args: T) => R | Promise<R>,
 	wait: number,
 ): ((...args: T) => Promise<R>) => {
 	let timeout: NodeJS.Timeout | null = null;
-	let resolves: ((value: R | PromiseLike<R>) => void)[] = [];
-	let rejects: ((reason?: unknown) => void)[] = [];
+	let pendingArgs: T | null = null;
+	let pendingResolves: ((value: R | PromiseLike<R>) => void)[] = [];
+	let pendingRejects: ((reason?: unknown) => void)[] = [];
+
+	const execute = async (args: T) => {
+		const resolves = pendingResolves;
+		const rejects = pendingRejects;
+		pendingArgs = null;
+		pendingResolves = [];
+		pendingRejects = [];
+
+		timeout = setTimeout(() => {
+			timeout = null;
+			if (pendingArgs !== null) {
+				execute(pendingArgs);
+			}
+		}, wait);
+
+		try {
+			const result = await fn(...args);
+			resolves.forEach((r) => {
+				r(result);
+			});
+		} catch (error) {
+			rejects.forEach((r) => {
+				r(error);
+			});
+		}
+	};
 
 	return (...args: T): Promise<R> => {
-		if (timeout) {
-			clearTimeout(timeout);
-		}
-
 		return new Promise<R>((resolve, reject) => {
-			resolves.push(resolve);
-			rejects.push(reject);
-
-			timeout = setTimeout(async () => {
-				timeout = null;
-				try {
-					const result = await fn(...args);
-					resolves.forEach((r) => {
-						r(result);
-					});
-				} catch (error) {
-					rejects.forEach((r) => {
-						r(error);
-					});
-				} finally {
-					resolves = [];
-					rejects = [];
-				}
-			}, wait);
+			pendingResolves.push(resolve);
+			pendingRejects.push(reject);
+			if (timeout === null) {
+				execute(args);
+			} else {
+				pendingArgs = args;
+			}
 		});
 	};
 };
