@@ -17,7 +17,11 @@ const db = drizzle({
 					logger.debug({ query, params }, "Executed query");
 				},
 			},
-	connection: env.DATABASE_URL,
+	connection: {
+		url: env.DATABASE_URL,
+		idleTimeout: 900,
+		connectionTimeout: 30,
+	},
 });
 
 export default db;
