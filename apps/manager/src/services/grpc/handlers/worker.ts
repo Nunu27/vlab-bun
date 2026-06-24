@@ -12,7 +12,7 @@ import type {
 	GrpcRpcRoutes,
 } from "@vlab/grpc";
 import { AsyncQueue, appRouter, WorkerProto } from "@vlab/grpc";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { attachMonitorHandlers } from "./monitor";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
@@ -23,16 +23,34 @@ export const connectedWorkers = new Map<
 >();
 
 export async function getAvailableWorkerId() {
-	const worker = await db.query.workers.findFirst({
-		columns: { id: true },
-		where: (w, { eq }) => eq(w.status, "online"),
-		orderBy: (w, { desc }) => [desc(w.score)],
-	});
-	if (!worker) {
-		throw new Error("No online workers available, please contact admin");
-	}
+	return await db.transaction(async (tx) => {
+		const [selected] = await tx
+			.select({ id: workers.id })
+			.from(workers)
+			.where(
+				and(
+					eq(workers.status, "online"),
+					sql`${workers.cpuUsagePercent} < ${workers.cpuThresholdPercent}`,
+					sql`${workers.memoryUsagePercent} < ${workers.memoryThresholdPercent}`,
+				),
+			)
+			.orderBy(asc(workers.activeLabs))
+			.limit(1)
+			.for("update", { skipLocked: true });
 
-	return worker.id;
+		if (!selected) {
+			throw new Error(
+				"No workers available. All workers are offline or at capacity.",
+			);
+		}
+
+		await tx
+			.update(workers)
+			.set({ activeLabs: sql`${workers.activeLabs} + 1` })
+			.where(eq(workers.id, selected.id));
+
+		return selected.id;
+	});
 }
 
 export async function resetStaleWorkers() {
@@ -109,7 +127,6 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				cpuUsagePercent: "0",
 				memoryUsagePercent: "0",
 				storageUsagePercent: "0",
-				score: "0",
 			})
 			.onConflictDoUpdate({
 				target: workers.id,
@@ -253,7 +270,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 		const workerId = context.metadata.get("worker-id");
 		if (!workerId) return { success: false };
 
-		await db
+		const [updated] = await db
 			.update(workers)
 			.set({
 				status: "online",
@@ -261,11 +278,10 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				cpuUsagePercent: request.cpuUsagePercent.toString(),
 				memoryUsagePercent: request.memoryUsagePercent.toString(),
 				storageUsagePercent: request.storageUsagePercent.toString(),
-				score: request.score.toString(),
-				activeLabs: request.activeLabs,
 				activeNodes: request.activeNodes,
 			})
-			.where(eq(workers.id, workerId));
+			.where(eq(workers.id, workerId))
+			.returning({ activeLabs: workers.activeLabs });
 
 		ws.server.emit("admin:worker:metrics", {
 			data: {
@@ -273,7 +289,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				cpuUsagePercent: request.cpuUsagePercent.toString(),
 				memoryUsagePercent: request.memoryUsagePercent.toString(),
 				storageUsagePercent: request.storageUsagePercent.toString(),
-				activeLabs: request.activeLabs,
+				activeLabs: updated?.activeLabs ?? 0,
 				activeNodes: request.activeNodes,
 			},
 		});
