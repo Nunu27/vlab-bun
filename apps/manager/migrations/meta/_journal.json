@@ -57,6 +57,13 @@
 			"when": 1781730892923,
 			"tag": "0007_add_topology_template_table",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1782321114299,
+			"tag": "0008_remove_worker_score_add_thresholds",
+			"breakpoints": true
 		}
 	]
 }
