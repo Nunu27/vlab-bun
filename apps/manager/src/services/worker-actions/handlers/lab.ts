@@ -1,7 +1,9 @@
 import db from "@manager/db";
+import { workers } from "@manager/db/schema";
 import { sendCommandToWorker } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
 import type { LabLink, LabNode } from "@manager/types/clab";
+import { eq, sql } from "drizzle-orm";
 
 export async function handleInitLabSession(
 	workerId: string,
@@ -138,6 +140,11 @@ export async function handleInitLabSession(
 		reply("info", "Lab provisioned successfully.");
 		ws.server.replyResponse("lab:[id]:init", payload.requestId, sessionId);
 	} catch (error) {
+		await db
+			.update(workers)
+			.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
+			.where(eq(workers.id, workerId));
+
 		ws.server.replyError(
 			"lab:[id]:init",
 			payload.requestId,

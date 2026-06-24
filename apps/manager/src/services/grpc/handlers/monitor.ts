@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import EventEmitter from "node:events";
 import db from "@manager/db";
-import { labSessionNodes, labSessions } from "@manager/db/schema";
+import { labSessionNodes, labSessions, workers } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
 import guacamole from "@manager/services/guacamole-lite";
 import { cache } from "@manager/services/http/middlewares/caching";
@@ -115,6 +115,15 @@ export function attachMonitorHandlers(
 					return and(...conditions);
 				},
 			});
+
+			if (staleSessions.length) {
+				await db
+					.update(workers)
+					.set({
+						activeLabs: sql`GREATEST(${workers.activeLabs} - ${staleSessions.length}, 0)`,
+					})
+					.where(eq(workers.id, workerId));
+			}
 
 			for (const { id } of staleSessions) {
 				await sessionThrottle.run(id, () => submitActiveSession(id));
@@ -250,6 +259,11 @@ export function attachMonitorHandlers(
 
 	client.onData("monitor:session-remove", {
 		callback: async ({ sessionId }) => {
+			await db
+				.update(workers)
+				.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
+				.where(eq(workers.id, workerId));
+
 			await sessionThrottle.run(sessionId, () =>
 				submitActiveSession(sessionId),
 			);

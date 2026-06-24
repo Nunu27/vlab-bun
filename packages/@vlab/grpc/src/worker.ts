@@ -31,8 +31,6 @@ export interface MetricsRequest {
 	cpuUsagePercent: number;
 	memoryUsagePercent: number;
 	storageUsagePercent: number;
-	score: number;
-	activeLabs: number;
 	activeNodes: number;
 }
 
@@ -354,8 +352,6 @@ function createBaseMetricsRequest(): MetricsRequest {
 		cpuUsagePercent: 0,
 		memoryUsagePercent: 0,
 		storageUsagePercent: 0,
-		score: 0,
-		activeLabs: 0,
 		activeNodes: 0,
 	};
 }
@@ -373,12 +369,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 		}
 		if (message.storageUsagePercent !== 0) {
 			writer.uint32(25).double(message.storageUsagePercent);
-		}
-		if (message.score !== 0) {
-			writer.uint32(33).double(message.score);
-		}
-		if (message.activeLabs !== 0) {
-			writer.uint32(40).int32(message.activeLabs);
 		}
 		if (message.activeNodes !== 0) {
 			writer.uint32(48).int32(message.activeNodes);
@@ -418,22 +408,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 					message.storageUsagePercent = reader.double();
 					continue;
 				}
-				case 4: {
-					if (tag !== 33) {
-						break;
-					}
-
-					message.score = reader.double();
-					continue;
-				}
-				case 5: {
-					if (tag !== 40) {
-						break;
-					}
-
-					message.activeLabs = reader.int32();
-					continue;
-				}
 				case 6: {
 					if (tag !== 48) {
 						break;
@@ -468,12 +442,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 				: isSet(object.storage_usage_percent)
 					? globalThis.Number(object.storage_usage_percent)
 					: 0,
-			score: isSet(object.score) ? globalThis.Number(object.score) : 0,
-			activeLabs: isSet(object.activeLabs)
-				? globalThis.Number(object.activeLabs)
-				: isSet(object.active_labs)
-					? globalThis.Number(object.active_labs)
-					: 0,
 			activeNodes: isSet(object.activeNodes)
 				? globalThis.Number(object.activeNodes)
 				: isSet(object.active_nodes)
@@ -493,12 +461,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 		if (message.storageUsagePercent !== 0) {
 			obj.storageUsagePercent = message.storageUsagePercent;
 		}
-		if (message.score !== 0) {
-			obj.score = message.score;
-		}
-		if (message.activeLabs !== 0) {
-			obj.activeLabs = Math.round(message.activeLabs);
-		}
 		if (message.activeNodes !== 0) {
 			obj.activeNodes = Math.round(message.activeNodes);
 		}
@@ -513,8 +475,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 		message.cpuUsagePercent = object.cpuUsagePercent ?? 0;
 		message.memoryUsagePercent = object.memoryUsagePercent ?? 0;
 		message.storageUsagePercent = object.storageUsagePercent ?? 0;
-		message.score = object.score ?? 0;
-		message.activeLabs = object.activeLabs ?? 0;
 		message.activeNodes = object.activeNodes ?? 0;
 		return message;
 	},
