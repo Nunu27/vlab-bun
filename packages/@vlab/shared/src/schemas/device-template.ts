@@ -46,6 +46,8 @@ export const CreateDeviceTemplateRequest = t.Object({
 	resources: DeviceTemplateResourcesSchema,
 	connection: DeviceTemplateConnectionSchema,
 	interfaces: t.Array(DeviceTemplateInterfaceSchema),
+	cpuCostCores: t.Optional(t.Union([t.Number(), t.Null()])),
+	memoryCostMB: t.Optional(t.Union([t.Integer(), t.Null()])),
 });
 
 export const UpdateDeviceTemplateRequest = t.Object({
@@ -58,4 +60,6 @@ export const UpdateDeviceTemplateRequest = t.Object({
 	resources: DeviceTemplateResourcesSchema,
 	connection: DeviceTemplateConnectionSchema,
 	interfaces: t.Array(DeviceTemplateInterfaceSchema),
+	cpuCostCores: t.Optional(t.Union([t.Number(), t.Null()])),
+	memoryCostMB: t.Optional(t.Union([t.Integer(), t.Null()])),
 });

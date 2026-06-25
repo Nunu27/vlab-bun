@@ -33,6 +33,9 @@ type TempNodeHealthEvent = Record<
 	`${string}:health`,
 	[NodeHealth | "deleted" | null]
 >;
-type TempNodeContainerIdEvent = Record<`${string}:ip`, [string]>;
+type TempNodeIpEvent = Record<`${string}:ip`, [string]>;
+type TempNodeContainerIdEvent = Record<`${string}:containerId`, [string]>;
 
-export type TempNodeEvents = TempNodeHealthEvent & TempNodeContainerIdEvent;
+export type TempNodeEvents = TempNodeHealthEvent &
+	TempNodeIpEvent &
+	TempNodeContainerIdEvent;

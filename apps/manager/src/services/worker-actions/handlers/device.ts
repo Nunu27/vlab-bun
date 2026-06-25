@@ -38,6 +38,12 @@ export async function handleTestInit(
 			timeout: 120000,
 		});
 
+		const containerIdPromise = waitForEvent(
+			tempNodeEvents,
+			`${nodeId}:containerId`,
+			{ timeout: 120000 },
+		);
+
 		const healthPromise = waitForEvent(tempNodeEvents, `${nodeId}:health`, {
 			predicate: (health) => {
 				if (!health) return null;
@@ -112,6 +118,18 @@ export async function handleTestInit(
 
 		reply("info", "Access token generated.");
 		ws.server.replyResponse("device-template:test", executionId, token);
+
+		// Measure container resource usage and emit as suggested cost values
+		const containerId = await containerIdPromise;
+		if (containerId) {
+			await sleep(3000); // let CPU settle after boot
+			await sendCommandToWorker(
+				workerId,
+				"docker:measureContainerStats",
+				{ containerId },
+				{ result: (data) => reply("stats", data) },
+			);
+		}
 	} catch (error) {
 		ws.server.replyError(
 			"device-template:test",

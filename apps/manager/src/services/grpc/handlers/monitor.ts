@@ -329,6 +329,7 @@ export function attachMonitorHandlers(
 			} else {
 				tempNodeEvents.emit(`${id}:health`, health);
 				tempNodeEvents.emit(`${id}:ip`, ip);
+				tempNodeEvents.emit(`${id}:containerId`, containerId);
 			}
 		},
 	});
