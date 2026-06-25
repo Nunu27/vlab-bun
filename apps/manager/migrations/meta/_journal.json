@@ -64,6 +64,13 @@
 			"when": 1782321114299,
 			"tag": "0008_remove_worker_score_add_thresholds",
 			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
+			"when": 1782363385375,
+			"tag": "0009_remove_worker_thresholds_add_device_template_costs",
+			"breakpoints": true
 		}
 	]
 }

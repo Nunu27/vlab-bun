@@ -35,7 +35,19 @@ The Web UI is a React 19 application. It is a purely presentation layer that com
 
 ## 4. Worker Selection
 
-When a user starts a lab, the Manager must choose which Worker to dispatch it to. It does this by picking the online Worker with the **highest score** (`ORDER BY score DESC`).
+When a user starts a lab, the Manager must choose which Worker to dispatch it to. It uses a **health-gated least connections** algorithm:
+
+1. **Admission control:** Only Workers that are `online` and have sufficient absolute free resources for the requested lab are eligible. The gate checks that `(1 - cpuUsage%) × cpuCores ≥ labCpuCost` and `(1 - memoryUsage%) × memoryMB ≥ labMemoryCost`. Using absolute headroom (rather than a fixed percentage) ensures the threshold is fair across Workers with different hardware specs — a 2-core Worker and a 32-core Worker at the same CPU percentage have very different real headroom.
+2. **Least connections:** Among eligible Workers, the one with the fewest active lab sessions (`activeLabs`) is selected (`ORDER BY active_labs ASC`).
+3. **Atomic selection:** The selection and increment of `activeLabs` happen in a single database transaction with `FOR UPDATE SKIP LOCKED`, preventing two concurrent requests from landing on the same Worker based on a stale count.
+
+The `activeLabs` counter is owned entirely by the Manager — incremented atomically at selection time, decremented when a session ends (or a deployment fails), and reset to `0` when the Worker disconnects.
+
+### Lab Cost Estimation
+
+`labCpuCost` and `labMemoryCost` are computed per-request by summing the `cpuCostCores` and `memoryCostMB` fields across all device templates in the lab's topology. If a template has not been measured yet, the per-device defaults (`DEFAULT_CPU_COST_CORES = 1` core, `DEFAULT_MEMORY_COST_MB = 1024` MB) are used as a fallback.
+
+These cost fields can be populated automatically: when an admin runs **Test Connection** on a device template, the system boots the container on a Worker, waits 3 seconds for CPU to settle, reads the Docker stats API (`stats({ stream: false })`), and emits the measured values as a `stats` reply to the admin's browser. The admin can then click **Apply to cost fields** in the dialog to write the measured values directly into the form before saving.
 
 ---
 

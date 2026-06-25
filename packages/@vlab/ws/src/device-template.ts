@@ -24,6 +24,7 @@ export const deviceTemplateRouter = new Router<WSMeta>().rpc(
 		replies: {
 			info: t.String(),
 			warn: t.String(),
+			stats: t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
 		},
 		response: t.String(),
 		meta: { private: ["admin"] },
