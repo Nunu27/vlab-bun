@@ -38,7 +38,9 @@ const TestConnectionButton = withForm({
 		const token = store.use.token();
 		const logs = store.use.logs();
 		const activeTab = store.use.activeTab();
-		const { setOpen, setToken, log, setDispose, setTab } = store.use.actions();
+		const suggestedStats = store.use.suggestedStats();
+		const { setOpen, setToken, log, setDispose, setTab, setSuggestedStats } =
+			store.use.actions();
 
 		const handleTestDevice = async () => {
 			const value = form.state.values;
@@ -73,7 +75,18 @@ const TestConnectionButton = withForm({
 				callbacks: {
 					info: (msg) => log("info", msg),
 					warn: (msg) => log("warn", msg),
+					stats: (data) => setSuggestedStats(data),
 				},
+			});
+		};
+
+		const handleApplyStats = () => {
+			if (!suggestedStats) return;
+			form.setFieldValue("cpuCostCores", suggestedStats.cpuCores);
+			form.setFieldValue("memoryCostMB", suggestedStats.memoryMB);
+			setSuggestedStats(undefined);
+			toast.success("Cost fields updated", {
+				description: `CPU: ${suggestedStats.cpuCores} cores · Memory: ${suggestedStats.memoryMB} MB`,
 			});
 		};
 
@@ -132,6 +145,26 @@ const TestConnectionButton = withForm({
 										/>
 									</TabsContent>
 								</div>
+								{suggestedStats && (
+									<div className="flex items-center justify-between border-t bg-muted/50 px-4 py-2.5 text-sm">
+										<span className="text-muted-foreground">
+											Measured cost:{" "}
+											<span className="font-medium text-foreground">
+												{suggestedStats.cpuCores} cores ·{" "}
+												{suggestedStats.memoryMB} MB
+											</span>
+										</span>
+										<Button
+											size="sm"
+											variant="outline"
+											type="button"
+											onClick={handleApplyStats}
+										>
+											Apply to cost fields
+										</Button>
+									</div>
+								)}
+
 								<DialogFooter className="p-4 pt-2">
 									<DialogClose asChild>
 										<Button variant="secondary">

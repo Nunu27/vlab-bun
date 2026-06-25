@@ -22,7 +22,13 @@ export const connectedWorkers = new Map<
 	ReturnType<typeof appRouter.buildClient>
 >();
 
-export async function getAvailableWorkerId() {
+export const DEFAULT_CPU_COST_CORES = 1;
+export const DEFAULT_MEMORY_COST_MB = 1024;
+
+export async function getAvailableWorkerId(
+	cpuCostCores = DEFAULT_CPU_COST_CORES,
+	memoryCostMB = DEFAULT_MEMORY_COST_MB,
+) {
 	return await db.transaction(async (tx) => {
 		const [selected] = await tx
 			.select({ id: workers.id })
@@ -30,8 +36,8 @@ export async function getAvailableWorkerId() {
 			.where(
 				and(
 					eq(workers.status, "online"),
-					sql`${workers.cpuUsagePercent} < ${workers.cpuThresholdPercent}`,
-					sql`${workers.memoryUsagePercent} < ${workers.memoryThresholdPercent}`,
+					sql`(1 - ${workers.cpuUsagePercent} / 100.0) * ${workers.cpuCores} >= ${cpuCostCores}`,
+					sql`(1 - ${workers.memoryUsagePercent} / 100.0) * ${workers.memoryMB} >= ${memoryCostMB}`,
 				),
 			)
 			.orderBy(asc(workers.activeLabs))

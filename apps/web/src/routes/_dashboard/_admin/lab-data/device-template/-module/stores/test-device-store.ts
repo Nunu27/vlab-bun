@@ -9,6 +9,7 @@ interface TestDeviceState {
 	dispose: VoidFunction | undefined;
 	logs: LogEntry[];
 	activeTab: string;
+	suggestedStats: { cpuCores: number; memoryMB: number } | undefined;
 }
 
 interface TestDeviceActions {
@@ -17,6 +18,9 @@ interface TestDeviceActions {
 	setToken: (token: string) => void;
 	setDispose: (dispose: VoidFunction) => void;
 	setTab: (tab: string) => void;
+	setSuggestedStats: (
+		stats: { cpuCores: number; memoryMB: number } | undefined,
+	) => void;
 	reset: () => void;
 }
 
@@ -28,6 +32,7 @@ const initialState: TestDeviceState = {
 	dispose: undefined,
 	logs: [],
 	activeTab: "logs",
+	suggestedStats: undefined,
 };
 
 const { Provider, useContext } = createScopedStore(() =>
@@ -47,6 +52,7 @@ const { Provider, useContext } = createScopedStore(() =>
 			setToken: (token) => set({ token, activeTab: "desktop" }),
 			setDispose: (dispose) => set({ dispose }),
 			setTab: (tab) => set({ activeTab: tab }),
+			setSuggestedStats: (stats) => set({ suggestedStats: stats }),
 			reset: () => {
 				const dispose = get().dispose;
 				if (dispose) dispose();

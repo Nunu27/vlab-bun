@@ -28,8 +28,6 @@ export const workers = pgTable(
 		cpuUsagePercent: numeric().notNull(),
 		memoryUsagePercent: numeric().notNull(),
 		storageUsagePercent: numeric().notNull(),
-		cpuThresholdPercent: integer().default(75).notNull(),
-		memoryThresholdPercent: integer().default(85).notNull(),
 		activeLabs: integer().default(0).notNull(),
 		activeNodes: integer().default(0).notNull(),
 	},

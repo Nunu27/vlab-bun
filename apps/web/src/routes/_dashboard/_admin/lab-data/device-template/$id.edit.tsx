@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import TestConnectionButton from "./-module/components/buttons/test-connection-button";
 import { DeviceBasicInfoForm } from "./-module/components/forms/device-basic-info-form";
 import { DeviceConnectionForm } from "./-module/components/forms/device-connection-form";
+import { DeviceCostForm } from "./-module/components/forms/device-cost-form";
 import { DeviceEnvForm } from "./-module/components/forms/device-env-form";
 import { DeviceNetworkInterfacesForm } from "./-module/components/forms/device-network-interfaces-form";
 import { DeviceResourcesForm } from "./-module/components/forms/device-resources-form";
@@ -120,6 +121,25 @@ function RouteComponent() {
 								</CardHeader>
 								<CardContent>
 									<DeviceResourcesForm form={form} fields="resources" />
+								</CardContent>
+							</Card>
+
+							<Card>
+								<CardHeader className="border-b">
+									<CardTitle>Worker Cost</CardTitle>
+									<CardDescription>
+										Resource cost used for worker selection. Use Test Connection
+										to auto-measure.
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<DeviceCostForm
+										form={form}
+										fields={{
+											cpuCostCores: "cpuCostCores",
+											memoryCostMB: "memoryCostMB",
+										}}
+									/>
 								</CardContent>
 							</Card>
 

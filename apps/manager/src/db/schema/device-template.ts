@@ -4,7 +4,7 @@ import type {
 	DeviceTemplateInterface,
 	DeviceTemplateResources,
 } from "@vlab/shared/schemas/device-template";
-import { jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, real, text, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
 import { base } from "./base";
 
@@ -34,6 +34,8 @@ export const deviceTemplates = pgTable("device_template", {
 	resources: jsonb().$type<DeviceTemplateResources>().notNull(),
 	connection: jsonb().$type<DeviceTemplateConnection>().notNull(),
 	interfaces: jsonb().$type<DeviceTemplateInterface[]>().notNull(),
+	cpuCostCores: real(),
+	memoryCostMB: integer(),
 });
 
 export const deviceTemplatesRelations = relations(

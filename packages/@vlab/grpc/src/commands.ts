@@ -164,6 +164,14 @@ export const appRouter = new Router()
 			image: t.String(),
 		}),
 	})
+	.rpc("docker:measureContainerStats", {
+		payload: t.Object({
+			containerId: t.String(),
+		}),
+		replies: {
+			result: t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+		},
+	})
 	.rpc("evaluator:stop", {
 		payload: t.Object({
 			sessionId: t.String(),
