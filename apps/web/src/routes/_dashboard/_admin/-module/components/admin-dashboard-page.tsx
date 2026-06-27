@@ -34,6 +34,8 @@ import {
 import { RadialStatCard } from "../../../-module/components/cards/radial-stat-card";
 import { StatCard } from "../../../-module/components/cards/stat-card";
 import { workerColumns } from "../columns";
+import { useMetricsHistoryStore } from "../stores/metrics-history-store";
+import { MetricsHistoryChart } from "./metrics-history-chart";
 
 function formatMemory(mb: number) {
 	if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`;
@@ -50,6 +52,7 @@ function AdminDashboardPage() {
 	const queryClient = useQueryClient();
 	const { data } = api.dashboard.admin.get.useSuspenseQuery();
 	const user = useAuthStore.use.user();
+	const addDataPoint = useMetricsHistoryStore((s) => s.addDataPoint);
 
 	const connectedWorkers = data.workers.filter((w) => w.status === "online");
 
@@ -128,12 +131,44 @@ function AdminDashboardPage() {
 		handler: (metrics) => {
 			api.dashboard.admin.get.setQueryData(queryClient, (oldData) => {
 				if (!oldData) return oldData;
-				return {
+				const updated = {
 					...oldData,
 					workers: oldData.workers.map((w) =>
 						w.id === metrics.id ? { ...w, ...metrics } : w,
 					),
 				};
+
+				// Derive aggregated percentages and push to history store
+				const online = updated.workers.filter((w) => w.status === "online");
+				const totalCpu = online.reduce((acc, w) => acc + w.cpuCores, 0);
+				const totalMem = online.reduce((acc, w) => acc + w.memoryMB, 0);
+				const totalSto = online.reduce((acc, w) => acc + w.storageMB, 0);
+				const usedCpu = online.reduce(
+					(acc, w) => acc + (w.cpuCores * Number(w.cpuUsagePercent)) / 100,
+					0,
+				);
+				const usedMem = online.reduce(
+					(acc, w) => acc + (w.memoryMB * Number(w.memoryUsagePercent)) / 100,
+					0,
+				);
+				const usedSto = online.reduce(
+					(acc, w) => acc + (w.storageMB * Number(w.storageUsagePercent)) / 100,
+					0,
+				);
+				addDataPoint({
+					timestamp: Date.now(),
+					cpuUsagePercent: totalCpu > 0 ? (usedCpu / totalCpu) * 100 : 0,
+					memoryUsagePercent: totalMem > 0 ? (usedMem / totalMem) * 100 : 0,
+					storageUsagePercent: totalSto > 0 ? (usedSto / totalSto) * 100 : 0,
+					usedCpuCores: usedCpu,
+					totalCpuCores: totalCpu,
+					usedMemoryMB: usedMem,
+					totalMemoryMB: totalMem,
+					usedStorageMB: usedSto,
+					totalStorageMB: totalSto,
+				});
+
+				return updated;
 			});
 		},
 	});
@@ -207,6 +242,8 @@ function AdminDashboardPage() {
 					progressColorHex={getMetricColorHex(storageUsagePercent)}
 				/>
 			</div>
+
+			<MetricsHistoryChart />
 
 			<Card className="border-border/50 bg-card">
 				<CardHeader>
