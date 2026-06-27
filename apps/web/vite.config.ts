@@ -5,7 +5,7 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-const config = defineConfig({
+const config = defineConfig(({ command }) => ({
 	plugins: [
 		devtools(),
 		tsconfigPaths({ projects: ["./tsconfig.json"] }),
@@ -13,6 +13,9 @@ const config = defineConfig({
 		tanstackRouter({ target: "react", autoCodeSplitting: true }),
 		viteReact(),
 	],
+	esbuild: {
+		drop: command === "build" ? ["console", "debugger"] : undefined,
+	},
 	build: {
 		outDir: "../../out/manager/public",
 		emptyOutDir: true,
@@ -24,6 +27,6 @@ const config = defineConfig({
 			"/api": "http://localhost:3000",
 		},
 	},
-});
+}));
 
 export default config;
