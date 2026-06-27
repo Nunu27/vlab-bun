@@ -24,12 +24,16 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 
 	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
 
-	if (!isTemp && !sessionIds.has(resolved.sessionId)) {
+	if (!sessionIds.has(resolved.sessionId)) {
 		const { sessionId, nodeId, name, deviceKind, ...userResolved } = resolved;
-		eventEmitter.emit("session-create", {
-			...(userResolved as unknown as ResolvedMapping<TFullMapping>),
-			id: resolved.sessionId,
-		});
+		eventEmitter.emit(
+			"session-create",
+			{
+				...(userResolved as unknown as ResolvedMapping<TFullMapping>),
+				id: resolved.sessionId,
+			},
+			isTemp,
+		);
 		sessionIds.add(resolved.sessionId);
 	}
 
@@ -90,8 +94,8 @@ async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
 		isTemp,
 	});
 
-	if (!isTemp && sessionIds.has(resolved.sessionId)) {
-		eventEmitter.emit("session-remove", resolved.sessionId);
+	if (sessionIds.has(resolved.sessionId)) {
+		eventEmitter.emit("session-remove", resolved.sessionId, isTemp);
 		sessionIds.delete(resolved.sessionId);
 	}
 
