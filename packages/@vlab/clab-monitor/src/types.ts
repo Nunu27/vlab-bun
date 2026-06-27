@@ -92,8 +92,8 @@ export interface Events<TFullMapping extends FullMappingConstraint> {
 		},
 	];
 	"stale-session": [string];
-	"session-create": [SessionData<TFullMapping>];
-	"session-remove": [string];
+	"session-create": [SessionData<TFullMapping>, boolean];
+	"session-remove": [string, boolean];
 	"node-create": [NodeData<TFullMapping>];
 	"node-remove": [string, boolean];
 	"node-health": [

@@ -91,6 +91,7 @@ export const appRouter = new Router()
 		"monitor:session-create",
 		t.Object({
 			id: t.String(),
+			isTemp: t.Boolean(),
 			...WorkerResolvedFields,
 		}),
 	)
@@ -98,6 +99,7 @@ export const appRouter = new Router()
 		"monitor:session-remove",
 		t.Object({
 			sessionId: t.String(),
+			isTemp: t.Boolean(),
 		}),
 	)
 	.data(

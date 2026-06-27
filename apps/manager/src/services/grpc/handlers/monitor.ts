@@ -24,8 +24,6 @@ export const tempNodeEvents: TypedEventEmitter<TempNodeEvents> =
 const sessionThrottle = new Throttler(1000);
 const interfaceDebounce = new Debouncer(750);
 
-// emitEnrollmentUpdate removed
-
 export async function submitActiveSession(id: string) {
 	const now = new Date();
 	const session = await db.transaction(async (tx) => {
@@ -119,9 +117,7 @@ export function attachMonitorHandlers(
 			if (staleSessions.length) {
 				await db
 					.update(workers)
-					.set({
-						activeLabs: sql`GREATEST(${workers.activeLabs} - ${staleSessions.length}, 0)`,
-					})
+					.set({ activeLabs: sessions.length })
 					.where(eq(workers.id, workerId));
 			}
 
@@ -218,8 +214,8 @@ export function attachMonitorHandlers(
 
 	client.onData("monitor:session-create", {
 		callback: async (event) => {
-			const { id, ownerId, labId, labDue } = event;
-			if (labId && labDue) {
+			const { id, isTemp, ownerId, labId, labDue } = event;
+			if (!isTemp && labId && labDue) {
 				const now = new Date();
 				const dueDate = new Date(Number(labDue));
 				sessionThrottle.run(id, async () => {
@@ -258,20 +254,22 @@ export function attachMonitorHandlers(
 	});
 
 	client.onData("monitor:session-remove", {
-		callback: async ({ sessionId }) => {
+		callback: async ({ sessionId, isTemp }) => {
 			await db
 				.update(workers)
 				.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
 				.where(eq(workers.id, workerId));
 
-			await sessionThrottle.run(sessionId, () =>
-				submitActiveSession(sessionId),
-			);
-			ws.server.emit("lab-session:[sessionId]:ended", {
-				params: { sessionId },
-				data: undefined,
-			});
-			labSessionQueue.remove(sessionId);
+			if (!isTemp) {
+				await sessionThrottle.run(sessionId, () =>
+					submitActiveSession(sessionId),
+				);
+				ws.server.emit("lab-session:[sessionId]:ended", {
+					params: { sessionId },
+					data: undefined,
+				});
+				labSessionQueue.remove(sessionId);
+			}
 		},
 	});
 

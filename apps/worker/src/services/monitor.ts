@@ -4,7 +4,6 @@ import { destroyLab } from "../lib/clab";
 import { clabMonitor } from "../lib/clab-monitor";
 
 export const monitorState = {
-	activeLabs: 0,
 	activeNodes: 0,
 };
 
@@ -16,19 +15,16 @@ export function bindMonitorEvents(server: RpcServer) {
 	});
 
 	emitter.on("snapshot", (snapshot) => {
-		monitorState.activeLabs = snapshot.sessions.length;
 		monitorState.activeNodes = snapshot.nodes.length;
 		server.emit("monitor:snapshot", { data: snapshot });
 	});
 
-	emitter.on("session-create", (session) => {
-		monitorState.activeLabs++;
-		server.emit("monitor:session-create", { data: session });
+	emitter.on("session-create", (session, isTemp) => {
+		server.emit("monitor:session-create", { data: { ...session, isTemp } });
 	});
 
-	emitter.on("session-remove", (sessionId) => {
-		monitorState.activeLabs = Math.max(0, monitorState.activeLabs - 1);
-		server.emit("monitor:session-remove", { data: { sessionId } });
+	emitter.on("session-remove", (sessionId, isTemp) => {
+		server.emit("monitor:session-remove", { data: { sessionId, isTemp } });
 	});
 
 	emitter.on("node-create", (node) => {
