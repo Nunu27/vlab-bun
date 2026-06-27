@@ -1,10 +1,12 @@
 import db from "@manager/db";
 import { students, users } from "@manager/db/schema/auth";
 import env from "@manager/env";
+import logger from "@manager/lib/logger";
 import auth from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import toast from "@manager/services/http/middlewares/toast";
 import { createRouter } from "@manager/services/http/plugins/system";
+import { parseNRP } from "@manager/utils/nrp";
 import { CASResponseSchema } from "@vlab/shared/schemas/cas";
 import { compile } from "elysia/type-system/utils";
 import { XMLParser } from "fast-xml-parser";
@@ -63,6 +65,17 @@ export default createRouter()
 						})
 						.returning({ id: users.id });
 
+					const nrpStr = userInfo.NRP.toString();
+					const parsedNRP = parseNRP(nrpStr);
+
+					if (!parsedNRP) {
+						throw new Error("Invalid NRP");
+					}
+
+					if (userInfo.Jurusan !== parsedNRP.programName) {
+						logger.debug({ userInfo, parsedNRP }, "NRP mismatch");
+					}
+
 					const studyProgram = await tx.query.studyPrograms.findFirst({
 						columns: { id: true },
 						where: ({ name }, { eq }) => eq(name, userInfo.Jurusan),
@@ -72,13 +85,11 @@ export default createRouter()
 						throw new Error("Study program not found");
 					}
 
-					const nrp = userInfo.NRP.toString();
-
 					await tx.insert(students).values({
 						id: user.id,
-						nrp,
-						year: 2000 + parseInt(nrp.substring(2, 4), 10),
-						degreeLevel: "D4",
+						nrp: nrpStr,
+						year: parsedNRP.year,
+						degreeLevel: parsedNRP.degreeLevel,
 						studyProgramId: studyProgram.id,
 					});
 
