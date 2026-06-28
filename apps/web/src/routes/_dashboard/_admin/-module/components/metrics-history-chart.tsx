@@ -13,6 +13,7 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 } from "@web/components/ui/chart";
+import { DownloadIcon } from "lucide-react";
 import { useState } from "react";
 import {
 	CartesianGrid,
@@ -137,6 +138,35 @@ export function MetricsHistoryChart() {
 		right: null,
 	});
 
+	function handleExportCSV() {
+		const headers = [
+			"Timestamp",
+			"CPU Usage (%)",
+			"Memory Usage (%)",
+			"Storage Usage (%)",
+			"Used CPU Cores",
+			"Used Memory (MB)",
+			"Used Storage (MB)",
+		];
+		const rows = history.map((p) => [
+			new Date(p.timestamp).toISOString(),
+			p.cpuUsagePercent.toFixed(2),
+			p.memoryUsagePercent.toFixed(2),
+			p.storageUsagePercent.toFixed(2),
+			p.usedCpuCores.toFixed(2),
+			p.usedMemoryMB.toFixed(2),
+			p.usedStorageMB.toFixed(2),
+		]);
+		const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+		const blob = new Blob([csv], { type: "text/csv" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `metrics-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.csv`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
 	const displayedData: MetricsDataPoint[] =
 		zoomDomain !== null
 			? history.filter(
@@ -185,16 +215,22 @@ export function MetricsHistoryChart() {
 						to 2 hours.
 					</CardDescription>
 				</div>
-				{zoomDomain !== null && (
+				<div className="flex shrink-0 gap-2">
+					{zoomDomain !== null && (
+						<Button variant="outline" size="sm" onClick={handleResetZoom}>
+							Reset Zoom
+						</Button>
+					)}
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={handleResetZoom}
-						className="shrink-0"
+						onClick={handleExportCSV}
+						disabled={history.length === 0}
 					>
-						Reset Zoom
+						<DownloadIcon className="h-3.5 w-3.5" />
+						Export CSV
 					</Button>
-				)}
+				</div>
 			</CardHeader>
 			<CardContent>
 				{history.length === 0 ? (
