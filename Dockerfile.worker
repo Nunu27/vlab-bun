@@ -1,37 +1,9 @@
 # syntax=docker/dockerfile:1.7-labs
 
-ARG CLAB_VERSION=0.75.0
-
-# --- Containerlab Downloader ---
-FROM --platform=$BUILDPLATFORM alpine:3.20 AS clab-downloader
-ARG CLAB_VERSION
-ARG TARGETARCH
-
-RUN apk add --no-cache ca-certificates curl tar
-
-WORKDIR /tmp/containerlab
-
-RUN set -eux; \
-	arch="${TARGETARCH:-}"; \
-	if [ -z "$arch" ]; then \
-		arch="$(uname -m)"; \
-	fi; \
-	case "$arch" in \
-		amd64|x86_64) clab_arch="amd64" ;; \
-		arm64|aarch64) clab_arch="arm64" ;; \
-		*) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
-	esac; \
-	artifact="containerlab_${CLAB_VERSION}_linux_${clab_arch}.tar.gz"; \
-	release_url="https://github.com/srl-labs/containerlab/releases/download/v${CLAB_VERSION}"; \
-	curl -fsSLO "${release_url}/${artifact}"; \
-	curl -fsSLO "${release_url}/checksums.txt"; \
-	grep " ${artifact}$" checksums.txt | sha256sum -c -; \
-	tar -xzf "${artifact}" containerlab; \
-	chmod +x containerlab; \
-	mv containerlab /containerlab
+ARG CLAB_VERSION=0.77.0
 
 # --- Base ---
-FROM oven/bun:1 AS base
+FROM oven/bun:1-alpine AS base
 WORKDIR /app
 
 # --- Dependencies ---
@@ -46,20 +18,12 @@ COPY apps/worker/ ./apps/worker/
 RUN cd apps/worker && bun run build
 
 # --- Runner ---
-FROM debian:bookworm-slim
+FROM ghcr.io/srl-labs/clab:${CLAB_VERSION}
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    iptables \
-    iproute2 \
-    procps \
-    && rm -rf /var/lib/apt/lists/* \
-    && update-alternatives --set iptables /usr/sbin/iptables-legacy \
-    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+RUN apk add --no-cache libstdc++
 
 COPY --from=worker-builder /app/out/worker/app /app/app
-COPY --from=clab-downloader /containerlab /app/containerlab
 
 ENTRYPOINT ["/app/app"]

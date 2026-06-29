@@ -146,12 +146,13 @@ docker run -d \
   -e MANAGER_GRPC_URL="$MANAGER_GRPC_URL" \
   -e GUACD_HOST="$GUACD_VLAB_IP" \
   -e GUACD_IP="$GUACD_IP" \
-  -e CLAB_CLI_PATH=/app/containerlab \
   -e CLAB_TOPOLOGIES_PATH=/app/lab \
   -e CLAB_MGMT_NETWORK="$CLAB_MGMT_NETWORK" \
   -e LOG_LEVEL="$LOG_LEVEL" \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /var/run/docker/netns:/var/run/docker/netns:ro \
+  -v /var/run/netns:/var/run/netns \
+  -v /etc/hosts:/etc/hosts \
+  -v /var/lib/docker/containers:/var/lib/docker/containers \
   -v "$TOPOLOGIES_VOLUME":/app/lab \
   "$WORKER_IMAGE"
 
