@@ -14,7 +14,6 @@ export function SessionSubmitButton({ sessionId }: { sessionId: string }) {
 		onSuccess: () => {
 			toast.success("Session submitted successfully");
 			api.dashboard.invalidateQuery(queryClient);
-			api.lab.invalidateQuery(queryClient);
 		},
 		onError: (err) => {
 			console.error(err);
