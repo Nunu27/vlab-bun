@@ -122,20 +122,23 @@ async function emitInitialState<TFullMapping extends FullMappingConstraint>(
 
 		nodes.push(nodeData);
 
-		if (!isTemp && !sessionIds.has(resolved.sessionId)) {
-			sessionIds.add(resolved.sessionId);
+		if (!isTemp) {
+			const nodeCount = sessionIds.get(resolved.sessionId) ?? 0;
+			sessionIds.set(resolved.sessionId, nodeCount + 1);
 
-			const {
-				sessionId: _si,
-				nodeId: _ni,
-				name: _n,
-				deviceKind: _dkk,
-				...sessionUserResolved
-			} = resolved;
-			sessions.push({
-				...(sessionUserResolved as unknown as ResolvedMapping<TFullMapping>),
-				id: resolved.sessionId,
-			});
+			if (nodeCount === 0) {
+				const {
+					sessionId: _si,
+					nodeId: _ni,
+					name: _n,
+					deviceKind: _dkk,
+					...sessionUserResolved
+				} = resolved;
+				sessions.push({
+					...(sessionUserResolved as unknown as ResolvedMapping<TFullMapping>),
+					id: resolved.sessionId,
+				});
+			}
 		}
 
 		networkMonitor.start(ctx, docker.getContainer(container.Id), nodeInfo);
@@ -153,7 +156,7 @@ async function initMonitoring<TFullMapping extends FullMappingConstraint>(
 	options: Options<TFullMapping>,
 ) {
 	const { docker, logger } = options;
-	const sessionIds = new Set<string>();
+	const sessionIds = new Map<string, number>();
 
 	emitter.on("snapshot", (data) => {
 		for (const node of data.nodes) {

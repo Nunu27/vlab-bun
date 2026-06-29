@@ -25,10 +25,10 @@ export const connectedWorkers = new Map<
 export const DEFAULT_CPU_COST_CORES = 1;
 export const DEFAULT_MEMORY_COST_MB = 1024;
 
-export async function getAvailableWorkerId(
-	cpuCostCores = DEFAULT_CPU_COST_CORES,
-	memoryCostMB = DEFAULT_MEMORY_COST_MB,
-) {
+async function tryGetAvailableWorkerId(
+	cpuCostCores: number,
+	memoryCostMB: number,
+): Promise<string | null> {
 	return await db.transaction(async (tx) => {
 		const [selected] = await tx
 			.select({ id: workers.id })
@@ -45,9 +45,7 @@ export async function getAvailableWorkerId(
 			.for("update", { skipLocked: true });
 
 		if (!selected) {
-			throw new Error(
-				"No workers available. All workers are offline or at capacity.",
-			);
+			return null;
 		}
 
 		await tx
@@ -57,6 +55,45 @@ export async function getAvailableWorkerId(
 
 		return selected.id;
 	});
+}
+
+export type WaitForWorkerOptions = {
+	timeoutMs?: number;
+	initialDelayMs?: number;
+	maxDelayMs?: number;
+	backoffFactor?: number;
+	onWait?: (attempt: number, delayMs: number) => void;
+};
+
+export async function waitForAvailableWorkerId(
+	cpuCostCores = DEFAULT_CPU_COST_CORES,
+	memoryCostMB = DEFAULT_MEMORY_COST_MB,
+	options?: WaitForWorkerOptions,
+): Promise<string> {
+	const timeoutMs = options?.timeoutMs ?? 30_000;
+	const initialDelayMs = options?.initialDelayMs ?? 500;
+	const maxDelayMs = options?.maxDelayMs ?? 5_000;
+	const backoffFactor = options?.backoffFactor ?? 1.5;
+
+	const startTime = Date.now();
+	let currentDelayMs = initialDelayMs;
+	let attempt = 1;
+
+	while (Date.now() - startTime < timeoutMs) {
+		const workerId = await tryGetAvailableWorkerId(cpuCostCores, memoryCostMB);
+		if (workerId) return workerId;
+
+		options?.onWait?.(attempt, currentDelayMs);
+
+		await new Promise((resolve) => setTimeout(resolve, currentDelayMs));
+
+		currentDelayMs = Math.min(currentDelayMs * backoffFactor, maxDelayMs);
+		attempt++;
+	}
+
+	throw new Error(
+		`No workers available after ${timeoutMs}ms. All workers are offline or at capacity.`,
+	);
 }
 
 export async function resetStaleWorkers() {

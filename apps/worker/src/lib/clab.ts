@@ -120,9 +120,16 @@ export async function deployLab(
 	return clab.deploy(sessionId, topologyContent);
 }
 
+export const destroyingSessions = new Set<string>();
+
 export async function destroyLab(sessionId: string) {
-	await stopLabEvaluation(sessionId, { immediate: true });
-	return clab.destroy(sessionId);
+	destroyingSessions.add(sessionId);
+	try {
+		await stopLabEvaluation(sessionId, { immediate: true });
+		return await clab.destroy(sessionId);
+	} finally {
+		destroyingSessions.delete(sessionId);
+	}
 }
 
 export async function checkPrerequisites() {
