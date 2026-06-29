@@ -1,11 +1,13 @@
 import evaluator from "@vlab/evaluator";
 import type { RpcServer } from "../handlers/server";
-import { destroyLab } from "../lib/clab";
+import { destroyingSessions, destroyLab } from "../lib/clab";
 import { clabMonitor } from "../lib/clab-monitor";
 
 export const monitorState = {
 	activeNodes: 0,
 };
+
+const nodeSessionMap = new Map<string, string>();
 
 export function bindMonitorEvents(server: RpcServer) {
 	const { emitter, init } = clabMonitor;
@@ -16,6 +18,9 @@ export function bindMonitorEvents(server: RpcServer) {
 
 	emitter.on("snapshot", (snapshot) => {
 		monitorState.activeNodes = snapshot.nodes.length;
+		for (const node of snapshot.nodes) {
+			nodeSessionMap.set(node.id, node.labSessionId);
+		}
 		server.emit("monitor:snapshot", { data: snapshot });
 	});
 
@@ -29,11 +34,21 @@ export function bindMonitorEvents(server: RpcServer) {
 
 	emitter.on("node-create", (node) => {
 		monitorState.activeNodes++;
+		nodeSessionMap.set(node.id, node.labSessionId);
 		server.emit("monitor:node-create", { data: node });
 	});
 
 	emitter.on("node-remove", (id, isTemp) => {
 		monitorState.activeNodes = Math.max(0, monitorState.activeNodes - 1);
+
+		const sessionId = nodeSessionMap.get(id);
+		nodeSessionMap.delete(id);
+
+		// If a non-temp node dies outside of an intentional destroy, tear down the whole session
+		if (!isTemp && sessionId && !destroyingSessions.has(sessionId)) {
+			destroyLab(sessionId).catch(console.error);
+		}
+
 		server.emit("monitor:node-remove", { data: { id, isTemp } });
 	});
 

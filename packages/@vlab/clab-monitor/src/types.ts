@@ -118,7 +118,7 @@ export interface BaseContext {
 	docker: Dockerode;
 	logger: Pick<Logger, "info" | "error" | "debug" | "warn">;
 	nodeInterfaceMap: Map<string, Record<string, string[]>>;
-	sessionIds: Set<string>;
+	sessionIds: Map<string, number>;
 	emitInterfaceUpdate: (
 		data: {
 			id: string;
