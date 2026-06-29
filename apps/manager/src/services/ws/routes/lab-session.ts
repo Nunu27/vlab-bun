@@ -3,7 +3,7 @@ import { deviceTemplates, labSessions } from "@manager/db/schema";
 import {
 	DEFAULT_CPU_COST_CORES,
 	DEFAULT_MEMORY_COST_MB,
-	getAvailableWorkerId,
+	waitForAvailableWorkerId,
 } from "@manager/services/grpc";
 import { workerActions } from "@manager/services/worker-actions";
 import ws from "@manager/services/ws";
@@ -11,7 +11,7 @@ import { eq, inArray } from "drizzle-orm";
 
 ws.server.on(
 	"lab:[id]:init",
-	async ({ params: { id }, context, connectionId, requestId }) => {
+	async ({ params: { id }, context, connectionId, requestId, reply }) => {
 		const userId = context.session.id;
 
 		const lab = await db.query.labs.findFirst({
@@ -44,9 +44,19 @@ ws.server.on(
 			}
 		}
 
-		const workerId = await getAvailableWorkerId(
+		const workerId = await waitForAvailableWorkerId(
 			totalCpuCost || DEFAULT_CPU_COST_CORES,
 			totalMemoryCost || DEFAULT_MEMORY_COST_MB,
+			{
+				onWait: (attempt) => {
+					if (attempt === 1) {
+						reply(
+							"info",
+							"High demand: waiting for an available worker node...",
+						);
+					}
+				},
+			},
 		);
 
 		await workerActions.dispatch("lab:initSession", workerId, {

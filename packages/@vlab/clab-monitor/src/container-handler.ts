@@ -24,7 +24,9 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 
 	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
 
-	if (!sessionIds.has(resolved.sessionId)) {
+	const nodeCount = sessionIds.get(resolved.sessionId) ?? 0;
+	sessionIds.set(resolved.sessionId, nodeCount + 1);
+	if (nodeCount === 0) {
 		const { sessionId, nodeId, name, deviceKind, ...userResolved } = resolved;
 		eventEmitter.emit(
 			"session-create",
@@ -34,7 +36,6 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 			},
 			isTemp,
 		);
-		sessionIds.add(resolved.sessionId);
 	}
 
 	const container = docker.getContainer(ID);
@@ -94,9 +95,12 @@ async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
 		isTemp,
 	});
 
-	if (sessionIds.has(resolved.sessionId)) {
-		eventEmitter.emit("session-remove", resolved.sessionId, isTemp);
+	const remaining = (sessionIds.get(resolved.sessionId) ?? 1) - 1;
+	if (remaining <= 0) {
 		sessionIds.delete(resolved.sessionId);
+		eventEmitter.emit("session-remove", resolved.sessionId, isTemp);
+	} else {
+		sessionIds.set(resolved.sessionId, remaining);
 	}
 
 	eventEmitter.emit("node-remove", resolved.nodeId, isTemp);

@@ -1,5 +1,5 @@
 import redis from "@manager/lib/redis";
-import { getAvailableWorkerId } from "@manager/services/grpc";
+import { waitForAvailableWorkerId } from "@manager/services/grpc";
 import { workerActions } from "@manager/services/worker-actions";
 import ws from "@manager/services/ws";
 
@@ -8,7 +8,7 @@ const PREFIX = "test-lab-worker:";
 ws.server.on(
 	"device-template:test",
 	async ({ connectionId, requestId, payload, context }) => {
-		const workerId = await getAvailableWorkerId();
+		const workerId = await waitForAvailableWorkerId();
 		await redis.client.set(`${PREFIX}${requestId}`, workerId);
 
 		await workerActions.dispatch("device:testInit", workerId, {
