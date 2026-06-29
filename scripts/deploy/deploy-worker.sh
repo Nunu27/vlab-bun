@@ -102,23 +102,20 @@ $DOCKER_CMD run -d \
   linuxserver/guacd:latest >/dev/null
 
 info "Starting vLab Worker..."
-KVM_FLAG=""
-if [ -e /dev/kvm ]; then
-  KVM_FLAG="--device /dev/kvm"
-else
-  warn "KVM (/dev/kvm) not found — VM-based nodes (e.g. mikrotik_ros) will not work on this host."
-fi
+info "Preparing /proc/2/status override for containerlab container detection..."
+mkdir -p /var/run/vlab && echo "Name: container_init" > /var/run/vlab/proc2-status \
+  || warn "Could not write /var/run/vlab/proc2-status — containerlab KVM check may fail on ARM64."
 
 $DOCKER_CMD run -d \
   --name vlab-worker \
   --privileged \
   --pid host \
+  -v /var/run/vlab/proc2-status:/proc/2/status:ro \
   --network clab-mgmt \
   --env-file "$WORKER_ENV_FILE" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /var/run/docker/netns:/var/run/docker/netns:ro \
   -v vlab-topologies:/app/lab \
-  $KVM_FLAG \
   --restart unless-stopped \
   ghcr.io/nunu27/vlab-bun-worker:latest >/dev/null
 

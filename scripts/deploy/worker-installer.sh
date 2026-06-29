@@ -117,10 +117,29 @@ docker rm -f "$WORKER_CONTAINER" 2>/dev/null || true
 # 7 — Start the worker on clab-mgmt (--privileged lets containerlab write
 #     to /proc/sys/net/ipv4/conf/all/rp_filter in its own network namespace)
 # =============================================================================
+# 7a — Ensure containerlab detects a container environment inside the worker.
+#      With --pid host the worker shares the host PID namespace, so /proc/2
+#      inside the worker is the host's kthreadd. containerlab's VerifyVirtSupport
+#      sees kthreadd → treats the worker as bare metal → checks /proc/cpuinfo
+#      for x86-only vmx/svm flags → always fails on ARM64.
+#      We bind-mount a synthetic /proc/2/status that omits "kthreadd", which
+#      makes containerlab believe it is in a container and skip the check
+#      entirely. This is correct — the worker IS a container. On x86 with real
+#      KVM this is a harmless no-op since vrnetlab still detects /dev/kvm
+#      independently at runtime.
+# =============================================================================
+log "Preparing /proc/2/status override for containerlab container detection..."
+docker run --rm --privileged -v /:/host alpine \
+  sh -c 'mkdir -p /host/var/run/vlab && echo "Name: container_init" > /host/var/run/vlab/proc2-status' 2>/dev/null \
+  || log "WARNING: Could not write /var/run/vlab/proc2-status — containerlab KVM check may fail on ARM64."
+
+# =============================================================================
 log "Starting worker container..."
 docker run -d \
   --name "$WORKER_CONTAINER" \
   --privileged \
+  --pid host \
+  -v /var/run/vlab/proc2-status:/proc/2/status:ro \
   --network "$CLAB_MGMT_NETWORK" \
   -e NODE_ENV=production \
   -e WORKER_ID="$WORKER_ID" \
