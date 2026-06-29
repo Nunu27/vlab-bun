@@ -239,7 +239,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "route-exist",
 		name: "Route Exist",
-		text: "Should have route to {dst} through {gateway}",
+		text: "Route to {dst} should be configured",
 		source: "routing-table",
 		params: {
 			dst: t.String({
@@ -334,7 +334,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-instance-exist",
 		name: "OSPF Instance Exist",
-		text: "Should have OSPF instance named {name} with router id {routerId}",
+		text: "OSPF instance '{name}' should have Router ID {routerId}",
 		source: "ospf-instance",
 		params: {
 			name: t.String({
@@ -428,7 +428,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-area-exist",
 		name: "OSPF Area Exist",
-		text: "Should have OSPF area named {name} in instance {instance}",
+		text: "OSPF area '{name}' should exist in instance {instance}",
 		source: "ospf-area",
 		params: {
 			name: t.String({
@@ -488,9 +488,6 @@ export default new EvaluationHandler("mikrotik")
 
 			listener.on("data", () => doUpdate());
 
-			// Initial evaluation
-			doUpdate();
-
 			return listener.cancel;
 		},
 		read: async ({ client }) => {
@@ -500,7 +497,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-interface-template-exist",
 		name: "OSPF Interface Template Exist",
-		text: "Should have OSPF interface template with interfaces {interfaces} in area {area}",
+		text: "Interface {interfaces} should be assigned to OSPF area {area}",
 		source: "ospf-interface-template",
 		params: {
 			interfaces: t.String({
@@ -533,7 +530,7 @@ export default new EvaluationHandler("mikrotik")
 
 			return data.some((template) => {
 				return (
-					template.interfaces === params.interfaces &&
+					template.interfaces.includes(params.interfaces) &&
 					template.area === params.area &&
 					(!params.type || template.type === params.type) &&
 					(!params.passive ||
@@ -584,7 +581,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-neighbor-exist",
 		name: "OSPF Neighbor Exist",
-		text: "Should have {interface} as OSPF neighbor in area {area} with state {state}",
+		text: "OSPF neighbor on {interface} should be in {state} state",
 		source: "ospf-neighbor",
 		params: {
 			area: t.Optional(
@@ -647,7 +644,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "rip-instance-exist",
 		name: "RIP Instance Exist",
-		text: "Should have RIP instance named {name}",
+		text: "RIP instance '{name}' should be configured",
 		source: "rip-instance",
 		params: {
 			name: t.String({
@@ -717,7 +714,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "rip-interface-template-exist",
 		name: "RIP Interface Template Exist",
-		text: "Should have RIP interface template with interfaces {interfaces} in instance {instance}",
+		text: "RIP should be enabled on interface {interfaces} for instance {instance}",
 		source: "rip-interface-template",
 		params: {
 			instance: t.String({
@@ -782,7 +779,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "bgp-instance-exist",
 		name: "BGP Instance Exist",
-		text: "Should have BGP instance named {name} with router id {routerId}",
+		text: "BGP instance '{name}' should have Router ID {routerId}",
 		source: "bgp-instance",
 		params: {
 			name: t.String({
@@ -851,7 +848,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "bgp-connection-exist",
 		name: "BGP Connection Exist",
-		text: "Should have BGP connection named {name}",
+		text: "BGP connection '{name}' should be configured",
 		source: "bgp-connection",
 		params: {
 			name: t.String({
@@ -962,7 +959,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "system-identity",
 		name: "System Identity",
-		text: "Should have identity {name}",
+		text: "System identity should be set to '{name}'",
 		source: "system-identity",
 		params: {
 			name: t.String({
@@ -1008,7 +1005,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "user-exist",
 		name: "User Exist",
-		text: "Should have user {username}",
+		text: "User '{username}' should exist",
 		source: "users",
 		params: {
 			username: t.String({

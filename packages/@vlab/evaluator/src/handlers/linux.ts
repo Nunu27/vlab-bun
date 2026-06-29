@@ -377,7 +377,7 @@ export default new EvaluationHandler("linux")
 	.addCheck({
 		id: "route-exist",
 		name: "Route Exist",
-		text: "Should have route to {dst} through {gateway}",
+		text: "Route to {dst} via {gateway} should be configured",
 		source: "routing",
 		params: {
 			dst: t.String({
@@ -462,7 +462,7 @@ export default new EvaluationHandler("linux")
 	.addCheck({
 		id: "user-exist",
 		name: "User Exist",
-		text: "Should have user {username}",
+		text: "User '{username}' should exist",
 		source: "users",
 		params: {
 			username: t.String({
