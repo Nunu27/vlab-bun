@@ -1,5 +1,5 @@
 import db from "@manager/db";
-import { workers } from "@manager/db/schema";
+import { labSessions, workers } from "@manager/db/schema";
 import { sendCommandToWorker } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
 import type { LabLink, LabNode } from "@manager/types/clab";
@@ -126,16 +126,25 @@ export async function handleInitLabSession(
 			lab.endAt.getTime(),
 		);
 
-		await sendCommandToWorker(workerId, "clab:deployLab", {
-			sessionId: sessionId,
-			config: {
-				labId: labId,
-				ownerId: userId,
-				nodes,
-				links,
-				dueDate,
-			},
-		});
+		try {
+			await sendCommandToWorker(workerId, "clab:deployLab", {
+				sessionId: sessionId,
+				config: {
+					labId: labId,
+					ownerId: userId,
+					nodes,
+					links,
+					dueDate,
+				},
+			});
+		} catch (deployError) {
+			// Delete any session record the monitor may have created for the partial deployment
+			await db
+				.delete(labSessions)
+				.where(eq(labSessions.id, sessionId))
+				.catch(() => {});
+			throw deployError;
+		}
 
 		reply("info", "Lab provisioned successfully.");
 		ws.server.replyResponse("lab:[id]:init", payload.requestId, sessionId);
