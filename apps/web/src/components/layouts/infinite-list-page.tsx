@@ -15,6 +15,7 @@ interface InfiniteListPageProps<T> {
 		isFetching: boolean;
 	};
 	renderItem: (item: T, index: number) => ReactNode;
+	renderEmpty?: () => ReactNode;
 	listClassName?: string;
 }
 
@@ -27,6 +28,7 @@ export function InfiniteListPage<T>({
 	filters,
 	list,
 	renderItem,
+	renderEmpty,
 	listClassName = "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
 }: InfiniteListPageProps<T>) {
 	return (
@@ -44,6 +46,7 @@ export function InfiniteListPage<T>({
 				{...list}
 				className={listClassName}
 				renderItem={renderItem}
+				renderEmpty={renderEmpty}
 			/>
 		</div>
 	);
