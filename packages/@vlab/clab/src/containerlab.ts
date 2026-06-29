@@ -127,6 +127,9 @@ export class Containerlab {
 				...buildDeployArgs(options),
 			]);
 		} catch (error) {
+			// Destroy any partially-deployed containers before re-throwing
+			await this.destroy(id).catch(() => {});
+
 			if (error instanceof ContainerlabCommandError) {
 				const kvmMatch = error.stderr.match(
 					/Cpu virtualization support is required for node "([^"]+)" \(([^)]+)\)/,
