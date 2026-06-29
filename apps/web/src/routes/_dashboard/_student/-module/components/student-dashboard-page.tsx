@@ -53,6 +53,9 @@ function StudentDashboardPage() {
 										<BookOpenIcon className="h-6 w-6 text-muted-foreground" />
 									</EmptyMedia>
 									<EmptyTitle>You haven't enrolled in any labs yet</EmptyTitle>
+									<Button className="mt-4" asChild>
+										<Link to="/lab/browse">Browse Labs</Link>
+									</Button>
 								</EmptyContent>
 							</Empty>
 						</CardContent>
