@@ -1,8 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ListFilterSelect } from "@web/components/infinite-list";
 import { InfiniteListPage } from "@web/components/layouts/infinite-list-page";
+import { Button } from "@web/components/ui/button";
+import {
+	Empty,
+	EmptyContent,
+	EmptyMedia,
+	EmptyTitle,
+} from "@web/components/ui/empty";
 import { useApiInfiniteList } from "@web/hooks/pagination/use-api-infinite-list";
 import api from "@web/lib/api";
+import { BookOpenIcon } from "lucide-react";
 import { useState } from "react";
 import { LabCard } from "./-module/components/lab-card";
 
@@ -38,6 +46,19 @@ function RouteComponent() {
 			searchPlaceholder="Search enrolled labs..."
 			list={list}
 			renderItem={(lab) => <LabCard key={lab.id} lab={lab} />}
+			renderEmpty={() => (
+				<Empty className="border-0 py-16">
+					<EmptyContent>
+						<EmptyMedia variant="icon">
+							<BookOpenIcon className="h-6 w-6 text-muted-foreground" />
+						</EmptyMedia>
+						<EmptyTitle>You haven't enrolled in any labs yet</EmptyTitle>
+						<Button className="mt-4" asChild>
+							<Link to="/lab/browse">Browse Labs</Link>
+						</Button>
+					</EmptyContent>
+				</Empty>
+			)}
 			filters={
 				<ListFilterSelect
 					value={orderBy}
