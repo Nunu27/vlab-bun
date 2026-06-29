@@ -116,30 +116,15 @@ docker rm -f "$WORKER_CONTAINER" 2>/dev/null || true
 # =============================================================================
 # 7 — Start the worker on clab-mgmt (--privileged lets containerlab write
 #     to /proc/sys/net/ipv4/conf/all/rp_filter in its own network namespace)
-# =============================================================================
-# 7a — Ensure containerlab detects a container environment inside the worker.
-#      With --pid host the worker shares the host PID namespace, so /proc/2
-#      inside the worker is the host's kthreadd. containerlab's VerifyVirtSupport
-#      sees kthreadd → treats the worker as bare metal → checks /proc/cpuinfo
-#      for x86-only vmx/svm flags → always fails on ARM64.
-#      We bind-mount a synthetic /proc/2/status that omits "kthreadd", which
-#      makes containerlab believe it is in a container and skip the check
-#      entirely. This is correct — the worker IS a container. On x86 with real
-#      KVM this is a harmless no-op since vrnetlab still detects /dev/kvm
-#      independently at runtime.
-# =============================================================================
-log "Preparing /proc/2/status override for containerlab container detection..."
-docker run --rm --privileged -v /:/host alpine \
-  sh -c 'mkdir -p /host/var/run/vlab && echo "Name: container_init" > /host/var/run/vlab/proc2-status' 2>/dev/null \
-  || log "WARNING: Could not write /var/run/vlab/proc2-status — containerlab KVM check may fail on ARM64."
-
+#     --pid host lets containerlab reach sibling container network namespaces
+#     via /proc/<pid>/ns/net. The /proc/2 detection shim (step 7b) is applied
+#     post-start via docker exec, bypassing runc's pre-start proc-safety check.
 # =============================================================================
 log "Starting worker container..."
 docker run -d \
   --name "$WORKER_CONTAINER" \
   --privileged \
   --pid host \
-  -v /var/run/vlab/proc2-status:/proc/2/status:ro \
   --network "$CLAB_MGMT_NETWORK" \
   -e NODE_ENV=production \
   -e WORKER_ID="$WORKER_ID" \
@@ -159,6 +144,24 @@ docker run -d \
 # Connect worker to vlab-network so it can reach the manager VIP
 log "Connecting worker to $VLAB_NETWORK..."
 docker network connect "$VLAB_NETWORK" "$WORKER_CONTAINER"
+
+# =============================================================================
+# 7b — Apply /proc/2 shim for containerlab container detection on ARM64.
+#      runc's proc-safety check blocks bind mounts into /proc at container
+#      start time, but the same mount succeeds post-start via docker exec
+#      because it goes directly to the kernel syscall. The kernel only
+#      restricts namespace files (/proc/*/ns/*), not regular proc directories.
+#      Result: containerlab reads "Name: container_init" from /proc/2/status
+#      and skips the KVM/cpuinfo check entirely — on both x86 and ARM64.
+# =============================================================================
+log "Applying /proc/2 containerlab detection shim..."
+if docker exec "$WORKER_CONTAINER" sh -c \
+  'mkdir -p /tmp/vlab-proc2 && echo "Name: container_init" > /tmp/vlab-proc2/status && mount --bind /tmp/vlab-proc2 /proc/2' \
+  2>/dev/null; then
+  log "/proc/2 shim applied — containerlab will skip KVM check."
+else
+  log "WARNING: /proc/2 shim failed — containerlab KVM check will run (may fail on ARM64)."
+fi
 
 log "Worker started. Monitoring (docker wait)..."
 
