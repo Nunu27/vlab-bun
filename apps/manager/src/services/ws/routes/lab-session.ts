@@ -1,5 +1,5 @@
 import db from "@manager/db";
-import { deviceTemplates, labSessions } from "@manager/db/schema";
+import { labSessions } from "@manager/db/schema";
 import {
 	DEFAULT_CPU_COST_CORES,
 	DEFAULT_MEMORY_COST_MB,
@@ -7,42 +7,123 @@ import {
 } from "@manager/services/grpc";
 import { workerActions } from "@manager/services/worker-actions";
 import ws from "@manager/services/ws";
-import { eq, inArray } from "drizzle-orm";
+import type { LabLink, LabNode } from "@manager/types/clab";
+import { eq } from "drizzle-orm";
 
 ws.server.on(
 	"lab:[id]:init",
-	async ({ params: { id }, context, connectionId, requestId, reply }) => {
+	async ({ params: { id: labId }, context, requestId, reply }) => {
 		const userId = context.session.id;
 
+		reply("info", "Getting lab configuration...");
+
 		const lab = await db.query.labs.findFirst({
-			columns: { topology: true },
-			where: (l, { eq }) => eq(l.id, id),
+			columns: {
+				isPublished: true,
+				topology: true,
+				maxAttempt: true,
+				sessionDuration: true,
+				startAt: true,
+				endAt: true,
+			},
+			where: (l, { eq }) => eq(l.id, labId),
+			with: {
+				enrollments: {
+					columns: { labId: true },
+					where: (enrollment, { eq }) => eq(enrollment.studentId, userId),
+				},
+				sessions: {
+					columns: { id: true, submittedAt: true },
+					where: (session, { eq }) => eq(session.studentId, userId),
+				},
+			},
+		});
+
+		if (!lab) throw new Error("Lab not found");
+		if (!lab.isPublished) throw new Error("Lab is not published");
+		if (!lab.enrollments.length) throw new Error("Not enrolled");
+
+		const now = Date.now();
+		if (now < lab.startAt.getTime()) throw new Error("Lab has not started yet");
+		if (now >= lab.endAt.getTime()) throw new Error("Lab has ended");
+
+		const existingSession = lab.sessions.find(
+			({ submittedAt }) => !submittedAt,
+		);
+
+		// No worker has been reserved yet at this point, so we can return early
+		// here for free without leaking a worker's activeLabs slot.
+		if (existingSession) return existingSession.id;
+		if (lab.maxAttempt && lab.sessions.length >= lab.maxAttempt) {
+			throw new Error("Max attempts reached");
+		}
+
+		reply("info", "Building lab configuration...");
+
+		const devices = Object.entries(lab.topology.devices);
+		const deviceIds = new Set(devices.map(([_, { deviceId }]) => deviceId));
+		if (!deviceIds.size) throw new Error("No devices in lab topology");
+
+		const templates = await db.query.deviceTemplates.findMany({
+			where: (template, { inArray }) =>
+				inArray(template.id, Array.from(deviceIds)),
+		});
+		const templatesMap = new Map(templates.map((d) => [d.id, d]));
+
+		const nodes: LabNode[] = devices.map(([id, device]) => {
+			const template = templatesMap.get(device.deviceId);
+			if (!template) {
+				throw new Error(`Device template not found for ${device.deviceId}`);
+			}
+
+			return {
+				id: Bun.randomUUIDv7(),
+				labNodeId: id,
+				name: device.name,
+				kind: template.kind,
+				image: template.image,
+				env: template.env,
+				resources: {
+					cpu: device.resources?.cpu || template.resources.cpu,
+					memory: device.resources?.memory || template.resources.memory,
+				},
+				credentials: {
+					username:
+						device.credentials?.username || template.connection.data.username,
+					password:
+						device.credentials?.password || template.connection.data.password,
+				},
+				deviceId: device.deviceId,
+			};
+		});
+
+		const links: LabLink[] = [];
+
+		Object.values(lab.topology.edges).forEach(([source, target]) => {
+			links.push({
+				sourceId: source.deviceId,
+				sourceInterface: source.interface,
+				targetId: target.deviceId,
+				targetInterface: target.interface,
+			});
 		});
 
 		let totalCpuCost = 0;
 		let totalMemoryCost = 0;
-
-		if (lab) {
-			const deviceIds = [
-				...new Set(Object.values(lab.topology.devices).map((d) => d.deviceId)),
-			];
-			const templates = await db
-				.select({
-					id: deviceTemplates.id,
-					cpuCostCores: deviceTemplates.cpuCostCores,
-					memoryCostMB: deviceTemplates.memoryCostMB,
-				})
-				.from(deviceTemplates)
-				.where(inArray(deviceTemplates.id, deviceIds));
-
-			const costMap = new Map(templates.map((t) => [t.id, t]));
-
-			for (const device of Object.values(lab.topology.devices)) {
-				const tmpl = costMap.get(device.deviceId);
-				totalCpuCost += tmpl?.cpuCostCores ?? DEFAULT_CPU_COST_CORES;
-				totalMemoryCost += tmpl?.memoryCostMB ?? DEFAULT_MEMORY_COST_MB;
-			}
+		for (const device of Object.values(lab.topology.devices)) {
+			const tmpl = templatesMap.get(device.deviceId);
+			totalCpuCost += tmpl?.cpuCostCores ?? DEFAULT_CPU_COST_CORES;
+			totalMemoryCost += tmpl?.memoryCostMB ?? DEFAULT_MEMORY_COST_MB;
 		}
+
+		reply("info", "Provisioning lab...");
+
+		const sessionDurationMs = lab.sessionDuration * 60 * 1000;
+		const dueDate = Math.min(
+			Date.now() + sessionDurationMs,
+			lab.endAt.getTime(),
+		);
+		const sessionId = Bun.randomUUIDv7();
 
 		const workerId = await waitForAvailableWorkerId(
 			totalCpuCost || DEFAULT_CPU_COST_CORES,
@@ -60,10 +141,13 @@ ws.server.on(
 		);
 
 		await workerActions.dispatch("lab:initSession", workerId, {
-			connectionId,
 			requestId,
-			labId: id,
+			sessionId,
+			labId,
 			userId,
+			nodes,
+			links,
+			dueDate,
 		});
 
 		return ws.server.defer;
