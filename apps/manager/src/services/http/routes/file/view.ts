@@ -17,7 +17,9 @@ export default createRouter()
 	.use(auth)
 	.get(
 		"/:name",
-		async ({ params: { name }, status }) => {
+		async ({ session, params: { name }, status }) => {
+			if (!session.data) return status(401);
+
 			const res = await storage.getObjectResponse(name);
 			if (!res?.ok) return status(404);
 
@@ -47,5 +49,5 @@ export default createRouter()
 
 			return response;
 		},
-		{ protected: true },
+		{ auth: true },
 	);
