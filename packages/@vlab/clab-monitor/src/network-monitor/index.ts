@@ -35,12 +35,27 @@ export default {
 			);
 		}
 
-		const cancel = ctx.waitForHealth(node.id, async () => {
-			handler.start(ctx, container, node);
-			waiters.delete(node.id);
-		});
+		const startWaiting = () => {
+			const cancel = ctx.waitForHealth(
+				node.id,
+				async () => {
+					handler.start(ctx, container, node);
+					waiters.delete(node.id);
+				},
+				undefined,
+				() => {
+					logger.warn(
+						"Node %s did not become healthy in time, retrying wait...",
+						node.id,
+					);
+					startWaiting();
+				},
+			);
 
-		waiters.set(node.id, cancel);
+			waiters.set(node.id, cancel);
+		};
+
+		startWaiting();
 	},
 	stop(ctx, node) {
 		const { logger } = ctx;
