@@ -49,6 +49,7 @@ export const useGuacamoleMouse = ({
 
 		const handleMouseDown = (e: MouseEvent) => {
 			e.preventDefault();
+			containerRef.current?.focus();
 			sendMouseState(e.clientX, e.clientY, e.buttons);
 		};
 
