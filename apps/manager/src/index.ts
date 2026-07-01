@@ -21,6 +21,11 @@ const commands: Record<string, () => Promise<void>> = {
 		const { runResetSessions } = await import("./commands/reset-sessions");
 		await runResetSessions();
 	},
+	"clear-sessions": async () => {
+		const { runClearSessions } = await import("./commands/clear-sessions");
+		const nrp = process.argv[3];
+		await runClearSessions(nrp);
+	},
 	"sync-modules": async () => {
 		const { runSyncModules } = await import("./commands/sync-modules");
 		await runSyncModules();
@@ -44,6 +49,9 @@ if (!handler) {
 	);
 	console.error(
 		"  bun run src/index.ts reset-sessions  Clear all lab sessions from the database",
+	);
+	console.error(
+		"  bun run src/index.ts clear-sessions [nrp]  Clear submitted lab sessions, optionally by NRP",
 	);
 	console.error(
 		"  bun run src/index.ts sync-modules    Sync lab modules from docs/modules to the database",
