@@ -48,9 +48,9 @@ const GuacamoleConnection: React.FC<GuacamoleConnectionProps> = ({
 		isConnected,
 	});
 
-	useGuacamoleKeyboard({ clientRef, isConnected });
+	useGuacamoleKeyboard({ clientRef, containerRef, isConnected });
 
-	useGuacamoleClipboard({ clientRef });
+	useGuacamoleClipboard({ clientRef, isConnected });
 
 	useEffect(() => {
 		if (state === "connected") {
