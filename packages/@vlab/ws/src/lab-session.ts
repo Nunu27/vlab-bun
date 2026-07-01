@@ -7,6 +7,7 @@ export const labSessionRouter = new Router<WSMeta>()
 		payload: t.Optional(t.Any()),
 		replies: {
 			info: t.String(),
+			warn: t.String(),
 		},
 		response: t.String(),
 		meta: { private: ["student"] },
