@@ -116,8 +116,6 @@ ws.server.on(
 			totalMemoryCost += tmpl?.memoryCostMB ?? DEFAULT_MEMORY_COST_MB;
 		}
 
-		reply("info", "Provisioning lab...");
-
 		const sessionDurationMs = lab.sessionDuration * 60 * 1000;
 		const dueDate = Math.min(
 			Date.now() + sessionDurationMs,
@@ -132,13 +130,15 @@ ws.server.on(
 				onWait: (attempt) => {
 					if (attempt === 1) {
 						reply(
-							"info",
+							"warn",
 							"High demand: waiting for an available worker node...",
 						);
 					}
 				},
 			},
 		);
+
+		reply("info", "Provisioning lab...");
 
 		await workerActions.dispatch("lab:initSession", workerId, {
 			requestId,

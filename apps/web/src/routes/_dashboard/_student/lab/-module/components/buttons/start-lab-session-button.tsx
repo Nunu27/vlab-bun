@@ -102,6 +102,9 @@ export function StartLabSessionButton({
 				info: (msg) => {
 					return setLogs((prev) => [...prev, { type: "info", message: msg }]);
 				},
+				warn: (msg) => {
+					return setLogs((prev) => [...prev, { type: "warn", message: msg }]);
+				},
 			},
 		});
 	};
