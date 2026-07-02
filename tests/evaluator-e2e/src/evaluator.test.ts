@@ -244,17 +244,9 @@ describe("Evaluator E2E", () => {
 			}
 		}
 
-		await new Promise<void>((resolve) =>
-			clabMonitor.waitForHealth("router1", resolve),
-		);
-
-		await new Promise<void>((resolve) =>
-			clabMonitor.waitForHealth("router2", resolve),
-		);
-
-		await new Promise<void>((resolve) =>
-			clabMonitor.waitForHealth("linux1", resolve),
-		);
+		await clabMonitor.waitForHealth("router1");
+		await clabMonitor.waitForHealth("router2");
+		await clabMonitor.waitForHealth("linux1");
 
 		router1Client = new RouterOSClient(nodeMap.router1?.ip || "");
 		await connectWithRetry(router1Client);

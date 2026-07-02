@@ -1,0 +1,153 @@
+{
+	"nodes": [
+		{
+			"id": "docs_deployment_manual_manual_deployment",
+			"label": "Manual Deployment Guide",
+			"file_type": "document",
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_manual_dynamic_guacd_routing",
+			"label": "Dynamic Guacd Routing",
+			"file_type": "concept",
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_manual_network_requirements",
+			"label": "Manual Deployment Network/Firewall Requirements",
+			"file_type": "concept",
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_manual_deploy_manager_sh",
+			"label": "deploy-manager.sh Script",
+			"file_type": "code",
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_manual_deploy_worker_sh",
+			"label": "deploy-worker.sh Script",
+			"file_type": "code",
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_manual_reverse_proxy_setup",
+			"label": "External Reverse Proxy Setup (Manual Deployment)",
+			"file_type": "document",
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_deployment_manual_manual_deployment",
+			"target": "docs_deployment_manual_dynamic_guacd_routing",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_manual_manual_deployment",
+			"target": "docs_deployment_manual_network_requirements",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_manual_manual_deployment",
+			"target": "docs_deployment_manual_deploy_manager_sh",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_manual_manual_deployment",
+			"target": "docs_deployment_manual_deploy_worker_sh",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_manual_deploy_worker_sh",
+			"target": "docs_deployment_manual_dynamic_guacd_routing",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_manual_manual_deployment",
+			"target": "docs_deployment_manual_reverse_proxy_setup",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_manual_reverse_proxy_setup",
+			"target": "docs_deployment_docker_swarm_virtual_host_multiports",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_manual_dynamic_guacd_routing",
+			"target": "docs_deployment_docker_swarm_nginx_proxy_reverse_proxy",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.65,
+			"source_file": "docs/deployment/manual.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

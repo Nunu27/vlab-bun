@@ -1,0 +1,48 @@
+{
+	"nodes": [
+		{
+			"id": "tests_modules_e2e_topologies_mod_371ac7_mod_371ac7_clab_mod_371ac7",
+			"label": "Topology mod-371ac7",
+			"file_type": "document",
+			"source_file": "tests/modules-e2e/topologies/mod-371ac7/mod-371ac7.clab.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "tests_modules_e2e_topologies_mod_371ac7_mod_371ac7_clab_mod_371ac7",
+			"target": "clab_kind_mikrotik_ros",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "tests/modules-e2e/topologies/mod-371ac7/mod-371ac7.clab.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "tests_modules_e2e_topologies_mod_371ac7_mod_371ac7_clab_mod_371ac7",
+			"target": "clab_kind_linux",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "tests/modules-e2e/topologies/mod-371ac7/mod-371ac7.clab.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "tests_modules_e2e_topologies_mod_371ac7_mod_371ac7_clab_mod_371ac7",
+			"target": "tests_modules_e2e_topologies_mod_5cc908_mod_5cc908_clab_mod_5cc908",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "tests/modules-e2e/topologies/mod-371ac7/mod-371ac7.clab.yml",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

@@ -1,0 +1,133 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_erd_2026_03_31",
+			"label": "ERD feature",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_erd_2026_03_31_entity_relationship_diagram",
+			"label": "Entity Relationship Diagram (vLab database)",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_erd_2026_03_31_user_entity",
+			"label": "User entity",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_erd_2026_03_31_lab_entity",
+			"label": "Lab entity",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_erd_2026_03_31_session_entity",
+			"label": "Session entity",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_erd_2026_03_31_node_entity",
+			"label": "Node entity",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_erd_2026_03_31",
+			"target": "devtool_features_done_erd_2026_03_31_entity_relationship_diagram",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_erd_2026_03_31_entity_relationship_diagram",
+			"target": "devtool_features_done_erd_2026_03_31_user_entity",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_erd_2026_03_31_entity_relationship_diagram",
+			"target": "devtool_features_done_erd_2026_03_31_lab_entity",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_erd_2026_03_31_entity_relationship_diagram",
+			"target": "devtool_features_done_erd_2026_03_31_session_entity",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_erd_2026_03_31_entity_relationship_diagram",
+			"target": "devtool_features_done_erd_2026_03_31_node_entity",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_erd_2026_03_31_lab_entity",
+			"target": "devtool_features_done_lab_creation_2026_03_31_lab_topology_storage",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": ".devtool/features/done/erd-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

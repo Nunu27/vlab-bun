@@ -1,0 +1,276 @@
+{
+	"nodes": [
+		{
+			"id": "docker_compose_yml",
+			"label": "docker-compose.yml (Docker Swarm stack)",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_manager_service",
+			"label": "manager service",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_worker_installer_service",
+			"label": "worker-installer service",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_db_service",
+			"label": "db service (postgres:18-alpine)",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_redis_service",
+			"label": "redis service",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_rustfs_service",
+			"label": "rustfs service",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_nginx_proxy_service",
+			"label": "nginx-proxy service",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_docker_gen_service",
+			"label": "docker-gen service",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docker_compose_acme_companion_service",
+			"label": "acme-companion service (Let's Encrypt)",
+			"file_type": "code",
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_manager_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_worker_installer_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_db_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_redis_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_rustfs_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_nginx_proxy_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_docker_gen_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_yml",
+			"target": "docker_compose_acme_companion_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docker_compose_manager_service",
+			"target": "docker_compose_db_service",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.85
+		},
+		{
+			"source": "docker_compose_manager_service",
+			"target": "docker_compose_redis_service",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.85
+		},
+		{
+			"source": "docker_compose_manager_service",
+			"target": "docker_compose_rustfs_service",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.85
+		},
+		{
+			"source": "docker_compose_worker_installer_service",
+			"target": "readme_worker_component",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.85
+		},
+		{
+			"source": "docker_compose_nginx_proxy_service",
+			"target": "docker_compose_docker_gen_service",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.85
+		},
+		{
+			"source": "docker_compose_nginx_proxy_service",
+			"target": "docker_compose_acme_companion_service",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.85
+		},
+		{
+			"source": "docker_compose_rustfs_service",
+			"target": "readme_rustfs_storage",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.95
+		},
+		{
+			"source": "docker_compose_db_service",
+			"target": "readme_postgresql",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.95
+		},
+		{
+			"source": "docker_compose_redis_service",
+			"target": "readme_redis_bullmq",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docker-compose.yml",
+			"source_location": null,
+			"weight": 0.95
+		}
+	],
+	"hyperedges": []
+}

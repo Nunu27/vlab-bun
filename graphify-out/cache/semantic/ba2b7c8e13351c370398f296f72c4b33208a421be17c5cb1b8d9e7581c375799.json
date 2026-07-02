@@ -1,0 +1,38 @@
+{
+	"nodes": [
+		{
+			"id": "tests_modules_e2e_topologies_mod_a2d8ec_clab_mod_a2d8ec_ansible_inventory_ansible_inventory",
+			"label": "Ansible inventory for mod-a2d8ec (empty/generated)",
+			"file_type": "document",
+			"source_file": "tests/modules-e2e/topologies/mod-a2d8ec/clab-mod-a2d8ec/ansible-inventory.yml",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "tests_modules_e2e_topologies_mod_a2d8ec_clab_mod_a2d8ec_ansible_inventory_ansible_inventory",
+			"target": "tests_modules_e2e_topologies_mod_a2d8ec_mod_a2d8ec_clab_mod_a2d8ec",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "tests/modules-e2e/topologies/mod-a2d8ec/clab-mod-a2d8ec/ansible-inventory.yml",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "tests_modules_e2e_topologies_mod_a2d8ec_clab_mod_a2d8ec_ansible_inventory_ansible_inventory",
+			"target": "tests_modules_e2e_topologies_mod_a2d8ec_clab_mod_a2d8ec_nornir_simple_inventory_nornir_simple_inventory",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "tests/modules-e2e/topologies/mod-a2d8ec/clab-mod-a2d8ec/ansible-inventory.yml",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

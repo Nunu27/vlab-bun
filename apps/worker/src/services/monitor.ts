@@ -1,68 +1,49 @@
 import evaluator from "@vlab/evaluator";
 import type { RpcServer } from "../handlers/server";
-import { destroyingSessions, destroyLab } from "../lib/clab";
 import { clabMonitor } from "../lib/clab-monitor";
 
 export const monitorState = {
 	activeNodes: 0,
 };
 
-const nodeSessionMap = new Map<string, string>();
-
-export function bindMonitorEvents(server: RpcServer) {
+export function bindMonitorEvents(_server: RpcServer) {
 	const { emitter, init } = clabMonitor;
 
-	emitter.on("stale-session", (sessionId) => {
-		destroyLab(sessionId).catch(console.error);
-	});
+	// clab-monitor now only tracks node health + interfaces (no session/lab
+	// label resolution, no stale-session detection) and emits exactly four
+	// events: node-create (also covers hydration of already-running nodes),
+	// node-remove, health-update, interface-update. The gRPC forwarding to
+	// apps/manager (monitor:snapshot, monitor:session-create/remove,
+	// monitor:node-create/health/interface-update/remove) and the
+	// destroyLab-on-stale-session / destroyLab-on-unexpected-node-death
+	// cleanup logic that used to live here need to be rebuilt manually,
+	// resolving the extra labels (ownerId, labId, labDue, labSessionId,
+	// labNodeId, deviceTemplateId) per node via docker inspect on
+	// node.containerId. See packages/@vlab/grpc/src/commands.ts for the
+	// expected monitor:* payload shapes.
 
-	emitter.on("snapshot", (snapshot) => {
-		monitorState.activeNodes = snapshot.nodes.length;
-		for (const node of snapshot.nodes) {
-			nodeSessionMap.set(node.id, node.labSessionId);
-		}
-		server.emit("monitor:snapshot", { data: snapshot });
-	});
-
-	emitter.on("session-create", (session, isTemp) => {
-		server.emit("monitor:session-create", { data: { ...session, isTemp } });
-	});
-
-	emitter.on("session-remove", (sessionId, isTemp) => {
-		server.emit("monitor:session-remove", { data: { sessionId, isTemp } });
-	});
-
-	emitter.on("node-create", (node) => {
+	emitter.on("node-create", (_node) => {
 		monitorState.activeNodes++;
-		nodeSessionMap.set(node.id, node.labSessionId);
-		server.emit("monitor:node-create", { data: node });
+		// TODO: resolve labels for _node.containerId + forward monitor:node-create
+		// (also covers the former monitor:snapshot hydration path)
 	});
 
-	emitter.on("node-remove", (id, isTemp) => {
+	emitter.on("node-remove", (_id) => {
 		monitorState.activeNodes = Math.max(0, monitorState.activeNodes - 1);
-
-		const sessionId = nodeSessionMap.get(id);
-		nodeSessionMap.delete(id);
-
-		// If a non-temp node dies outside of an intentional destroy, tear down the whole session
-		if (!isTemp && sessionId && !destroyingSessions.has(sessionId)) {
-			destroyLab(sessionId).catch(console.error);
-		}
-
-		server.emit("monitor:node-remove", { data: { id, isTemp } });
+		// TODO: destroyLab-on-unexpected-death + forward monitor:node-remove
 	});
 
-	emitter.on("node-health", (node, isTemp) => {
-		server.emit("monitor:node-health", { data: { node, isTemp } });
+	emitter.on("health-update", (_node) => {
+		// TODO: forward monitor:node-health
 	});
 
-	emitter.on("interface-update", (node, isTemp) => {
-		server.emit("monitor:interface-update", { data: { node, isTemp } });
+	emitter.on("interface-update", (node) => {
 		evaluator.emitSource(
 			node.id,
 			"node-interface.interfaces-ip",
 			node.interfaces,
 		);
+		// TODO: forward monitor:interface-update
 	});
 
 	init();

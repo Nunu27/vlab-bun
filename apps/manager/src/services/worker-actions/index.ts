@@ -42,7 +42,7 @@ redis.subscriber.on("messageBuffer", (channelBuffer, messageBuffer) => {
 			.catch(logger.error);
 	} catch (error) {
 		logger.error(
-			{ error },
+			{ err: error },
 			`Failed to execute forwarded action for ${workerId}:`,
 		);
 	}

@@ -1,0 +1,330 @@
+{
+	"nodes": [
+		{
+			"id": "docs_system_data_model_data_model",
+			"label": "Data Model & Database Document",
+			"file_type": "document",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_postgresql",
+			"label": "PostgreSQL Database",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_drizzle_orm",
+			"label": "Drizzle ORM",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_manager_owns_db_rationale",
+			"label": "Rationale: Manager Exclusively Owns Database",
+			"file_type": "rationale",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_entity_user",
+			"label": "User Entity",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_entity_lab",
+			"label": "Lab Template Entity",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_entity_lab_session",
+			"label": "Lab Session Entity",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_entity_lab_session_check",
+			"label": "Lab Session Check Entity",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_entity_worker",
+			"label": "Worker Entity",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_entity_device_template",
+			"label": "Device Template Entity",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_file_storage_tracking",
+			"label": "File Storage Tracking (file/lab_attachments/lab_embedded_file)",
+			"file_type": "concept",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_orphan_search_gc",
+			"label": "Orphan Search Garbage Collection (BullMQ)",
+			"file_type": "rationale",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_data_model_data_model_system_erd_json",
+			"label": "System ERD (system.erd.json)",
+			"file_type": "image",
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_postgresql",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_drizzle_orm",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_manager_owns_db_rationale",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_entity_user",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_entity_lab",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_entity_lab_session",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_entity_lab_session",
+			"target": "docs_system_data_model_data_model_entity_lab_session_check",
+			"relation": "shares_data_with",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_entity_lab_session",
+			"target": "docs_system_data_model_data_model_entity_worker",
+			"relation": "shares_data_with",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_entity_worker",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_entity_device_template",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_file_storage_tracking",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_file_storage_tracking",
+			"target": "docs_system_data_model_data_model_orphan_search_gc",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_orphan_search_gc",
+			"target": "docs_system_architecture_architecture_bullmq_background_tasks",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.9,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model",
+			"target": "docs_system_data_model_data_model_system_erd_json",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_manager_owns_db_rationale",
+			"target": "docs_system_architecture_architecture_single_source_of_truth_rationale",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_entity_lab",
+			"target": "docs_system_evaluator_evaluator_rule_definition",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.9,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_entity_lab_session_check",
+			"target": "docs_system_evaluator_evaluator_evaluation_flow",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.9,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_data_model_data_model_orphan_search_gc",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_material_output_redistribute_connected_danger",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.6,
+			"source_file": "docs/system/data-model/data-model.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

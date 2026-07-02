@@ -7,14 +7,8 @@ const monitors = new Map<string, Duplex>();
 
 export default {
 	async start(ctx, container, node) {
-		const {
-			docker,
-			logger,
-			emitInterfaceUpdate,
-			nodeInterfaceMap,
-			sessionIds,
-		} = ctx;
-		const { id, labSessionId, isTemp } = node;
+		const { docker, logger, emitInterfaceUpdate, nodeInterfaceMap } = ctx;
+		const { id } = node;
 
 		if (monitors.has(id)) return;
 
@@ -54,13 +48,14 @@ export default {
 					// Event might come from node being destroyed
 					await sleep(500);
 
-					if (!sessionIds.has(labSessionId)) return;
+					// stop() already cleared this node's tracking, discard the stale event
+					if (!nodeInterfaceMap.has(id)) return;
 					removeItemFromArray(interfaces[iface] ?? [], ip);
 				} else {
 					interfaces[iface]?.push(ip);
 				}
 
-				emitInterfaceUpdate({ id, labSessionId, interfaces }, isTemp);
+				emitInterfaceUpdate({ id, interfaces });
 			});
 
 			rawStream.on("end", () => {
@@ -68,7 +63,11 @@ export default {
 				return monitors.delete(id);
 			});
 			rawStream.on("error", (error) => {
-				logger.error({ error, id }, "Network monitor error for node %s", id);
+				logger.error(
+					{ err: error, id },
+					"Network monitor error for node %s",
+					id,
+				);
 				this.stop(ctx, node);
 			});
 		} catch (error) {
@@ -78,7 +77,7 @@ export default {
 				typeof error.statusCode === "number" &&
 				![409, 404].includes(error.statusCode)
 			) {
-				logger.error({ error, id }, "Failed to start network monitor");
+				logger.error({ err: error, id }, "Failed to start network monitor");
 			}
 		}
 	},
@@ -142,7 +141,7 @@ export default {
 					);
 				}
 			} catch (error) {
-				logger.debug({ error, data: output }, "JSON parsing failed");
+				logger.debug({ err: error, data: output }, "JSON parsing failed");
 			}
 		} catch (error) {
 			if (
@@ -151,7 +150,7 @@ export default {
 				typeof error.statusCode === "number" &&
 				![409, 404].includes(error.statusCode)
 			) {
-				logger.warn({ error, id }, "Failed to extract interfaces");
+				logger.warn({ err: error, id }, "Failed to extract interfaces");
 			}
 		}
 

@@ -35,7 +35,7 @@ const errorHandler = new Elysia({ name: "error-handler" })
 				return status(404, failure({ message: "Resource not found" }));
 
 			case "DrizzleError":
-				logger.error({ error: error.cause }, error.message);
+				logger.error({ err: error.cause }, error.message);
 
 				return status(
 					500,
@@ -50,7 +50,7 @@ const errorHandler = new Elysia({ name: "error-handler" })
 					if (response) return response;
 				}
 
-				logger.error({ error: error.cause }, error.message);
+				logger.error({ err: error.cause }, error.message);
 
 				return status(
 					500,
@@ -60,7 +60,7 @@ const errorHandler = new Elysia({ name: "error-handler" })
 				);
 
 			default:
-				logger.error({ error }, "Unknown error");
+				logger.error({ err: error }, "Unknown error");
 
 				return status(
 					500,

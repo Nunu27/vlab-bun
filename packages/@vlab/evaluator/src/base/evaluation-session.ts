@@ -44,7 +44,11 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		checks: SessionCheckPayload<THandlers>[],
 		private healthHooks?: {
 			isNodeHealthy: (nodeId: string) => boolean;
-			waitForHealth: (nodeId: string, onHealthy: () => void) => () => void;
+			waitForHealth: (
+				nodeId: string,
+				timeoutMs?: number,
+				signal?: AbortSignal,
+			) => Promise<void>;
 		},
 		initialValues?: Record<string, boolean>,
 	) {
@@ -124,13 +128,22 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		if (!this.healthHooks) return;
 		if (this.healthHooks.isNodeHealthy(nodeId)) return;
 
-		return new Promise<void>((resolve) => {
-			const cancel = this.healthHooks?.waitForHealth(nodeId, resolve);
-			this.cleanups.set(`health-wait::${nodeId}`, () => {
-				cancel?.();
-				resolve();
-			});
-		});
+		const controller = new AbortController();
+		this.cleanups.set(`health-wait::${nodeId}`, () => controller.abort());
+
+		try {
+			// Best-effort: if the node times out or becomes unhealthy, the source
+			// still starts against whatever context is available rather than hanging.
+			await this.healthHooks.waitForHealth(
+				nodeId,
+				undefined,
+				controller.signal,
+			);
+		} catch {
+			// swallow — proceed with a best-effort context
+		} finally {
+			this.cleanups.delete(`health-wait::${nodeId}`);
+		}
 	}
 
 	onChange(cb: (checkId: string, result: boolean) => void) {

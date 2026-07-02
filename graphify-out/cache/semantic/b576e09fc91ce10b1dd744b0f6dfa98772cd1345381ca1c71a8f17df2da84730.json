@@ -1,0 +1,60 @@
+{
+	"nodes": [
+		{
+			"id": "packages_external_mikro_routeros_readme_mikro_routeros",
+			"label": "mikro-routeros (MikroTik RouterOS API client)",
+			"file_type": "document",
+			"source_file": "packages/external/mikro-routeros/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_external_mikro_routeros_readme_routerosclient",
+			"label": "RouterOSClient class",
+			"file_type": "code",
+			"source_file": "packages/external/mikro-routeros/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_external_mikro_routeros_readme_runquery_method",
+			"label": "RouterOSClient.runQuery()",
+			"file_type": "code",
+			"source_file": "packages/external/mikro-routeros/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "packages_external_mikro_routeros_readme_mikro_routeros",
+			"target": "packages_external_mikro_routeros_readme_routerosclient",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/external/mikro-routeros/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_external_mikro_routeros_readme_routerosclient",
+			"target": "packages_external_mikro_routeros_readme_runquery_method",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/external/mikro-routeros/README.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

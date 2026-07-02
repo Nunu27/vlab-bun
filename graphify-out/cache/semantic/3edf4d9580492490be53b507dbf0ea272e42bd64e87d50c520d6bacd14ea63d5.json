@@ -1,0 +1,264 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_material",
+			"label": "OSPF Material",
+			"file_type": "document",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_link_state_algorithm",
+			"label": "Link-State Algorithm (Dijkstra/SPF)",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_lsdb",
+			"label": "Link-State Database (LSDB)",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_lsa",
+			"label": "Link-State Advertisement (LSA)",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_cost_metric",
+			"label": "OSPF Cost Metric",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_area",
+			"label": "OSPF Area Hierarchy",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_backbone_area_0",
+			"label": "Backbone Area 0",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_dr_bdr_election",
+			"label": "DR/BDR Election",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_point_to_point_type_ptp",
+			"label": "Point-to-Point (type=ptp) Interface",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_adjacency_states",
+			"label": "OSPF Adjacency State Cycle",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_routeros_v7_ospf_commands",
+			"label": "RouterOS v7 OSPF Command Reference",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_5_konfigurasi_routing_ospf_material_passive_interface",
+			"label": "OSPF Passive Interface",
+			"file_type": "concept",
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_material",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_routeros_v7_ospf_commands",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_link_state_algorithm",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_lsdb",
+			"relation": "conceptually_related_to",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_lsa",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_lsdb",
+			"relation": "conceptually_related_to",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_area",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_backbone_area_0",
+			"relation": "conceptually_related_to",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_dr_bdr_election",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_point_to_point_type_ptp",
+			"relation": "conceptually_related_to",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_point_to_point_type_ptp",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_adjacency_states",
+			"relation": "conceptually_related_to",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_cost_metric",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_link_state_algorithm",
+			"relation": "conceptually_related_to",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_material",
+			"target": "docs_system_evaluator_evaluator_ospf_checks",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_material",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_cost_metric",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_ospf_material",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_material_dr_bdr_election",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_5_konfigurasi_routing_ospf_material_point_to_point_type_ptp",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_material_bgp_instance_connection_split",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.65,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": [
+		{
+			"id": "ospf_area_adjacency_hyperedge",
+			"label": "OSPF Single-Area Adjacency Formation Pattern",
+			"nodes": [
+				"docs_modules_5_konfigurasi_routing_ospf_material_ospf_area",
+				"docs_modules_5_konfigurasi_routing_ospf_material_backbone_area_0",
+				"docs_modules_5_konfigurasi_routing_ospf_material_point_to_point_type_ptp",
+				"docs_modules_5_konfigurasi_routing_ospf_material_adjacency_states"
+			],
+			"relation": "participate_in",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docs/modules/5-konfigurasi-routing-ospf/material.md"
+		}
+	]
+}

@@ -1,0 +1,59 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_split_manager_and_worker_2026_06_11_splitmanagerandworker",
+			"label": "Split Manager and Worker",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/split-manager-and-worker-2026-06-11.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_split_manager_and_worker_2026_06_11_grpcchannel",
+			"label": "gRPC communication channel (Manager-Worker)",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/split-manager-and-worker-2026-06-11.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_split_manager_and_worker_2026_06_11_splitmanagerandworker",
+			"target": "devtool_features_done_split_manager_and_worker_2026_06_11_grpcchannel",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/split-manager-and-worker-2026-06-11.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_split_manager_and_worker_2026_06_11_splitmanagerandworker",
+			"target": "agents_md_manager_worker_architecture",
+			"relation": "rationale_for",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": ".devtool/features/done/split-manager-and-worker-2026-06-11.md",
+			"source_location": null,
+			"weight": 0.95
+		},
+		{
+			"source": "devtool_features_done_split_manager_and_worker_2026_06_11_grpcchannel",
+			"target": "readme_grpc_nice_grpc",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": ".devtool/features/done/split-manager-and-worker-2026-06-11.md",
+			"source_location": null,
+			"weight": 0.95
+		}
+	],
+	"hyperedges": []
+}

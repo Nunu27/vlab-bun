@@ -513,7 +513,7 @@ export async function runSyncModules() {
 
 		logger.info("Sync complete!");
 	} catch (error) {
-		logger.error({ error }, "Sync failed");
+		logger.error({ err: error }, "Sync failed");
 		throw error;
 	} finally {
 		await db.$client.end();

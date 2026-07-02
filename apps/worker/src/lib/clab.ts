@@ -7,8 +7,11 @@ import type {
 import Containerlab from "@vlab/clab";
 import type { LabConfigSchema } from "@vlab/grpc";
 import { toKebabCase } from "@vlab/shared/utils";
+import baseLogger from "@worker/lib/logger";
 import env from "../env";
 import { stopLabEvaluation } from "./evaluator";
+
+const logger = baseLogger.child({ service: "clab" });
 
 const clab = new Containerlab({
 	cliPath: env.CLAB_CLI_PATH,
@@ -43,6 +46,7 @@ export async function deployLab(
 	}
 
 	const nodeNames: Record<string, string> = {};
+	const idByKebabName: Record<string, string> = {};
 	const nodes: Record<string, ContainerlabNodeDefinition> = {};
 
 	for (const {
@@ -56,6 +60,7 @@ export async function deployLab(
 		...rest
 	} of config.nodes) {
 		const kebabName = toKebabCase(name);
+		idByKebabName[kebabName] = id;
 		const labels: Record<string, string> = {
 			[LABELS.SESSION_NODE_ID]: id,
 		};
@@ -70,10 +75,10 @@ export async function deployLab(
 		const env = { ...nodeEnv };
 		if (rest.kind === "linux" && credentials) {
 			if (credentials.username) {
-				env.CLAB_USERNAME = credentials.username;
+				env.USERNAME = credentials.username;
 			}
 			if (credentials.password) {
-				env.CLAB_PASSWORD = credentials.password;
+				env.PASSWORD = credentials.password;
 			}
 		}
 
@@ -117,7 +122,34 @@ export async function deployLab(
 		},
 	};
 
-	return clab.deploy(sessionId, topologyContent);
+	const inspected = await clab.deploy(sessionId, topologyContent);
+
+	const deployedNodes: { id: string; ip: string; containerId: string }[] = [];
+	for (const node of inspected) {
+		const id = idByKebabName[node.name];
+		if (!id) {
+			logger.warn(
+				{ sessionId, containerName: node.name },
+				"Deployed container has no matching session node id, skipping",
+			);
+			continue;
+		}
+
+		// containerlab's inspect reports management IPs as CIDR (e.g. "1.2.3.4/24");
+		// every other consumer (guacamole tokens, docker-event-driven sync) expects a bare IP.
+		const ip = node.ipv4Address?.split("/")[0];
+		if (!ip) {
+			logger.warn(
+				{ sessionId, containerName: node.name, id },
+				"Deployed container has no management IP, skipping",
+			);
+			continue;
+		}
+
+		deployedNodes.push({ id, ip, containerId: node.containerId });
+	}
+
+	return deployedNodes;
 }
 
 export const destroyingSessions = new Set<string>();

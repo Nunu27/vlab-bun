@@ -1,0 +1,111 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_evaluator_system_test_coverage_2026_06_11",
+			"label": "Evaluator System Test Coverage feature",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_vitest_bun_test",
+			"label": "Vitest/Bun test framework",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_debouncer_unit_tests",
+			"label": "Debouncer/state management unit tests",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_integration_tests_namespaces",
+			"label": "Integration tests for Docker namespace interactions",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_debouncer_unit_tests",
+			"target": "devtool_features_done_evaluator_system_2026_03_31_debouncing",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": "rationale: evaluator system dictates the grading of student labs, critical to test correctness especially with BGP and CLI checks added",
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_evaluator_system_test_coverage_2026_06_11",
+			"target": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_vitest_bun_test",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_evaluator_system_test_coverage_2026_06_11",
+			"target": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_debouncer_unit_tests",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_evaluator_system_test_coverage_2026_06_11",
+			"target": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_integration_tests_namespaces",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_integration_tests_namespaces",
+			"target": "devtool_features_done_evaluation_for_routing_module_2026_04_13_bgp_checks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_evaluator_system_test_coverage_2026_06_11_integration_tests_namespaces",
+			"target": "devtool_features_done_cli_introduction_lab_evaluation_checks_2026_06_11_command_history_checks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-test-coverage-2026-06-11.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

@@ -1,0 +1,28 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_paginator_2026_03_31_paginator",
+			"label": "Paginator",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/paginator-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_paginator_2026_03_31_paginator",
+			"target": "devtool_features_done_tanstack_query_helper_for_eden_treaty_2026_03_31_tanstackqueryhelperforedentreaty",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.65,
+			"source_file": ".devtool/features/done/paginator-2026-03-31.md",
+			"source_location": null,
+			"weight": 0.65
+		}
+	],
+	"hyperedges": []
+}

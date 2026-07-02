@@ -1,0 +1,450 @@
+{
+	"nodes": [
+		{
+			"id": "packages_vlab_evaluator_readme_vlab_evaluator",
+			"label": "@vlab/evaluator",
+			"file_type": "document",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_evaluationhandler",
+			"label": "EvaluationHandler",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_evaluator_registry",
+			"label": "Evaluator (Central Registry)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_evaluationsession",
+			"label": "EvaluationSession (Runtime Engine)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_source",
+			"label": "Source (State Extractor/Listener)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_check",
+			"label": "Check (Evaluation Rule)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_dependency_mapping",
+			"label": "Dependency Mapping (only connect to required Sources)",
+			"file_type": "rationale",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_debounced_updates",
+			"label": "Debounced Updates",
+			"file_type": "rationale",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_linux_handler",
+			"label": "Linux Handler (linux)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"label": "MikroTik Handler (mikrotik)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_node_interface_handler",
+			"label": "Node Interface Handler (node-interface)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_route_exist_check",
+			"label": "route-exist Check",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_user_exist_check",
+			"label": "user-exist Check",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_ospf_checks",
+			"label": "OSPF Checks (instance/area/interface-template/neighbor)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_rip_checks",
+			"label": "RIP Checks (instance/interface-template)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_bgp_instance_check",
+			"label": "bgp-instance-exist Check",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_system_identity_check",
+			"label": "system-identity Check",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_check_ip_check",
+			"label": "check-ip Check",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_evaluator_readme_mikro_routeros_dependency",
+			"label": "mikro-routeros API dependency",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "packages_vlab_evaluator_readme_vlab_evaluator",
+			"target": "packages_vlab_evaluator_readme_evaluator_registry",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_evaluator_registry",
+			"target": "packages_vlab_evaluator_readme_evaluationhandler",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_evaluator_registry",
+			"target": "packages_vlab_evaluator_readme_evaluationsession",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_evaluationhandler",
+			"target": "packages_vlab_evaluator_readme_source",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_evaluationhandler",
+			"target": "packages_vlab_evaluator_readme_check",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_check",
+			"target": "packages_vlab_evaluator_readme_source",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_evaluationsession",
+			"target": "packages_vlab_evaluator_readme_dependency_mapping",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_evaluationsession",
+			"target": "packages_vlab_evaluator_readme_debounced_updates",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_vlab_evaluator",
+			"target": "packages_vlab_evaluator_readme_linux_handler",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_vlab_evaluator",
+			"target": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_vlab_evaluator",
+			"target": "packages_vlab_evaluator_readme_node_interface_handler",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_linux_handler",
+			"target": "packages_vlab_evaluator_readme_route_exist_check",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_linux_handler",
+			"target": "packages_vlab_evaluator_readme_user_exist_check",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_linux_handler",
+			"target": "packages_vlab_clab_monitor_readme_dockerode",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"target": "packages_vlab_evaluator_readme_route_exist_check",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"target": "packages_vlab_evaluator_readme_ospf_checks",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"target": "packages_vlab_evaluator_readme_rip_checks",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"target": "packages_vlab_evaluator_readme_bgp_instance_check",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"target": "packages_vlab_evaluator_readme_system_identity_check",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"target": "packages_vlab_evaluator_readme_mikro_routeros_dependency",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_mikro_routeros_dependency",
+			"target": "packages_external_mikro_routeros_readme_mikro_routeros",
+			"relation": "references",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_evaluator_readme_node_interface_handler",
+			"target": "packages_vlab_evaluator_readme_check_ip_check",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": [
+		{
+			"id": "vlab_evaluator_handler_pattern",
+			"label": "Evaluator Handlers implementing common Source/Check pattern",
+			"nodes": [
+				"packages_vlab_evaluator_readme_linux_handler",
+				"packages_vlab_evaluator_readme_mikrotik_handler",
+				"packages_vlab_evaluator_readme_node_interface_handler"
+			],
+			"relation": "implement",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/evaluator/README.md"
+		}
+	]
+}

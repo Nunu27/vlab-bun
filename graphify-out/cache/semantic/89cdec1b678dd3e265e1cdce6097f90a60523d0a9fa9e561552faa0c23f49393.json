@@ -1,0 +1,81 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_evaluator_system_2026_03_31",
+			"label": "Evaluator System feature",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/evaluator-system-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_evaluator_system_2026_03_31_state_evaluator",
+			"label": "State Evaluator",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/evaluator-system-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_evaluator_system_2026_03_31_debouncing",
+			"label": "Debouncing for flap protection",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/evaluator-system-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_evaluator_system_2026_03_31_evaluation_api_hooks",
+			"label": "Evaluation API hooks",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/evaluator-system-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_evaluator_system_2026_03_31",
+			"target": "devtool_features_done_evaluator_system_2026_03_31_state_evaluator",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_evaluator_system_2026_03_31",
+			"target": "devtool_features_done_evaluator_system_2026_03_31_debouncing",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_evaluator_system_2026_03_31",
+			"target": "devtool_features_done_evaluator_system_2026_03_31_evaluation_api_hooks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/evaluator-system-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

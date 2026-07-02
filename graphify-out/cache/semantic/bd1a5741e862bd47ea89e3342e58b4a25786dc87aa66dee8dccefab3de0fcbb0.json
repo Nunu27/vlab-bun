@@ -1,0 +1,39 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_zustand_helper_2026_03_31_zustandhelper",
+			"label": "Zustand Helper",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/zustand-helper-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_zustand_helper_2026_03_31_storefactories",
+			"label": "Zustand store factories",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/zustand-helper-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_zustand_helper_2026_03_31_zustandhelper",
+			"target": "devtool_features_done_zustand_helper_2026_03_31_storefactories",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/zustand-helper-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

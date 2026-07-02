@@ -1,0 +1,98 @@
+{
+	"nodes": [
+		{
+			"id": "docs_system_readme_readme",
+			"label": "vLab System Documentation Index",
+			"file_type": "document",
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_codebase_tour_codebase_tour",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_architecture_architecture",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_communication_communication",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_data_model_data_model",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_frontend_frontend",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_containerlab_containerlab",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_evaluator_evaluator",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_readme_readme",
+			"target": "docs_system_external_libs_external_libs",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/README.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

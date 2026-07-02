@@ -1,0 +1,91 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_dynamic_form_2026_04_06",
+			"label": "Dynamic Form feature",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_dynamic_form_2026_04_06_react_hook_form",
+			"label": "React Hook Form / Tanstack Form",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_dynamic_form_2026_04_06_dynamic_field_rendering",
+			"label": "Dynamic field rendering",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_dynamic_form_2026_04_06_schema_validation",
+			"label": "Schema validation",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_dynamic_form_2026_04_06",
+			"target": "devtool_features_done_dynamic_form_2026_04_06_react_hook_form",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_dynamic_form_2026_04_06",
+			"target": "devtool_features_done_dynamic_form_2026_04_06_dynamic_field_rendering",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_dynamic_form_2026_04_06",
+			"target": "devtool_features_done_dynamic_form_2026_04_06_schema_validation",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_dynamic_form_2026_04_06_schema_validation",
+			"target": "devtool_features_done_lab_evaluation_rules_builder_ui_2026_06_11_visual_rule_builder",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.75,
+			"source_file": ".devtool/features/done/dynamic-form-2026-04-06.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

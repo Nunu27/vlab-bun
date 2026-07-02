@@ -92,7 +92,7 @@ const callbacks: Callbacks = {
 				return session ?? undefined;
 			} catch (error) {
 				logger.error(
-					{ error, id },
+					{ err: error, id },
 					"Failed to fetch Guacamole session from Redis",
 				);
 				return undefined;
@@ -103,7 +103,7 @@ const callbacks: Callbacks = {
 				await redis.set(`session:guac:${id}`, sessionData, SESSION_TTL_SECONDS);
 			} catch (error) {
 				logger.error(
-					{ error, id },
+					{ err: error, id },
 					"Failed to save Guacamole session to Redis",
 				);
 			}
@@ -113,7 +113,7 @@ const callbacks: Callbacks = {
 				await redis.del(`session:guac:${id}`);
 			} catch (error) {
 				logger.error(
-					{ error, id },
+					{ err: error, id },
 					"Failed to delete Guacamole session from Redis",
 				);
 			}
@@ -151,7 +151,7 @@ function initGuacamole(server?: Server) {
 
 	guacServer.on("error", (clientConnection, error) => {
 		logger.error(
-			{ error, connectionId: clientConnection?.connectionId },
+			{ err: error, connectionId: clientConnection?.connectionId },
 			"Guacamole connection error",
 		);
 	});

@@ -1,0 +1,174 @@
+{
+	"nodes": [
+		{
+			"id": "docs_system_containerlab_containerlab",
+			"label": "Containerlab Integration Document",
+			"file_type": "document",
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_containerlab_containerlab_tool",
+			"label": "Containerlab (external tool)",
+			"file_type": "concept",
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_containerlab_containerlab_topology_generation",
+			"label": "Topology Generation (Lab Template)",
+			"file_type": "concept",
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_containerlab_containerlab_topology_definition",
+			"label": "ContainerlabTopologyDefinition",
+			"file_type": "concept",
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_containerlab_containerlab_worker_execution",
+			"label": "Worker Execution (containerlab deploy)",
+			"file_type": "concept",
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_containerlab_containerlab_telemetry_monitoring",
+			"label": "Telemetry Monitoring via @vlab/clab-monitor",
+			"file_type": "concept",
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_containerlab_containerlab_security_considerations",
+			"label": "Containerlab Security Considerations (Root/Docker Socket)",
+			"file_type": "rationale",
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_system_containerlab_containerlab",
+			"target": "docs_system_containerlab_containerlab_tool",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab",
+			"target": "docs_system_containerlab_containerlab_topology_generation",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab_topology_generation",
+			"target": "docs_system_codebase_tour_codebase_tour_vlab_clab",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab_worker_execution",
+			"target": "docs_system_containerlab_containerlab_topology_definition",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab_worker_execution",
+			"target": "docs_system_containerlab_containerlab_tool",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab_telemetry_monitoring",
+			"target": "docs_system_codebase_tour_codebase_tour_vlab_clab_monitor",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab_telemetry_monitoring",
+			"target": "docs_system_architecture_architecture_telemetry_streaming",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.9,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab_security_considerations",
+			"target": "docs_system_architecture_architecture_worker_daemon_rationale",
+			"relation": "rationale_for",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_containerlab_containerlab_topology_generation",
+			"target": "docs_system_data_model_data_model_entity_lab",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docs/system/containerlab/containerlab.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

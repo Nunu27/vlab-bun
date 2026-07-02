@@ -1,0 +1,39 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_3_konfigurasi_static_routing_checks_ip_checks",
+			"label": "Checks: node-interface.check-ip (R1, R2, PC1, PC2)",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_3_konfigurasi_static_routing_checks_linux_route_exist",
+			"label": "Check: linux.route-exist (PC1/PC2 default gateway)",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_3_konfigurasi_static_routing_checks_mikrotik_route_exist",
+			"label": "Check: mikrotik.route-exist (R1/R2 static routes, flag As)",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [],
+	"hyperedges": []
+}

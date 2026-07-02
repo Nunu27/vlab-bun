@@ -1,0 +1,205 @@
+{
+	"nodes": [
+		{
+			"id": "docs_system_communication_communication",
+			"label": "Communication Protocols Document",
+			"file_type": "document",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_communication_communication_grpc_command_control",
+			"label": "gRPC Command & Control Channel",
+			"file_type": "concept",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_communication_communication_grpc_streams_telemetry",
+			"label": "gRPC Streams (Telemetry)",
+			"file_type": "concept",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_communication_communication_http_rest_api",
+			"label": "HTTP REST API (Elysia.js)",
+			"file_type": "concept",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_communication_communication_waycast_websockets",
+			"label": "Waycast WebSockets (Real-time UI)",
+			"file_type": "concept",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_communication_communication_guacamole_websockets",
+			"label": "Guacamole Remote Access WebSockets",
+			"file_type": "concept",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_communication_communication_flow_excalidraw",
+			"label": "communication-flow.excalidraw diagram",
+			"file_type": "image",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_communication_communication_grpc_streams_rationale",
+			"label": "Rationale: Reuse gRPC Connection for Telemetry",
+			"file_type": "rationale",
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_system_communication_communication",
+			"target": "docs_system_communication_communication_grpc_command_control",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication",
+			"target": "docs_system_communication_communication_grpc_streams_telemetry",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication",
+			"target": "docs_system_communication_communication_http_rest_api",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication",
+			"target": "docs_system_communication_communication_waycast_websockets",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication",
+			"target": "docs_system_communication_communication_guacamole_websockets",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication",
+			"target": "docs_system_communication_communication_flow_excalidraw",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication_grpc_streams_telemetry",
+			"target": "docs_system_communication_communication_grpc_streams_rationale",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication_grpc_command_control",
+			"target": "docs_system_codebase_tour_codebase_tour_vlab_grpc",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication_guacamole_websockets",
+			"target": "docs_system_architecture_architecture_guacamole_remote_access_proxy",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication_waycast_websockets",
+			"target": "docs_system_frontend_frontend_waycast_realtime_telemetry",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_communication_communication_http_rest_api",
+			"target": "docs_system_frontend_frontend_tanstack_query",
+			"relation": "shares_data_with",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/communication/communication.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}
