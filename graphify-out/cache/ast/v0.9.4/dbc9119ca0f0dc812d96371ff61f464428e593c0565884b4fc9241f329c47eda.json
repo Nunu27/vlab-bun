@@ -1,0 +1,31 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_2_konfigurasi_ip_address_description_md",
+			"label": "description.md",
+			"file_type": "document",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/description.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_2_konfigurasi_ip_address_description_konfigurasi_ip_address",
+			"label": "Konfigurasi IP Address",
+			"file_type": "document",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/description.md",
+			"source_location": "L1"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_2_konfigurasi_ip_address_description_md",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_2_konfigurasi_ip_address_description_konfigurasi_ip_address",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/description.md",
+			"source_location": "L1",
+			"weight": 1.0
+		}
+	],
+	"input_tokens": 0,
+	"output_tokens": 0
+}

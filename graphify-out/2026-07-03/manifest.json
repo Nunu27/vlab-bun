@@ -3525,9 +3525,9 @@
 		"semantic_hash": "6816a6a9ce304f5818c85279206f849c"
 	},
 	"AGENTS.md": {
-		"mtime": 1781472404.1478794,
-		"ast_hash": "73c2b20084c2bf05fa74589145c9b769",
-		"semantic_hash": "73c2b20084c2bf05fa74589145c9b769"
+		"mtime": 1783014300.8244536,
+		"ast_hash": "6d466b07b80a233b411912b347eeb135",
+		"semantic_hash": ""
 	},
 	"README.md": {
 		"mtime": 1781604870.286097,
@@ -3962,6 +3962,11 @@
 	"apps/web/src/routes/lab/$labId/session/$labSessionId/-module/onboarding/use-lab-session-tour.ts": {
 		"mtime": 1783012353.5408478,
 		"ast_hash": "c37936875f91260da0f9c5e5ca1b06c2",
+		"semantic_hash": ""
+	},
+	".claude/settings.json": {
+		"mtime": 1783014326.8699763,
+		"ast_hash": "c6b3cac0847bd3fdc4394cbfeeeef232",
 		"semantic_hash": ""
 	}
 }

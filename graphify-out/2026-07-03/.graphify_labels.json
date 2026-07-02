@@ -224,16 +224,11 @@
 	"222": "Containerlab class",
 	"223": "index.ts",
 	"224": "checkbox-field.tsx",
-	"225": "textarea-field.tsx",
 	"226": "index.ts",
 	"227": "utils.ts",
 	"228": "LabChecksSessionProvider",
 	"229": "LabSessionModalProvider",
-	"230": "textarea-field.tsx",
 	"231": "hash.ts",
 	"232": "canvas.tsx",
-	"233": "test-device-store.ts",
-	"234": "lab.ts",
-	"235": "combobox-field.tsx",
-	"236": "paginated-combobox-field.tsx"
+	"234": "lab.ts"
 }

@@ -1,0 +1,31 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_description_md",
+			"label": "description.md",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/description.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_description_konfigurasi_static_routing",
+			"label": "Konfigurasi Static Routing",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/description.md",
+			"source_location": "L1"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_description_md",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_description_konfigurasi_static_routing",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/description.md",
+			"source_location": "L1",
+			"weight": 1.0
+		}
+	],
+	"input_tokens": 0,
+	"output_tokens": 0
+}

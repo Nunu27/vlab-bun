@@ -224,11 +224,10 @@
 	"222": "Containerlab class",
 	"223": "index.ts",
 	"224": "checkbox-field.tsx",
+	"225": "description.md",
 	"226": "index.ts",
 	"227": "utils.ts",
 	"228": "LabChecksSessionProvider",
 	"229": "LabSessionModalProvider",
-	"231": "hash.ts",
-	"232": "canvas.tsx",
-	"234": "lab.ts"
+	"231": "hash.ts"
 }
