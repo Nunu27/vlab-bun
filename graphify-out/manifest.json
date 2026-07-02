@@ -3610,9 +3610,9 @@
 		"semantic_hash": "099fe687e90ea96cd5fd0f20eccc7589"
 	},
 	"docs/modules/2-konfigurasi-ip-address/description.md": {
-		"mtime": 1781208836.711707,
-		"ast_hash": "289593ac6879c8e960c6461b4ddde15e",
-		"semantic_hash": "289593ac6879c8e960c6461b4ddde15e"
+		"mtime": 1783014576.10073,
+		"ast_hash": "4cc6184ee6a5ba4ec8389890d60e5e12",
+		"semantic_hash": ""
 	},
 	"docs/modules/2-konfigurasi-ip-address/instructions.md": {
 		"mtime": 1781701185.9467666,
@@ -3620,9 +3620,9 @@
 		"semantic_hash": "f24fed85ebc8f3c29c1c9e859c5cd650"
 	},
 	"docs/modules/2-konfigurasi-ip-address/material.md": {
-		"mtime": 1781867955.8778555,
-		"ast_hash": "fa668a510e075a8cf90027b8951cab17",
-		"semantic_hash": "fa668a510e075a8cf90027b8951cab17"
+		"mtime": 1783014609.7870257,
+		"ast_hash": "5fdcdd64bdb2bd0b57226c1355634d0f",
+		"semantic_hash": ""
 	},
 	"docs/modules/2-konfigurasi-ip-address/solution.md": {
 		"mtime": 1782137004.4073539,
@@ -3635,9 +3635,9 @@
 		"semantic_hash": "b2d63b7cf8975e0097aa4e6e6f1807fc"
 	},
 	"docs/modules/3-konfigurasi-static-routing/description.md": {
-		"mtime": 1781208836.7118924,
-		"ast_hash": "030a954af92d6b1a1ce44129b0f9d14c",
-		"semantic_hash": "030a954af92d6b1a1ce44129b0f9d14c"
+		"mtime": 1783014579.552183,
+		"ast_hash": "6ba4e1e466206a1b01de2e1590a58b39",
+		"semantic_hash": ""
 	},
 	"docs/modules/3-konfigurasi-static-routing/instructions.md": {
 		"mtime": 1781867960.7136028,
@@ -3645,9 +3645,9 @@
 		"semantic_hash": "f2f6c2bdd280b8da8a692ad59cb80b02"
 	},
 	"docs/modules/3-konfigurasi-static-routing/material.md": {
-		"mtime": 1781703450.4495733,
-		"ast_hash": "862a3a6165976fb9a962c51379ca0a6a",
-		"semantic_hash": "862a3a6165976fb9a962c51379ca0a6a"
+		"mtime": 1783014611.9612935,
+		"ast_hash": "c32ab6244bbd621cdce5df4f8f5651c9",
+		"semantic_hash": ""
 	},
 	"docs/modules/3-konfigurasi-static-routing/solution.md": {
 		"mtime": 1782137006.753363,
@@ -3660,9 +3660,9 @@
 		"semantic_hash": "262a594fc22bb45f4da50d335281c677"
 	},
 	"docs/modules/4-konfigurasi-routing-rip/description.md": {
-		"mtime": 1781208836.712125,
-		"ast_hash": "dc51da9f857e65593ba15e154fa2be87",
-		"semantic_hash": "dc51da9f857e65593ba15e154fa2be87"
+		"mtime": 1783014583.250268,
+		"ast_hash": "e539b20861ef1def0cd3bf08134973f5",
+		"semantic_hash": ""
 	},
 	"docs/modules/4-konfigurasi-routing-rip/instructions.md": {
 		"mtime": 1781887018.8971655,
@@ -3670,9 +3670,9 @@
 		"semantic_hash": "20fe02c32e95aa0d1a381cb34af770da"
 	},
 	"docs/modules/4-konfigurasi-routing-rip/material.md": {
-		"mtime": 1781887045.5274868,
-		"ast_hash": "fdae8ed1e2570a44555d046ee63dc303",
-		"semantic_hash": "fdae8ed1e2570a44555d046ee63dc303"
+		"mtime": 1783014613.7785165,
+		"ast_hash": "03e8e22bdbd086e11077a50f1f8dd2c7",
+		"semantic_hash": ""
 	},
 	"docs/modules/4-konfigurasi-routing-rip/solution.md": {
 		"mtime": 1782137010.4133766,
@@ -3685,9 +3685,9 @@
 		"semantic_hash": "a988eb70942577e519f6c11760bd2b18"
 	},
 	"docs/modules/5-konfigurasi-routing-ospf/description.md": {
-		"mtime": 1781208836.7122648,
-		"ast_hash": "e30857cf23ef99e0ddd297e202cc064e",
-		"semantic_hash": "e30857cf23ef99e0ddd297e202cc064e"
+		"mtime": 1783014586.8481307,
+		"ast_hash": "ceea9b4ea7e0254ae45f5cf3ef2bf91a",
+		"semantic_hash": ""
 	},
 	"docs/modules/5-konfigurasi-routing-ospf/instructions.md": {
 		"mtime": 1781872412.9237754,
@@ -3695,9 +3695,9 @@
 		"semantic_hash": "8a5b3b9f2c01f6bda66cf2c6345dc720"
 	},
 	"docs/modules/5-konfigurasi-routing-ospf/material.md": {
-		"mtime": 1781873744.684961,
-		"ast_hash": "ce22069c1704c95db1d0b909c79d62d9",
-		"semantic_hash": "ce22069c1704c95db1d0b909c79d62d9"
+		"mtime": 1783014615.6117408,
+		"ast_hash": "526e7be54cfbc488387d45b25295e317",
+		"semantic_hash": ""
 	},
 	"docs/modules/5-konfigurasi-routing-ospf/solution.md": {
 		"mtime": 1782137013.3723876,
@@ -3710,9 +3710,9 @@
 		"semantic_hash": "6deff9020a1378cede71c638f4b2e002"
 	},
 	"docs/modules/6-konfigurasi-routing-bgp/description.md": {
-		"mtime": 1781873505.1106272,
-		"ast_hash": "73ce95e70dc48f61be8fc19c30b0b3a2",
-		"semantic_hash": "73ce95e70dc48f61be8fc19c30b0b3a2"
+		"mtime": 1783014590.4695964,
+		"ast_hash": "c096436c6d61da5b84d5af8c968111e3",
+		"semantic_hash": ""
 	},
 	"docs/modules/6-konfigurasi-routing-bgp/instructions.md": {
 		"mtime": 1782988900.4187136,
@@ -3720,9 +3720,9 @@
 		"semantic_hash": ""
 	},
 	"docs/modules/6-konfigurasi-routing-bgp/material.md": {
-		"mtime": 1781873750.0565903,
-		"ast_hash": "4864502241b567e1e962adc7cc62b2bf",
-		"semantic_hash": "4864502241b567e1e962adc7cc62b2bf"
+		"mtime": 1783014617.436963,
+		"ast_hash": "1480a97dc6b5f2d27e9d80a021e00720",
+		"semantic_hash": ""
 	},
 	"docs/modules/6-konfigurasi-routing-bgp/solution.md": {
 		"mtime": 1782137017.2404022,

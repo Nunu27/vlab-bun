@@ -1,0 +1,143 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_md",
+			"label": "material.md",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"label": "Konfigurasi Routing RIP",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konsep_dasar_dynamic_routing",
+			"label": "Konsep Dasar Dynamic Routing",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L5"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_distance_vector_dan_algoritma_bellman_ford",
+			"label": "Distance-Vector dan Algoritma Bellman-Ford",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L8"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_karakteristik_dan_limitasi_rip",
+			"label": "Karakteristik dan Limitasi RIP",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L13"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_mekanisme_split_horizon_poison_reverse",
+			"label": "Mekanisme Split Horizon & Poison Reverse",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L19"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_catatan_best_practices",
+			"label": "Catatan (Best Practices)",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L24"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_referensi_perintah",
+			"label": "Referensi Perintah",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L32"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_mikrotik_routeros_v7",
+			"label": "MikroTik RouterOS v7",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L33"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_md",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L1",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konsep_dasar_dynamic_routing",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L5",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_distance_vector_dan_algoritma_bellman_ford",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L8",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_karakteristik_dan_limitasi_rip",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L13",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_mekanisme_split_horizon_poison_reverse",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L19",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_catatan_best_practices",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L24",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_konfigurasi_routing_rip",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_referensi_perintah",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L32",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_referensi_perintah",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_4_konfigurasi_routing_rip_material_mikrotik_routeros_v7",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/material.md",
+			"source_location": "L33",
+			"weight": 1.0
+		}
+	],
+	"input_tokens": 0,
+	"output_tokens": 0
+}

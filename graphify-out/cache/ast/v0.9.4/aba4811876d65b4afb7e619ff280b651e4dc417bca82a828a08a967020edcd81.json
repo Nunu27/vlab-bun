@@ -1,0 +1,143 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_md",
+			"label": "material.md",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konfigurasi_static_routing",
+			"label": "Konfigurasi Static Routing",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konsep_dasar_routing",
+			"label": "Konsep Dasar Routing",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L5"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_cara_kerja_tabel_routing_routing_table",
+			"label": "Cara Kerja Tabel Routing (Routing Table)",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L8"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_static_routing_vs_dynamic_routing",
+			"label": "Static Routing vs Dynamic Routing",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L14"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_fenomena_asymmetric_routing_rute_balikan",
+			"label": "Fenomena Asymmetric Routing & Rute Balikan",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L24"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_referensi_perintah",
+			"label": "Referensi Perintah",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L28"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_linux_ubuntu_end_device",
+			"label": "Linux (Ubuntu) - End Device",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L29"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_mikrotik_routeros",
+			"label": "MikroTik RouterOS",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L37"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_md",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konfigurasi_static_routing",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L1",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konfigurasi_static_routing",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konsep_dasar_routing",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L5",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konfigurasi_static_routing",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_cara_kerja_tabel_routing_routing_table",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L8",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konfigurasi_static_routing",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_static_routing_vs_dynamic_routing",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L14",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konfigurasi_static_routing",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_fenomena_asymmetric_routing_rute_balikan",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L24",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_konfigurasi_static_routing",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_referensi_perintah",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L28",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_referensi_perintah",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_linux_ubuntu_end_device",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L29",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_referensi_perintah",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_3_konfigurasi_static_routing_material_mikrotik_routeros",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/material.md",
+			"source_location": "L37",
+			"weight": 1.0
+		}
+	],
+	"input_tokens": 0,
+	"output_tokens": 0
+}
