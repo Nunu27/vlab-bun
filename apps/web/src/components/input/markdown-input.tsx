@@ -2,6 +2,8 @@ import {
 	BlockTypeSelect,
 	BoldItalicUnderlineToggles,
 	CreateLink,
+	codeBlockPlugin,
+	codeMirrorPlugin,
 	headingsPlugin,
 	InsertImage,
 	InsertTable,
@@ -122,6 +124,8 @@ function MarkdownInput({
 						imagePlugin({ imageUploadHandler }),
 						tablePlugin(),
 						thematicBreakPlugin(),
+						codeBlockPlugin({ defaultCodeBlockLanguage: "" }),
+						codeMirrorPlugin({ codeBlockLanguages: { "": "Text" } }),
 						markdownShortcutPlugin(),
 					]}
 				/>
