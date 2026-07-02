@@ -1,5 +1,7 @@
 # Konfigurasi Static Routing
 
+> **Prasyarat:** Materi ini melanjutkan **Modul 1: Pengenalan CLI** dan **Modul 2: Konfigurasi IP Address**. Pengalamatan IP harus sudah dikuasai karena *routing* baru dapat dibahas setelah setiap *interface* memiliki alamat IP.
+
 ## Konsep Dasar Routing
 Routing adalah proses mentransmisikan paket data dari satu segmen jaringan (Network ID) ke segmen jaringan lain yang berbeda melalui perangkat **Router**. Jika sebuah PC mencoba mengirim paket ke IP di luar jaringannya, PC tersebut tidak akan melakukan *broadcast*, melainkan akan menyerahkan paket tersebut kepada "pintu keluar" utamanya, yang dikenal sebagai **Default Gateway**.
 

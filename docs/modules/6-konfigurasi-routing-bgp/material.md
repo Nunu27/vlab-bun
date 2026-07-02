@@ -1,5 +1,7 @@
 # Konfigurasi Routing BGP
 
+> **Prasyarat:** Materi ini melanjutkan **Modul 5: Konfigurasi Routing OSPF**. Pemahaman IGP pada OSPF diperlukan sebagai pembanding untuk memahami peran BGP sebagai EGP.
+
 ## Protokol Tulang Punggung Internet
 Border Gateway Protocol (BGP) adalah satu-satunya **Exterior Gateway Protocol (EGP)** yang dipakai di dunia nyata. Protokol lain (seperti RIP dan OSPF) adalah IGP (*Interior Gateway Protocol*) yang tugasnya mencari rute di *dalam* jaringan internal.
 BGP bertugas mencari rute di *luar* jaringan internal, menghubungkan jaringan ISP lokal menuju ke Google, Meta, atau benua lain. Tanpa BGP, Internet global tidak bisa terjalin.

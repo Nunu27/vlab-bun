@@ -1,5 +1,7 @@
 # Konfigurasi Routing RIP
 
+> **Prasyarat:** Materi ini melanjutkan **Modul 3: Konfigurasi Static Routing**. Pahami dahulu konsep tabel *routing* dan perutean manual sebelum mempelajari perutean dinamis di modul ini.
+
 ## Konsep Dasar Dynamic Routing
 *Dynamic Routing* diciptakan untuk memecahkan masalah kompleksitas konfigurasi pada *Static Routing*. Dengan routing dinamis, setiap router akan menjalankan sebuah protokol perangkat lunak yang bertugas bertukar informasi "Peta Jaringan" dengan router tetangganya. Jika ada perubahan (seperti kabel terputus atau router mati), algoritma akan mengkalkulasi ulang secara otomatis untuk menemukan jalur alternatif.
 

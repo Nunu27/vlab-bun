@@ -1,5 +1,7 @@
 # Konfigurasi IP
 
+> **Prasyarat:** Materi ini melanjutkan **Modul 1: Pengenalan CLI**. Pastikan Anda sudah terbiasa dengan navigasi dan perintah dasar CLI sebelum melanjutkan.
+
 ## Konsep Dasar Pengalamatan IP
 Alamat IP (Internet Protocol) adalah identitas numerik (mirip seperti nomor telepon atau alamat rumah) yang dipasang pada setiap perangkat jaringan agar bisa saling mengenali dan bertukar paket data. Tanpa alamat IP, PC, Router, atau Server tidak akan pernah bisa berkomunikasi.
 
