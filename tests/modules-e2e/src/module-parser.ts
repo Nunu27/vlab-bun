@@ -87,10 +87,18 @@ export async function parseModule(modulePath: string): Promise<ParsedModule> {
 			.filter(Boolean);
 		if (parts.length !== 4) continue;
 
-		const checkId = parts[0]?.replace(/`/g, "");
-		const targetNode = parts[1]?.replace(/`/g, "");
-		const paramsStr = parts[2]!;
-		const weight = parseInt(parts[3]!, 10) || 1;
+		const [rawCheckId, rawTargetNode, paramsStr, weightStr] = parts;
+		const checkId = rawCheckId?.replace(/`/g, "");
+		const targetNode = rawTargetNode?.replace(/`/g, "");
+		if (
+			!checkId ||
+			!targetNode ||
+			paramsStr === undefined ||
+			weightStr === undefined
+		) {
+			throw new Error(`Malformed check row in ${name}/checks.md: "${trimmed}"`);
+		}
+		const weight = parseInt(weightStr, 10) || 1;
 
 		const params: Record<string, string> = {};
 		for (const p of paramsStr.split(/<br>|,\s+/).map((s) => s.trim())) {

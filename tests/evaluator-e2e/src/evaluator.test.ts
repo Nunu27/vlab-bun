@@ -66,13 +66,7 @@ const clabMonitor = createMonitor({
 		warn: () => {},
 	},
 	docker,
-	filter: (data) => data.sessionId === LAB_NAME,
-	mapping: {
-		sessionId: "containerlab",
-		nodeId: "clab-node-name",
-		name: "clab-node-name",
-		deviceKind: "clab-node-kind",
-	},
+	nodeIdLabel: "clab-node-name",
 });
 
 // Add node interface read override
