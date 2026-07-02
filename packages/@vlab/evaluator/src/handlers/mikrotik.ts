@@ -195,7 +195,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "log",
 		data: t.String(),
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const listener = await client.stream("/log/listen");
 
 			// Example data
@@ -209,6 +209,7 @@ export default new EvaluationHandler("mikrotik")
 			listener.on("data", (data) => {
 				notify(data.message);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -216,19 +217,19 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "routing-table",
 		data: IPRouteSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const doUpdate = throttle(async () => {
 				try {
 					const data = await client.runQuery("/ip/route/print");
 					notify(data);
-				} catch {
-					// Client closed during cleanup — ignore
+				} catch (error) {
+					reportError(error);
 				}
 			}, 100);
 
 			const listener = await client.stream("/ip/route/listen");
 			listener.on("data", () => doUpdate());
-			listener.on("error", () => {});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -302,7 +303,7 @@ export default new EvaluationHandler("mikrotik")
 		//   }
 		// ]
 		data: OSPFInstanceSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof OSPFInstanceSchema.static = await client.runQuery(
 				"/routing/ospf/instance/print",
 			);
@@ -324,6 +325,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -383,7 +385,7 @@ export default new EvaluationHandler("mikrotik")
 		//   }
 		// ]
 		data: OSPFAreaSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof OSPFAreaSchema.static = await client.runQuery(
 				"/routing/ospf/area/print",
 			);
@@ -418,6 +420,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -468,7 +471,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "ospf-interface-template",
 		data: OSPFInterfaceTemplateSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof OSPFInterfaceTemplateSchema.static = [];
 			const doUpdate = throttle(async () => {
 				try {
@@ -477,8 +480,8 @@ export default new EvaluationHandler("mikrotik")
 					list.length = 0;
 					list.push(...currentList);
 					notify(list);
-				} catch (_e) {
-					// ignore
+				} catch (error) {
+					reportError(error);
 				}
 			}, 100);
 
@@ -487,6 +490,7 @@ export default new EvaluationHandler("mikrotik")
 			);
 
 			listener.on("data", () => doUpdate());
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -549,7 +553,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "ospf-neighbor",
 		data: OSPFNeighborSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof OSPFNeighborSchema.static = await client.runQuery(
 				"/routing/ospf/neighbor/print",
 			);
@@ -571,6 +575,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -612,7 +617,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "rip-instance",
 		data: RIPInstanceSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof RIPInstanceSchema.static = await client.runQuery(
 				"/routing/rip/instance/print",
 			);
@@ -634,6 +639,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -681,7 +687,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "rip-interface-template",
 		data: RIPInterfaceTemplateSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof RIPInterfaceTemplateSchema.static =
 				await client.runQuery("/routing/rip/interface-template/print");
 
@@ -704,6 +710,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -747,7 +754,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "bgp-instance",
 		data: BGPInstanceSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof BGPInstanceSchema.static = await client.runQuery(
 				"/routing/bgp/instance/print",
 			);
@@ -769,6 +776,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -816,7 +824,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "bgp-connection",
 		data: BGPConnectionSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof BGPConnectionSchema.static = await client.runQuery(
 				"/routing/bgp/connection/print",
 			);
@@ -838,6 +846,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -895,19 +904,19 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "bgp-session",
 		data: BGPSessionSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const doUpdate = throttle(async () => {
 				try {
 					const data = await client.runQuery("/routing/bgp/session/print");
 					notify(data);
-				} catch {
-					// Client closed during cleanup — ignore
+				} catch (error) {
+					reportError(error);
 				}
 			}, 100);
 
 			const listener = await client.stream("/routing/bgp/session/listen");
 			listener.on("data", () => doUpdate());
-			listener.on("error", () => {});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},
@@ -941,7 +950,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "system-identity",
 		data: SystemIdentitySchema,
-		listen: async ({ client }, notify, subscribe) => {
+		listen: async ({ client }, { notify, subscribe }) => {
 			const doUpdate = throttle(async () => {
 				const data = await client.runQuery("/system/identity/print");
 				notify(data);
@@ -974,7 +983,7 @@ export default new EvaluationHandler("mikrotik")
 	.addSource({
 		id: "users",
 		data: UserSchema,
-		listen: async ({ client }, notify) => {
+		listen: async ({ client }, { notify, reportError }) => {
 			const list: typeof UserSchema.static =
 				await client.runQuery("/user/print");
 
@@ -995,6 +1004,7 @@ export default new EvaluationHandler("mikrotik")
 
 				notify(list);
 			});
+			listener.on("error", reportError);
 
 			return listener.cancel;
 		},

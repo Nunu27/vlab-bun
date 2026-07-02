@@ -315,13 +315,13 @@ export default new EvaluationHandler("linux")
 	.addSource({
 		id: "routing",
 		data: IpRouteSchema,
-		listen: async ({ container, docker }, notify) => {
+		listen: async ({ container, docker }, { notify, reportError }) => {
 			const doUpdate = throttle(async () => {
 				try {
 					const data = await getRoutes(container);
 					notify(data);
-				} catch {
-					// transient container error (e.g. namespace not ready), ignore
+				} catch (error) {
+					reportError(error);
 				}
 			}, 100);
 
@@ -338,7 +338,9 @@ export default new EvaluationHandler("linux")
 				const rawStream = await exec.start({ Detach: false, Tty: false });
 				docker.modem.demuxStream(rawStream, stdout, stderr);
 
+				let closed = false;
 				const cleanup = () => {
+					closed = true;
 					rawStream.destroy();
 				};
 
@@ -351,10 +353,17 @@ export default new EvaluationHandler("linux")
 				stderr.on("data", (chunk: Buffer) => {
 					const text = chunk.toString();
 					if (text.includes("OCI runtime exec failed")) {
-						cleanup();
+						if (!closed) reportError(new Error(text));
 					} else {
 						console.error("Routing Monitor Error:", text);
 					}
+				});
+
+				rawStream.on("error", (error) => {
+					if (!closed) reportError(error);
+				});
+				rawStream.on("close", () => {
+					if (!closed) reportError(new Error("Routing monitor stream closed"));
 				});
 
 				return cleanup;
@@ -396,13 +405,13 @@ export default new EvaluationHandler("linux")
 	.addSource({
 		id: "users",
 		data: UserSchema,
-		listen: async ({ container, docker }, notify) => {
+		listen: async ({ container, docker }, { notify, reportError }) => {
 			const doUpdate = throttle(async () => {
 				try {
 					const data = await getUsers(container);
 					notify(data);
 				} catch (error) {
-					console.error("Failed to update users:", error);
+					reportError(error);
 				}
 			}, 100);
 
@@ -423,7 +432,9 @@ export default new EvaluationHandler("linux")
 				const rawStream = await exec.start({ Detach: false, Tty: false });
 				docker.modem.demuxStream(rawStream, stdout, stderr);
 
+				let closed = false;
 				const cleanup = () => {
+					closed = true;
 					rawStream.destroy();
 				};
 
@@ -436,10 +447,17 @@ export default new EvaluationHandler("linux")
 				stderr.on("data", (chunk: Buffer) => {
 					const text = chunk.toString();
 					if (text.includes("OCI runtime exec failed")) {
-						cleanup();
+						if (!closed) reportError(new Error(text));
 					} else {
 						console.error("Users Monitor Error:", text);
 					}
+				});
+
+				rawStream.on("error", (error) => {
+					if (!closed) reportError(error);
+				});
+				rawStream.on("close", () => {
+					if (!closed) reportError(new Error("Users monitor stream closed"));
 				});
 
 				return cleanup;

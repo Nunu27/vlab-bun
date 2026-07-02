@@ -19,7 +19,7 @@ export function parseInspectOutput(stdout: string): ContainerlabInspectNode[] {
 		image: getString(row, "image") ?? "",
 		kind: getString(row, "kind") ?? "",
 		state: getString(row, "state") ?? "",
-		status: getString(row, "status"),
+		status: getString(row, "status")?.replace("health: ", ""),
 		ipv4Address: getString(row, "ipv4_address"),
 		ipv6Address: getString(row, "ipv6_address"),
 		owner: getString(row, "owner"),

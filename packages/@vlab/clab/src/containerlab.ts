@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { access, mkdir, rm, stat } from "node:fs/promises";
+import { access, mkdir, readdir, rm, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { buildDeployArgs, buildDestroyArgs } from "./args";
 import {
@@ -163,6 +163,20 @@ export class Containerlab {
 			...buildDestroyArgs(options),
 		]);
 		await rm(labDirectory, { recursive: true, force: true });
+	}
+
+	async listDeployedIds(): Promise<string[]> {
+		await this.ready();
+
+		try {
+			const entries = await readdir(this.topologiesPath, {
+				withFileTypes: true,
+			});
+			return entries.filter((entry) => entry.isDirectory()).map((e) => e.name);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+			throw error;
+		}
 	}
 
 	async inspect(id: string): Promise<ContainerlabInspectNode[]> {

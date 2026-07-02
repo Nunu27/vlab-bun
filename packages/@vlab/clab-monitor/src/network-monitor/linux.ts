@@ -1,5 +1,4 @@
 import { type Duplex, PassThrough } from "node:stream";
-import { sleep } from "bun";
 import type { NetworkMonitor } from "../types";
 import { removeItemFromArray } from "../utils";
 
@@ -45,10 +44,6 @@ export default {
 				if (!interfaces[iface]) interfaces[iface] = [];
 
 				if (info?.startsWith("Deleted")) {
-					// Event might come from node being destroyed
-					await sleep(500);
-
-					// stop() already cleared this node's tracking, discard the stale event
 					if (!nodeInterfaceMap.has(id)) return;
 					removeItemFromArray(interfaces[iface] ?? [], ip);
 				} else {

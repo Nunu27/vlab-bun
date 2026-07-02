@@ -1,12 +1,10 @@
 import EventEmitter from "node:events";
-import type { ContainerInspectInfo } from "dockerode";
 import containerHandler from "./container-handler";
 import networkMonitor from "./network-monitor";
 import type {
 	ContainerEvent,
 	Context,
 	Events,
-	NodeData,
 	NodeInfo,
 	Options,
 } from "./types";
@@ -50,13 +48,11 @@ async function emitInitialState(ctx: Context) {
 		const resolved = resolveNode(ctx.nodeIdLabel, container.Labels);
 		if (!resolved) continue;
 
-		if (!("Health" in container)) continue;
+		const containerHandle = docker.getContainer(container.Id);
+		const info = await containerHandle.inspect();
+		const health = info.State.Health?.Status ?? null;
 
-		const healthData =
-			container.Health as ContainerInspectInfo["State"]["Health"];
-		const health = healthData?.Status ?? null;
-
-		const ip = extractManagementIp(container.NetworkSettings);
+		const ip = extractManagementIp(info.NetworkSettings);
 		if (!ip) continue;
 
 		const nodeInfo: NodeInfo = {
@@ -66,19 +62,18 @@ async function emitInitialState(ctx: Context) {
 			ip,
 		};
 
-		const containerHandle = docker.getContainer(container.Id);
-		const nodeData: NodeData = {
+		const interfaces = await networkMonitor.extractInterfaces(
+			ctx,
+			containerHandle,
+			nodeInfo,
+		);
+
+		eventEmitter.emit("node-create", {
 			...nodeInfo,
 			name: resolved.name,
 			containerId: container.Id,
-			interfaces: await networkMonitor.extractInterfaces(
-				ctx,
-				containerHandle,
-				nodeInfo,
-			),
-		};
-
-		eventEmitter.emit("node-create", nodeData);
+			interfaces,
+		});
 		networkMonitor.start(ctx, containerHandle, nodeInfo);
 	}
 }
@@ -91,11 +86,6 @@ async function initMonitoring(
 	options: Options,
 ) {
 	const { docker, logger } = options;
-
-	emitter.on("node-create", (node) => {
-		nodeHealths.set(node.id, node.health ?? null);
-		healthEmitter.emit(node.id, node.health ?? null);
-	});
 
 	emitter.on("health-update", (data) => {
 		nodeHealths.set(data.id, data.health);
