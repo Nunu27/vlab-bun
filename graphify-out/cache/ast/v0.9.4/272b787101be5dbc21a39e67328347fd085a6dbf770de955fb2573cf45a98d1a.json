@@ -1,0 +1,159 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_md",
+			"label": "README.md",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"label": "@vlab/clab-monitor",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_architecture_underlying_system",
+			"label": "\ud83c\udfd7\ufe0f Architecture & Underlying System",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L7"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_core_components",
+			"label": "Core Components",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L9"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_list_of_emitted_events",
+			"label": "\ud83d\udce1 List of Emitted Events",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L19"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_node_create",
+			"label": "`node-create`",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L23"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_node_remove",
+			"label": "`node-remove`",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L27"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_health_update",
+			"label": "`health-update`",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L31"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_interface_update",
+			"label": "`interface-update`",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L36"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_usage_overview",
+			"label": "\ud83d\udee0 Usage Overview",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L40"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_md",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L1",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_architecture_underlying_system",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L7",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_architecture_underlying_system",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_core_components",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L9",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_list_of_emitted_events",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L19",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_list_of_emitted_events",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_node_create",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L23",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_list_of_emitted_events",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_node_remove",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L27",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_list_of_emitted_events",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_health_update",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L31",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_list_of_emitted_events",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_interface_update",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L36",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "home_nunu27_projects_pa_vlab_packages_vlab_clab_monitor_readme_usage_overview",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": "L40",
+			"weight": 1.0
+		}
+	],
+	"input_tokens": 0,
+	"output_tokens": 0
+}

@@ -1,0 +1,19 @@
+{
+	"runs": [
+		{
+			"date": "2026-07-01T18:39:37.839696+00:00",
+			"input_tokens": 375922,
+			"output_tokens": 0,
+			"files": 787
+		},
+		{
+			"date": "2026-07-01T18:58:41.406376+00:00",
+			"input_tokens": 0,
+			"output_tokens": 0,
+			"files": 2,
+			"note": "incremental update: excluded scripts/ via .graphifyignore, pruned 10 files"
+		}
+	],
+	"total_input_tokens": 375922,
+	"total_output_tokens": 0
+}
