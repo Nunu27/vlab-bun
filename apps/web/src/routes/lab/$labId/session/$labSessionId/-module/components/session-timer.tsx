@@ -12,7 +12,10 @@ export function SessionTimer({ dueDate }: { dueDate: Date }) {
 	}, [startCountdown]);
 
 	return (
-		<div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm">
+		<div
+			data-tour="session-timer"
+			className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm"
+		>
 			<Clock className="size-4 text-muted-foreground" />
 			<span
 				className={

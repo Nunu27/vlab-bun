@@ -5,14 +5,18 @@ import TopologyCanvas from "@web/shared/topology/components/canvas";
 import { BookOpen, WifiOff } from "lucide-react";
 import { useLabSessionModalStore } from "../store/lab-session-modal-store";
 
-export function SessionTopology() {
+export function SessionTopology({
+	onReplayTour,
+}: {
+	onReplayTour?: () => void;
+}) {
 	const store = useLabSessionModalStore();
 	const { sidebar } = store.use.actions();
 	const isConnected = useWSConnectionState();
 
 	return (
 		<>
-			<TopologyCanvas />
+			<TopologyCanvas onReplayTour={onReplayTour} />
 
 			{!isConnected && (
 				<div className="absolute top-6 left-6 z-50">
@@ -23,7 +27,10 @@ export function SessionTopology() {
 				</div>
 			)}
 
-			<div className="absolute top-6 right-6 z-50">
+			<div
+				data-tour="toggle-instructions"
+				className="absolute top-6 right-6 z-50"
+			>
 				<div className="flex flex-col gap-1 rounded-xl border border-border bg-card/90 p-1.5 shadow-lg backdrop-blur-sm">
 					<ActionButton
 						icon={BookOpen}

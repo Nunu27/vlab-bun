@@ -14,7 +14,7 @@ import Controls from "./controls";
 import TopologyLayers from "./layers";
 import Toolbar from "./toolbar";
 
-function TopologyCanvas() {
+function TopologyCanvas({ onReplayTour }: { onReplayTour?: () => void } = {}) {
 	const canvasRef = useRef<HTMLDivElement>(null) as RefObject<HTMLDivElement>;
 	const backgroundRef = useRef<HTMLDivElement>(
 		null,
@@ -26,7 +26,11 @@ function TopologyCanvas() {
 	const screenToWorld = useScreenToWorld({ worldRef: canvasRef });
 
 	useTopologyWheel({ elementRef: canvasRef });
-	useTopologyPanAndDrag({ backgroundRef, foregroundRef: canvasRef });
+	useTopologyPanAndDrag({
+		backgroundRef,
+		foregroundRef: canvasRef,
+		panOnLeftClick: !isEditor,
+	});
 
 	useTopologyText({
 		enabled: isEditor,
@@ -78,7 +82,7 @@ function TopologyCanvas() {
 		>
 			<Background ref={backgroundRef} />
 			<TopologyLayers />
-			<Controls canvasRef={canvasRef} />
+			<Controls canvasRef={canvasRef} onReplayTour={onReplayTour} />
 
 			{isEditor && <Toolbar />}
 			{isEditor && <ConnectionStatus />}

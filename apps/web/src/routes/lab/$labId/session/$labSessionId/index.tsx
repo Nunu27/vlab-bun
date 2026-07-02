@@ -21,6 +21,8 @@ import SessionOverridenModal from "./-module/components/modals/session-overriden
 import { SessionHeader } from "./-module/components/session-header";
 import { SessionSidebar } from "./-module/components/session-sidebar";
 import { SessionTopology } from "./-module/components/session-topology";
+import { hasSeenTour } from "./-module/onboarding/constants";
+import { useLabSessionTour } from "./-module/onboarding/use-lab-session-tour";
 import {
 	LabSessionModalProvider,
 	useLabSessionModalStore,
@@ -30,10 +32,14 @@ type LabTopology = ExtractTreatyData<
 	ReturnType<typeof api.lab>["get"]
 >["topology"];
 
+type LabAttachments = ExtractTreatyData<
+	ReturnType<typeof api.lab>["get"]
+>["attachments"];
+
 export const Route = createFileRoute("/lab/$labId/session/$labSessionId/")({
 	component: RouteComponent,
 	loader: async ({ params: { labId, labSessionId } }) => {
-		await Promise.all([
+		const [lab] = await Promise.all([
 			api.lab({ labId }).get.ensureQueryData(queryClient),
 			api
 				.lab({ labId })
@@ -42,7 +48,12 @@ export const Route = createFileRoute("/lab/$labId/session/$labSessionId/")({
 			api["device-template"].list.get.ensureQueryData(queryClient),
 			api.evaluator.list.get.ensureQueryData(queryClient),
 		]);
+
+		return { labName: lab.name };
 	},
+	head: ({ loaderData }) => ({
+		meta: [{ title: `${loaderData?.labName ?? "Session"} - vLab` }],
+	}),
 });
 
 function RouteComponent() {
@@ -94,6 +105,7 @@ function RouteComponent() {
 						{/* Main Content Area */}
 						<SessionLayout
 							instructions={lab.instructions}
+							attachments={lab.attachments}
 							labId={labId}
 							labSessionId={labSessionId}
 						/>
@@ -118,10 +130,12 @@ function RouteComponent() {
 
 function SessionLayout({
 	instructions,
+	attachments,
 	labId,
 	labSessionId,
 }: {
 	instructions: string;
+	attachments: LabAttachments;
 	labId: string;
 	labSessionId: string;
 }) {
@@ -133,9 +147,15 @@ function SessionLayout({
 	const { sidebar, conflict, overridden } = modalStore.use.actions();
 	const sidebarOpen = modalStore.use.sidebar((s) => s !== null);
 
+	const { start: startTour } = useLabSessionTour();
+
 	useEffect(() => {
 		sidebar.open("open");
 	}, [sidebar]);
+
+	useEffect(() => {
+		if (sidebarOpen && !hasSeenTour()) startTour();
+	}, [sidebarOpen, startTour]);
 
 	useWSEvent("lab-session:[sessionId]:client-change", {
 		params: { sessionId: labSessionId },
@@ -172,7 +192,7 @@ function SessionLayout({
 						minSize="30%"
 					>
 						<main className="relative flex h-full w-full flex-col overflow-hidden bg-muted/5">
-							<SessionTopology />
+							<SessionTopology onReplayTour={startTour} />
 						</main>
 					</ResizablePanel>
 
@@ -180,7 +200,10 @@ function SessionLayout({
 						<>
 							<ResizableHandle />
 							<ResizablePanel defaultSize="25%" minSize="25%" maxSize="50%">
-								<SessionSidebar instructions={instructions} />
+								<SessionSidebar
+									instructions={instructions}
+									attachments={attachments}
+								/>
 							</ResizablePanel>
 						</>
 					)}

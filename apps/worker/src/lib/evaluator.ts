@@ -71,7 +71,6 @@ export async function startLabEvaluation(
 
 		logger.debug({ sessionId, checkId: id, value }, "Lab node check changed");
 
-		// Fire callback instead of updating DB directly
 		onCheckChange(id, value);
 	});
 
@@ -129,7 +128,6 @@ export function stopLabEvaluation(
 
 	logger.debug({ sessionId }, "Scheduling lab evaluation stop");
 
-	// A simple timeout for "debouncing" stop
 	return new Promise((resolve) => {
 		const timer = setTimeout(() => {
 			stopTimers.delete(sessionId);

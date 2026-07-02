@@ -27,6 +27,7 @@ export function SessionSubmitButton({ sessionId }: { sessionId: string }) {
 
 	return (
 		<Button
+			data-tour="submit-button"
 			variant="default"
 			size="sm"
 			className="gap-2"
