@@ -5,6 +5,10 @@ import { type RefObject, useEffect } from "react";
 // active, even without a modifier held. Printable characters are excluded so
 // that the subsequent `keypress` event still fires — Guacamole.Keyboard relies
 // on it for character keysym resolution.
+
+// Clipboard shortcuts that must NOT be suppressed so that the browser's
+// cut/copy/paste events still fire (needed for our clipboard sync hook).
+const CLIPBOARD_KEYS = new Set(["c", "v", "x", "a"]);
 const NON_PRINTABLE_KEYS = new Set([
 	"ArrowUp",
 	"ArrowDown",
@@ -64,8 +68,15 @@ export const useGuacamoleKeyboard = ({
 
 		// Prevent the browser from consuming key combos (Ctrl+W, Ctrl+Arrow, Alt+F4…)
 		// and non-printable keys (arrows scrolling the page, Backspace navigating back).
+		// Clipboard shortcuts (Ctrl+C/V/X/A) are exempted so the browser paste event
+		// still fires, allowing our clipboard sync hook to intercept it.
 		const suppressBrowserShortcuts = (e: KeyboardEvent) => {
-			if (e.ctrlKey || e.altKey || e.metaKey || NON_PRINTABLE_KEYS.has(e.key)) {
+			const isClipboardShortcut =
+				(e.ctrlKey || e.metaKey) && CLIPBOARD_KEYS.has(e.key.toLowerCase());
+			if (
+				!isClipboardShortcut &&
+				(e.ctrlKey || e.altKey || e.metaKey || NON_PRINTABLE_KEYS.has(e.key))
+			) {
 				e.preventDefault();
 			}
 		};

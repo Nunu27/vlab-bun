@@ -151,6 +151,9 @@ function SessionLayout({
 		params: { sessionId: labSessionId },
 		handler: async () => {
 			await navigate({ to: "/lab/$labId", params: { labId }, replace: true });
+			queryClient.removeQueries(
+				api.lab({ labId }).session({ labSessionId }).get.queryOptions(),
+			);
 			api.lab({ labId }).invalidateQuery(queryClient);
 		},
 	});
