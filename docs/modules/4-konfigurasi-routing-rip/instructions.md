@@ -70,7 +70,7 @@ Skenario ini dirancang khusus untuk menunjukkan kemampuan inti RIP sebagai proto
 
 1. Tunggu sejenak (sekitar 30 detik), lalu buka tabel *routing* pada R1 (`/ip route print`).
 2. Cari dua entri rute RIP berikut dan perhatikan perbedaan *hop count*-nya:
-   - Rute `10.10.20.0/30` (Network C) — dipelajari langsung dari R2, *hop count* = **1**.
-   - Rute `192.168.20.0/24` (Network D) — dipelajari dari R2 yang mendapatkannya dari R3, *hop count* = **2**. Inilah propagasi rute *transitif* yang menjadi inti dari *Distance-Vector*. <LabCheck node="R1" id="mikrotik.route-exist" />
+   - Rute `10.10.20.0/30` (Network C): dipelajari langsung dari R2, *hop count* = **1**.
+   - Rute `192.168.20.0/24` (Network D): dipelajari dari R2 yang mendapatkannya dari R3, *hop count* = **2**. Inilah propagasi rute *transitif* yang menjadi inti dari *Distance-Vector*. <LabCheck node="R1" id="mikrotik.route-exist" />
 3. Lakukan verifikasi silang pada R3: rute `192.168.10.0/24` harus muncul dengan flag **DAr**. <LabCheck node="R3" id="mikrotik.route-exist" />
 4. Lakukan pengujian ping *end-to-end* dari PC1 ke PC2: `ping -c 4 192.168.20.2`.

@@ -23,9 +23,9 @@ vLab uses a **Manager-Worker** architecture designed to run Containerlab on bare
   └─────────────┘
 ```
 
-- **Manager** — Central API server. Owns the database, handles auth, manages job queues, proxies terminal access (Guacamole), and relays real-time telemetry to the web UI.
-- **Worker** — Long-running daemon installed on each lab host. Executes `containerlab deploy/destroy`, monitors container health, and streams metrics back to the Manager via gRPC.
-- **Web UI** — React 19 SPA. Communicates exclusively with the Manager; never touches a Worker directly.
+- **Manager**: Central API server. Owns the database, handles auth, manages job queues, proxies terminal access (Guacamole), and relays real-time telemetry to the web UI.
+- **Worker**: Long-running daemon installed on each lab host. Executes `containerlab deploy/destroy`, monitors container health, and streams metrics back to the Manager via gRPC.
+- **Web UI**: React 19 SPA. Communicates exclusively with the Manager; never touches a Worker directly.
 
 ---
 
@@ -112,9 +112,9 @@ cp apps/worker/.env.example apps/worker/.env
 | `S3_ACCESS_KEY` | `minioadmin` | S3 access key |
 | `S3_SECRET_KEY` | `minioadmin` | S3 secret key |
 | `BASE_URL` | `http://localhost:3000` | Public-facing Manager URL (used for callbacks) |
-| `CAS_BASE_URL` | — | CAS SSO base URL (e.g. `https://login.pens.ac.id`) |
-| `COOKIE_SECRET` | — | 32+ char secret for signing session cookies |
-| `GUACD_SECRET` | — | 32+ char secret for signing Guacamole tokens |
+| `CAS_BASE_URL` | - | CAS SSO base URL (e.g. `https://login.pens.ac.id`) |
+| `COOKIE_SECRET` | - | 32+ char secret for signing session cookies |
+| `GUACD_SECRET` | - | 32+ char secret for signing Guacamole tokens |
 | `LOG_LEVEL` | `debug` | Pino log level (`debug`, `info`, `warn`, `error`) |
 | `ENABLE_OPENAPI` | `true` | Expose OpenAPI docs at `/swagger` |
 
@@ -150,7 +150,7 @@ Seed the database with initial data:
 bun run manager seed
 ```
 
-### Production — Docker Swarm
+### Production (Docker Swarm)
 
 Copy and fill in environment files, then deploy the full stack:
 
@@ -186,9 +186,9 @@ bun run manager reset-sessions  # Clear all active lab sessions
 
 vLab has a built-in evaluation engine (`@vlab/evaluator`) that checks student lab configurations automatically. Supported node types:
 
-- **Linux** — systemd services, routing tables, user accounts
-- **MikroTik RouterOS** — OSPF, RIP, BGP, interface state
-- **Generic** — ping reachability, custom command output
+- **Linux**: systemd services, routing tables, user accounts
+- **MikroTik RouterOS**: OSPF, RIP, BGP, interface state
+- **Generic**: ping reachability, custom command output
 
 ---
 

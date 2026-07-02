@@ -24,4 +24,4 @@ When a user starts a lab:
 Once the Containerlab topology is running, the Worker uses the `@vlab/clab-monitor` package. This package hooks into the Docker daemon on the Worker host to continuously monitor container health, lifecycle events (start, die), and active network interfaces for the specific containers belonging to that lab session. This state data is then streamed back to the Manager via gRPC.
 
 ## Security Considerations
-Because Containerlab requires interacting with network namespaces and modifying iptables rules, the Worker daemon must run with elevated privileges (root access and access to the Docker socket). This is the primary reason for the Manager-Worker architectural split—keeping the Manager isolated from the execution environment.
+Because Containerlab requires interacting with network namespaces and modifying iptables rules, the Worker daemon must run with elevated privileges (root access and access to the Docker socket). This is the primary reason for the Manager-Worker architectural split: keeping the Manager isolated from the execution environment.

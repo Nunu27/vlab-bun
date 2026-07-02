@@ -6,7 +6,7 @@ vLab supports two distinct deployment methods, depending on your needs.
 
 **[Read the Docker Swarm Guide](./docker-swarm.md)**
 
-This is the recommended approach for most users. It deploys the entire vLab stack—including the API manager, workers, backing services (PostgreSQL, Redis, MinIO), and a reverse proxy with automated SSL—as a single Docker Swarm stack.
+This is the recommended approach for most users. It deploys the entire vLab stack as a single Docker Swarm stack, including the API manager, workers, backing services (PostgreSQL, Redis, MinIO), and a reverse proxy with automated SSL.
 
 **Best for:** Production environments, homelabs, and users who want a simple, one-command deployment.
 

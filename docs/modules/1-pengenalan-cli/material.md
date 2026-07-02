@@ -1,7 +1,7 @@
 # Pengenalan Command Line Interface (CLI)
 
 ## Konsep Dasar CLI
-Command Line Interface (CLI) adalah antarmuka teks di mana pengguna berinteraksi dengan sistem menggunakan perintah teks. Di dunia jaringan, CLI lebih disukai daripada Graphical User Interface (GUI) karena sangat efisien, cepat, ringan, dan sangat stabil ketika digunakan untuk *remote access* lewat koneksi dengan *bandwidth* yang sangat rendah (misalnya via SSH). Hindari penggunaan Telnet karena protokol ini mengirimkan seluruh data — termasuk *password* — dalam bentuk teks mentah yang bisa disadap.
+Command Line Interface (CLI) adalah antarmuka teks di mana pengguna berinteraksi dengan sistem menggunakan perintah teks. Di dunia jaringan, CLI lebih disukai daripada Graphical User Interface (GUI) karena sangat efisien, cepat, ringan, dan sangat stabil ketika digunakan untuk *remote access* lewat koneksi dengan *bandwidth* yang sangat rendah (misalnya via SSH). Hindari penggunaan Telnet karena protokol ini mengirimkan seluruh data, termasuk *password*, dalam bentuk teks mentah yang bisa disadap.
 
 ## Mengapa Administrator Menggunakan CLI?
 Meskipun GUI terlihat lebih modern dan mudah digunakan, seorang *Network Engineer* profesional lebih sering berhadapan dengan CLI karena beberapa alasan krusial:
