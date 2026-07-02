@@ -1,3 +1,4 @@
+import { TOPOLOGY_ID } from "@web/shared/topology/constants";
 import type { DriveStep } from "driver.js";
 
 export function buildTourSteps(): DriveStep[] {
@@ -20,7 +21,9 @@ export function buildTourSteps(): DriveStep[] {
 		},
 	];
 
-	const firstNode = document.querySelector(".node");
+	const firstNode = document.querySelector(
+		`#${TOPOLOGY_ID.DEVICE_LAYER} .node`,
+	);
 	if (firstNode) {
 		steps.push(
 			{
@@ -36,7 +39,7 @@ export function buildTourSteps(): DriveStep[] {
 				popover: {
 					title: "Device status",
 					description:
-						"The corner dot shows its status.\nYellow: starting up\nGreen: healthy\nRed: needs attention",
+						"The corner dot shows its status.\nYellow: starting up\nGreen: healthy\nRed: needs attention: submit and start a new session; contact an admin if it persists",
 					side: "bottom",
 				},
 			},
