@@ -37,11 +37,11 @@ The Web UI is a React 19 application. It is a purely presentation layer that com
 
 When a user starts a lab, the Manager must choose which Worker to dispatch it to. It uses a **health-gated least connections** algorithm:
 
-1. **Admission control:** Only Workers that are `online` and have sufficient absolute free resources for the requested lab are eligible. The gate checks that `(1 - cpuUsage%) × cpuCores ≥ labCpuCost` and `(1 - memoryUsage%) × memoryMB ≥ labMemoryCost`. Using absolute headroom (rather than a fixed percentage) ensures the threshold is fair across Workers with different hardware specs — a 2-core Worker and a 32-core Worker at the same CPU percentage have very different real headroom.
+1. **Admission control:** Only Workers that are `online` and have sufficient absolute free resources for the requested lab are eligible. The gate checks that `(1 - cpuUsage%) × cpuCores ≥ labCpuCost` and `(1 - memoryUsage%) × memoryMB ≥ labMemoryCost`. Using absolute headroom (rather than a fixed percentage) ensures the threshold is fair across Workers with different hardware specs: a 2-core Worker and a 32-core Worker at the same CPU percentage have very different real headroom.
 2. **Least connections:** Among eligible Workers, the one with the fewest active lab sessions (`activeLabs`) is selected (`ORDER BY active_labs ASC`).
 3. **Atomic selection:** The selection and increment of `activeLabs` happen in a single database transaction with `FOR UPDATE SKIP LOCKED`, preventing two concurrent requests from landing on the same Worker based on a stale count.
 
-The `activeLabs` counter is owned entirely by the Manager — incremented atomically at selection time, decremented when a session ends (or a deployment fails), and reset to `0` when the Worker disconnects.
+The `activeLabs` counter is owned entirely by the Manager: incremented atomically at selection time, decremented when a session ends (or a deployment fails), and reset to `0` when the Worker disconnects.
 
 ### Lab Cost Estimation
 

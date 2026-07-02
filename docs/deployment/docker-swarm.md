@@ -48,7 +48,7 @@ The script will:
 
 ### Adding Worker Nodes
 
-After the deploy script finishes, it will output a `docker swarm join` command. On each **worker node**, install Docker and join the Swarm — that's it:
+After the deploy script finishes, it will output a `docker swarm join` command. On each **worker node**, install Docker and join the Swarm: that's it.
 
 ```bash
 # 1. Install Docker
@@ -63,7 +63,7 @@ The `worker-installer` Swarm service (`mode: global`) automatically runs on ever
 2. Discovers the local guacd IP on the `clab-mgmt` overlay.
 3. Creates the `vlab-topologies` volume on the node.
 4. Starts the vLab worker as a standalone `--privileged` container.
-5. Monitors the worker — if it exits, the installer exits too, triggering a Swarm restart that relaunches the worker.
+5. Monitors the worker; if it exits, the installer exits too, triggering a Swarm restart that relaunches the worker.
 
 > [!NOTE]
 > The worker runs as a standalone `docker run --privileged` container (not a Swarm service) because containerlab requires `--privileged` to configure kernel networking parameters, which Docker Swarm does not support for managed services.

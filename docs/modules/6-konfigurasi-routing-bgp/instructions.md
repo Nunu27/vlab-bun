@@ -29,11 +29,11 @@
 
 > **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
 
-Pada lab ini terdapat tiga *Autonomous System* yang berbeda. **R1** adalah *border router* milik **AS 65001** yang mengelola blok `192.0.2.0/24`. **R3** adalah *border router* milik **AS 65002** yang mengelola blok `203.0.113.0/24`. Keduanya tidak terhubung langsung — mereka dihubungkan melalui **R2**, yang berperan sebagai **AS 65000 (Transit)**. R2 tidak memiliki jaringan klien; tugasnya semata-mata meneruskan rute antara AS 65001 dan AS 65002, seperti layaknya sebuah ISP.
+Pada lab ini terdapat tiga *Autonomous System* yang berbeda. **R1** adalah *border router* milik **AS 65001** yang mengelola blok `192.0.2.0/24`. **R3** adalah *border router* milik **AS 65002** yang mengelola blok `203.0.113.0/24`. Keduanya tidak terhubung langsung. Mereka dihubungkan melalui **R2**, yang berperan sebagai **AS 65000 (Transit)**. R2 tidak memiliki jaringan klien; tugasnya semata-mata meneruskan rute antara AS 65001 dan AS 65002, seperti layaknya sebuah ISP.
 
 Dengan topologi ini, Anda akan dapat mengamati atribut **AS-Path** secara langsung: rute yang diterima R1 dari R3 akan membawa jejak `[65000, 65002]`, membuktikan bahwa rute tersebut melewati AS 65000 sebelum tiba.
 
-> IP yang digunakan (`192.0.2.0/24`, `203.0.113.0/24`, `198.51.100.0/30`, `198.51.100.4/30`) adalah *documentation address* sesuai RFC 5737 — dirancang untuk simulasi dan pembelajaran, bukan untuk internet nyata.
+> IP yang digunakan (`192.0.2.0/24`, `203.0.113.0/24`, `198.51.100.0/30`, `198.51.100.4/30`) adalah *documentation address* sesuai RFC 5737: dirancang untuk simulasi dan pembelajaran, bukan untuk internet nyata.
 
 **Addressing Table:**
 
@@ -55,7 +55,7 @@ Dengan topologi ini, Anda akan dapat mengamati atribut **AS-Path** secara langsu
 | **Instance Name** | bgp-default | bgp-default | bgp-default |
 | **Local AS** | 65001 | 65000 | 65002 |
 | **Router ID** | 1.1.1.1 | 2.2.2.2 | 3.3.3.3 |
-| **Address List** | bgp-networks | — | bgp-networks |
+| **Address List** | bgp-networks | - | bgp-networks |
 | **Connection Name** | peer-R2 | peer-R1, peer-R3 | peer-R2 |
 | **Remote AS** | 65000 | 65001 / 65002 | 65000 |
 | **Local Address** | 198.51.100.1 | 198.51.100.2 / 198.51.100.5 | 198.51.100.6 |
@@ -85,7 +85,7 @@ Dengan topologi ini, Anda akan dapat mengamati atribut **AS-Path** secara langsu
 
 #### Tahap III: Konfigurasi BGP pada R2 (AS 65000, Transit)
 
-R2 adalah *transit AS*. Ia tidak mengiklankan prefix miliknya sendiri — tugasnya hanya meneruskan rute yang dipelajari dari R1 ke R3, dan sebaliknya. Oleh karena itu, R2 tidak memerlukan *address-list* maupun parameter `output.network`.
+R2 adalah *transit AS*. Ia tidak mengiklankan prefix miliknya sendiri: tugasnya hanya meneruskan rute yang dipelajari dari R1 ke R3, dan sebaliknya. Oleh karena itu, R2 tidak memerlukan *address-list* maupun parameter `output.network`.
 
 1. **Membuat BGP Instance:** <LabCheck node="R2" id="mikrotik.bgp-instance-exist" />
    ```
@@ -119,5 +119,5 @@ R2 adalah *transit AS*. Ia tidak mengiklankan prefix miliknya sendiri — tugasn
 
 1. **Status Sesi:** Pada setiap router, jalankan `/routing bgp session print`. Semua sesi harus berstatus **Established**. <LabCheck node="R1" id="mikrotik.bgp-session-established" /> <LabCheck node="R2" id="mikrotik.bgp-session-established" /> <LabCheck node="R2" id="mikrotik.bgp-session-established" /> <LabCheck node="R3" id="mikrotik.bgp-session-established" />
 2. **Tabel Routing:** Jalankan `/ip route print` pada R1 dan R3. Pastikan rute dari AS lawan muncul dengan flag **DAb**. <LabCheck node="R1" id="mikrotik.route-exist" /> <LabCheck node="R3" id="mikrotik.route-exist" />
-3. **Mengamati AS-Path:** Pada R1, jalankan `/ip route print detail` dan cari rute `203.0.113.0/24`. Perhatikan atribut **BGP-AS-PATH**. Nilai yang muncul seharusnya `65000 65002` — membuktikan rute ini melewati AS 65000 (R2) sebelum berasal dari AS 65002 (R3).
+3. **Mengamati AS-Path:** Pada R1, jalankan `/ip route print detail` dan cari rute `203.0.113.0/24`. Perhatikan atribut **BGP-AS-PATH**. Nilai yang muncul seharusnya `65000 65002`: membuktikan rute ini melewati AS 65000 (R2) sebelum berasal dari AS 65002 (R3).
 4. Lakukan *ping end-to-end* dari PC1 (`192.0.2.2`) ke PC2 (`203.0.113.2`).

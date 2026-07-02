@@ -31,7 +31,7 @@ While gRPC is excellent for unary request/response orchestration, it also suppor
 The Web UI never communicates directly with a Worker. All data passes through the Manager API.
 
 ### HTTP REST API (Elysia.js)
-Standard operations—such as user login, fetching the list of available lab templates, and viewing historical session scores—are handled via standard HTTP endpoints.
+Standard operations, such as user login, fetching the list of available lab templates, and viewing historical session scores, are handled via standard HTTP endpoints.
 
 - **Usage:** The Manager exposes these endpoints using Elysia.js. The Web UI consumes them using TanStack Query, allowing for efficient caching and background invalidation.
 

@@ -25,9 +25,9 @@ RIP menggunakan berbagai trik untuk mencegah paket data berputar-putar dalam lin
 
 > **Status Legacy:** Di lingkungan *Enterprise* atau ISP modern, RIP praktis sudah ditinggalkan dan digantikan oleh OSPF atau BGP karena konvergensinya yang lambat. Namun, RIP tetap menjadi standar akademik wajib untuk memahami cara kerja algoritma *Distance-Vector*.
 
-> **Perhatian — Bahaya Redistribute Connected:** Pada lab ini, kita menggunakan `redistribute=connected,rip`. Nilai `connected` agar jaringan lokal diiklankan, dan nilai `rip` agar rute yang dipelajari dari tetangga juga diteruskan ke tetangga lain (*transitive propagation*). Di dunia nyata, mengiklankan semua rute secara membabi buta berbahaya; solusi amannya adalah menggunakan *Routing Filter* secara spesifik.
+> **Perhatian, Bahaya Redistribute Connected:** Pada lab ini, kita menggunakan `redistribute=connected,rip`. Nilai `connected` agar jaringan lokal diiklankan, dan nilai `rip` agar rute yang dipelajari dari tetangga juga diteruskan ke tetangga lain (*transitive propagation*). Di dunia nyata, mengiklankan semua rute secara membabi buta berbahaya; solusi amannya adalah menggunakan *Routing Filter* secara spesifik.
 
-> **Tips — Default RIPv2 & Keamanan (Autentikasi):** Pada RouterOS v7, *Interface Template* secara otomatis mengirim paket menggunakan **RIPv2** sehingga subnet `/30` bisa langsung berfungsi tanpa dikonfigurasi. Namun, router secara default tetap mendengarkan update RIPv1. Di jaringan produksi, selalu gunakan parameter tambahan `receive=v2 auth=md5 auth-key=<rahasia>` untuk mengamankan router dari injeksi rute palsu.
+> **Tips, Default RIPv2 & Keamanan (Autentikasi):** Pada RouterOS v7, *Interface Template* secara otomatis mengirim paket menggunakan **RIPv2** sehingga subnet `/30` bisa langsung berfungsi tanpa dikonfigurasi. Namun, router secara default tetap mendengarkan update RIPv1. Di jaringan produksi, selalu gunakan parameter tambahan `receive=v2 auth=md5 auth-key=<rahasia>` untuk mengamankan router dari injeksi rute palsu.
 
 ## Referensi Perintah
 ### MikroTik RouterOS v7

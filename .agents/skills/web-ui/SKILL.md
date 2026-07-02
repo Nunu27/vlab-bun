@@ -139,14 +139,14 @@ const pagination = useApiPagination(client.departments.index);
 |---|---|---|---|
 | `pagination` | `UseApiPaginationReturn<TData>` | ✅ | From `useApiPagination` |
 | `columns` | `ColumnDef<TData>[]` | ✅ | TanStack column definitions |
-| `searchPlaceholder` | `string` | — | Input placeholder |
-| `emptyMessage` | `string` | — | Text shown when table is empty |
-| `pageSizeOptions` | `number[]` | — | Rows-per-page selector options |
-| `filters` | `React.ReactNode` | — | Extra filter UI in the toolbar |
+| `searchPlaceholder` | `string` | - | Input placeholder |
+| `emptyMessage` | `string` | - | Text shown when table is empty |
+| `pageSizeOptions` | `number[]` | - | Rows-per-page selector options |
+| `filters` | `React.ReactNode` | - | Extra filter UI in the toolbar |
 
 ### `ColumnMeta` type augmentation
 
-The project extends `ColumnMeta` (declared in `apps/web/src/env.d.ts`) with these fields — use them in `meta` on any column definition:
+The project extends `ColumnMeta` (declared in `apps/web/src/env.d.ts`) with these fields; use them in `meta` on any column definition:
 
 | Field | Type | Effect |
 |---|---|---|
