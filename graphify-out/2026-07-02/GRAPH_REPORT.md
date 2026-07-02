@@ -1,13 +1,18 @@
-# Graph Report - .  (2026-07-02)
+# Graph Report - vlab  (2026-07-02)
 
 ## Corpus Check
-- 2 files · ~180,190 words
+- 764 files · ~179,146 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3888 nodes · 8774 edges · 206 communities (179 shown, 27 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 154 edges (avg confidence: 0.75)
+- 3877 nodes · 8504 edges · 227 communities (194 shown, 33 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 150 edges (avg confidence: 0.75)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `9f901544`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Manager System Routes & DB|Manager System Routes & DB]]
@@ -216,6 +221,27 @@
 - [[_COMMUNITY_@vlabgrpc Overview|@vlab/grpc Overview]]
 - [[_COMMUNITY_@vlabshared Overview|@vlab/shared Overview]]
 - [[_COMMUNITY_@vlabws Overview|@vlab/ws Overview]]
+- [[_COMMUNITY_utils.ts|utils.ts]]
+- [[_COMMUNITY_chart.tsx|chart.tsx]]
+- [[_COMMUNITY_sync-modules.ts|sync-modules.ts]]
+- [[_COMMUNITY_index.ts|index.ts]]
+- [[_COMMUNITY_index.ts|index.ts]]
+- [[_COMMUNITY_theme-provider.tsx|theme-provider.tsx]]
+- [[_COMMUNITY_context.ts|context.ts]]
+- [[_COMMUNITY_session-header.tsx|session-header.tsx]]
+- [[_COMMUNITY_📡 List of Emitted Events|📡 List of Emitted Events]]
+- [[_COMMUNITY_module.test.ts|module.test.ts]]
+- [[_COMMUNITY_redis.ts|redis.ts]]
+- [[_COMMUNITY_enrollments-tab.tsx|enrollments-tab.tsx]]
+- [[_COMMUNITY_linux.ts|linux.ts]]
+- [[_COMMUNITY_MessageFns|MessageFns]]
+- [[_COMMUNITY_Throttler|Throttler]]
+- [[_COMMUNITY_Dynamic Form feature|Dynamic Form feature]]
+- [[_COMMUNITY_Containerlab class|Containerlab class]]
+- [[_COMMUNITY_index.ts|index.ts]]
+- [[_COMMUNITY_checkbox-field.tsx|checkbox-field.tsx]]
+- [[_COMMUNITY_textarea-field.tsx|textarea-field.tsx]]
+- [[_COMMUNITY_index.ts|index.ts]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 239 edges
@@ -243,10 +269,9 @@
 
 ## Import Cycles
 - 3-file cycle: `apps/web/src/lib/router.ts -> apps/web/src/routeTree.gen.ts -> apps/web/src/routes/__root.tsx -> apps/web/src/lib/router.ts`
-- 3-file cycle: `apps/web/src/shared/topology/stores/index.ts -> apps/web/src/shared/topology/stores/node-slice.ts -> apps/web/src/shared/topology/stores/node-drag-slice.ts -> apps/web/src/shared/topology/stores/index.ts`
 - 3-file cycle: `apps/web/src/shared/topology/stores/index.ts -> apps/web/src/shared/topology/stores/node-slice.ts -> apps/web/src/shared/topology/stores/node-select-slice.ts -> apps/web/src/shared/topology/stores/index.ts`
+- 3-file cycle: `apps/web/src/shared/topology/stores/index.ts -> apps/web/src/shared/topology/stores/node-slice.ts -> apps/web/src/shared/topology/stores/node-drag-slice.ts -> apps/web/src/shared/topology/stores/index.ts`
 - 4-file cycle: `apps/web/src/hooks/state/use-router-pending-attribute.ts -> apps/web/src/lib/router.ts -> apps/web/src/routeTree.gen.ts -> apps/web/src/routes/__root.tsx -> apps/web/src/hooks/state/use-router-pending-attribute.ts`
-- 4-file cycle: `apps/manager/src/services/queue/lab-session.ts -> apps/manager/src/services/worker-actions/index.ts -> apps/manager/src/services/worker-actions/handlers/index.ts -> apps/manager/src/services/worker-actions/handlers/lab.ts -> apps/manager/src/services/queue/lab-session.ts`
 
 ## Hyperedges (group relationships)
 - **Evaluation capability expansion for BGP, CLI, and rule-builder UI** — devtool_features_done_evaluation_for_routing_module_2026_04_13_vlab_evaluator_pkg, devtool_features_done_cli_introduction_lab_evaluation_checks_2026_06_11_evaluator_engine, devtool_features_done_evaluator_system_test_coverage_2026_06_11_integration_tests_namespaces, devtool_features_done_lab_evaluation_rules_builder_ui_2026_06_11_visual_rule_builder [INFERRED 0.85]
@@ -265,87 +290,87 @@
 - **Evaluator Handlers implementing common Source/Check pattern** — packages_vlab_evaluator_readme_linux_handler, packages_vlab_evaluator_readme_mikrotik_handler, packages_vlab_evaluator_readme_node_interface_handler [EXTRACTED 1.00]
 - **Modules e2e test topologies with MikroTik routers and Linux PCs** — tests_modules_e2e_topologies_mod_371ac7_mod_371ac7_clab_mod_371ac7, tests_modules_e2e_topologies_mod_5cc908_mod_5cc908_clab_mod_5cc908, tests_modules_e2e_topologies_mod_a2d8ec_mod_a2d8ec_clab_mod_a2d8ec [EXTRACTED 1.00]
 
-## Communities (206 total, 27 thin omitted)
+## Communities (227 total, 33 thin omitted)
 
 ### Community 0 - "Manager System Routes & DB"
-Cohesion: 0.12
-Nodes (28): db, logger, departments, labEnrollments, BASE_ENTITY, createRouter(), Entity, entityBase (+20 more)
+Cohesion: 0.13
+Nodes (23): db, logger, departments, labEnrollments, labSessions, BASE_ENTITY, createRouter(), Entity (+15 more)
 
 ### Community 1 - "Topology Store & State Slices"
-Cohesion: 0.07
-Nodes (65): getRandom(), GROUP_COLORS, createDeviceSlice(), DeviceData, deviceInitialState, TopologyDeviceActions, TopologyDeviceState, createEdgeSlice() (+57 more)
+Cohesion: 0.05
+Nodes (78): getFirst(), getRandom(), GROUP_COLORS, createDeviceSlice(), DeviceData, deviceInitialState, TopologyDeviceActions, TopologyDeviceState (+70 more)
 
 ### Community 2 - "Web Router & Route Guards"
 Cohesion: 0.04
-Nodes (60): guestRoute(), privateRoute(), protectedRoute(), Route, Route, Route, Route, Route (+52 more)
+Nodes (56): privateRoute(), Route, Route, Route, Route, Route, Route, Route (+48 more)
 
 ### Community 3 - "Manager Guacamole & Redis"
-Cohesion: 0.05
-Nodes (45): checkAndRunMigration(), casted, converted, env, EnvSchema, errors, validator, value (+37 more)
+Cohesion: 0.09
+Nodes (18): checkAndRunMigration(), casted, converted, env, EnvSchema, errors, validator, value (+10 more)
 
 ### Community 4 - "UI Dialog & Form Modals"
-Cohesion: 0.11
-Nodes (42): App, LabCheckModal(), useLabChecksModalStore, Dialog(), DialogClose(), DialogContent(), DialogDescription(), DialogFooter() (+34 more)
+Cohesion: 0.12
+Nodes (31): LabCheckModal(), useLabChecksModalStore, Dialog(), DialogContent(), DialogDescription(), DialogFooter(), DialogHeader(), DialogTitle() (+23 more)
 
 ### Community 5 - "Containerlab Command Wrapper"
-Cohesion: 0.08
-Nodes (42): resolve(), buildDeployArgs(), buildDestroyArgs(), normalizeListOption(), commandRunner(), ContainerlabCommandResult, ContainerlabCommandRunner, Containerlab (+34 more)
+Cohesion: 0.07
+Nodes (39): buildDeployArgs(), buildDestroyArgs(), normalizeListOption(), ContainerlabCommandResult, ContainerlabCommandRunner, Containerlab, ContainerlabCliNotFoundError, ContainerlabCommandError (+31 more)
 
 ### Community 6 - "Manager Clab & gRPC Monitor Handlers"
-Cohesion: 0.06
-Nodes (39): labSessionNodes, interfaceDebounce, logger, sessionThrottle, submitActiveSession(), tempNodeEvents, sendCommandToWorker(), LabSessionCleanupJob (+31 more)
+Cohesion: 0.12
+Nodes (16): submitActiveSession(), LabSessionCleanupJob, labSessionQueue, labSessionWorker, logger, ActionPayloads, DecodedAction, workerActions (+8 more)
 
 ### Community 7 - "UI Form Field & Command Components"
-Cohesion: 0.09
-Nodes (39): CheckboxInputProps, ComboboxInputProps, ComboboxOption, DateInputProps, DateRangeInputProps, allIconNames, IconInputProps, ImageInputProps (+31 more)
+Cohesion: 0.10
+Nodes (31): ComboboxInput(), ComboboxInputProps, ComboboxOption, DateInput(), DateInputProps, DateRangeInput(), DateRangeInputProps, allIconNames (+23 more)
 
 ### Community 8 - "Manager Session & Auth Schema"
-Cohesion: 0.08
-Nodes (33): logger, runClearSessions(), logger, runResetSessions(), degreeLevelEnum, departmentsRelations, instructorsRelations, roleEnum (+25 more)
+Cohesion: 0.19
+Nodes (14): logger, runResetSessions(), users, sessions, cache, logger, getAffectedCount(), ReturningQuery (+6 more)
 
 ### Community 9 - "UI Table & Empty State Components"
-Cohesion: 0.07
-Nodes (37): InfiniteList(), InfiniteListProps, ListFilterSelect(), ListToolbar(), ListToolbarProps, PaginatedComboboxInput(), InfiniteListPage(), InfiniteListPageProps (+29 more)
+Cohesion: 0.09
+Nodes (24): LoadingPage(), LoadingPageProps, NotFoundPage(), Button(), Empty(), EmptyContent(), EmptyDescription(), EmptyMedia() (+16 more)
 
 ### Community 10 - "UI Combobox & Input Group Components"
-Cohesion: 0.06
-Nodes (45): DynamicIcon(), DynamicIconProps, IconRenderer, LucideIconsPromise, ComboboxInput(), DateInput(), DateRangeInput(), ImageInput() (+37 more)
+Cohesion: 0.10
+Nodes (32): ListToolbar(), TextInputProps, AlertDialogMedia(), AlertDialogOverlay(), CardAction(), CardFooter(), ComboboxChip(), ComboboxChips() (+24 more)
 
 ### Community 11 - "Manager Sync-Modules Command"
-Cohesion: 0.07
-Nodes (40): logger, detectMimeType(), logger, runRestore(), buildTopology(), DOCS_DIR, EMPTY_TOPOLOGY, logger (+32 more)
+Cohesion: 0.08
+Nodes (37): logger, logger, runClearSessions(), detectMimeType(), logger, runRestore(), instructors, students (+29 more)
 
 ### Community 12 - "WS & Lab Session Routes"
-Cohesion: 0.07
-Nodes (36): LabChecksSessionProvider, useLabChecksSessionStore, labCheckViewerDescriptor, ResizableHandle(), ResizablePanel(), ResizablePanelGroup(), useWSConnectionState(), useWSEvent() (+28 more)
+Cohesion: 0.11
+Nodes (22): LabChecksSessionProvider, labCheckViewerDescriptor, ResizableHandle(), ResizablePanel(), ResizablePanelGroup(), useWSConnectionState(), socket, ws (+14 more)
 
 ### Community 13 - "UI Sidebar & Sheet Components"
-Cohesion: 0.06
-Nodes (41): Collapsible(), CollapsibleContent(), CollapsibleTrigger(), Sheet(), SheetContent(), SheetDescription(), SheetFooter(), SheetHeader() (+33 more)
+Cohesion: 0.05
+Nodes (50): Collapsible(), CollapsibleContent(), CollapsibleTrigger(), Separator(), Sheet(), SheetContent(), SheetDescription(), SheetFooter() (+42 more)
 
 ### Community 14 - "Evaluator & Monitor Package Docs"
-Cohesion: 0.05
-Nodes (49): clab node kind: linux, clab node kind: mikrotik_ros, mikro-routeros (MikroTik RouterOS API client), RouterOSClient class, Container Handlers (container-handler.ts), Containerlab Docker event stream monitoring, createMonitor function, dockerode (+41 more)
+Cohesion: 0.08
+Nodes (36): clab node kind: linux, clab node kind: mikrotik_ros, mikro-routeros (MikroTik RouterOS API client), RouterOSClient class, bgp-instance-exist Check, Check (Evaluation Rule), check-ip Check, Debounced Updates (+28 more)
 
 ### Community 15 - "Web App Dependencies"
 Cohesion: 0.04
 Nodes (49): dependencies, @base-ui/react, class-variance-authority, clsx, cmdk, date-fns, @dnd-kit/core, @dnd-kit/modifiers (+41 more)
 
 ### Community 16 - "UI Card & Admin Dashboard"
-Cohesion: 0.10
-Nodes (29): MarkdownViewer(), MarkdownViewerProps, Card(), CardAction(), CardContent(), CardDescription(), CardFooter(), CardHeader() (+21 more)
+Cohesion: 0.12
+Nodes (24): MarkdownViewer(), MarkdownViewerProps, LabChecksSessionContext, Badge(), badgeVariants, Card(), CardContent(), CardHeader() (+16 more)
 
 ### Community 17 - "@jawit/query Hooks & Types"
-Cohesion: 0.07
-Nodes (41): errorHandler(), ErrorHandlerConfig, getErrorMessage(), getErrorMessageFromApi(), ResponseWithMessage, BaseResponse, FailureResponse, SuccessResponse (+33 more)
+Cohesion: 0.15
+Nodes (22): ALL_HOOKS, MUTATION_HOOKS, MUTATION_METHODS, PROXY_SYMBOL_HANDLERS, QUERY_HOOKS, QUERY_METHODS, TREATY_TYPES, createEnsureQueryData() (+14 more)
 
 ### Community 18 - "Web Pagination Params & Types"
-Cohesion: 0.08
-Nodes (35): DataTableComboboxFilter(), DataTableComboboxFilterProps, PaginatedComboboxFieldProps, UseApiInfiniteListOptions, useApiPagination(), UseApiPaginationOptions, UseApiPaginationReturn, PaginationFilters (+27 more)
+Cohesion: 0.13
+Nodes (21): DataTableComboboxFilter(), DataTableComboboxFilterProps, PaginatedComboboxField(), PaginatedComboboxFieldProps, UseApiInfiniteListOptions, UseApiPaginationOptions, UseApiPaginationReturn, PaginationFilters (+13 more)
 
 ### Community 19 - "Lab & Topology Template Schema"
-Cohesion: 0.07
-Nodes (36): PageHeading(), PageHeadingProps, queryClient, Route, RouteComponent(), validator, Route, RouteComponent() (+28 more)
+Cohesion: 0.10
+Nodes (26): PageHeading(), PageHeadingProps, queryClient, Route, RouteComponent(), validator, Route, RouteComponent() (+18 more)
 
 ### Community 20 - "Guacamole-Lite Type Definitions"
 Cohesion: 0.06
@@ -353,43 +378,43 @@ Nodes (19): AllowedUnencryptedConnectionSettings, BaseProtocolSettings, Callback
 
 ### Community 21 - "Shared Enums & Menu Constants"
 Cohesion: 0.07
-Nodes (32): ParsedNRP, parseNRP(), Menu, menuByRole, MenuItem, MenuSection, MenuWithSub, Route (+24 more)
+Nodes (39): ParsedNRP, parseNRP(), LabChecksEditorProvider, LabChecksEditorStore, { Provider, useContext }, LabChecksModalProvider, CardDescription(), RouteComponent() (+31 more)
 
 ### Community 22 - "Topology Canvas Buttons"
-Cohesion: 0.11
-Nodes (23): ActionButton(), Background(), BackgroundProps, ConnectModeButton(), DeleteButton(), GroupButton(), TextModeButton(), UngroupButton() (+15 more)
+Cohesion: 0.25
+Nodes (9): ActionButton(), ActionButtonProps, ConnectModeButton(), DeleteButton(), GroupButton(), TextModeButton(), UngroupButton(), Toolbar() (+1 more)
 
 ### Community 23 - "Guacamole Connection Store & States"
 Cohesion: 0.08
-Nodes (31): useWSData(), Route, RouteComponent(), GuacamoleConnection(), GuacamoleConnectionProps, ConnectionStatesProps, GuacamoleConnectionStates(), STATE_CONFIG (+23 more)
+Nodes (29): Route, GuacamoleConnection(), GuacamoleConnectionProps, ConnectionStatesProps, GuacamoleConnectionStates(), STATE_CONFIG, StateConfig, StateKey (+21 more)
 
 ### Community 24 - "App Shell & Auth Store"
-Cohesion: 0.07
-Nodes (26): App(), AppLoadingPage(), AppLoadingPageProps, NotFoundPage(), initialState, Theme, ThemeProvider(), ThemeProviderContext (+18 more)
+Cohesion: 0.08
+Nodes (21): AppLoadingPage(), AppLoadingPageProps, useRouterPendingAttribute(), guestRoute(), protectedRoute(), RouterContext, AdminDashboard, InstructorDashboard (+13 more)
 
 ### Community 25 - "ERD Table Column Metadata"
 Cohesion: 0.08
 Nodes (40): ui, ui, columnIds, comment, id, meta, name, seqColumnIds (+32 more)
 
 ### Community 26 - "Lab Checks Editor & Tabs UI"
-Cohesion: 0.09
-Nodes (27): LabChecksEditorProvider, LabChecksEditorStore, { Provider, useContext }, LabChecksModalProvider, LabChecksSessionContext, Tabs(), TabsContent(), TabsList() (+19 more)
+Cohesion: 0.12
+Nodes (19): DialogClose(), Tabs(), TabsContent(), TabsList(), tabsListVariants, TabsTrigger(), FieldKeys, TestConnectionButton (+11 more)
 
 ### Community 27 - "Admin Columns & Tooltip UI"
-Cohesion: 0.11
-Nodes (19): ActionButtonProps, labCheckReadonlyEditorDescriptor, { Provider, useContext }, formatLabCheck(), useLabCheckValue(), Badge(), badgeVariants, Tooltip() (+11 more)
+Cohesion: 0.09
+Nodes (23): labCheckEditorDescriptor, labCheckReadonlyEditorDescriptor, InsertLabCheck(), { Provider, useContext }, formatLabCheck(), useLabCheckValue(), Tooltip(), TooltipContent() (+15 more)
 
 ### Community 28 - "UI Dropdown & Markdown Input"
-Cohesion: 0.08
-Nodes (23): ModeToggle(), MarkdownInput(), MarkdownInputProps, labCheckEditorDescriptor, InsertLabCheck(), useTheme(), DropdownMenu(), DropdownMenuCheckboxItem() (+15 more)
+Cohesion: 0.16
+Nodes (13): DropdownMenu(), DropdownMenuCheckboxItem(), DropdownMenuContent(), DropdownMenuGroup(), DropdownMenuItem(), DropdownMenuLabel(), DropdownMenuRadioItem(), DropdownMenuSeparator() (+5 more)
 
 ### Community 29 - "Device Env & Log Viewer"
-Cohesion: 0.10
-Nodes (27): LogEntry, LogLevel, LogViewer(), LogViewerProps, LabChecksSessionActions, LabChecksSessionState, LabChecksSessionStore, { Provider, useContext } (+19 more)
+Cohesion: 0.08
+Nodes (30): LogEntry, LogLevel, LogViewer(), LogViewerProps, LabChecksSessionActions, LabChecksSessionState, LabChecksSessionStore, { Provider, useContext } (+22 more)
 
 ### Community 30 - "UI Alert Dialog & Enroll"
-Cohesion: 0.29
-Nodes (18): AlertDialog(), AlertDialogAction(), AlertDialogCancel(), AlertDialogContent(), AlertDialogDescription(), AlertDialogFooter(), AlertDialogHeader(), AlertDialogTitle() (+10 more)
+Cohesion: 0.27
+Nodes (19): App, AlertDialog(), AlertDialogAction(), AlertDialogCancel(), AlertDialogContent(), AlertDialogDescription(), AlertDialogFooter(), AlertDialogHeader() (+11 more)
 
 ### Community 31 - "Root Tooling & Husky Hooks"
 Cohesion: 0.06
@@ -397,35 +422,35 @@ Nodes (30): husky.sh script, devDependencies, @biomejs/biome, @clack/prompts, co
 
 ### Community 32 - "UI Pagination & Select Input"
 Cohesion: 0.12
-Nodes (25): DataTablePaginationProps, ListFilterOption, ListFilterSelectProps, SelectInputProps, SelectOption, Pagination(), PaginationContent(), PaginationEllipsis() (+17 more)
+Nodes (24): DataTablePaginationProps, SelectInputProps, SelectOption, Label(), Pagination(), PaginationContent(), PaginationEllipsis(), PaginationFirst() (+16 more)
 
 ### Community 33 - "Topology Canvas Interaction Hooks"
-Cohesion: 0.15
-Nodes (21): Options, useEventListener(), MouseButton, mouseButtonPressed(), TopologyTemplateForm(), TopologyCanvas(), ScreenToWorld, useScreenToWorld() (+13 more)
+Cohesion: 0.09
+Nodes (35): Options, useEventListener(), MouseButton, mouseButtonPressed(), ApplyTopologyTemplateModal(), TopologyTemplateForm(), Background(), BackgroundProps (+27 more)
 
 ### Community 34 - "gRPC Worker Protobuf Messages"
-Cohesion: 0.06
-Nodes (12): Builtin, CommandPayload, CommandRequest, DeepPartial, MessageFns, MetricsRequest, MetricsResponse, ServerStreamingMethodResult (+4 more)
+Cohesion: 0.08
+Nodes (11): Builtin, CommandPayload, CommandRequest, DeepPartial, MetricsRequest, MetricsResponse, ServerStreamingMethodResult, WorkerServiceClient (+3 more)
 
 ### Community 35 - "My-Lab Detail & Enrollment Routes"
-Cohesion: 0.11
-Nodes (20): LoadingPage(), formatTimeAgo(), Route, enrollmentColumns, EnrollmentsTab(), EnrollmentsTabContent(), useClientPagination(), labColumns (+12 more)
+Cohesion: 0.24
+Nodes (9): DeleteLabButton(), EditLabButton(), LabActionsCell(), useLabModalStore, LabDetail, LabDetailRequest, LabEnrollmentListRequest, LabItem (+1 more)
 
 ### Community 36 - "Modules E2E Configurator"
-Cohesion: 0.10
-Nodes (23): createMonitor(), applyConfigurations(), applyLinuxCheck(), applyMikrotikCheck(), DeviceTypes, execInContainer(), getNetworkAddress(), getRemoteNodeIp() (+15 more)
+Cohesion: 0.15
+Nodes (13): applyConfigurations(), applyLinuxCheck(), applyMikrotikCheck(), DeviceTypes, execInContainer(), getNetworkAddress(), getRemoteNodeIp(), ParsedCheck (+5 more)
 
 ### Community 37 - "Manager App Dependencies"
 Cohesion: 0.07
 Nodes (29): dependencies, bcryptjs, @bogeychan/elysia-logger, bullmq, dotenv, drizzle-orm, elysia, elysia-helmet (+21 more)
 
 ### Community 38 - "gRPC Commands & Worker Handler"
-Cohesion: 0.09
-Nodes (24): attachMonitorHandlers(), connectedWorkers, ExtractReplyType, logger, tryGetAvailableWorkerId(), waitForAvailableWorkerId(), WaitForWorkerOptions, WorkerServiceImpl (+16 more)
+Cohesion: 0.12
+Nodes (15): AppRouter, DeployedNodeSchema, EvaluatorNodeInfoSchema, EvaluatorSessionCheckSchema, LabConfigSchema, LabLinkSchema, LabNodeSchema, StartEvaluationPayloadSchema (+7 more)
 
 ### Community 39 - "Topology Node Components"
-Cohesion: 0.12
-Nodes (15): Device(), getHealthColor(), healthColorMap, Edge(), InterfaceLabelProps, InterfaceTooltip(), Group(), Note() (+7 more)
+Cohesion: 0.14
+Nodes (14): useWSData(), RouteComponent(), Device(), getHealthColor(), healthColorMap, InterfaceTooltip(), Group(), Note() (+6 more)
 
 ### Community 40 - "Worker App Dependencies"
 Cohesion: 0.07
@@ -437,7 +462,7 @@ Nodes (27): comment, dataType, default, id, name, options, tableId, comment (+19
 
 ### Community 42 - "Admin Dashboard Charts"
 Cohesion: 0.10
-Nodes (20): ChartConfig, ChartContainer(), ChartContext, ChartContextProps, ChartLegendContent(), ChartTooltipContent(), INITIAL_DIMENSION, THEMES (+12 more)
+Nodes (27): ChartContainer(), EmptyHeader(), Table(), TableBody(), TableCaption(), TableCell(), TableFooter(), TableHead() (+19 more)
 
 ### Community 43 - "ERD Table Column Metadata"
 Cohesion: 0.09
@@ -460,16 +485,16 @@ Cohesion: 0.16
 Nodes (18): COLUMN_FILTER_OPS, FilterOp, RANGE_OPS, RangeOp, SortOrder, buildFilterConditions(), buildSearchConditions(), buildPaginationSchema() (+10 more)
 
 ### Community 48 - "Manager Evaluator & File Routes"
-Cohesion: 0.12
-Nodes (13): authRoutes, deviceCategoryRoutes, deviceTemplateRoutes, evaluatorRoutes, fileRoutes, labEnrollmentRoutes, labRoutes, labSessionRoutes (+5 more)
+Cohesion: 0.17
+Nodes (9): authRoutes, departmentRoutes, deviceCategoryRoutes, deviceTemplateRoutes, evaluatorRoutes, fileRoutes, labEnrollmentRoutes, labRoutes (+1 more)
 
 ### Community 49 - "Admin User Management Routes"
-Cohesion: 0.16
-Nodes (15): adminColumns, AdminActionsCell(), CreateAdminButton(), CreateAdminModal(), DeleteAdminModal(), EditAdminModal(), AdminModalProvider, { Provider, useContext } (+7 more)
+Cohesion: 0.15
+Nodes (16): adminColumns, AdminActionsCell(), CreateAdminButton(), CreateAdminModal(), EditAdminModal(), AdminModalProvider, { Provider, useContext }, useAdminModalStore (+8 more)
 
 ### Community 50 - "Worker Env & System Metrics"
-Cohesion: 0.15
-Nodes (18): casted, converted, env, EnvSchema, errors, validator, value, baseLogger (+10 more)
+Cohesion: 0.14
+Nodes (19): casted, converted, env, EnvSchema, errors, validator, value, RpcServer (+11 more)
 
 ### Community 51 - "Biome Lint Config"
 Cohesion: 0.09
@@ -516,8 +541,8 @@ Cohesion: 0.10
 Nodes (20): compilerOptions, allowImportingTsExtensions, allowJs, jsx, lib, module, moduleDetection, moduleResolution (+12 more)
 
 ### Community 62 - "System Architecture Overview Docs"
-Cohesion: 0.12
-Nodes (20): System Architecture Document, Manager-Worker Architecture, architecture-overview.excalidraw diagram, Telemetry Streaming (Worker to Manager), Worker (apps/worker), Worker Daemon Rationale (Root/Docker Access Isolation), Codebase Tour Document, apps/worker (Worker daemon) (+12 more)
+Cohesion: 0.15
+Nodes (15): System Architecture Document, Manager-Worker Architecture, architecture-overview.excalidraw diagram, Telemetry Streaming (Worker to Manager), Worker (apps/worker), Worker Daemon Rationale (Root/Docker Access Isolation), Codebase Tour Document, apps/worker (Worker daemon) (+7 more)
 
 ### Community 63 - "@jawit/common TSConfig"
 Cohesion: 0.10
@@ -536,8 +561,8 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, allowJs, jsx, lib, module, moduleDetection, moduleResolution (+11 more)
 
 ### Community 67 - "Clab-Monitor Docker Event Types"
-Cohesion: 0.12
-Nodes (19): BaseContext, BaseDockerEvent, BaseMappingKeys, BaseResolvedData, ContainerAttributes, ContainerDieAttributes, ContainerHealthAttributes, Context (+11 more)
+Cohesion: 0.10
+Nodes (22): ModeToggle(), CheckboxInputProps, ColorInputProps, ImageInput(), ImageInputProps, MarkdownInput(), MarkdownInputProps, SwitchInputProps (+14 more)
 
 ### Community 68 - "@vlab/evaluator TSConfig"
 Cohesion: 0.10
@@ -560,12 +585,12 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, allowJs, jsx, lib, module, moduleDetection, moduleResolution (+11 more)
 
 ### Community 73 - "Data Table Context & Columns"
-Cohesion: 0.18
-Nodes (12): DataTableContext, DataTableContextValue, useDataTableContext(), DataTableColumnHeader(), DataTableColumnHeaderProps, DataTableProps, DataTablePagination(), DataTableToolbar() (+4 more)
+Cohesion: 0.29
+Nodes (9): DataTableContext, DataTableContextValue, useDataTableContext(), DataTableColumnHeader(), DataTableColumnHeaderProps, DataTableProps, DataTablePagination(), DataTableToolbar() (+1 more)
 
 ### Community 74 - "Admin Student User Routes"
-Cohesion: 0.20
-Nodes (13): ChangePasswordModal(), UserPasswordModalProvider, useUserPasswordModalStore, studentColumns, CreateStudentButton(), CreateStudentModal(), EditStudentModal(), StudentActionsCell() (+5 more)
+Cohesion: 0.16
+Nodes (18): useApiForm(), ChangePasswordModal(), studentColumns, CreateStudentButton(), CreateStudentModal(), validator, DeleteStudentModal(), EditStudentModal() (+10 more)
 
 ### Community 75 - "ERD Table Column Metadata"
 Cohesion: 0.41
@@ -574,10 +599,6 @@ Nodes (19): ui, ui, ui, ui, ui, ui, ui, ui (+11 more)
 ### Community 76 - "ERD Table Column Metadata"
 Cohesion: 0.11
 Nodes (19): settings, bracketType, canvasType, columnNameCase, columnOrder, database, databaseName, height (+11 more)
-
-### Community 77 - "Evaluator Core Session Engine"
-Cohesion: 0.22
-Nodes (8): Evaluator, AnyHandler, ExtractContext, ExtractSourceData, ExtractValidSourceIds, NodeInfo, SessionCheckPayload, ModuleTestContext
 
 ### Community 78 - "Evaluator MikroTik Route Schemas"
 Cohesion: 0.12
@@ -592,24 +613,24 @@ Cohesion: 0.11
 Nodes (18): devDependencies, @jawit/paginator, jsdom, @tailwindcss/typography, @tanstack/devtools-vite, @tanstack/router-plugin, @testing-library/dom, @testing-library/react (+10 more)
 
 ### Community 81 - "Admin Device Category Routes"
-Cohesion: 0.21
-Nodes (12): Route, RouteComponent(), deviceCategoryColumns, CreateDeviceCategoryButton(), DeviceCategoryActionsCell(), CreateDeviceCategoryModal(), EditDeviceCategoryModal(), DeviceCategoryModalProvider (+4 more)
+Cohesion: 0.24
+Nodes (11): deviceCategoryColumns, CreateDeviceCategoryButton(), DeviceCategoryActionsCell(), CreateDeviceCategoryModal(), DeleteDeviceCategoryModal(), EditDeviceCategoryModal(), DeviceCategoryModalProvider, { Provider, useContext } (+3 more)
 
 ### Community 82 - "Admin Study Program Routes"
-Cohesion: 0.22
-Nodes (12): Route, studyProgramColumns, CreateStudyProgramButton(), CreateStudyProgramModal(), DeleteStudyProgramModal(), EditStudyProgramModal(), StudyProgramActionsCell(), { Provider, useContext } (+4 more)
+Cohesion: 0.20
+Nodes (13): studyProgramColumns, CreateStudyProgramButton(), CreateStudyProgramModal(), validator, DeleteStudyProgramModal(), EditStudyProgramModal(), validator, StudyProgramActionsCell() (+5 more)
 
 ### Community 83 - "@jawit/zustand-helper Package Manifest"
 Cohesion: 0.11
 Nodes (17): devDependencies, @types/bun, @types/react, exports, ./react, ./types, module, name (+9 more)
 
 ### Community 84 - "Clab-Monitor Container Handlers"
-Cohesion: 0.20
-Nodes (15): onContainerCreate(), onContainerHealthStatus(), onContainerRemove(), emitInitialState(), handleDockerEvent(), ContainerEvent, Events, NodeData (+7 more)
+Cohesion: 0.07
+Nodes (45): onContainerCreate(), onContainerHealthStatus(), onContainerRemove(), emitInitialState(), handleDockerEvent(), monitors, extractInterfaces(), monitors (+37 more)
 
 ### Community 85 - "Evaluator E2E Test Suite"
-Cohesion: 0.18
-Nodes (11): TestContext, checkPromises, checks, clab, clabMonitor, docker, nodeMap, topo (+3 more)
+Cohesion: 0.20
+Nodes (7): checkPromises, checks, clab, clabMonitor, docker, nodeMap, topo
 
 ### Community 86 - "README & Package Feature Docs"
 Cohesion: 0.12
@@ -624,28 +645,28 @@ Cohesion: 0.24
 Nodes (11): instructorColumns, CreateInstructorButton(), InstructorActionsCell(), CreateInstructorModal(), DeleteInstructorModal(), EditInstructorModal(), InstructorModalProvider, { Provider, useContext } (+3 more)
 
 ### Community 89 - "Worker Evaluator & Monitor"
-Cohesion: 0.16
-Nodes (12): destroyLab(), clabMonitor, logger, activeEvaluations, logger, startLabEvaluation(), stopEvaluationSession(), stopLabEvaluation() (+4 more)
+Cohesion: 0.17
+Nodes (12): clab, deployLab(), destroyingSessions, destroyLab(), logger, startupExecs, activeEvaluations, logger (+4 more)
 
 ### Community 90 - "Docker Swarm Deployment Docs"
 Cohesion: 0.15
 Nodes (17): deploy-swarm.sh Automated Deployment Script, Docker Swarm (All-in-One) Deployment, Multi-Cloud & Firewall Requirements (2377, 7946, 4789), nginx-proxy Reverse Proxy + Let's Encrypt SSL Companion, Docker Swarm Placement Constraints (node.role == manager), Standalone --privileged Worker Container Rationale, Docker Stack Management Commands, VIRTUAL_HOST_MULTIPORTS Env Variable (+9 more)
 
 ### Community 91 - "Evaluator Linux Handler"
-Cohesion: 0.18
-Nodes (9): EvaluationHandler, getRoutes(), getUsers(), IpRouteSchema, RouteEntrySchema, RouteNextHopSchema, UserSchema, BaseContext (+1 more)
+Cohesion: 0.20
+Nodes (7): EvaluationHandler, AnyHandler, BaseContext, ExtractContext, ExtractSourceData, ExtractValidSourceIds, SessionCheckPayload
 
 ### Community 92 - "RIP Routing Checks & Solution"
-Cohesion: 0.13
-Nodes (16): Stage III: Route Verification and Connectivity (ping, tracepath), End-to-End Connectivity Test (PC1 -> PC2), Solution Steps PC1 (IP + default gateway to R1), Solution Steps PC2 (IP + default gateway to R2), Check: mikrotik.rip-instance-exist (R1/R2/R3, rip-lab), Check: mikrotik.rip-interface-template-exist (R1/R2/R3), Check: mikrotik.route-exist (R1/R3, flag DAr), Stage II: RIP Configuration on R1 (instance rip-lab) (+8 more)
+Cohesion: 0.12
+Nodes (18): Stage III: Route Verification and Connectivity (ping, tracepath), End-to-End Connectivity Test (PC1 -> PC2), Solution Steps PC1 (IP + default gateway to R1), Solution Steps PC2 (IP + default gateway to R2), Check: mikrotik.rip-instance-exist (R1/R2/R3, rip-lab), Check: mikrotik.rip-interface-template-exist (R1/R2/R3), Check: mikrotik.route-exist (R1/R3, flag DAr), Stage II: RIP Configuration on R1 (instance rip-lab) (+10 more)
 
 ### Community 93 - "@vlab/shared Package Manifest"
 Cohesion: 0.12
 Nodes (15): dependencies, @sinclair/typebox, devDependencies, @types/bun, exports, ./commands, ./enums, ./schemas (+7 more)
 
 ### Community 94 - "Topology Template Modal Routes"
-Cohesion: 0.22
-Nodes (10): DataTable(), Route, RouteComponent(), topologyTemplateColumns, TopologyTemplateActionsCell(), { Provider, useContext }, TopologyTemplateModalProvider, useTopologyTemplateModalStore (+2 more)
+Cohesion: 0.36
+Nodes (6): topologyTemplateColumns, TopologyTemplateActionsCell(), { Provider, useContext }, useTopologyTemplateModalStore, PaginationRequest, TopologyTemplateItem
 
 ### Community 95 - "@jawit/query Package Manifest"
 Cohesion: 0.13
@@ -656,16 +677,16 @@ Cohesion: 0.16
 Nodes (13): Elysia with Bun runtime template (Manager README), worker README (bun init template), gRPC communication channel (Manager-Worker), Split Manager and Worker, worker-installer service, Dockerfile.installer, Containerlab (container orchestration), gRPC (nice-grpc) (+5 more)
 
 ### Community 97 - "Manager Error Handling Utils"
-Cohesion: 0.23
-Nodes (10): errorHandler, logger, dbErrorHandlers, formatDBError(), formatValidationError(), handleForeignKeyViolation(), handleUniqueViolation(), toKebabCase() (+2 more)
+Cohesion: 0.24
+Nodes (6): dbErrorHandlers, handleForeignKeyViolation(), handleUniqueViolation(), toKebabCase(), toTitleCase(), failure()
 
 ### Community 98 - "UI Breadcrumb Component"
 Cohesion: 0.24
 Nodes (10): Breadcrumb(), BreadcrumbEllipsis(), BreadcrumbItem(), BreadcrumbLink(), BreadcrumbList(), BreadcrumbPage(), BreadcrumbSeparator(), getTitleFromBreadcrumbs() (+2 more)
 
 ### Community 99 - "Topology Device Properties & Forms"
-Cohesion: 0.14
-Nodes (6): getFirst(), ApplyTopologyTemplateModal(), SaveTopologyTemplateModal(), DeviceProperties(), EMPTY_CREDENTIALS, EMPTY_RESOURCES
+Cohesion: 0.11
+Nodes (21): DataTable(), useApiPagination(), RouteComponent(), Route, RouteComponent(), deviceTemplateColumns, DeviceTemplateActionsCell(), DeviceTemplateModalProvider (+13 more)
 
 ### Community 100 - "Docker Build CI Workflow"
 Cohesion: 0.23
@@ -696,28 +717,24 @@ Cohesion: 0.14
 Nodes (13): dependencies, @sinclair/typebox, @vlab/shared, waycast, devDependencies, @types/bun, exports, module (+5 more)
 
 ### Community 107 - "Device Template & Lab Session Schema"
-Cohesion: 0.21
-Nodes (11): deviceCategoriesRelations, deviceTemplatesRelations, CreateDeviceTemplateRequest, DeviceTemplateConnection, DeviceTemplateConnectionSchema, DeviceTemplateEnv, DeviceTemplateEnvSchema, DeviceTemplateInterface (+3 more)
+Cohesion: 0.23
+Nodes (10): DeviceTemplateConnectionSchema, DeviceTemplateEnvSchema, DeviceTemplateResourcesSchema, adminRouter, WorkerSchema, deviceTemplateRouter, TestDeviceTemplateRequest, labRouter (+2 more)
 
 ### Community 108 - "gRPC Async Queue & Worker Index"
-Cohesion: 0.15
-Nodes (6): logger, replyQueue, server, bindMonitorEvents(), listenToCommands(), AsyncQueue
-
-### Community 109 - "Worker Clab Deploy Utils"
-Cohesion: 0.19
-Nodes (7): clab, deployLab(), destroyingSessions, logger, startupExecs, LABELS, toKebabCase()
+Cohesion: 0.20
+Nodes (8): logger, replyQueue, server, clabMonitor, logger, bindMonitorEvents(), monitorState, createMonitor()
 
 ### Community 110 - "Static & RIP Routing Concepts"
-Cohesion: 0.15
-Nodes (13): Asymmetric Routing & Return Route Phenomenon, check-gateway=ping Failover Parameter, Routing Basic Concept & Default Gateway, Routing Table Mechanism (Destination Network + Next-Hop), When to Use Static Routing (Small Topology, Stub Network, Security), Static Routing vs Dynamic Routing, Distance-Vector & Bellman-Ford Algorithm, Dynamic Routing Basic Concept (+5 more)
+Cohesion: 0.18
+Nodes (11): Asymmetric Routing & Return Route Phenomenon, check-gateway=ping Failover Parameter, Routing Basic Concept & Default Gateway, Routing Table Mechanism (Destination Network + Next-Hop), When to Use Static Routing (Small Topology, Stub Network, Security), Static Routing vs Dynamic Routing, Distance-Vector & Bellman-Ford Algorithm, Dynamic Routing Basic Concept (+3 more)
 
 ### Community 111 - "BGP Material & Instructions"
-Cohesion: 0.15
-Nodes (13): BGP Lab Checks, BGP Lab Instructions, BGP Network Advertisement (Address List), RFC 5737 Documentation Addresses, BGP Instance/Connection Object Split (RouterOS v7), BGP Material, Danger of output.redistribute=connected, RouterOS v7 BGP Command Reference (+5 more)
+Cohesion: 0.25
+Nodes (8): BGP Lab Instructions, BGP Network Advertisement (Address List), RFC 5737 Documentation Addresses, Danger of output.redistribute=connected, BGP Lab Solution, BullMQ Background Task Processing, File Storage Tracking (file/lab_attachments/lab_embedded_file), Orphan Search Garbage Collection (BullMQ)
 
 ### Community 112 - "Network Monitor Linux Handler"
-Cohesion: 0.18
-Nodes (7): monitors, waiters, extractInterfaces(), monitors, start(), NetworkMonitor, healthyStatus
+Cohesion: 0.10
+Nodes (16): attachMonitorHandlers(), interfaceDebounce, logger, sessionThrottle, tempNodeEvents, connectedWorkers, ExtractReplyType, logger (+8 more)
 
 ### Community 113 - "Docker Compose Services"
 Cohesion: 0.24
@@ -752,16 +769,16 @@ Cohesion: 0.18
 Nodes (10): author, email, name, url, name, pnpm, onlyBuiltDependencies, private (+2 more)
 
 ### Community 121 - "Form Field Hooks & Checkbox"
-Cohesion: 0.22
-Nodes (8): CheckboxField(), CheckboxFieldProps, PaginatedComboboxField(), TextareaField(), TextareaFieldProps, { fieldContext, useFieldContext, formContext, useFormContext }, MarkdownField, { useAppForm, withForm, withFieldGroup, useTypedAppFormContext }
+Cohesion: 0.24
+Nodes (7): ColorField(), ColorFieldProps, ComboboxField(), ComboboxFieldProps, { fieldContext, useFieldContext, formContext, useFormContext }, MarkdownField, { useAppForm, withForm, withFieldGroup, useTypedAppFormContext }
 
 ### Community 122 - "Worker RPC Handler Registration"
-Cohesion: 0.44
-Nodes (6): registerClabHandlers(), registerDockerHandlers(), registerEvaluatorHandlers(), initRpc(), createRpcServer(), RpcServer
+Cohesion: 0.20
+Nodes (6): registerClabHandlers(), registerDockerHandlers(), registerEvaluatorHandlers(), initRpc(), createRpcServer(), AsyncQueue
 
 ### Community 123 - "ERD Feature Kanban Docs"
-Cohesion: 0.18
-Nodes (11): Schema validation, ERD feature, Entity Relationship Diagram (vLab database), Lab entity, Node entity, Session entity, User entity, Lab Creation feature (+3 more)
+Cohesion: 0.25
+Nodes (8): ERD feature, Entity Relationship Diagram (vLab database), Lab entity, Node entity, Session entity, User entity, Lab Creation feature, Lab topology backend storage
 
 ### Community 124 - "Module 1 CLI Intro Docs"
 Cohesion: 0.22
@@ -774,10 +791,6 @@ Nodes (11): Module 2: Konfigurasi IP Address (Description), Addressing Table (R1
 ### Community 126 - "System Communication Protocol Docs"
 Cohesion: 0.22
 Nodes (11): lab-lifecycle.excalidraw diagram, Orchestration Lifecycle (Lab Provisioning), @vlab/grpc package, @vlab/ws package, Communication Protocols Document, communication-flow.excalidraw diagram, gRPC Command & Control Channel, Rationale: Reuse gRPC Connection for Telemetry (+3 more)
-
-### Community 127 - "Mikro-RouterOS Type Definitions"
-Cohesion: 0.18
-Nodes (3): RouterOSClient, RouterOSStream, stop()
 
 ### Community 128 - "@jawit/elysia-caching Package Manifest"
 Cohesion: 0.18
@@ -795,13 +808,17 @@ Nodes (10): Better Communication Protocol (Waycast) feature, Type-safe event bro
 Cohesion: 0.20
 Nodes (10): CLI Introduction Lab Evaluation Checks feature, Evaluator engine (container interaction), Filesystem state checks (existence, permissions, contents), Advertised prefixes verification, BGP neighbor established check, @vlab/evaluator package, Lab Modules Documentation feature, Module for Dynamic Routing feature (+2 more)
 
+### Community 133 - "EvaluationSession Core Methods"
+Cohesion: 0.15
+Nodes (12): degreeLevelEnum, departmentsRelations, instructorsRelations, roleEnum, studentsRelations, studyPrograms, studyProgramsRelations, usersRelations (+4 more)
+
 ### Community 134 - "Auto-Form & Lab Check Forms"
 Cohesion: 0.25
 Nodes (7): AutoForm, AutoFormProps, fieldMapping, LabCheckForm, useLabChecksEditorStore, fieldComponents, LabCheckConfig
 
 ### Community 135 - "Device Template & Downloader Feature"
-Cohesion: 0.22
-Nodes (9): Containerlab Binary Downloader feature, Containerlab binary, Worker build process, Device Template Form feature, Containerlab device templates, Template creation form, Dynamic Form feature, Dynamic field rendering (+1 more)
+Cohesion: 0.29
+Nodes (7): Containerlab Binary Downloader feature, Containerlab binary, Worker build process, Device Template Form feature, Containerlab device templates, Template creation form, Dynamic field rendering
 
 ### Community 136 - "Manager & Web Architecture Docs"
 Cohesion: 0.22
@@ -864,8 +881,8 @@ Cohesion: 0.22
 Nodes (9): createPaginator function, Drizzle ORM, @jawit/paginator (drizzle-paginator), TypeBox, Automatic Query Key Generation (Proxy-based), Elysia Eden Treaty, @jawit/query, TanStack Query (+1 more)
 
 ### Community 151 - "MikroTik Network Monitor"
-Cohesion: 0.33
-Nodes (7): checkAccess(), connections, extractInterfaces(), getApi(), monitors, nodeInterfaceIdMapping, start()
+Cohesion: 0.12
+Nodes (19): errorHandler(), ErrorHandlerConfig, getErrorMessage(), getErrorMessageFromApi(), ResponseWithMessage, BaseResponse, FailureResponse, SuccessResponse (+11 more)
 
 ### Community 152 - "Web App PWA Manifest"
 Cohesion: 0.25
@@ -880,8 +897,8 @@ Cohesion: 0.25
 Nodes (8): Checks: node-interface.check-ip (R1, R2, PC1, PC2), Check: linux.route-exist (PC1/PC2 default gateway), Check: mikrotik.route-exist (R1/R2 static routes, flag As), Stage I: IP Configuration Across Routers/Clients, Stage II: Static Route Configuration (R1<->R2), Module 3 Command Reference (Linux + RouterOS Static Routing), Solution Steps R1 (IP + static route to 192.168.20.0/24), Solution Steps R2 (IP + static route to 192.168.10.0/24)
 
 ### Community 155 - "Containerlab Integration Doc"
-Cohesion: 0.29
-Nodes (8): @vlab/clab package, Containerlab Integration Document, Containerlab (external tool), ContainerlabTopologyDefinition, Topology Generation (Lab Template), Worker Execution (containerlab deploy), Lab Template Entity, Rule Definition (Instructor-defined)
+Cohesion: 0.25
+Nodes (9): @vlab/clab package, Containerlab Integration Document, Containerlab (external tool), ContainerlabTopologyDefinition, Topology Generation (Lab Template), Worker Execution (containerlab deploy), Lab Template Entity, Rule Definition (Instructor-defined) (+1 more)
 
 ### Community 156 - "Data Model Entities Doc"
 Cohesion: 0.29
@@ -928,12 +945,12 @@ Cohesion: 0.29
 Nodes (7): activeLabs Counter, Admission Control (Absolute Free Resource Gate), Atomic Selection (FOR UPDATE SKIP LOCKED), Lab Cost Estimation (cpuCostCores/memoryCostMB), Test Connection Cost Measurement Feature, Health-Gated Least Connections Worker Selection, Device Template Entity
 
 ### Community 167 - "Evaluator Engine Document"
-Cohesion: 0.33
-Nodes (7): @vlab/evaluator package, Lab Evaluation Engine Document, Evaluation Flow (Dispatch, Execution, Scoring), Interface IP Check, RIP Checks (Evaluator), Routing Checks, Rationale: Shared Evaluator Types Between Manager & Worker
+Cohesion: 0.14
+Nodes (16): BGP Lab Checks, BGP Instance/Connection Object Split (RouterOS v7), BGP Material, RouterOS v7 BGP Command Reference, packages/external (Mikro-RouterOS), @vlab/evaluator package, Lab Evaluation Engine Document, BGP Checks (Evaluator) (+8 more)
 
 ### Community 168 - "Manager API Documentation Plugin"
-Cohesion: 0.47
-Nodes (4): module, name, version, documentation
+Cohesion: 0.24
+Nodes (8): devDependencies, drizzle-kit, @types/bun, @types/ws, module, name, version, documentation
 
 ### Community 170 - "Web NPM Scripts"
 Cohesion: 0.33
@@ -960,8 +977,8 @@ Cohesion: 0.33
 Nodes (6): Checks: node-interface.check-ip (R1, R2, R3, PC1, PC2), Check: linux.route-exist (PC1/PC2 default gateway), Module 4: Konfigurasi Routing RIP (Description), Addressing Table (R1/R2/R3/PC1/PC2), Stage I: IP Configuration on R1/R2/R3/PC1/PC2, Module 4 Topology (R1-R2-R3 Transit + PC1/PC2)
 
 ### Community 176 - "Clab-Monitor Utility Types"
-Cohesion: 0.40
-Nodes (5): CLAB_BUILT_IN_LABELS, FullMappingConstraint, ResolvedData, removeItemFromArray(), removeItemFromArrayByIndex()
+Cohesion: 0.13
+Nodes (11): adminRoutes, userRoutes, instructorRoutes, studentRoutes, CreateAdminRequest, UpdateAdminRequest, NonEmptyString(), CreateInstructorRequest (+3 more)
 
 ### Community 177 - "CI & Deployment Feature Docs"
 Cohesion: 0.40
@@ -972,8 +989,8 @@ Cohesion: 0.40
 Nodes (5): Socket.io server (Manager), WS Backend, useWebSocket hook, WS Client Hook, Socket.io + msgpack WebSocket
 
 ### Community 179 - "Manager Dev Dependencies"
-Cohesion: 0.50
-Nodes (4): devDependencies, drizzle-kit, @types/bun, @types/ws
+Cohesion: 0.16
+Nodes (14): InfiniteList(), InfiniteListProps, ListFilterOption, ListFilterSelect(), ListFilterSelectProps, ListToolbarProps, PaginatedComboboxInput(), InfiniteListPage() (+6 more)
 
 ### Community 180 - "Query Helper Feature Docs"
 Cohesion: 0.50
@@ -983,25 +1000,93 @@ Nodes (4): Paginator, Elysia Eden Treaty client, TanStack Query, Tanstack Query 
 Cohesion: 0.50
 Nodes (3): AuthChangePasswordRequest, LoginRequest, Nullable()
 
+### Community 182 - "UI Color Field Component"
+Cohesion: 0.20
+Nodes (12): labSessionChecks, labSessionNodes, sendCommandToWorker(), handleTestCleanup(), handleTestInit(), handleStartLabEvaluation(), handleStopLabEvaluation(), handleInitLabSession() (+4 more)
+
+### Community 183 - "UI Combobox Field Component"
+Cohesion: 0.16
+Nodes (10): logger, WsDisposalJob, wsDisposalQueue, wsDisposalWorker, engine, io, logger, server (+2 more)
+
+### Community 206 - "utils.ts"
+Cohesion: 0.21
+Nodes (8): DynamicIcon(), DynamicIconProps, IconRenderer, LucideIconsPromise, Skeleton(), removeFromArray(), removeItemFromArray(), Icon()
+
+### Community 207 - "chart.tsx"
+Cohesion: 0.20
+Nodes (9): ChartConfig, ChartContext, ChartContextProps, ChartLegendContent(), ChartTooltipContent(), INITIAL_DIMENSION, THEMES, TooltipNameType (+1 more)
+
+### Community 208 - "sync-modules.ts"
+Cohesion: 0.20
+Nodes (10): buildTopology(), DOCS_DIR, EMPTY_TOPOLOGY, logger, runSyncModules(), TopologyMarkdown, TopologyMarkdownDevice, TopologyMarkdownGroup (+2 more)
+
+### Community 209 - "index.ts"
+Cohesion: 0.20
+Nodes (7): callbacks, generateNodeToken(), generateToken(), GuacamoleConnectionConfig, GuacamoleProtocol, logger, websocketOptions
+
+### Community 210 - "index.ts"
+Cohesion: 0.25
+Nodes (6): httpHandler, errorHandler, logger, fallback, logging, security
+
+### Community 211 - "theme-provider.tsx"
+Cohesion: 0.22
+Nodes (8): App(), initialState, Theme, ThemeProvider(), ThemeProviderContext, ThemeProviderProps, ThemeProviderState, rootElement
+
+### Community 212 - "context.ts"
+Cohesion: 0.27
+Nodes (3): NodeInfo, TestContext, ModuleTestContext
+
+### Community 213 - "session-header.tsx"
+Cohesion: 0.31
+Nodes (6): useLabChecksSessionStore, formatDuration(), ScoreIndicator(), SessionHeader(), SessionSubmitButton(), SessionTimer()
+
+### Community 214 - "📡 List of Emitted Events"
+Cohesion: 0.20
+Nodes (9): 🏗️ Architecture & Underlying System, Core Components, `health-update`, `interface-update`, 📡 List of Emitted Events, `node-create`, `node-remove`, 🛠 Usage Overview (+1 more)
+
+### Community 215 - "module.test.ts"
+Cohesion: 0.20
+Nodes (6): clab, docker, DOCS_DIR, moduleDirs, monitor, TOPOLOGIES_DIR
+
+### Community 216 - "redis.ts"
+Cohesion: 0.25
+Nodes (5): client, del(), delByPattern(), logger, subscriber
+
+### Community 217 - "enrollments-tab.tsx"
+Cohesion: 0.39
+Nodes (6): useWSEvent(), enrollmentColumns, EnrollmentsTab(), EnrollmentsTabContent(), useClientPagination(), LabEnrollmentItem
+
+### Community 218 - "linux.ts"
+Cohesion: 0.32
+Nodes (7): getRoutes(), getUsers(), IpRouteSchema, RouteEntrySchema, RouteNextHopSchema, UserSchema, getModem()
+
+### Community 221 - "Dynamic Form feature"
+Cohesion: 0.40
+Nodes (5): Dynamic Form feature, React Hook Form / Tanstack Form, Schema validation, Lab creation UI workflow, Visual evaluation rule builder
+
+### Community 222 - "Containerlab class"
+Cohesion: 0.40
+Nodes (3): Containerlab class, Containerlab CLI (external tool), containerlab (TypeScript wrapper for Containerlab CLI)
+
 ## Knowledge Gaps
-- **1512 isolated node(s):** `husky.sh script`, `dev`, `seed`, `backup`, `restore` (+1507 more)
+- **1521 isolated node(s):** `logger`, `DOCS_DIR`, `EMPTY_TOPOLOGY`, `TopologyMarkdownDevice`, `TopologyMarkdownLink` (+1516 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `UI Combobox & Input Group Components` to `UI Pagination & Select Input`, `UI Breadcrumb Component`, `UI Dialog & Form Modals`, `UI Form Field & Command Components`, `Topology Node Components`, `Data Table Context & Columns`, `UI Table & Empty State Components`, `Admin Dashboard Charts`, `WS & Lab Session Routes`, `UI Sidebar & Sheet Components`, `UI Card & Admin Dashboard`, `Lab & Topology Template Schema`, `Lab Checks Editor & Tabs UI`, `Admin Columns & Tooltip UI`, `UI Dropdown & Markdown Input`, `UI Alert Dialog & Enroll`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
-- **Why does `NodeInfo` connect `Evaluator Core Session Engine` to `Worker Evaluator & Monitor`, `Modules E2E Configurator`, `Evaluator E2E Test Suite`, `Manager Clab & gRPC Monitor Handlers`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **Why does `db` connect `Manager System Routes & DB` to `Manager Guacamole & Redis`, `Manager Clab & gRPC Monitor Handlers`, `gRPC Commands & Worker Handler`, `Manager Session & Auth Schema`, `Manager Sync-Modules Command`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **What connects `husky.sh script`, `dev`, `seed` to the rest of the system?**
-  _1530 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `cn()` connect `UI Combobox & Input Group Components` to `UI Dialog & Form Modals`, `UI Form Field & Command Components`, `UI Table & Empty State Components`, `WS & Lab Session Routes`, `UI Sidebar & Sheet Components`, `UI Card & Admin Dashboard`, `Lab & Topology Template Schema`, `Shared Enums & Menu Constants`, `Lab Checks Editor & Tabs UI`, `Admin Columns & Tooltip UI`, `UI Dropdown & Markdown Input`, `UI Alert Dialog & Enroll`, `UI Pagination & Select Input`, `Topology Node Components`, `Admin Dashboard Charts`, `Manager Dev Dependencies`, `Clab-Monitor Docker Event Types`, `Data Table Context & Columns`, `utils.ts`, `chart.tsx`, `UI Breadcrumb Component`?**
+  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+- **Why does `NodeInfo` connect `context.ts` to `Evaluator Linux Handler`, `Modules E2E Configurator`, `UI Color Field Component`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `db` connect `Manager System Routes & DB` to `Manager Guacamole & Redis`, `EvaluationSession Core Methods`, `Manager Clab & gRPC Monitor Handlers`, `Manager Session & Auth Schema`, `Manager Sync-Modules Command`, `sync-modules.ts`, `Network Monitor Linux Handler`, `Clab-Monitor Utility Types`, `UI Color Field Component`, `index.ts`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **What connects `logger`, `DOCS_DIR`, `EMPTY_TOPOLOGY` to the rest of the system?**
+  _1538 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Manager System Routes & DB` be split into smaller, more focused modules?**
-  _Cohesion score 0.11928864569083447 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1299385425812116 - nodes in this community are weakly interconnected._
 - **Should `Topology Store & State Slices` be split into smaller, more focused modules?**
-  _Cohesion score 0.0683526999316473 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05327281414237936 - nodes in this community are weakly interconnected._
 - **Should `Web Router & Route Guards` be split into smaller, more focused modules?**
-  _Cohesion score 0.03822937625754527 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04198668714797747 - nodes in this community are weakly interconnected._
