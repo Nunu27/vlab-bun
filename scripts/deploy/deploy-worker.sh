@@ -104,7 +104,7 @@ $DOCKER_CMD run -d \
 info "Starting vLab Worker..."
 info "Preparing /proc/2/status override for containerlab container detection..."
 mkdir -p /var/run/vlab && echo "Name: container_init" > /var/run/vlab/proc2-status \
-  || warn "Could not write /var/run/vlab/proc2-status — containerlab KVM check may fail on ARM64."
+  || warn "Could not write /var/run/vlab/proc2-status: containerlab KVM check may fail on ARM64."
 
 $DOCKER_CMD run -d \
   --name vlab-worker \

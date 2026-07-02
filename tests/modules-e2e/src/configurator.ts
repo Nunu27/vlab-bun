@@ -244,7 +244,7 @@ async function applyMikrotikCheck(
 			break;
 		}
 
-		// Result checks — these pass once protocols converge; no direct config needed.
+		// Result checks: these pass once protocols converge; no direct config needed.
 		case "mikrotik.ospf-neighbor-exist":
 		case "mikrotik.bgp-session-established":
 			break;

@@ -101,7 +101,7 @@ function abortableSleep(ms: number, signal?: AbortSignal): Promise<void> {
 /**
  * Retries `fn` with exponential backoff + jitter. Used to ride out transient
  * failures (e.g. a container/device not being ready yet) at the moment a
- * failure is observed — not on a schedule.
+ * failure is observed, not on a schedule.
  */
 export async function withRetry<T>(
 	fn: () => Promise<T>,

@@ -25,7 +25,7 @@ die() { echo "[installer] ERROR: $*" >&2; exit 1; }
 # When Swarm stops this installer (SIGTERM on stack rm / node leave),
 # also stop and remove the standalone containers so they don't linger.
 cleanup() {
-  log "Installer stopping — shutting down standalone containers..."
+  log "Installer stopping: shutting down standalone containers..."
   docker stop "$WORKER_CONTAINER" guacd 2>/dev/null || true
   docker rm -f "$WORKER_CONTAINER" guacd 2>/dev/null || true
   exit 0
@@ -33,7 +33,7 @@ cleanup() {
 trap cleanup SIGTERM SIGINT
 
 # =============================================================================
-# 1 — Resolve manager VIP via Swarm DNS
+# 1: Resolve manager VIP via Swarm DNS
 #     This works because worker-installer IS a Swarm service task.
 # =============================================================================
 log "Resolving manager address..."
@@ -51,7 +51,7 @@ done
 MANAGER_GRPC_URL="${MANAGER_IP}:50051"
 
 # =============================================================================
-# 2 — Ensure the local bridge network and named volume exist
+# 2: Ensure the local bridge network and named volume exist
 # =============================================================================
 log "Ensuring local bridge network $CLAB_MGMT_NETWORK..."
 docker network create -d bridge "$CLAB_MGMT_NETWORK" >/dev/null 2>&1 || true
@@ -60,7 +60,7 @@ log "Ensuring volume $TOPOLOGIES_VOLUME..."
 docker volume create "$TOPOLOGIES_VOLUME" >/dev/null 2>&1 || true
 
 # =============================================================================
-# 3 — Start standalone guacd
+# 3: Start standalone guacd
 #     Attached to both vlab-network (for manager) and clab-mgmt (for lab)
 # =============================================================================
 log "Starting standalone guacd container..."
@@ -71,7 +71,7 @@ docker run -d --name guacd \
 docker network connect "$CLAB_MGMT_NETWORK" guacd
 
 # =============================================================================
-# 4 — Discover guacd IPs
+# 4: Discover guacd IPs
 #     We pass GUACD_VLAB_IP to the worker as GUACD_HOST so the manager connects
 #     DIRECTLY to the node-local guacd task IP, bypassing Swarm VIP balancing.
 # =============================================================================
@@ -102,19 +102,19 @@ done
 [[ -n "$GUACD_VLAB_IP" ]] || die "Could not find guacd on $VLAB_NETWORK"
 
 
-# 5 — Pull latest worker image
+# 5: Pull latest worker image
 # =============================================================================
 log "Pulling $WORKER_IMAGE..."
 docker pull "$WORKER_IMAGE"
 
 # =============================================================================
-# 6 — Remove any stale worker container from a previous run
+# 6: Remove any stale worker container from a previous run
 # =============================================================================
 log "Removing stale worker container (if any)..."
 docker rm -f "$WORKER_CONTAINER" 2>/dev/null || true
 
 # =============================================================================
-# 7 — Start the worker on clab-mgmt (--privileged lets containerlab write
+# 7: Start the worker on clab-mgmt (--privileged lets containerlab write
 #     to /proc/sys/net/ipv4/conf/all/rp_filter in its own network namespace)
 #     --pid host lets containerlab reach sibling container network namespaces
 #     via /proc/<pid>/ns/net. The /proc/2 detection shim (step 7b) is applied
@@ -146,28 +146,28 @@ log "Connecting worker to $VLAB_NETWORK..."
 docker network connect "$VLAB_NETWORK" "$WORKER_CONTAINER"
 
 # =============================================================================
-# 7b — Apply /proc/2 shim for containerlab container detection on ARM64.
+# 7b: Apply /proc/2 shim for containerlab container detection on ARM64.
 #      runc's proc-safety check blocks bind mounts into /proc at container
 #      start time, but the same mount succeeds post-start via docker exec
 #      because it goes directly to the kernel syscall. The kernel only
 #      restricts namespace files (/proc/*/ns/*), not regular proc directories.
 #      Result: containerlab reads "Name: container_init" from /proc/2/status
-#      and skips the KVM/cpuinfo check entirely — on both x86 and ARM64.
+#      and skips the KVM/cpuinfo check entirely, on both x86 and ARM64.
 # =============================================================================
 log "Applying /proc/2 containerlab detection shim..."
 if docker exec "$WORKER_CONTAINER" sh -c \
   'mkdir -p /tmp/vlab-proc2 && echo "Name: container_init" > /tmp/vlab-proc2/status && mount --bind /tmp/vlab-proc2 /proc/2' \
   2>/dev/null; then
-  log "/proc/2 shim applied — containerlab will skip KVM check."
+  log "/proc/2 shim applied: containerlab will skip KVM check."
 else
-  log "WARNING: /proc/2 shim failed — containerlab KVM check will run (may fail on ARM64)."
+  log "WARNING: /proc/2 shim failed; containerlab KVM check will run (may fail on ARM64)."
 fi
 
 log "Worker started. Monitoring (docker wait)..."
 
 # =============================================================================
-# 8 — Block until the worker exits. `docker wait` runs in the background so
-#     bash's `wait` builtin is used instead — unlike a foreground blocking call,
+# 8: Block until the worker exits. `docker wait` runs in the background so
+#     bash's `wait` builtin is used instead; unlike a foreground blocking call,
 #     `wait` IS interruptible by signals, allowing the SIGTERM trap to fire
 #     immediately when Swarm stops this installer task.
 # =============================================================================

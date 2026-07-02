@@ -73,7 +73,7 @@ function formatMemory(mb: number) {
 }
 
 // ---------------------------------------------------------------------------
-// Custom tooltip — full layout control, no ChartTooltipContent wrapper
+// Custom tooltip: full layout control, no ChartTooltipContent wrapper
 // ---------------------------------------------------------------------------
 function MetricsTooltip({
 	active,
@@ -107,7 +107,7 @@ function MetricsTooltip({
 						/>
 						<span className="text-muted-foreground text-xs">{label}</span>
 
-						{/* Values — right-aligned */}
+						{/* Values, right-aligned */}
 						<div className="flex flex-col items-end">
 							<span className="font-medium font-mono text-foreground text-xs tabular-nums">
 								{point[key].toFixed(1)}%

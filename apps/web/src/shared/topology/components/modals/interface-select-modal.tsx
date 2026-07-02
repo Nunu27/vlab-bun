@@ -49,7 +49,7 @@ function InterfaceSelectModal() {
 								<span className="font-medium text-foreground">
 									{sourceName}
 								</span>{" "}
-								[<span className="font-mono text-xs">{sourceInterface}</span>] —
+								[<span className="font-mono text-xs">{sourceInterface}</span>]:
 								select an interface on{" "}
 								<span className="font-medium text-foreground">
 									{targetName}

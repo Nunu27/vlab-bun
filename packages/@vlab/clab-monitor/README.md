@@ -2,7 +2,7 @@
 
 `@vlab/clab-monitor` is a lightweight Node.js package for monitoring the health and network interfaces of Containerlab (clab) nodes running as Docker containers. It hooks into the Docker Engine's event stream, resolves each container's stable node identity from a single label, and tracks two things per node: container health and internal network interfaces.
 
-It intentionally does **not** track lab sessions, ownership, or any other business-level grouping — callers are expected to resolve any additional labels/metadata they need themselves (e.g. via `containerId` and their own `docker.getContainer(...).inspect()` call) and to own their own lifecycle/cleanup logic.
+It intentionally does **not** track lab sessions, ownership, or any other business-level grouping; callers are expected to resolve any additional labels/metadata they need themselves (e.g. via `containerId` and their own `docker.getContainer(...).inspect()` call) and to own their own lifecycle/cleanup logic.
 
 ## 🏗️ Architecture & Underlying System
 
@@ -18,7 +18,7 @@ It intentionally does **not** track lab sessions, ownership, or any other busine
 
 ## 📡 List of Emitted Events
 
-Exactly four events are emitted — nothing else. Initial hydration (on `init()`) is folded into `node-create`: every already-running node matching `nodeIdLabel` is emitted as a `node-create` event before the monitor starts watching for live Docker events.
+Exactly four events are emitted: nothing else. Initial hydration (on `init()`) is folded into `node-create`: every already-running node matching `nodeIdLabel` is emitted as a `node-create` event before the monitor starts watching for live Docker events.
 
 ### `node-create`
 - **When**: Emitted for every node found during hydration, and for every new container matching `nodeIdLabel` created afterwards.

@@ -12,7 +12,7 @@ interface UseGuacamoleClipboardProps {
  * Permissions API (Chromium-based browsers).
  *
  * Firefox and Safari do not expose "clipboard-read" in the Permissions API
- * and restrict readText() to direct user-gesture handlers — calling it from
+ * and restrict readText() to direct user-gesture handlers: calling it from
  * focus/visibilitychange events is silently rejected with no permission prompt.
  */
 const isClipboardReadSupported = async (): Promise<boolean> => {
@@ -23,7 +23,7 @@ const isClipboardReadSupported = async (): Promise<boolean> => {
 		});
 		return result.state === "granted" || result.state === "prompt";
 	} catch {
-		// Permissions API doesn't recognise "clipboard-read" — Firefox / Safari
+		// Permissions API doesn't recognise "clipboard-read" (Firefox / Safari)
 		return false;
 	}
 };
@@ -56,7 +56,7 @@ export const useGuacamoleClipboard = ({
 
 	// Receive clipboard data from the remote and write it to the local clipboard.
 	// isConnected is a dependency so this effect re-runs after connection is
-	// established — clientRef.current is null at mount time.
+	// established: clientRef.current is null at mount time.
 	useEffect(() => {
 		const client = clientRef.current;
 		if (!client || !isConnected) return;
@@ -156,7 +156,7 @@ export const useGuacamoleClipboard = ({
 		};
 	}, [isConnected, sendClipboardText]);
 
-	// Explicit paste (Ctrl+V) — forward clipboard data to the remote.
+	// Explicit paste (Ctrl+V): forward clipboard data to the remote.
 	// Works in all browsers regardless of clipboard-read permission support.
 	useEffect(() => {
 		const handlePaste = (e: ClipboardEvent) => {
