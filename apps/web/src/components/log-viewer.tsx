@@ -1,14 +1,22 @@
+import { cn } from "@web/lib/utils";
+
 export type LogLevel = "info" | "warn" | "error";
 export type LogEntry = { type: LogLevel; message: string };
 
 interface LogViewerProps {
 	logs: LogEntry[];
 	emptyMessage?: string;
+	className?: string;
 }
 
-export function LogViewer({ logs, emptyMessage }: LogViewerProps) {
+export function LogViewer({ logs, emptyMessage, className }: LogViewerProps) {
 	return (
-		<div className="flex aspect-video w-full flex-col overflow-y-auto bg-slate-950 p-4 font-mono text-xs">
+		<div
+			className={cn(
+				"flex aspect-video w-full flex-col overflow-y-auto bg-slate-950 p-4 font-mono text-xs",
+				className,
+			)}
+		>
 			{logs.length === 0 && emptyMessage && (
 				<div className="text-slate-500">{emptyMessage}</div>
 			)}

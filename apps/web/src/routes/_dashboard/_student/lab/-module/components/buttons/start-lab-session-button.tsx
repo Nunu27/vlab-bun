@@ -18,6 +18,7 @@ import {
 import { useWSAction } from "@web/hooks/ws";
 import { PlayIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { WaitingDistraction } from "./waiting-distraction";
 
 interface StartLabSessionButtonProps {
 	labId: string;
@@ -42,6 +43,12 @@ export function StartLabSessionButton({
 	const [isLoading, setIsLoading] = useState(false);
 	const [disposeFn, setDisposeFn] = useState<(() => void) | null>(null);
 	const [now, setNow] = useState(() => Date.now());
+
+	const isHighDemand =
+		isLoading &&
+		logs.some(
+			(log) => log.type === "warn" && log.message.includes("High demand"),
+		);
 
 	const isLimitReached = maxAttempt !== null && attemptCount >= maxAttempt;
 	const startTime =
@@ -135,11 +142,13 @@ export function StartLabSessionButton({
 						<DialogTitle>Starting Lab Session...</DialogTitle>
 					</DialogHeader>
 
-					<div className="relative aspect-video w-full overflow-hidden bg-slate-950">
+					<div className="flex aspect-video w-full overflow-hidden bg-slate-950">
 						<LogViewer
 							logs={logs}
 							emptyMessage="Initializing connection sequence..."
+							className="aspect-auto w-0 flex-1"
 						/>
+						<WaitingDistraction active={isHighDemand} sessionKey={open} />
 					</div>
 
 					<DialogFooter className="p-4 pt-0">
