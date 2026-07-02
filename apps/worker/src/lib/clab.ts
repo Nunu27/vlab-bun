@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import type { Static } from "@sinclair/typebox";
 import type {
 	ContainerlabLinkDefinition,
@@ -9,6 +10,7 @@ import type { LabConfigSchema } from "@vlab/grpc";
 import { toKebabCase } from "@vlab/shared/utils";
 import baseLogger from "@worker/lib/logger";
 import env from "../env";
+import { LABELS } from "./constants";
 import { stopLabEvaluation } from "./evaluator";
 
 const logger = baseLogger.child({ service: "clab" });
@@ -23,10 +25,14 @@ const startupExecs: Partial<Record<string, string[]>> = {
 		"ip route del default",
 		`ip route add ${env.GUACD_IP} dev eth0`,
 		`sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'`,
+		"sh -c 'rm -f /sbin/shutdown /sbin/poweroff /sbin/reboot /sbin/halt /usr/sbin/shutdown /usr/sbin/poweroff /usr/sbin/reboot /usr/sbin/halt || true'",
+		'sh -c \'printf "#!/bin/sh\\necho \\"Shutdown is disabled in this lab.\\" >&2\\nexit 1\\n" > /sbin/shutdown\'',
+		"sh -c 'chmod +x /sbin/shutdown'",
+		"sh -c 'ln -s /sbin/shutdown /sbin/poweroff || true'",
+		"sh -c 'ln -s /sbin/shutdown /sbin/reboot || true'",
+		"sh -c 'ln -s /sbin/shutdown /sbin/halt || true'",
 	],
 };
-
-import { LABELS } from "./constants";
 
 export async function deployLab(
 	sessionId: string,
@@ -88,7 +94,6 @@ export async function deployLab(
 			cpu: resources.cpu ?? undefined,
 			memory: resources.memory ?? undefined,
 			labels,
-			"auto-remove": true,
 			credentials,
 			stages: {
 				configure: {
@@ -100,6 +105,12 @@ export async function deployLab(
 				},
 			},
 		};
+
+		if (rest.kind === "mikrotik_ros") {
+			const configPath = "/tmp/mikrotik-noreboot.rsc";
+			writeFileSync(configPath, "/user group set [find] policy=!reboot\n");
+			nodes[kebabName]["startup-config"] = configPath;
+		}
 	}
 
 	const links: ContainerlabLinkDefinition[] =
@@ -124,12 +135,23 @@ export async function deployLab(
 
 	const inspected = await clab.deploy(sessionId, topologyContent);
 
-	const deployedNodes: { id: string; ip: string; containerId: string }[] = [];
+	const deployedNodes: {
+		id: string;
+		ip: string;
+		containerId: string;
+		health: string | null;
+	}[] = [];
 	for (const node of inspected) {
-		const id = idByKebabName[node.name];
+		let nodeName = node.name;
+		const expectedPrefix = `clab-${sessionId}-`;
+		if (nodeName.startsWith(expectedPrefix)) {
+			nodeName = nodeName.substring(expectedPrefix.length);
+		}
+
+		const id = idByKebabName[nodeName];
 		if (!id) {
 			logger.warn(
-				{ sessionId, containerName: node.name },
+				{ sessionId, containerName: node.name, parsedNodeName: nodeName },
 				"Deployed container has no matching session node id, skipping",
 			);
 			continue;
@@ -146,26 +168,72 @@ export async function deployLab(
 			continue;
 		}
 
-		deployedNodes.push({ id, ip, containerId: node.containerId });
+		const health = node.status?.startsWith("Up") ? null : (node.status ?? null);
+
+		deployedNodes.push({
+			id,
+			ip,
+			containerId: node.containerId,
+			health,
+		});
 	}
 
 	return deployedNodes;
 }
 
-export const destroyingSessions = new Set<string>();
+// Lets a `clab:destroyLab` RPC and reconcileSessions racing on the same
+// session share one in-flight destroy instead of running two.
+export const destroyingSessions = new Map<string, Promise<unknown>>();
 
 export async function destroyLab(sessionId: string) {
-	destroyingSessions.add(sessionId);
-	try {
-		await stopLabEvaluation(sessionId, { immediate: true });
-		return await clab.destroy(sessionId);
-	} finally {
-		destroyingSessions.delete(sessionId);
-	}
+	const inFlight = destroyingSessions.get(sessionId);
+	if (inFlight) return inFlight;
+
+	const promise = (async () => {
+		try {
+			await stopLabEvaluation(sessionId, { immediate: true });
+			return await clab.destroy(sessionId);
+		} finally {
+			destroyingSessions.delete(sessionId);
+		}
+	})();
+
+	destroyingSessions.set(sessionId, promise);
+	return promise;
 }
 
 export async function checkPrerequisites() {
 	return clab.checkPrerequisites();
 }
 
-export default { deployLab, destroyLab, checkPrerequisites };
+// Called once on worker connect: the manager sends the session ids it still
+// considers active, and anything deployed locally but absent from that list
+// is a leftover from a crash/restart/missed destroy and gets torn down.
+export async function reconcileSessions(activeSessionIds: string[]) {
+	const active = new Set(activeSessionIds);
+	const deployedIds = await clab.listDeployedIds();
+
+	const destroyed: string[] = [];
+	for (const id of deployedIds) {
+		if (active.has(id)) continue;
+
+		try {
+			await destroyLab(id);
+			destroyed.push(id);
+		} catch (error) {
+			logger.error(
+				{ err: error, sessionId: id },
+				"Failed to destroy stale lab session",
+			);
+		}
+	}
+
+	return destroyed;
+}
+
+export default {
+	deployLab,
+	destroyLab,
+	checkPrerequisites,
+	reconcileSessions,
+};

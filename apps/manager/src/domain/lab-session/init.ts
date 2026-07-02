@@ -15,7 +15,7 @@ import type { LabLink, LabNode } from "@manager/types/clab";
 import { getAffectedCount } from "@manager/utils/db";
 import { eq, inArray, sql } from "drizzle-orm";
 
-const logger = baseLogger.child({ service: "worker-action" });
+const logger = baseLogger.child({ service: "lab-session" });
 
 async function rollbackSession(sessionId: string, workerId: string) {
 	const shouldDecrement = await getAffectedCount(
@@ -28,11 +28,9 @@ async function rollbackSession(sessionId: string, workerId: string) {
 			.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
 			.where(eq(workers.id, workerId));
 	}
-
-	await labSessionQueue.remove(sessionId);
 }
 
-export async function handleInitLabSession(
+export async function initSession(
 	workerId: string,
 	payload: {
 		requestId: string;
@@ -67,15 +65,6 @@ export async function handleInitLabSession(
 			})
 			.onConflictDoNothing();
 
-		await labSessionQueue.add(
-			"cleanup",
-			{ sessionId, workerId },
-			{
-				delay: Math.max(0, dueDateObj.getTime() - Date.now()),
-				jobId: sessionId,
-			},
-		);
-
 		await cache.delete(`lab:${labId}:lab-session:list:${userId}`);
 		ws.server.emit("lab:[labId]:enrollment:update", {
 			params: { labId },
@@ -88,8 +77,7 @@ export async function handleInitLabSession(
 
 		// Any failure past this point (deploy RPC error, partial deploy, DB error)
 		// falls through to the catch-all below, which rolls back and replies.
-		let deployedNodes: { id: string; ip: string; containerId: string }[] = [];
-		await sendCommandToWorker(
+		const deployedNodes = await sendCommandToWorker(
 			workerId,
 			"clab:deployLab",
 			{
@@ -100,11 +88,6 @@ export async function handleInitLabSession(
 					nodes,
 					links,
 					dueDate,
-				},
-			},
-			{
-				deployed: (deployed) => {
-					deployedNodes = deployed;
 				},
 			},
 		);
@@ -177,11 +160,18 @@ export async function handleInitLabSession(
 				return [];
 			}
 
+			const healthValue =
+				deployedNode.health != null &&
+				["healthy", "unhealthy", "starting"].includes(deployedNode.health)
+					? deployedNode.health
+					: null;
+
 			return [
 				{
 					id: deployedNode.id,
 					name: node.name,
 					ip: deployedNode.ip,
+					health: healthValue as "healthy" | "unhealthy" | "starting" | null,
 					interfaces: {},
 					containerId: deployedNode.containerId,
 					token: guacamole.generateNodeToken(
@@ -200,6 +190,10 @@ export async function handleInitLabSession(
 
 		if (rows.length) {
 			await db.insert(labSessionNodes).values(rows).onConflictDoNothing();
+			await db
+				.update(workers)
+				.set({ activeNodes: sql`${workers.activeNodes} + ${rows.length}` })
+				.where(eq(workers.id, workerId));
 		}
 
 		ws.server.reply("lab:[id]:init", requestId)(
@@ -207,6 +201,15 @@ export async function handleInitLabSession(
 			"Lab provisioned successfully.",
 		);
 		ws.server.replyResponse("lab:[id]:init", requestId, sessionId);
+
+		await labSessionQueue.add(
+			"cleanup",
+			{ sessionId, workerId },
+			{
+				delay: Math.max(0, dueDateObj.getTime() - Date.now()),
+				jobId: sessionId,
+			},
+		);
 	} catch (error) {
 		logger.error({ err: error, sessionId }, "Failed to initialize lab session");
 		await rollbackSession(sessionId, workerId).catch((err) =>
@@ -219,15 +222,4 @@ export async function handleInitLabSession(
 			error instanceof Error ? error.message : String(error),
 		);
 	}
-}
-
-export async function handleSubmitLabSession(
-	workerId: string,
-	payload: {
-		sessionId: string;
-	},
-) {
-	await sendCommandToWorker(workerId, "clab:destroyLab", {
-		sessionId: payload.sessionId,
-	});
 }

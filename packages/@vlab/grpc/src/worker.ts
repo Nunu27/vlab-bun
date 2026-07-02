@@ -31,7 +31,6 @@ export interface MetricsRequest {
 	cpuUsagePercent: number;
 	memoryUsagePercent: number;
 	storageUsagePercent: number;
-	activeNodes: number;
 }
 
 export interface MetricsResponse {
@@ -348,12 +347,7 @@ export const CommandRequest: MessageFns<CommandRequest> = {
 };
 
 function createBaseMetricsRequest(): MetricsRequest {
-	return {
-		cpuUsagePercent: 0,
-		memoryUsagePercent: 0,
-		storageUsagePercent: 0,
-		activeNodes: 0,
-	};
+	return { cpuUsagePercent: 0, memoryUsagePercent: 0, storageUsagePercent: 0 };
 }
 
 export const MetricsRequest: MessageFns<MetricsRequest> = {
@@ -369,9 +363,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 		}
 		if (message.storageUsagePercent !== 0) {
 			writer.uint32(25).double(message.storageUsagePercent);
-		}
-		if (message.activeNodes !== 0) {
-			writer.uint32(48).int32(message.activeNodes);
 		}
 		return writer;
 	},
@@ -408,14 +399,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 					message.storageUsagePercent = reader.double();
 					continue;
 				}
-				case 6: {
-					if (tag !== 48) {
-						break;
-					}
-
-					message.activeNodes = reader.int32();
-					continue;
-				}
 			}
 			if ((tag & 7) === 4 || tag === 0) {
 				break;
@@ -442,11 +425,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 				: isSet(object.storage_usage_percent)
 					? globalThis.Number(object.storage_usage_percent)
 					: 0,
-			activeNodes: isSet(object.activeNodes)
-				? globalThis.Number(object.activeNodes)
-				: isSet(object.active_nodes)
-					? globalThis.Number(object.active_nodes)
-					: 0,
 		};
 	},
 
@@ -461,9 +439,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 		if (message.storageUsagePercent !== 0) {
 			obj.storageUsagePercent = message.storageUsagePercent;
 		}
-		if (message.activeNodes !== 0) {
-			obj.activeNodes = Math.round(message.activeNodes);
-		}
 		return obj;
 	},
 
@@ -475,7 +450,6 @@ export const MetricsRequest: MessageFns<MetricsRequest> = {
 		message.cpuUsagePercent = object.cpuUsagePercent ?? 0;
 		message.memoryUsagePercent = object.memoryUsagePercent ?? 0;
 		message.storageUsagePercent = object.storageUsagePercent ?? 0;
-		message.activeNodes = object.activeNodes ?? 0;
 		return message;
 	},
 };

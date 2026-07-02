@@ -1,6 +1,8 @@
 import redis from "@manager/lib/redis";
-import { waitForAvailableWorkerId } from "@manager/services/grpc";
-import { workerActions } from "@manager/services/worker-actions";
+import {
+	dispatchWorkerAction,
+	waitForAvailableWorkerId,
+} from "@manager/services/grpc";
 import ws from "@manager/services/ws";
 
 const PREFIX = "test-lab-worker:";
@@ -11,7 +13,7 @@ ws.server.on(
 		const workerId = await waitForAvailableWorkerId();
 		await redis.client.set(`${PREFIX}${requestId}`, workerId);
 
-		await workerActions.dispatch("device:testInit", workerId, {
+		await dispatchWorkerAction("device:testInit", workerId, {
 			connectionId,
 			requestId,
 			userId: context.session.id,
@@ -26,7 +28,7 @@ ws.server.onDispose("device-template:test", async (_, requestId) => {
 	const workerId = await redis.client.get(`${PREFIX}${requestId}`);
 	if (!workerId) return;
 
-	await workerActions.dispatch("device:testCleanup", workerId, {
+	await dispatchWorkerAction("device:testCleanup", workerId, {
 		sessionId: requestId,
 	});
 	await redis.client.del(`${PREFIX}${requestId}`);

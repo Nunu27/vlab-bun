@@ -1,4 +1,5 @@
 import db from "@manager/db";
+import { workers } from "@manager/db/schema";
 import { sendCommandToWorker, tempNodeEvents } from "@manager/services/grpc";
 import guacamole from "@manager/services/guacamole-lite";
 import ws from "@manager/services/ws";
@@ -6,8 +7,9 @@ import { waitForEvent } from "@manager/utils/events";
 import type { Static } from "@sinclair/typebox";
 import type { TestDeviceTemplateRequest } from "@vlab/ws/device-template";
 import { sleep } from "bun";
+import { eq, sql } from "drizzle-orm";
 
-export async function handleTestInit(
+export async function testDeviceOnWorker(
 	workerId: string,
 	payload: {
 		connectionId: string;
@@ -34,16 +36,6 @@ export async function handleTestInit(
 		// Lab provisioning
 		reply("info", "Provisioning device...");
 
-		const ipPromise = waitForEvent(tempNodeEvents, `${nodeId}:ip`, {
-			timeout: 120000,
-		});
-
-		const containerIdPromise = waitForEvent(
-			tempNodeEvents,
-			`${nodeId}:containerId`,
-			{ timeout: 120000 },
-		);
-
 		const healthPromise = waitForEvent(tempNodeEvents, `${nodeId}:health`, {
 			predicate: (health) => {
 				if (!health) return null;
@@ -52,8 +44,10 @@ export async function handleTestInit(
 			timeout: 120000,
 		});
 
-		try {
-			await sendCommandToWorker(workerId, "clab:deployLab", {
+		const deployedNodes = await sendCommandToWorker(
+			workerId,
+			"clab:deployLab",
+			{
 				sessionId: executionId,
 				config: {
 					ownerId: payload.userId,
@@ -72,19 +66,20 @@ export async function handleTestInit(
 						},
 					],
 				},
-			});
-		} catch (error) {
+			},
+		).catch((error) => {
 			throw new Error(
 				`Provisioning failed: ${error instanceof Error ? error.message : String(error)}`,
 			);
-		}
+		});
 
 		reply("info", "Device provisioned.");
 
-		const ip = await ipPromise;
-		if (!ip) {
-			throw new Error("Failed to retrieve container IP.");
+		const deployed = deployedNodes.find((n) => n.id === nodeId);
+		if (!deployed) {
+			throw new Error("Failed to retrieve deployed device info.");
 		}
+		const { ip, containerId } = deployed;
 
 		// Health check
 		reply("info", "Waiting for device to become healthy...");
@@ -120,16 +115,13 @@ export async function handleTestInit(
 		ws.server.replyResponse("device-template:test", executionId, token);
 
 		// Measure container resource usage and emit as suggested cost values
-		const containerId = await containerIdPromise;
-		if (containerId) {
-			await sleep(3000); // let CPU settle after boot
-			await sendCommandToWorker(
-				workerId,
-				"docker:measureContainerStats",
-				{ containerId },
-				{ result: (data) => reply("stats", data) },
-			);
-		}
+		await sleep(3000); // let CPU settle after boot
+		const stats = await sendCommandToWorker(
+			workerId,
+			"docker:measureContainerStats",
+			{ containerId },
+		);
+		reply("stats", stats);
 	} catch (error) {
 		ws.server.replyError(
 			"device-template:test",
@@ -140,7 +132,7 @@ export async function handleTestInit(
 	}
 }
 
-export async function handleTestCleanup(
+export async function cleanupDeviceTest(
 	workerId: string,
 	payload: {
 		sessionId: string;
@@ -149,4 +141,9 @@ export async function handleTestCleanup(
 	await sendCommandToWorker(workerId, "clab:destroyLab", {
 		sessionId: payload.sessionId,
 	});
+
+	await db
+		.update(workers)
+		.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
+		.where(eq(workers.id, workerId));
 }
