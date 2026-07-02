@@ -1,11 +1,11 @@
 <!-- topology
 {
   "devices": {
-    "R1": { "template": "Mikrotik RouterOS", "x": 180, "y": 160 },
-    "R2": { "template": "Mikrotik RouterOS", "x": 400, "y": 160 },
-    "R3": { "template": "Mikrotik RouterOS", "x": 620, "y": 160 },
-    "PC1": { "template": "Ubuntu 24.04 SSH", "x": 40, "y": 320 },
-    "PC2": { "template": "Ubuntu 24.04 SSH", "x": 760, "y": 320 }
+    "R1": { "template": "Mikrotik RouterOS", "x": 100, "y": 140 },
+    "R2": { "template": "Mikrotik RouterOS", "x": 500, "y": 140 },
+    "R3": { "template": "Mikrotik RouterOS", "x": 900, "y": 140 },
+    "PC1": { "template": "Ubuntu 24.04 SSH", "x": 100, "y": 320 },
+    "PC2": { "template": "Ubuntu 24.04 SSH", "x": 900, "y": 320 }
   },
   "links": [
     { "from": "R1", "interface": "ether2", "to": "PC1", "remoteInterface": "eth1" },
@@ -14,13 +14,13 @@
     { "from": "R3", "interface": "ether2", "to": "PC2", "remoteInterface": "eth1" }
   ],
   "groups": {
-    "AS 65001": { "color": "#4ade80", "x": 20, "y": 110, "width": 260, "height": 340, "members": ["R1", "PC1"] },
-    "AS 65000 (Transit)": { "color": "#818cf8", "x": 340, "y": 110, "width": 140, "height": 180, "members": ["R2"] },
-    "AS 65002": { "color": "#fb923c", "x": 540, "y": 110, "width": 260, "height": 340, "members": ["R3", "PC2"] }
+    "AS 65001": { "color": "#4ade80", "x": 40, "y": 90, "width": 200, "height": 350, "members": ["R1", "PC1"] },
+    "AS 65000 (Transit)": { "color": "#818cf8", "x": 440, "y": 90, "width": 200, "height": 180, "members": ["R2"] },
+    "AS 65002": { "color": "#fb923c", "x": 840, "y": 90, "width": 200, "height": 350, "members": ["R3", "PC2"] }
   },
   "notes": [
-    { "content": "eBGP\n198.51.100.0/30", "x": 276, "y": 178 },
-    { "content": "eBGP\n198.51.100.4/30", "x": 487, "y": 178 }
+    { "content": "eBGP\n198.51.100.0/30", "x": 280, "y": 130 },
+    { "content": "eBGP\n198.51.100.4/30", "x": 680, "y": 130 }
   ]
 }
 -->
