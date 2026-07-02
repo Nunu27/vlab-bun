@@ -49,9 +49,6 @@ export async function initSession(
 		const now = new Date();
 		const dueDateObj = new Date(dueDate);
 
-		// Written synchronously (rather than left to the async docker-event-driven
-		// monitor sync) so that by the time this RPC resolves, the session and its
-		// nodes are guaranteed visible to any client that immediately connects.
 		await db
 			.insert(labSessions)
 			.values({
@@ -75,8 +72,6 @@ export async function initSession(
 			},
 		});
 
-		// Any failure past this point (deploy RPC error, partial deploy, DB error)
-		// falls through to the catch-all below, which rolls back and replies.
 		const deployedNodes = await sendCommandToWorker(
 			workerId,
 			"clab:deployLab",
