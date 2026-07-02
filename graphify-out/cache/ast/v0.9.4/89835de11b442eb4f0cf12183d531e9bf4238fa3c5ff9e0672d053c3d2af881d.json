@@ -1,0 +1,207 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_md",
+			"label": "AGENTS.md",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"label": "AI Agents Guidelines",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_1_project_context",
+			"label": "1. Project Context",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L7"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_2_planning_guardrails",
+			"label": "2. Planning Guardrails",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L22"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_3_task_feature_tracking",
+			"label": "3. Task & Feature Tracking",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L35"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_4_tech_stack",
+			"label": "4. Tech Stack",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L45"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_rtk_rust_token_killer",
+			"label": "RTK (Rust Token Killer)",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L52"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_5_coding_conventions",
+			"label": "5. Coding Conventions",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L64"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_6_database_migrations",
+			"label": "6. Database Migrations",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L82"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_7_verification",
+			"label": "7. Verification",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L96"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_8_git_operations",
+			"label": "8. Git Operations",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L111"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_9_file_safety",
+			"label": "9. File Safety",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L122"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_agents_10_graphify",
+			"label": "10. Graphify",
+			"file_type": "document",
+			"source_file": "AGENTS.md",
+			"source_location": "L128"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_md",
+			"target": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L1",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_1_project_context",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L7",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_2_planning_guardrails",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L22",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_3_task_feature_tracking",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L35",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_4_tech_stack",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L45",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_4_tech_stack",
+			"target": "home_nunu27_projects_pa_vlab_agents_rtk_rust_token_killer",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L52",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_5_coding_conventions",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L64",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_6_database_migrations",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L82",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_7_verification",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L96",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_8_git_operations",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L111",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_9_file_safety",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L122",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_agents_ai_agents_guidelines",
+			"target": "home_nunu27_projects_pa_vlab_agents_10_graphify",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "AGENTS.md",
+			"source_location": "L128",
+			"weight": 1.0
+		}
+	],
+	"input_tokens": 0,
+	"output_tokens": 0
+}

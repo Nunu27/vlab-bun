@@ -9,6 +9,7 @@ You are working on the **vLab** project. Follow these rules precisely.
 **vLab** is a Virtual Lab management system orchestrating Containerlab-based network topologies.
 
 **Architecture**: Manager-Worker
+
 - **Manager** (`apps/manager`): Central Elysia.js API, orchestrator, and database owner.
 - **Worker** (`apps/worker`): Long-running daemon on host machines that provisions and manages containerized labs.
 - **Web** (`apps/web`): React 19 / Vite frontend.
@@ -34,6 +35,7 @@ When modifying shared types or communication protocols (gRPC protos, WebSocket/W
 ## 3. Task & Feature Tracking
 
 We use the `kanban-markdown` extension for project management.
+
 - Features/tasks are stored as markdown files with YAML frontmatter, typically in `.devtool/features/`.
 - When creating, updating, or moving tasks/features, you **must** strictly follow the `kanban-markdown` skill instructions.
 - Preserve exact YAML serialization formats, fractional indexing (`order`), and directory structures (e.g., `done/` subfolder for completed tasks).
@@ -122,3 +124,14 @@ Git operations that modify history or the remote are **never** performed autonom
 - **Never** delete or overwrite a file unless the user explicitly asks for it.
 - Before replacing a large or critical file wholesale, confirm intent if the operation is destructive and irreversible.
 - Prefer targeted edits (replacing specific blocks) over full-file rewrites.
+
+## 10. Graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

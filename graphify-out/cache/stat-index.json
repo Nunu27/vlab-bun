@@ -130,9 +130,9 @@
 		"hash": "dd6e48db02e1fbc8c1d75134eae35f23777e8d23aa1dcccba8428e8b4c638c48"
 	},
 	"/home/nunu27/Projects/PA/vlab/apps/web/package.json": {
-		"size": 2584,
-		"mtime_ns": 1782715470877634997,
-		"hash": "e93b070e5e832f28ab3dd8ade8c07afecf6677cfc165491aa7d98a3d0736e5bf"
+		"size": 2609,
+		"mtime_ns": 1783012144870203735,
+		"hash": "d5d530c511a77b5dac42be5a4a61074d53a9c3c6aaf7e181ec3d269789a829a2"
 	},
 	"/home/nunu27/Projects/PA/vlab/apps/web/public/manifest.json": {
 		"size": 261,
@@ -530,9 +530,9 @@
 		"hash": "1984ec5799a05bb6a9146a5f68cdb40d3d54924443a8b6ee3b6d052049727133"
 	},
 	"/home/nunu27/Projects/PA/vlab/AGENTS.md": {
-		"size": 5912,
-		"mtime_ns": 1781472404147879378,
-		"hash": "1dc17fc86d5994ecc600fdfecd26b121a1a0595e4b1e30d93363fd94bbeb7777"
+		"size": 6693,
+		"mtime_ns": 1783014300824453674,
+		"hash": "89835de11b442eb4f0cf12183d531e9bf4238fa3c5ff9e0672d053c3d2af881d"
 	},
 	"/home/nunu27/Projects/PA/vlab/README.md": {
 		"size": 8481,
@@ -903,5 +903,10 @@
 		"size": 256,
 		"mtime_ns": 1781939199251505562,
 		"hash": "f86bf9c903bf932f301c6be4da20bd8d422ff9e191f62f5bc3ca8dfedb2b2ca2"
+	},
+	"/home/nunu27/Projects/PA/vlab/.claude/settings.json": {
+		"size": 2080,
+		"mtime_ns": 1783014326869976357,
+		"hash": "64f7e769c772cad78c22f66104f1331a4bef66e186aa951357a0f0e042cc59e9"
 	}
 }
