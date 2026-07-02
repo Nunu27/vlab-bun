@@ -2,6 +2,8 @@
 
 Modul ini menyajikan pemahaman *Border Gateway Protocol* (BGP), teknologi *Path Vector* yang menjadi tulang punggung internet global. Fokus pembahasan ditekankan pada konsep *External BGP* (eBGP) dalam skenario tiga AS, termasuk peran *transit AS* sebagai perantara yang meneruskan rute antar-organisasi — model yang mencerminkan cara kerja nyata internet global.
 
+**Prasyarat:** Peserta diharapkan telah memahami konsep *routing* dinamis berbasis IGP pada **Modul 5: Konfigurasi Routing OSPF**, karena modul ini akan membahas perbedaan mendasar antara IGP dan EGP (BGP).
+
 **Tujuan Pembelajaran:**
 - Mengidentifikasi perbedaan peran antara *Interior Gateway Protocol* (IGP) dengan BGP (EGP).
 - Memahami konsep ASN (*Autonomous System Number*), atribut **AS-Path**, dan mekanisme peering eBGP.

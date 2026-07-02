@@ -1,5 +1,7 @@
 # Konfigurasi Routing OSPF
 
+> **Prasyarat:** Materi ini melanjutkan **Modul 4: Konfigurasi Routing RIP**. Pemahaman *Distance Vector* pada RIP akan menjadi pembanding untuk memahami pendekatan *Link-State* pada OSPF.
+
 ## Konsep Dasar Algoritma Link-State
 Open Shortest Path First (OSPF) adalah standar emas untuk *Dynamic Routing* di lingkungan perusahaan (Enterprise). OSPF masuk ke dalam kategori **Link-State Protocol**.
 Berbeda dengan RIP yang sekadar menyalin tabel rute tetangga secara pasif, OSPF mengumpulkan informasi detail mengenai status interface (kecepatan, IP, apakah *up/down*) dari *seluruh router* di jaringan melalui paket LSA (*Link-State Advertisement*).
