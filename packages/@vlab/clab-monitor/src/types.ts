@@ -4,7 +4,7 @@ import type Dockerode from "dockerode";
 import type { Container } from "dockerode";
 import type { Logger } from "pino";
 
-// Internal containerlab labels — always present, not configurable
+// Internal containerlab labels: always present, not configurable
 export const CLAB_BUILT_IN_LABELS = {
 	name: "clab-node-name",
 	deviceKind: "clab-node-kind",

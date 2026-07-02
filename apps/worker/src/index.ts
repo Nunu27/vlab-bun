@@ -45,7 +45,7 @@ process.on("unhandledRejection", (reason) => {
 process.on("uncaughtException", (error) => {
 	// Per Node's own guidance, the process is in an undefined state after an
 	// uncaught exception (e.g. containerlab child-process/docker-stream state
-	// may be corrupted) — log with a real stack trace, then exit and let the
+	// may be corrupted); log with a real stack trace, then exit and let the
 	// process supervisor restart us cleanly instead of limping on.
 	logger.fatal({ err: error }, "Uncaught Exception, exiting");
 	process.exit(1);

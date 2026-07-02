@@ -114,7 +114,7 @@ export async function resetStaleWorkers() {
 
 // Called right after a worker connects. The worker may have leftover local
 // containerlab deployments from a crash, restart, or a destroy command that
-// never reached it while it was disconnected — so the manager hands it the
+// never reached it while it was disconnected, so the manager hands it the
 // sessions it still considers active, and the worker tears down anything
 // deployed locally that isn't on that list.
 async function reconcileWorkerSessions(workerId: string) {

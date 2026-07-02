@@ -466,7 +466,7 @@ export async function runSyncModules() {
 					});
 				}
 			} else {
-				// Insert new lab — requires a topology block and an existing instructor
+				// Insert new lab: requires a topology block and an existing instructor
 				if (!newTopology) {
 					logger.warn(`Skipping new lab "${title}": no topology block found`);
 					continue;

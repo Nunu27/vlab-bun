@@ -268,7 +268,7 @@ export type TreatyQueryProxy<T> =
 	// Callable non-Promise = path-param node, e.g. client({ id: "x" })
 	T extends (...args: infer A) => infer R
 		? R extends Promise<any>
-			? T // raw leaf function — should not appear here outside of method keys
+			? T // raw leaf function: should not appear here outside of method keys
 			: ((...args: A) => TreatyQueryProxy<R>) & {
 					// biome-ignore lint/complexity/noBannedTypes: intentionally loose typing for proxy internals
 					[K in Exclude<keyof T, keyof Function>]: InjectHooks<K, T[K]>;

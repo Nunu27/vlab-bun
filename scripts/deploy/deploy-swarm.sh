@@ -105,7 +105,7 @@ read_env() {
 }
 
 # =============================================================================
-# STEP 0 — Setup directory
+# STEP 0: Setup directory
 # =============================================================================
 echo
 echo -e "${BLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
@@ -137,7 +137,7 @@ cd "$SETUP_DIR"
 success "Working directory: $(pwd)"
 
 # =============================================================================
-# STEP 1 — Preflight checks
+# STEP 1: Preflight checks
 # =============================================================================
 echo
 info "Running preflight checks ..."
@@ -166,7 +166,7 @@ fi
 success "Docker $(${DOCKER_CMD} version --format '{{.Server.Version}}') is ready."
 
 # =============================================================================
-# STEP 2 — Swarm check
+# STEP 2: Swarm check
 # =============================================================================
 echo
 info "Checking Docker Swarm status ..."
@@ -212,14 +212,14 @@ else
 fi
 
 # =============================================================================
-# STEP 3 — Collect env
+# STEP 3: Collect env
 # =============================================================================
 echo
 MANAGER_ENV_FILE="$SETUP_DIR/.env.manager"
 WORKER_ENV_FILE="$SETUP_DIR/.env.worker"
 
 if [[ -f "$MANAGER_ENV_FILE" ]]; then
-  info "Existing .env.manager found — using current values as defaults."
+  info "Existing .env.manager found: using current values as defaults."
 fi
 
 echo -e "\n${BLD}── Database (Postgres) ──────────────────${RST}"
@@ -307,7 +307,7 @@ success ".env.manager written."
 
 
 # =============================================================================
-# STEP 4 — Fetch files (Compose + Nginx Template)
+# STEP 4: Fetch files (Compose + Nginx Template)
 # =============================================================================
 echo
 info "Fetching latest docker-compose.yml from GitHub (main) ..."
@@ -321,7 +321,7 @@ curl -fsSL "$NGINX_TMPL_URL" -o "$SETUP_DIR/nginx.tmpl" \
 success "nginx.tmpl updated."
 
 # =============================================================================
-# STEP 5 — Deploy the stack
+# STEP 5: Deploy the stack
 # =============================================================================
 echo
 info "Deploying stack '${STACK_NAME}' ..."
@@ -330,7 +330,7 @@ $DOCKER_CMD stack deploy -c "$SETUP_DIR/docker-compose.yml" "$STACK_NAME"
 success "Stack deployment issued."
 
 # =============================================================================
-# STEP 6 — Verify
+# STEP 6: Verify
 # =============================================================================
 echo
 info "Waiting for services to start (timeout: 90s) ..."
@@ -365,7 +365,7 @@ echo
 $DOCKER_CMD stack services "$STACK_NAME"
 
 # =============================================================================
-# STEP 7 — Initialize RustFS Bucket
+# STEP 7: Initialize RustFS Bucket
 # =============================================================================
 echo
 info "Initializing RustFS 'vlab' bucket ..."

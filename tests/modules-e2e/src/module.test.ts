@@ -66,7 +66,7 @@ monitor.emitter.on("interface-update", ({ id, interfaces }) => {
 
 await monitor.init();
 
-// Timeouts per check category — convergence checks (OSPF/BGP) need more time.
+// Timeouts per check category: convergence checks (OSPF/BGP) need more time.
 function checkTimeout(checkId: string): number {
 	if (
 		checkId === "mikrotik.ospf-neighbor-exist" ||

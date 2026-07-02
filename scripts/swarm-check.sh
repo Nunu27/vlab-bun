@@ -46,7 +46,7 @@ usage() {
 [[ "$MODE" == "worker" && -z "$MANAGER_IP" ]] && { echo "Error: manager-ip is required for worker mode"; usage; }
 
 echo
-info "=== Swarm connectivity check — mode: $MODE ==="
+info "=== Swarm connectivity check, mode: $MODE ==="
 echo
 
 # ── Common checks ─────────────────────────────────────────────────────────────
@@ -190,7 +190,7 @@ if [[ "$MODE" == "worker" ]]; then
   if [[ "$SYNC_ERRORS" -eq 0 ]]; then
     ok  "No NetworkDB bulk sync timeouts in the last 5 minutes"
   else
-    fail "$SYNC_ERRORS NetworkDB bulk sync timeout(s) in the last 5 minutes — check inbound TCP/UDP 7946 from manager"
+    fail "$SYNC_ERRORS NetworkDB bulk sync timeout(s) in the last 5 minutes: check inbound TCP/UDP 7946 from manager"
   fi
 
   info "── Overlay network attachment + DNS test"

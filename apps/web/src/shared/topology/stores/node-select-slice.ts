@@ -223,7 +223,7 @@ export const createNodeSelectSlice: StateCreator<
 		devices.forEach((id) => {
 			newSelectedDevices.delete(id);
 			// If this device belongs to a selected group, that group is no longer
-			// fully selected — remove it to keep the invariant intact.
+			// fully selected: remove it to keep the invariant intact.
 			const device = devicesData[id];
 			if (device) {
 				for (const groupId of device.groupIds)

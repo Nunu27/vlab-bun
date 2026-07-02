@@ -3,7 +3,7 @@ import { type RefObject, useEffect } from "react";
 
 // Keys that should have their browser default prevented when the session is
 // active, even without a modifier held. Printable characters are excluded so
-// that the subsequent `keypress` event still fires — Guacamole.Keyboard relies
+// that the subsequent `keypress` event still fires: Guacamole.Keyboard relies
 // on it for character keysym resolution.
 
 // Clipboard shortcuts that must NOT be suppressed so that the browser's

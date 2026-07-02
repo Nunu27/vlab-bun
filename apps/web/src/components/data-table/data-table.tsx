@@ -32,7 +32,7 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 
 export type DataTableProps<TData> = {
-	/** Result from `useApiPagination()` — provides data + all state/setters */
+	/** Result from `useApiPagination()`: provides data + all state/setters */
 	pagination: UseApiPaginationReturn<TData>;
 	/** Column definitions from `@tanstack/react-table` */
 	columns: ColumnDef<TData>[];

@@ -15,7 +15,7 @@ import type { Evaluator } from "./evaluator";
 const CONTEXT_FAILURE_THRESHOLD = 3;
 
 // Unbounded: a source keeps retrying (capped backoff) until it connects or
-// the session stops (retryAbort) — there's no other event that would tell us
+// the session stops (retryAbort); there's no other event that would tell us
 // a slow-booting node is never coming up.
 const SOURCE_START_RETRIES = Number.POSITIVE_INFINITY;
 const SOURCE_START_MIN_DELAY_MS = 500;
@@ -199,7 +199,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 				controller.signal,
 			);
 		} catch {
-			// swallow — proceed with a best-effort context
+			// swallow, proceed with a best-effort context
 		} finally {
 			this.cleanups.delete(`health-wait::${nodeId}`);
 		}
@@ -211,7 +211,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 
 	/**
 	 * Notified whenever a source fails to start (after exhausting retries) or
-	 * dies later on. Purely observational — does not affect retry/reconnect
+	 * dies later on. Purely observational: does not affect retry/reconnect
 	 * behavior, which happens regardless of whether a listener is registered.
 	 */
 	onSourceError(cb: (sourceKey: string, error: unknown) => void) {
@@ -259,7 +259,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 				cb(sessionCheck.id, result);
 			}
 
-			// oneTime check just became true — stop listening immediately
+			// oneTime check just became true, stop listening immediately
 			if (runDef.checkDef.oneTime && result === true) {
 				this.removeCheckFromEmitter(sessionCheck.id);
 			}
@@ -330,7 +330,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		this.sessionEmitterCleanups.push(removeFromEmitter);
 	}
 
-	/** Reacts to a source failing by tearing it down and re-attempting `startSource` — no polling involved. */
+	/** Reacts to a source failing by tearing it down and re-attempting `startSource`; no polling involved. */
 	private async recoverSource(
 		nodeId: string,
 		sourceId: string,
@@ -477,7 +477,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 			}
 
 			if (this.stopped) {
-				// Session stopped while we were retrying — undo what we just set up.
+				// Session stopped while we were retrying: undo what we just set up.
 				if (cleanupListener) await cleanupListener();
 				return;
 			}
