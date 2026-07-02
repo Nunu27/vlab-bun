@@ -3,49 +3,40 @@ import type { RpcServer } from "./server";
 
 export function registerDockerHandlers(server: RpcServer) {
 	server.on("docker:pullImage", async ({ payload: { image } }) => {
-		await new Promise<void>((resolve, reject) => {
-			docker.pull(image, {}, (err, stream) => {
-				if (err || !stream) {
-					return reject(err ?? new Error("Image pull failed"));
-				}
-				docker.modem.followProgress(stream, (err) => {
-					if (err) return reject(err);
-					resolve();
-				});
-			});
+		const pullStream = await docker.pull(image);
+		await new Promise((resolve, reject) => {
+			docker.modem.followProgress(pullStream, (err, res) =>
+				err ? reject(err) : resolve(res),
+			);
 		});
 	});
 
 	server.on(
 		"docker:measureContainerStats",
-		async ({ payload: { containerId }, reply }) => {
-			const stats = (await docker
+		async ({ payload: { containerId } }) => {
+			const { cpu_stats, precpu_stats, memory_stats } = await docker
 				.getContainer(containerId)
-				// biome-ignore lint/suspicious/noExplicitAny: Docker stats shape is not typed by dockerode
-				.stats({ stream: false })) as any;
+				.stats({ stream: false });
 
 			const cpuDelta =
-				stats.cpu_stats.cpu_usage.total_usage -
-				stats.precpu_stats.cpu_usage.total_usage;
+				cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage;
 			const systemDelta =
-				stats.cpu_stats.system_cpu_usage - stats.precpu_stats.system_cpu_usage;
+				cpu_stats.system_cpu_usage - precpu_stats.system_cpu_usage;
 			const numCpus =
-				stats.cpu_stats.online_cpus ??
-				stats.cpu_stats.cpu_usage.percpu_usage?.length ??
-				1;
+				cpu_stats.online_cpus ?? cpu_stats.cpu_usage.percpu_usage.length ?? 1;
 			const cpuCores =
 				systemDelta > 0
 					? Math.round((cpuDelta / systemDelta) * numCpus * 100) / 100
 					: 0;
 
 			const cache =
-				(stats.memory_stats.stats as Record<string, number> | undefined)
-					?.cache ?? 0;
+				memory_stats.stats?.cache ?? memory_stats.stats?.inactive_file ?? 0;
+			const usage = memory_stats.usage ?? 0;
 			const memoryMB = Math.round(
-				(stats.memory_stats.usage - cache) / (1024 * 1024),
+				usage > 0 ? (usage - cache) / (1024 * 1024) : 0,
 			);
 
-			reply("result", { cpuCores, memoryMB });
+			return { cpuCores, memoryMB };
 		},
 	);
 }
