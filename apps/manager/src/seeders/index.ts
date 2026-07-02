@@ -19,7 +19,7 @@ export async function runSeeder() {
 		});
 		logger.info("Seeding complete");
 	} catch (error) {
-		logger.error({ error }, "Seeding failed");
+		logger.error({ err: error }, "Seeding failed");
 		throw error;
 	} finally {
 		await db.$client.end();

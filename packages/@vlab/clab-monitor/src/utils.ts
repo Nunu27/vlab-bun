@@ -1,10 +1,5 @@
 import type { ContainerInfo } from "dockerode";
-import {
-	CLAB_BUILT_IN_LABELS,
-	type FullMappingConstraint,
-	type ResolvedData,
-	type ResolvedMapping,
-} from "./types";
+import { CLAB_BUILT_IN_LABELS } from "./types";
 
 export const healthyStatus = new Set([null, "none", "healthy"]);
 
@@ -53,40 +48,48 @@ export function removeItemFromArrayByIndex<T>(arr: T[], index: number) {
 	arr.pop();
 }
 
-export function buildResolvedData<TFullMapping extends FullMappingConstraint>(
-	mapping: TFullMapping,
-	labels: Record<string, string | undefined>,
-): ResolvedData<TFullMapping> | null {
-	const sessionId = labels[mapping.sessionId];
-	const nodeId = labels[mapping.nodeId];
-	const name = labels[CLAB_BUILT_IN_LABELS.name];
-	const deviceKind = labels[CLAB_BUILT_IN_LABELS.deviceKind];
+export interface ResolvedNode {
+	id: string;
+	name: string;
+	deviceKind: string;
+}
 
-	if (!sessionId || !nodeId || !name || !deviceKind) return null;
+export interface NodeCredentials {
+	username: string;
+	password: string;
+}
 
-	const userResolved = {} as ResolvedMapping<TFullMapping>;
-	for (const _key of Object.keys(mapping)) {
-		if (_key === "sessionId" || _key === "nodeId") continue;
+// Containerlab launches vrnetlab-backed kinds (e.g. mikrotik_ros) with the
+// resolved node credentials injected as USERNAME/PASSWORD env vars, falling
+// back to the RouterOS default (admin/admin) when the topology doesn't
+// override them.
+export function extractCredentials(
+	env: string[] | undefined,
+	fallback: NodeCredentials = { username: "admin", password: "admin" },
+): NodeCredentials {
+	const vars: Record<string, string> = {};
 
-		const entry = mapping[_key as keyof TFullMapping];
-		if (!entry) continue;
-
-		if (typeof entry === "string") {
-			(userResolved as Record<string, string | undefined>)[_key] =
-				labels[entry];
-		} else {
-			const value = labels[entry.label];
-			if (entry.required && !value) return null;
-
-			(userResolved as Record<string, string | undefined>)[_key] = value;
-		}
+	for (const entry of env ?? []) {
+		const index = entry.indexOf("=");
+		if (index === -1) continue;
+		vars[entry.slice(0, index)] = entry.slice(index + 1);
 	}
 
 	return {
-		sessionId,
-		nodeId,
-		name,
-		deviceKind,
-		...userResolved,
-	} as ResolvedData<TFullMapping>;
+		username: vars.USERNAME || fallback.username,
+		password: vars.PASSWORD || fallback.password,
+	};
+}
+
+export function resolveNode(
+	nodeIdLabel: string,
+	labels: Record<string, string | undefined>,
+): ResolvedNode | null {
+	const id = labels[nodeIdLabel];
+	const name = labels[CLAB_BUILT_IN_LABELS.name];
+	const deviceKind = labels[CLAB_BUILT_IN_LABELS.deviceKind];
+
+	if (!id || !name || !deviceKind) return null;
+
+	return { id, name, deviceKind };
 }

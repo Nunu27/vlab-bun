@@ -85,7 +85,11 @@ export class Evaluator<THandlers extends Record<string, AnyHandler> = {}> {
 		checks: SessionCheckPayload<THandlers>[],
 		healthHooks?: {
 			isNodeHealthy: (nodeId: string) => boolean;
-			waitForHealth: (nodeId: string, onHealthy: () => void) => () => void;
+			waitForHealth: (
+				nodeId: string,
+				timeoutMs?: number,
+				signal?: AbortSignal,
+			) => Promise<void>;
 		},
 		initialValues?: Record<string, boolean>,
 	) {

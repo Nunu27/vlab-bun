@@ -39,9 +39,14 @@ function shutdown(signal: string) {
 
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("unhandledRejection", (reason, promise) => {
-	logger.error({ reason, promise }, "Unhandled Rejection");
+process.on("unhandledRejection", (reason) => {
+	logger.error({ err: reason }, "Unhandled Rejection");
 });
 process.on("uncaughtException", (error) => {
-	logger.error({ error }, "Uncaught Exception");
+	// Per Node's own guidance, the process is in an undefined state after an
+	// uncaught exception (e.g. containerlab child-process/docker-stream state
+	// may be corrupted) — log with a real stack trace, then exit and let the
+	// process supervisor restart us cleanly instead of limping on.
+	logger.fatal({ err: error }, "Uncaught Exception, exiting");
+	process.exit(1);
 });

@@ -4,153 +4,52 @@ import type Dockerode from "dockerode";
 import type { Container } from "dockerode";
 import type { Logger } from "pino";
 
-// Each custom mapping entry: label + whether it's required
-export interface MappingEntry {
-	label: string;
-	required?: boolean;
-}
-
 // Internal containerlab labels — always present, not configurable
 export const CLAB_BUILT_IN_LABELS = {
 	name: "clab-node-name",
 	deviceKind: "clab-node-kind",
 } as const;
 
-type IsRequired<T> = T extends { required: true } ? true : false;
-
-// Base mapping keys the caller must provide (as label strings, always required)
-export interface BaseMappingKeys {
-	sessionId: string;
-	nodeId: string;
-}
-
-// The constraint for the full mapping passed by the user
-export type FullMappingConstraint = BaseMappingKeys &
-	Record<string, string | MappingEntry>;
-
-// Helper to get only the MappingEntry properties
-export type UserMapping<TFullMapping extends FullMappingConstraint> = Omit<
-	TFullMapping,
-	keyof BaseMappingKeys
->;
-
-// Resolved type from a user-supplied mapping: required entries → string, optional → string | undefined
-export type ResolvedMapping<TFullMapping extends FullMappingConstraint> = {
-	[K in keyof UserMapping<TFullMapping> as IsRequired<
-		UserMapping<TFullMapping>[K]
-	> extends true
-		? K
-		: never]: string;
-} & {
-	[K in keyof UserMapping<TFullMapping> as IsRequired<
-		UserMapping<TFullMapping>[K]
-	> extends true
-		? never
-		: K]?: string;
-};
-
-// Fixed base fields always available from containerlab labels
-export interface BaseResolvedData {
-	sessionId: string;
-	nodeId: string;
-	name: string;
-	deviceKind: string;
-}
-
-// The full resolved data passed to filter/isTemp/isStale callbacks
-export type ResolvedData<TFullMapping extends FullMappingConstraint> =
-	BaseResolvedData & ResolvedMapping<TFullMapping>;
-
-export type SessionData<TFullMapping extends FullMappingConstraint> =
-	ResolvedMapping<TFullMapping> & { id: string };
-
-export type NodeData<TFullMapping extends FullMappingConstraint> =
-	ResolvedMapping<TFullMapping> & {
-		id: string;
-		name: string;
-		health: string | null;
-		ip: string;
-		interfaces: Record<string, string[]>;
-		containerId: string;
-		labSessionId: string;
-	};
-
+// Base data resolved for every tracked node
 export interface NodeInfo {
 	id: string;
-	labSessionId: string;
 	deviceKind: string;
 	health: string | null;
 	ip: string;
-	isTemp: boolean;
 }
 
-export interface Events<TFullMapping extends FullMappingConstraint> {
-	snapshot: [
-		{
-			sessions: SessionData<TFullMapping>[];
-			nodes: NodeData<TFullMapping>[];
-		},
-	];
-	"stale-session": [string];
-	"session-create": [SessionData<TFullMapping>, boolean];
-	"session-remove": [string, boolean];
-	"node-create": [NodeData<TFullMapping>];
-	"node-remove": [string, boolean];
-	"node-health": [
-		{
-			id: string;
-			labSessionId: string;
-			health: string | null;
-		},
-		boolean,
-	];
-	"interface-update": [
-		{
-			id: string;
-			labSessionId: string;
-			interfaces: Record<string, string[]>;
-		},
-		boolean,
-	];
+export interface NodeData extends NodeInfo {
+	name: string;
+	containerId: string;
+	interfaces: Record<string, string[]>;
+}
+
+export interface Events {
+	"node-create": [NodeData];
+	"node-remove": [string];
+	"health-update": [{ id: string; health: string | null }];
+	"interface-update": [{ id: string; interfaces: Record<string, string[]> }];
 }
 
 export interface BaseContext {
 	docker: Dockerode;
 	logger: Pick<Logger, "info" | "error" | "debug" | "warn">;
 	nodeInterfaceMap: Map<string, Record<string, string[]>>;
-	sessionIds: Map<string, number>;
-	emitInterfaceUpdate: (
-		data: {
-			id: string;
-			labSessionId: string;
-			interfaces: Record<string, string[]>;
-		},
-		isTemp: boolean,
-	) => void;
-	waitForHealth: (
-		id: string,
-		callback: () => MaybePromise<void>,
-		timeoutMs?: number,
-		onTimeout?: (id: string) => void,
-	) => () => void;
+	emitInterfaceUpdate: (data: {
+		id: string;
+		interfaces: Record<string, string[]>;
+	}) => void;
 }
 
-export interface Context<TFullMapping extends FullMappingConstraint>
-	extends BaseContext {
-	mapping: TFullMapping;
-	filter?: (data: ResolvedData<TFullMapping>) => boolean;
-	isTemp?: (data: ResolvedData<TFullMapping>) => boolean;
-	isStale?: (data: ResolvedData<TFullMapping>) => boolean;
-	eventEmitter: EventEmitter<Events<TFullMapping>>;
+export interface Context extends BaseContext {
+	// Label used to resolve a container's stable node identity
+	nodeIdLabel: string;
+	eventEmitter: EventEmitter<Events>;
 }
 
-export type Options<TFullMapping extends FullMappingConstraint> = Omit<
-	Context<TFullMapping>,
-	| "sessionIds"
-	| "eventEmitter"
-	| "waitForHealth"
-	| "emitInterfaceUpdate"
-	| "nodeInterfaceMap"
+export type Options = Omit<
+	Context,
+	"eventEmitter" | "emitInterfaceUpdate" | "nodeInterfaceMap"
 >;
 
 // Docker Event Types
@@ -166,10 +65,6 @@ export interface ContainerAttributes {
 	name: string;
 	image: string;
 	[key: string]: string | undefined;
-}
-
-export interface ContainerDieAttributes extends ContainerAttributes {
-	exitCode: string;
 }
 
 export interface ContainerHealthAttributes extends ContainerAttributes {
@@ -200,10 +95,10 @@ export interface VolumeAttributes {
 export type ContainerEvent =
 	| {
 			Type: "container";
-			Action: "die";
+			Action: "destroy";
 			Actor: {
 				ID: string;
-				Attributes: ContainerDieAttributes;
+				Attributes: ContainerAttributes;
 			};
 	  }
 	| {
@@ -228,7 +123,6 @@ export type ContainerEvent =
 				| "pause"
 				| "unpause"
 				| "rename"
-				| "destroy"
 				| "exec_create"
 				| "exec_start"
 				| "exec_die";
@@ -304,7 +198,6 @@ export type DockerEvent = BaseDockerEvent &
 // Network
 
 export interface NetworkMonitor {
-	checkAccess?: (ctx: BaseContext, node: NodeInfo) => MaybePromise<boolean>;
 	start: (
 		ctx: BaseContext,
 		container: Container,

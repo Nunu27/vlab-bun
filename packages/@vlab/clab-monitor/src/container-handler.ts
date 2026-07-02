@@ -1,42 +1,14 @@
 import networkMonitor from "./network-monitor";
-import type {
-	ContainerEvent,
-	Context,
-	FullMappingConstraint,
-	NodeData,
-	NodeInfo,
-	ResolvedMapping,
-} from "./types";
-import { buildResolvedData, extractManagementIp } from "./utils";
+import type { ContainerEvent, Context, NodeData, NodeInfo } from "./types";
+import { extractManagementIp, resolveNode } from "./utils";
 
-async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
-	ctx: Context<TFullMapping>,
-	event: ContainerEvent,
-) {
-	const { logger, docker, sessionIds, eventEmitter } = ctx;
+async function onContainerCreate(ctx: Context, event: ContainerEvent) {
+	const { logger, docker, eventEmitter } = ctx;
 	logger.debug("Container created: %s", event.Actor.ID);
 	const { ID, Attributes } = event.Actor;
 
-	const resolved = buildResolvedData(ctx.mapping, Attributes);
+	const resolved = resolveNode(ctx.nodeIdLabel, Attributes);
 	if (!resolved) return;
-
-	if (ctx.filter && !ctx.filter(resolved)) return;
-
-	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
-
-	const nodeCount = sessionIds.get(resolved.sessionId) ?? 0;
-	sessionIds.set(resolved.sessionId, nodeCount + 1);
-	if (nodeCount === 0) {
-		const { sessionId, nodeId, name, deviceKind, ...userResolved } = resolved;
-		eventEmitter.emit(
-			"session-create",
-			{
-				...(userResolved as unknown as ResolvedMapping<TFullMapping>),
-				id: resolved.sessionId,
-			},
-			isTemp,
-		);
-	}
 
 	const container = docker.getContainer(ID);
 	const info = await container.inspect();
@@ -46,23 +18,16 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 	if (!ip) return;
 
 	const nodeInfo: NodeInfo = {
-		id: resolved.nodeId,
+		id: resolved.id,
 		health,
-		labSessionId: resolved.sessionId,
 		deviceKind: resolved.deviceKind,
 		ip,
-		isTemp,
 	};
 
-	const { sessionId, nodeId, name, deviceKind, ...userResolved } = resolved;
-	const nodeData: NodeData<TFullMapping> = {
-		...(userResolved as unknown as ResolvedMapping<TFullMapping>),
-		id: resolved.nodeId,
+	const nodeData: NodeData = {
+		...nodeInfo,
 		name: resolved.name,
 		containerId: ID,
-		health,
-		labSessionId: resolved.sessionId,
-		ip,
 		interfaces: await networkMonitor.extractInterfaces(
 			ctx,
 			container,
@@ -74,60 +39,63 @@ async function onContainerCreate<TFullMapping extends FullMappingConstraint>(
 	networkMonitor.start(ctx, container, nodeInfo);
 }
 
-async function onContainerRemove<TFullMapping extends FullMappingConstraint>(
-	ctx: Context<TFullMapping>,
-	event: Extract<ContainerEvent, { Action: "die" }>,
+async function onContainerRemove(
+	ctx: Context,
+	event: Extract<ContainerEvent, { Action: "destroy" }>,
 ) {
-	const { logger, sessionIds, eventEmitter } = ctx;
+	const { logger, eventEmitter } = ctx;
 	logger.debug("Container removed: %s", event.Actor.ID);
 
-	const resolved = buildResolvedData(ctx.mapping, event.Actor.Attributes);
+	const resolved = resolveNode(ctx.nodeIdLabel, event.Actor.Attributes);
 	if (!resolved) return;
 
-	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
-
 	networkMonitor.stop(ctx, {
-		id: resolved.nodeId,
-		labSessionId: resolved.sessionId,
+		id: resolved.id,
 		deviceKind: resolved.deviceKind,
 		health: null,
 		ip: "",
-		isTemp,
 	});
 
-	const remaining = (sessionIds.get(resolved.sessionId) ?? 1) - 1;
-	if (remaining <= 0) {
-		sessionIds.delete(resolved.sessionId);
-		eventEmitter.emit("session-remove", resolved.sessionId, isTemp);
-	} else {
-		sessionIds.set(resolved.sessionId, remaining);
-	}
-
-	eventEmitter.emit("node-remove", resolved.nodeId, isTemp);
+	eventEmitter.emit("node-remove", resolved.id);
 }
 
-async function onContainerHealthStatus<
-	TFullMapping extends FullMappingConstraint,
->(ctx: Context<TFullMapping>, event: ContainerEvent) {
-	const { logger, eventEmitter } = ctx;
+async function onContainerHealthStatus(ctx: Context, event: ContainerEvent) {
+	const { logger, docker, eventEmitter } = ctx;
 	const { Action, Actor } = event;
 
-	const resolved = buildResolvedData(ctx.mapping, Actor.Attributes);
+	const resolved = resolveNode(ctx.nodeIdLabel, Actor.Attributes);
 	if (!resolved) return;
 
 	const health = Action.split(": ")[1] ?? null;
-	const isTemp = ctx.isTemp ? ctx.isTemp(resolved) : false;
 
 	logger.debug("Container health status: %s, %s", Actor.ID, health);
-	eventEmitter.emit(
-		"node-health",
-		{ id: resolved.nodeId, labSessionId: resolved.sessionId, health },
-		isTemp,
+	eventEmitter.emit("health-update", { id: resolved.id, health });
+
+	if (health !== "healthy") return;
+
+	const container = docker.getContainer(Actor.ID);
+	const info = await container.inspect();
+	const ip = extractManagementIp(info.NetworkSettings);
+	if (!ip) return;
+
+	const nodeInfo: NodeInfo = {
+		id: resolved.id,
+		health,
+		deviceKind: resolved.deviceKind,
+		ip,
+	};
+
+	const interfaces = await networkMonitor.extractInterfaces(
+		ctx,
+		container,
+		nodeInfo,
 	);
+	ctx.emitInterfaceUpdate({ id: resolved.id, interfaces });
+	networkMonitor.start(ctx, container, nodeInfo);
 }
 
 export default {
 	create: onContainerCreate,
-	die: onContainerRemove,
+	destroy: onContainerRemove,
 	health_status: onContainerHealthStatus,
 };

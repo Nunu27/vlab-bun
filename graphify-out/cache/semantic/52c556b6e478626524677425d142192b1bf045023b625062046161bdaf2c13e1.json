@@ -1,0 +1,101 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_6_konfigurasi_routing_bgp_instructions_bgp_instructions",
+			"label": "BGP Lab Instructions",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_6_konfigurasi_routing_bgp_instructions_transit_as_scenario",
+			"label": "Transit AS Scenario (AS 65000)",
+			"file_type": "concept",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_6_konfigurasi_routing_bgp_instructions_bgp_network_advertisement",
+			"label": "BGP Network Advertisement (Address List)",
+			"file_type": "concept",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_6_konfigurasi_routing_bgp_instructions_rfc5737_documentation_addresses",
+			"label": "RFC 5737 Documentation Addresses",
+			"file_type": "concept",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_instructions_bgp_instructions",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_checks_bgp_checks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_instructions_bgp_instructions",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_instructions_transit_as_scenario",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_instructions_bgp_instructions",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_instructions_bgp_network_advertisement",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_instructions_bgp_instructions",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_instructions_rfc5737_documentation_addresses",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_instructions_transit_as_scenario",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_material_as_path_attribute",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.9,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

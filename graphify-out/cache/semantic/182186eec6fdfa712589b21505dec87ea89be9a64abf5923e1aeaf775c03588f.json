@@ -1,0 +1,70 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_1_pengenalan_cli_checks_mikrotik_system_identity",
+			"label": "Check: mikrotik.system-identity (R1)",
+			"file_type": "document",
+			"source_file": "docs/modules/1-pengenalan-cli/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_1_pengenalan_cli_checks_mikrotik_user_exist",
+			"label": "Check: mikrotik.user-exist (R1, siswa)",
+			"file_type": "document",
+			"source_file": "docs/modules/1-pengenalan-cli/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_1_pengenalan_cli_checks_linux_user_exist",
+			"label": "Check: linux.user-exist (PC1, siswa)",
+			"file_type": "document",
+			"source_file": "docs/modules/1-pengenalan-cli/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_modules_1_pengenalan_cli_checks_mikrotik_system_identity",
+			"target": "docs_modules_1_pengenalan_cli_solution_r1_steps",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/1-pengenalan-cli/checks.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_1_pengenalan_cli_checks_mikrotik_user_exist",
+			"target": "docs_modules_1_pengenalan_cli_solution_r1_steps",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/1-pengenalan-cli/checks.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_1_pengenalan_cli_checks_linux_user_exist",
+			"target": "docs_modules_1_pengenalan_cli_solution_pc1_steps",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/1-pengenalan-cli/checks.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

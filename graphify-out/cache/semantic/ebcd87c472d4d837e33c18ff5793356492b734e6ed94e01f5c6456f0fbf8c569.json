@@ -1,0 +1,122 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_2_konfigurasi_ip_address_instructions_topology",
+			"label": "Module 2 Topology (R1 ether2 <-> PC1 eth1)",
+			"file_type": "document",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_2_konfigurasi_ip_address_instructions_addressing_table",
+			"label": "Addressing Table (R1/PC1 192.168.10.0/24)",
+			"file_type": "document",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_2_konfigurasi_ip_address_instructions_router_config_steps",
+			"label": "Router R1 IP Configuration Steps",
+			"file_type": "document",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_2_konfigurasi_ip_address_instructions_client_config_steps",
+			"label": "Client PC1 IP Configuration Steps",
+			"file_type": "document",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_2_konfigurasi_ip_address_instructions_connectivity_test",
+			"label": "Connectivity Test via ping (R1<->PC1)",
+			"file_type": "document",
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_modules_2_konfigurasi_ip_address_instructions_topology",
+			"target": "docs_modules_2_konfigurasi_ip_address_instructions_addressing_table",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_2_konfigurasi_ip_address_instructions_addressing_table",
+			"target": "docs_modules_2_konfigurasi_ip_address_instructions_router_config_steps",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_2_konfigurasi_ip_address_instructions_router_config_steps",
+			"target": "docs_modules_2_konfigurasi_ip_address_checks_r1_check_ip",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_2_konfigurasi_ip_address_instructions_client_config_steps",
+			"target": "docs_modules_2_konfigurasi_ip_address_checks_pc1_check_ip",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_2_konfigurasi_ip_address_instructions_router_config_steps",
+			"target": "docs_modules_2_konfigurasi_ip_address_instructions_client_config_steps",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_2_konfigurasi_ip_address_instructions_client_config_steps",
+			"target": "docs_modules_2_konfigurasi_ip_address_instructions_connectivity_test",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/2-konfigurasi-ip-address/instructions.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

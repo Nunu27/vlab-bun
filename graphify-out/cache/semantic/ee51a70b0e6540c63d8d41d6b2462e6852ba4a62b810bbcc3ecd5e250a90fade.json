@@ -1,0 +1,54 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_3_konfigurasi_static_routing_description_module_overview",
+			"label": "Module 3: Konfigurasi Static Routing (Description)",
+			"file_type": "document",
+			"source_file": "docs/modules/3-konfigurasi-static-routing/description.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_modules_3_konfigurasi_static_routing_description_module_overview",
+			"target": "docs_modules_2_konfigurasi_ip_address_description_module_overview",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/modules/3-konfigurasi-static-routing/description.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_3_konfigurasi_static_routing_description_module_overview",
+			"target": "docs_modules_3_konfigurasi_static_routing_instructions_topology",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/3-konfigurasi-static-routing/description.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": [
+		{
+			"id": "module3_static_routing_learning_unit",
+			"label": "Module 3 (Static Routing) Learning Unit",
+			"nodes": [
+				"docs_modules_3_konfigurasi_static_routing_description_module_overview",
+				"docs_modules_3_konfigurasi_static_routing_instructions_topology",
+				"docs_modules_3_konfigurasi_static_routing_material_routing_basic_concept",
+				"docs_modules_3_konfigurasi_static_routing_solution_r1_steps",
+				"docs_modules_3_konfigurasi_static_routing_checks_mikrotik_route_exist"
+			],
+			"relation": "form",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docs/modules/3-konfigurasi-static-routing/description.md"
+		}
+	]
+}

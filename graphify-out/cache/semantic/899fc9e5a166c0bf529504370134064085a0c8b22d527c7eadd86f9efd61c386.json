@@ -1,0 +1,81 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_frontend_migration_2026_03_31",
+			"label": "Frontend Migration feature",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/frontend-migration-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_frontend_migration_2026_03_31_react19",
+			"label": "React 19",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/frontend-migration-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_frontend_migration_2026_03_31_vite",
+			"label": "Vite",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/frontend-migration-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_frontend_migration_2026_03_31_tailwind_v4",
+			"label": "Tailwind CSS v4",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/frontend-migration-2026-03-31.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_frontend_migration_2026_03_31",
+			"target": "devtool_features_done_frontend_migration_2026_03_31_react19",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/frontend-migration-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_frontend_migration_2026_03_31",
+			"target": "devtool_features_done_frontend_migration_2026_03_31_vite",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/frontend-migration-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_frontend_migration_2026_03_31",
+			"target": "devtool_features_done_frontend_migration_2026_03_31_tailwind_v4",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/frontend-migration-2026-03-31.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

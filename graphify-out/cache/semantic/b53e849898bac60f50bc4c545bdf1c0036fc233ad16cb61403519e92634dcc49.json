@@ -1,0 +1,38 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_6_konfigurasi_routing_bgp_description_bgp_description",
+			"label": "BGP Module Description",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/description.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_description_bgp_description",
+			"target": "docs_modules_6_konfigurasi_routing_bgp_material_egp_vs_igp",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/description.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_description_bgp_description",
+			"target": "docs_modules_5_konfigurasi_routing_ospf_description_ospf_description",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/description.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

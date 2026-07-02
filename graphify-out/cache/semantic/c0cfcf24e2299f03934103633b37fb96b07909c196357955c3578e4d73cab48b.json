@@ -1,0 +1,61 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_4_konfigurasi_routing_rip_checks_ip_checks",
+			"label": "Checks: node-interface.check-ip (R1, R2, R3, PC1, PC2)",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_4_konfigurasi_routing_rip_checks_linux_route_exist",
+			"label": "Check: linux.route-exist (PC1/PC2 default gateway)",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_4_konfigurasi_routing_rip_checks_rip_instance_exist",
+			"label": "Check: mikrotik.rip-instance-exist (R1/R2/R3, rip-lab)",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_4_konfigurasi_routing_rip_checks_rip_interface_template_exist",
+			"label": "Check: mikrotik.rip-interface-template-exist (R1/R2/R3)",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_modules_4_konfigurasi_routing_rip_checks_route_exist_dar",
+			"label": "Check: mikrotik.route-exist (R1/R3, flag DAr)",
+			"file_type": "document",
+			"source_file": "docs/modules/4-konfigurasi-routing-rip/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [],
+	"hyperedges": []
+}

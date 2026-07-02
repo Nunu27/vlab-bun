@@ -1,0 +1,407 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"label": "package.json",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_name",
+			"label": "name",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L2"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_module",
+			"label": "module",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L3"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_type",
+			"label": "type",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L4"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_private",
+			"label": "private",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L5"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts",
+			"label": "scripts",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L6"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts_test",
+			"label": "test",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L7"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts_test_module",
+			"label": "test:module",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L8"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"label": "dependencies",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L10"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_sinclair_typebox",
+			"label": "@sinclair/typebox",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L11"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_clab",
+			"label": "@vlab/clab",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L12"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_clab_monitor",
+			"label": "@vlab/clab-monitor",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L13"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_evaluator",
+			"label": "@vlab/evaluator",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L14"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_dockerode",
+			"label": "dockerode",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L15"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_mikro_routeros",
+			"label": "mikro-routeros",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L16"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies",
+			"label": "devDependencies",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L18"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies_types_bun",
+			"label": "@types/bun",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L19"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies_types_dockerode",
+			"label": "@types/dockerode",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L20"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_peerdependencies",
+			"label": "peerDependencies",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L22"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_peerdependencies_typescript",
+			"label": "typescript",
+			"file_type": "code",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L23"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_name",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L2",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_module",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L3",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_type",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L4",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_private",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L5",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L6",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts_test",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L7",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_scripts_test_module",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L8",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L10",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_sinclair_typebox",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L11",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_sinclair_typebox",
+			"target": "sinclair_typebox",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L11",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_clab",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L12",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_clab",
+			"target": "vlab_clab",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L12",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_clab_monitor",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L13",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_clab_monitor",
+			"target": "vlab_clab_monitor",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L13",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_evaluator",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L14",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_vlab_evaluator",
+			"target": "vlab_evaluator",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L14",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_dockerode",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L15",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_dockerode",
+			"target": "dockerode",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L15",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_mikro_routeros",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L16",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_dependencies_mikro_routeros",
+			"target": "mikro_routeros",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L16",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L18",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies_types_bun",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L19",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies_types_bun",
+			"target": "types_bun",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L19",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies_types_dockerode",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L20",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_devdependencies_types_dockerode",
+			"target": "types_dockerode",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L20",
+			"weight": 1.0,
+			"context": "import"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_json",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_peerdependencies",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L22",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_peerdependencies",
+			"target": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_peerdependencies_typescript",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L23",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_tests_modules_e2e_package_peerdependencies_typescript",
+			"target": "typescript",
+			"relation": "imports",
+			"confidence": "EXTRACTED",
+			"source_file": "tests/modules-e2e/package.json",
+			"source_location": "L23",
+			"weight": 1.0,
+			"context": "import"
+		}
+	]
+}

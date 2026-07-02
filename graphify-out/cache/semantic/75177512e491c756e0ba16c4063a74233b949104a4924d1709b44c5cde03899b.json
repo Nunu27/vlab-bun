@@ -1,0 +1,216 @@
+{
+	"nodes": [
+		{
+			"id": "docs_system_frontend_frontend",
+			"label": "Frontend Architecture Document",
+			"file_type": "document",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_react19",
+			"label": "React 19",
+			"file_type": "concept",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_vite",
+			"label": "Vite",
+			"file_type": "concept",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_tailwind_shadcn",
+			"label": "Tailwind CSS v4 & Shadcn UI",
+			"file_type": "concept",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_tanstack_router",
+			"label": "TanStack Router",
+			"file_type": "concept",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_tanstack_query",
+			"label": "TanStack Query (Server State)",
+			"file_type": "concept",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_zustand",
+			"label": "Zustand (Client State)",
+			"file_type": "concept",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_waycast_realtime_telemetry",
+			"label": "Real-time Telemetry via Waycast Hooks",
+			"file_type": "concept",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_frontend_frontend_pages_excalidraw",
+			"label": "pages.excalidraw diagram",
+			"file_type": "image",
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_react19",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_vite",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_tailwind_shadcn",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_tanstack_router",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_tanstack_query",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_zustand",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend_zustand",
+			"target": "docs_system_codebase_tour_codebase_tour_jawit_zustand_helper",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_waycast_realtime_telemetry",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend_waycast_realtime_telemetry",
+			"target": "docs_system_codebase_tour_codebase_tour_vlab_ws",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend",
+			"target": "docs_system_frontend_frontend_pages_excalidraw",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_frontend_frontend_react19",
+			"target": "docs_system_architecture_architecture_web_ui",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/system/frontend/frontend.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

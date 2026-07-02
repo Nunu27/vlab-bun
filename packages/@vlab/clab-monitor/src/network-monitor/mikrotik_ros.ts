@@ -1,7 +1,8 @@
+import type { Container } from "dockerode";
 import { RouterOSClient, type RouterOSStream } from "mikro-routeros";
 import type { Logger } from "pino";
 import type { NetworkMonitor } from "../types";
-import { removeItemFromArray } from "../utils";
+import { extractCredentials, removeItemFromArray } from "../utils";
 
 const monitors = new Map<string, RouterOSStream>();
 const connections = new Map<string, RouterOSClient>();
@@ -9,6 +10,14 @@ const nodeInterfaceIdMapping = new Map<
 	string,
 	Record<string, { iface: string; address: string }>
 >();
+
+// Containerlab injects the node's resolved credentials as USERNAME/PASSWORD
+// env vars on vrnetlab-backed containers, so read them straight from the
+// running container instead of assuming a fixed login.
+async function getCredentials(container: Container) {
+	const { Config } = await container.inspect();
+	return extractCredentials(Config.Env);
+}
 
 const getApi = async (
 	id: string,
@@ -18,6 +27,8 @@ const getApi = async (
 	}: {
 		host: string;
 		port: number;
+		username: string;
+		password: string;
 		logger: Pick<Logger, "info" | "error" | "debug" | "warn">;
 	},
 ) => {
@@ -27,7 +38,7 @@ const getApi = async (
 		const client = new RouterOSClient(options.host, options.port);
 
 		await client.connect();
-		await client.login("admin", "admin");
+		await client.login(options.username, options.password);
 
 		connections.set(id, client);
 
@@ -36,28 +47,9 @@ const getApi = async (
 };
 
 export default {
-	async checkAccess({ logger }, { id, ip }) {
-		if (!ip) {
-			logger.warn("MikroTik ROS monitor: No ip detected, skipping");
-			return false;
-		}
-
-		try {
-			await getApi(id, { host: ip, port: 8728, logger });
-
-			return true;
-		} catch (error) {
-			logger.warn(
-				{ error, id },
-				"MikroTik ROS monitor: Access failed for node %s",
-				id,
-			);
-			return false;
-		}
-	},
 	async start(ctx, container, node) {
 		const { logger, emitInterfaceUpdate, nodeInterfaceMap } = ctx;
-		const { id, ip, labSessionId, isTemp } = node;
+		const { id, ip } = node;
 
 		if (!ip) {
 			return logger.warn("MikroTik ROS monitor: No ip detected, skipping");
@@ -68,12 +60,15 @@ export default {
 
 			if (!nodeInterfaceMap.has(id)) {
 				const interfaces = await this.extractInterfaces(ctx, container, node);
-				emitInterfaceUpdate({ id, interfaces, labSessionId }, isTemp);
+				emitInterfaceUpdate({ id, interfaces });
 			}
 
+			const { username, password } = await getCredentials(container);
 			const api = await getApi(id, {
 				host: ip,
 				port: 8728,
+				username,
+				password,
 				logger,
 			});
 
@@ -114,21 +109,25 @@ export default {
 					}
 				}
 
-				emitInterfaceUpdate({ id, labSessionId, interfaces }, isTemp);
+				emitInterfaceUpdate({ id, interfaces });
 			});
 			listener.on("stop", () => {
 				logger.debug("Network monitor for node %s ended", id);
 				return monitors.delete(id);
 			});
 			listener.on("error", (error) => {
-				logger.error({ error, id }, "Network monitor error for node %s", id);
+				logger.error(
+					{ err: error, id },
+					"Network monitor error for node %s",
+					id,
+				);
 				this.stop(ctx, node);
 			});
 
 			monitors.set(id, listener);
 		} catch (error) {
 			logger.error(
-				{ error, id },
+				{ err: error, id },
 				"Failed to start MikroTik ROS network monitor for node %s",
 				id,
 			);
@@ -144,7 +143,7 @@ export default {
 				if (client) client.close();
 			} catch (error) {
 				logger.error(
-					{ error, id },
+					{ err: error, id },
 					"Error stopping MikroTik ROS monitor for node %s",
 					id,
 				);
@@ -156,7 +155,7 @@ export default {
 			}
 		}
 	},
-	async extractInterfaces({ logger, nodeInterfaceMap }, _, { id, ip }) {
+	async extractInterfaces({ logger, nodeInterfaceMap }, container, { id, ip }) {
 		const existingInterfaces = nodeInterfaceMap.get(id);
 		if (existingInterfaces) return existingInterfaces;
 
@@ -166,9 +165,12 @@ export default {
 		}
 
 		try {
+			const { username, password } = await getCredentials(container);
 			const api = await getApi(id, {
 				host: ip,
 				port: 8728,
+				username,
+				password,
 				logger,
 			});
 
@@ -192,7 +194,7 @@ export default {
 
 			return interfaces;
 		} catch (error) {
-			logger.warn({ error, id }, "Failed to extract interfaces");
+			logger.warn({ err: error, id }, "Failed to extract interfaces");
 		}
 
 		return {};

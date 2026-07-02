@@ -1,0 +1,217 @@
+{
+	"nodes": [
+		{
+			"id": "docs_deployment_docker_swarm_docker_swarm_deployment",
+			"label": "Docker Swarm (All-in-One) Deployment",
+			"file_type": "document",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_placement_constraints",
+			"label": "Docker Swarm Placement Constraints (node.role == manager)",
+			"file_type": "concept",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_nginx_proxy_reverse_proxy",
+			"label": "nginx-proxy Reverse Proxy + Let's Encrypt SSL Companion",
+			"file_type": "concept",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_virtual_host_multiports",
+			"label": "VIRTUAL_HOST_MULTIPORTS Env Variable",
+			"file_type": "concept",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_deploy_swarm_sh",
+			"label": "deploy-swarm.sh Automated Deployment Script",
+			"file_type": "code",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_worker_installer_service",
+			"label": "worker-installer Swarm Service (mode: global)",
+			"file_type": "concept",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_privileged_worker_container",
+			"label": "Standalone --privileged Worker Container Rationale",
+			"file_type": "rationale",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_multi_cloud_firewall_requirements",
+			"label": "Multi-Cloud & Firewall Requirements (2377, 7946, 4789)",
+			"file_type": "concept",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_stack_management_commands",
+			"label": "Docker Stack Management Commands",
+			"file_type": "document",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_deployment_docker_swarm_volume_data_preservation",
+			"label": "Named Volume Data Preservation on Stack Removal",
+			"file_type": "rationale",
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_deployment_docker_swarm_docker_swarm_deployment",
+			"target": "docs_deployment_docker_swarm_placement_constraints",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_docker_swarm_deployment",
+			"target": "docs_deployment_docker_swarm_nginx_proxy_reverse_proxy",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_nginx_proxy_reverse_proxy",
+			"target": "docs_deployment_docker_swarm_virtual_host_multiports",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_docker_swarm_deployment",
+			"target": "docs_deployment_docker_swarm_deploy_swarm_sh",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_deploy_swarm_sh",
+			"target": "docs_deployment_docker_swarm_worker_installer_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_worker_installer_service",
+			"target": "docs_deployment_docker_swarm_privileged_worker_container",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_docker_swarm_deployment",
+			"target": "docs_deployment_docker_swarm_multi_cloud_firewall_requirements",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_docker_swarm_deployment",
+			"target": "docs_deployment_docker_swarm_stack_management_commands",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_stack_management_commands",
+			"target": "docs_deployment_docker_swarm_volume_data_preservation",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_deployment_docker_swarm_stack_management_commands",
+			"target": "docs_deployment_docker_swarm_worker_installer_service",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/deployment/docker-swarm.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

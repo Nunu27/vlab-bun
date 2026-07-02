@@ -128,7 +128,12 @@ export class Containerlab {
 			]);
 		} catch (error) {
 			// Destroy any partially-deployed containers before re-throwing
-			await this.destroy(id).catch(() => {});
+			await this.destroy(id).catch((cleanupError) => {
+				console.error(
+					`Failed to clean up partially-deployed lab '${id}' after deploy failure:`,
+					cleanupError,
+				);
+			});
 
 			if (error instanceof ContainerlabCommandError) {
 				const kvmMatch = error.stderr.match(

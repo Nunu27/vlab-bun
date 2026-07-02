@@ -1,123 +1,41 @@
 # @vlab/clab-monitor
 
-`@vlab/clab-monitor` is a robust Node.js package designed to monitor Containerlab (clab) Docker environments. It acts as an abstraction layer over the raw Docker API, interpreting Docker events specifically through the lens of Containerlab deployments, providing structured, stateful tracking of network nodes, lab sessions, and internal network interfaces.
+`@vlab/clab-monitor` is a lightweight Node.js package for monitoring the health and network interfaces of Containerlab (clab) nodes running as Docker containers. It hooks into the Docker Engine's event stream, resolves each container's stable node identity from a single label, and tracks two things per node: container health and internal network interfaces.
+
+It intentionally does **not** track lab sessions, ownership, or any other business-level grouping — callers are expected to resolve any additional labels/metadata they need themselves (e.g. via `containerId` and their own `docker.getContainer(...).inspect()` call) and to own their own lifecycle/cleanup logic.
 
 ## 🏗️ Architecture & Underlying System
 
-The system operates by hooking into the Docker Engine's event stream and filtering for containers that match specific Containerlab labels. It correlates individual container lifecycles into cohesive "lab sessions" and "nodes", maintaining an internal state of health and networking configurations.
-
 ### Core Components
 
-1. **Monitor Engine (`index.ts`)**: The entry point that initializes the Docker event stream, performs state hydration by parsing already-running containers, and maintains the primary `EventEmitter`.
-2. **Label Mapper & Filter (`types.ts`, `utils.ts`)**: Dynamically resolves custom user mappings alongside default `clab` labels (`clab-node-name`, `clab-node-kind`). It allows consumers to inject logic to define what constitutes a "temp" or "stale" container.
-3. **Container Handlers (`container-handler.ts`)**: Specialized routers that react to specific Docker events:
-   - `create`: Resolves node data, initiates network monitoring, and tracks session creation.
-   - `die`: Cleans up network monitoring and handles node/session removal.
+1. **Monitor Engine (`index.ts`)**: Initializes the Docker event stream, hydrates state by inspecting already-running containers, and maintains the primary `EventEmitter`.
+2. **Node Resolver (`types.ts`, `utils.ts`)**: Resolves a container's stable node id from a caller-supplied label (`nodeIdLabel`), alongside the built-in `clab` labels (`clab-node-name`, `clab-node-kind`). A container without all three is ignored.
+3. **Container Handlers (`container-handler.ts`)**: React to Docker container events:
+   - `create`: Resolves node identity, extracts current interfaces, and starts network monitoring.
+   - `destroy`: Stops network monitoring and emits removal.
    - `health_status`: Tracks and broadcasts health check updates.
-4. **Network Monitor (`network-monitor/`)**: An extensible subsystem that tracks the internal network interfaces (e.g., `eth0`, `veth1`) of nodes. Since different network OSes expose interfaces differently, it dynamically assigns a handler based on the `deviceKind` (e.g., `linux` via `ip a`, or `mikrotik_ros` via REST/API).
-
-### System Flow Diagram
-
-```mermaid
-flowchart TD
-    subgraph Docker Daemon
-        stream[Docker Event Stream\n/events]
-        ps[Docker List Containers\n/containers/json]
-    end
-
-    subgraph "clab-monitor System"
-        monitor[Monitor Engine]
-        mapper[Label Mapper & Filter]
-        state[State & Health Manager]
-        netmon[Network Monitor Engine]
-        
-        subgraph Handlers
-            h_create[Container Create]
-            h_die[Container Die]
-            h_health[Health Status]
-        end
-        
-        subgraph "Device Network Monitors"
-            net_linux[Linux IP Monitor]
-            net_ros[MikroTik ROS Monitor]
-        end
-    end
-    
-    subgraph "Public API (EventEmitter)"
-        out_snapshot(snapshot)
-        out_session_create(session-create)
-        out_node_create(node-create)
-        out_node_health(node-health)
-        out_interface(interface-update)
-        out_node_remove(node-remove)
-        out_session_remove(session-remove)
-        out_stale(stale-session)
-    end
-
-    ps -->|1. Hydrate Initial State| monitor
-    stream -->|2. Continuous Events| monitor
-    
-    monitor --> mapper
-    mapper -->|Parsed Labels| state
-    mapper -->|Event Routing| h_create & h_die & h_health
-    
-    h_create --> state
-    h_die --> state
-    h_health --> state
-    
-    state -->|Trigger| netmon
-    netmon --> net_linux & net_ros
-    
-    monitor -->|Emit Initial| out_snapshot & out_stale
-    h_create -->|Emit| out_node_create & out_session_create
-    h_die -->|Emit| out_node_remove & out_session_remove
-    h_health -->|Emit| out_node_health
-    net_linux & net_ros -->|Emit| out_interface
-```
+4. **Network Monitor (`network-monitor/`)**: Tracks internal network interfaces (e.g. `eth0`, `veth1`) of nodes. Since different network OSes expose interfaces differently, it dynamically assigns a handler based on `deviceKind` (e.g. `linux` via `ip a`, or `mikrotik_ros` via the RouterOS API). Device-specific handlers read any credentials they need (e.g. MikroTik's `USERNAME`/`PASSWORD`) directly off the container Containerlab launched, rather than assuming a fixed login.
 
 ## 📡 List of Emitted Events
 
-The package exposes a strongly typed `EventEmitter` that emits the following lifecycle events:
-
-### `snapshot`
-- **When**: Emitted once immediately upon monitor initialization (hydration phase).
-- **Payload**: `{ sessions: SessionData[], nodes: NodeData[] }`
-- **Description**: Provides the current existing state of all running lab sessions and nodes. Useful for aligning the application state with the Docker daemon at startup.
-
-### `stale-session`
-- **When**: Emitted during the hydration phase if a running container is detected as stale (determined by the user-provided `isStale` callback).
-- **Payload**: `sessionId` (string)
-- **Description**: Alerts the consumer that a previously running session is considered abandoned and should likely be destroyed.
-
-### `session-create`
-- **When**: Emitted when a new container is created that belongs to a previously unknown `sessionId`.
-- **Payload**: `SessionData`
-- **Description**: Signifies the start of a new Containerlab session/topology deployment.
-
-### `session-remove`
-- **When**: Emitted when a container dies and it was the *last* known container tracked for that specific `sessionId`.
-- **Payload**: `sessionId` (string)
-- **Description**: Signifies that an entire Containerlab topology has been taken down.
+Exactly four events are emitted — nothing else. Initial hydration (on `init()`) is folded into `node-create`: every already-running node matching `nodeIdLabel` is emitted as a `node-create` event before the monitor starts watching for live Docker events.
 
 ### `node-create`
-- **When**: Emitted every time a new container belonging to a tracked session is created.
-- **Payload**: `NodeData` (includes `nodeId`, `name`, `ip`, `health`, and initial `interfaces`)
-- **Description**: Tracks the deployment of individual devices within a lab topology.
+- **When**: Emitted for every node found during hydration, and for every new container matching `nodeIdLabel` created afterwards.
+- **Payload**: `NodeData` (includes `id`, `name`, `deviceKind`, `ip`, `health`, `containerId`, and initial `interfaces`)
 
 ### `node-remove`
-- **When**: Emitted every time a tracked container dies.
-- **Payload**: `[nodeId: string, isTemp: boolean]`
-- **Description**: Tracks the teardown or crash of an individual lab device.
+- **When**: Emitted when a tracked container is destroyed.
+- **Payload**: `id: string`
 
-### `node-health`
-- **When**: Emitted when the Docker daemon fires a `health_status` event for a container.
-- **Payload**: `[{ id: string, labSessionId: string, health: string | null }, isTemp: boolean]`
-- **Description**: Tracks the internal readiness of a device (e.g., `starting`, `healthy`, `unhealthy`). Network interface extraction and monitoring are generally deferred until a node reaches the `healthy` state.
+### `health-update`
+- **When**: Emitted when the Docker daemon fires a `health_status` event for a tracked container.
+- **Payload**: `{ id: string, health: string | null }`
+- **Description**: Network interface extraction/monitoring is deferred until a node reaches the `healthy` state.
 
 ### `interface-update`
-- **When**: Emitted dynamically by the device-specific `NetworkMonitor` when an internal interface change is detected (e.g., an interface is brought UP, given an IP, or added via a veth pair).
-- **Payload**: `[{ id: string, labSessionId: string, interfaces: Record<string, string[]> }, isTemp: boolean]`
-- **Description**: Provides a real-time map of interface names to their assigned IP addresses (e.g., `{ eth1: ["10.0.0.1/24", "fde4::1/64"] }`).
+- **When**: Emitted dynamically by the device-specific `NetworkMonitor` when an internal interface change is detected.
+- **Payload**: `{ id: string, interfaces: Record<string, string[]> }`
 
 ## 🛠 Usage Overview
 
@@ -132,16 +50,10 @@ const logger = pino();
 const monitor = createMonitor({
   docker,
   logger,
-  mapping: {
-    sessionId: "vlab-session-id",
-    nodeId: "vlab-node-id",
-  },
-  // Optional filters
-  filter: (data) => data.sessionId.startsWith("lab_"),
-  isTemp: (data) => data.name.includes("temp"),
+  nodeIdLabel: "vlab-node-id",
 });
 
-const { emitter, init } = monitor;
+const { emitter, init, isNodeHealthy, waitForHealth, nodeInterfaceMap } = monitor;
 
 emitter.on("node-create", (node) => {
   console.log(`Node started: ${node.name} (${node.ip})`);
@@ -151,6 +63,6 @@ emitter.on("interface-update", (data) => {
   console.log(`Interfaces updated for ${data.id}:`, data.interfaces);
 });
 
-// Start listening and emit the initial snapshot
+// Start listening and emit node-create for already-running nodes
 await init();
 ```

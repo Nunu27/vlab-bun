@@ -1,4 +1,16 @@
-export {};
+import logger from "./lib/logger";
+
+// The manager is a shared, multi-tenant process (every connected student, every
+// worker's grpc stream) — unlike the worker, crashing here on any stray unhandled
+// rejection takes down everyone, not just one session. Log and keep running rather
+// than exit; Bun's default behavior for an unhandled rejection is to crash the
+// process, and this codebase has fire-and-forget async calls that can throw.
+process.on("unhandledRejection", (reason) => {
+	logger.error({ err: reason }, "Unhandled Rejection");
+});
+process.on("uncaughtException", (error) => {
+	logger.error({ err: error }, "Uncaught Exception");
+});
 
 const commands: Record<string, () => Promise<void>> = {
 	serve: async () => {

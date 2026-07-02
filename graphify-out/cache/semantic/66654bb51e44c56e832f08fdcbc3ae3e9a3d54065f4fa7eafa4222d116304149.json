@@ -1,0 +1,70 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_grpc_connection_logging_worker_2026_06_12",
+			"label": "gRPC Connection Logging for Worker feature",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/grpc-connection-logging-worker-2026-06-12.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_grpc_connection_logging_worker_2026_06_12_pino_logger",
+			"label": "Pino logger",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/grpc-connection-logging-worker-2026-06-12.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "devtool_features_done_grpc_connection_logging_worker_2026_06_12_grpc_service_logic",
+			"label": "gRPC service logic (Manager connection)",
+			"file_type": "concept",
+			"source_file": ".devtool/features/done/grpc-connection-logging-worker-2026-06-12.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_grpc_connection_logging_worker_2026_06_12",
+			"target": "devtool_features_done_grpc_connection_logging_worker_2026_06_12_pino_logger",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/grpc-connection-logging-worker-2026-06-12.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_grpc_connection_logging_worker_2026_06_12",
+			"target": "devtool_features_done_grpc_connection_logging_worker_2026_06_12_grpc_service_logic",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": ".devtool/features/done/grpc-connection-logging-worker-2026-06-12.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "devtool_features_done_grpc_connection_logging_worker_2026_06_12_grpc_service_logic",
+			"target": "devtool_features_done_better_communication_protocol_waycast_2026_06_11_vlab_waycast",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.65,
+			"source_file": ".devtool/features/done/grpc-connection-logging-worker-2026-06-12.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

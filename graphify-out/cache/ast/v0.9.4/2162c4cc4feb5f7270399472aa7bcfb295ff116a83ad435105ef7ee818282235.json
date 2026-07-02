@@ -1,0 +1,365 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_json",
+			"label": "biome.json",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_schema",
+			"label": "$schema",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L2"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_formatter",
+			"label": "formatter",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L3"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_formatter_enabled",
+			"label": "enabled",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L4"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_formatter_indentstyle",
+			"label": "indentStyle",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L5"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_assist",
+			"label": "assist",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L7"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_assist_enabled",
+			"label": "enabled",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L8"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_assist_actions",
+			"label": "actions",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L9"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_actions_source",
+			"label": "source",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L10"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_source_organizeimports",
+			"label": "organizeImports",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L11"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_linter",
+			"label": "linter",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L15"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_linter_enabled",
+			"label": "enabled",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L16"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_linter_rules",
+			"label": "rules",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L17"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_rules_correctness",
+			"label": "correctness",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L18"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_correctness_useuniqueelementids",
+			"label": "useUniqueElementIds",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L19"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_rules_a11y",
+			"label": "a11y",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L21"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_a11y_nostaticelementinteractions",
+			"label": "noStaticElementInteractions",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L22"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_rules_nursery",
+			"label": "nursery",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L24"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_nursery_usesortedclasses",
+			"label": "useSortedClasses",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L25"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_css",
+			"label": "css",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L29"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_css_parser",
+			"label": "parser",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L30"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_parser_tailwinddirectives",
+			"label": "tailwindDirectives",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L31"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_biome_overrides",
+			"label": "overrides",
+			"file_type": "code",
+			"source_file": "biome.json",
+			"source_location": "L34"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_json",
+			"target": "home_nunu27_projects_pa_vlab_biome_schema",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L2",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_json",
+			"target": "home_nunu27_projects_pa_vlab_biome_formatter",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L3",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_formatter",
+			"target": "home_nunu27_projects_pa_vlab_biome_formatter_enabled",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L4",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_formatter",
+			"target": "home_nunu27_projects_pa_vlab_biome_formatter_indentstyle",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L5",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_json",
+			"target": "home_nunu27_projects_pa_vlab_biome_assist",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L7",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_assist",
+			"target": "home_nunu27_projects_pa_vlab_biome_assist_enabled",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L8",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_assist",
+			"target": "home_nunu27_projects_pa_vlab_biome_assist_actions",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L9",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_assist_actions",
+			"target": "home_nunu27_projects_pa_vlab_biome_actions_source",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L10",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_actions_source",
+			"target": "home_nunu27_projects_pa_vlab_biome_source_organizeimports",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L11",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_json",
+			"target": "home_nunu27_projects_pa_vlab_biome_linter",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L15",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_linter",
+			"target": "home_nunu27_projects_pa_vlab_biome_linter_enabled",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L16",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_linter",
+			"target": "home_nunu27_projects_pa_vlab_biome_linter_rules",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L17",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_linter_rules",
+			"target": "home_nunu27_projects_pa_vlab_biome_rules_correctness",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L18",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_rules_correctness",
+			"target": "home_nunu27_projects_pa_vlab_biome_correctness_useuniqueelementids",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L19",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_linter_rules",
+			"target": "home_nunu27_projects_pa_vlab_biome_rules_a11y",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L21",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_rules_a11y",
+			"target": "home_nunu27_projects_pa_vlab_biome_a11y_nostaticelementinteractions",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L22",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_linter_rules",
+			"target": "home_nunu27_projects_pa_vlab_biome_rules_nursery",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L24",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_rules_nursery",
+			"target": "home_nunu27_projects_pa_vlab_biome_nursery_usesortedclasses",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L25",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_json",
+			"target": "home_nunu27_projects_pa_vlab_biome_css",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L29",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_css",
+			"target": "home_nunu27_projects_pa_vlab_biome_css_parser",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L30",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_css_parser",
+			"target": "home_nunu27_projects_pa_vlab_biome_parser_tailwinddirectives",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L31",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_biome_json",
+			"target": "home_nunu27_projects_pa_vlab_biome_overrides",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "biome.json",
+			"source_location": "L34",
+			"weight": 1.0
+		}
+	]
+}

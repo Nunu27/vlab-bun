@@ -1,0 +1,227 @@
+{
+	"nodes": [
+		{
+			"id": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"label": "@vlab/clab-monitor",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_monitor_engine",
+			"label": "Monitor Engine (index.ts)",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_label_mapper_filter",
+			"label": "Label Mapper & Filter (types.ts, utils.ts)",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_container_handlers",
+			"label": "Container Handlers (container-handler.ts)",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_network_monitor_subsystem",
+			"label": "Network Monitor subsystem (network-monitor/)",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_linux_network_monitor",
+			"label": "Linux Network Monitor (ip a based)",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_mikrotik_ros_network_monitor",
+			"label": "MikroTik ROS Network Monitor (REST/API based)",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_createmonitor",
+			"label": "createMonitor function",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_dockerode",
+			"label": "dockerode",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_monitor_readme_containerlab_events",
+			"label": "Containerlab Docker event stream monitoring",
+			"file_type": "rationale",
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "packages_vlab_clab_monitor_readme_monitor_engine",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "packages_vlab_clab_monitor_readme_label_mapper_filter",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "packages_vlab_clab_monitor_readme_container_handlers",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "packages_vlab_clab_monitor_readme_network_monitor_subsystem",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_network_monitor_subsystem",
+			"target": "packages_vlab_clab_monitor_readme_linux_network_monitor",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_network_monitor_subsystem",
+			"target": "packages_vlab_clab_monitor_readme_mikrotik_ros_network_monitor",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_monitor_engine",
+			"target": "packages_vlab_clab_monitor_readme_dockerode",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "packages_vlab_clab_monitor_readme_createmonitor",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "packages_vlab_clab_monitor_readme_containerlab_events",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_vlab_clab_monitor",
+			"target": "packages_vlab_clab_readme_containerlab_wrapper",
+			"relation": "conceptually_related_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_monitor_readme_mikrotik_ros_network_monitor",
+			"target": "packages_vlab_evaluator_readme_mikrotik_handler",
+			"relation": "semantically_similar_to",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": "packages/@vlab/clab-monitor/README.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

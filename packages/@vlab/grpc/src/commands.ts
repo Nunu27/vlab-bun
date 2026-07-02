@@ -42,6 +42,12 @@ export const LabConfigSchema = t.Object({
 	links: t.Optional(t.Array(LabLinkSchema)),
 });
 
+export const DeployedNodeSchema = t.Object({
+	id: t.String(),
+	ip: t.String(),
+	containerId: t.String(),
+});
+
 export const EvaluatorNodeInfoSchema = t.Object({
 	id: t.String(),
 	ip: t.String(),
@@ -149,6 +155,9 @@ export const appRouter = new Router()
 			sessionId: t.String(),
 			config: LabConfigSchema,
 		}),
+		replies: {
+			deployed: t.Array(DeployedNodeSchema),
+		},
 	})
 	.rpc("clab:destroyLab", {
 		payload: t.Object({

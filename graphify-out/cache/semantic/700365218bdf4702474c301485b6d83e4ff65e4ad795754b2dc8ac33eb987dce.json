@@ -1,0 +1,28 @@
+{
+	"nodes": [
+		{
+			"id": "docs_modules_6_konfigurasi_routing_bgp_checks_bgp_checks",
+			"label": "BGP Lab Checks",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/checks.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_modules_6_konfigurasi_routing_bgp_checks_bgp_checks",
+			"target": "docs_system_evaluator_evaluator_bgp_checks",
+			"relation": "shares_data_with",
+			"confidence": "INFERRED",
+			"confidence_score": 0.95,
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/checks.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

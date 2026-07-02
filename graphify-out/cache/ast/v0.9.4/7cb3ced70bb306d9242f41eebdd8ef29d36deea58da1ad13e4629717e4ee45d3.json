@@ -1,0 +1,401 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"label": "swarm-check.sh",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L1",
+			"metadata": { "language": "bash", "kind": "file" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"label": "swarm-check.sh script",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L1",
+			"metadata": { "language": "bash", "kind": "bash_entrypoint" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_green",
+			"label": "green()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L13",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_red",
+			"label": "red()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L14",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_info",
+			"label": "info()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L15",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"label": "ok()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L17",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"label": "fail()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L18",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_tcp",
+			"label": "check_port_tcp()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L20",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_udp_local",
+			"label": "check_port_udp_local()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L29",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_usage",
+			"label": "usage()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L38",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_tcp",
+			"label": "check_inbound_tcp()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L92",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_udp",
+			"label": "check_inbound_udp()",
+			"file_type": "code",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L114",
+			"metadata": { "language": "bash", "kind": "bash_function" }
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L1",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_green",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L13",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_red",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L14",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_info",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L15",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L17",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L18",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_tcp",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L20",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_udp_local",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L29",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_usage",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L38",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_tcp",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L92",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_udp",
+			"relation": "defines",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L114",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_usage",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L45",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_info",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L49",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L56",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L58",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_udp_local",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L85",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_tcp",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L134",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_udp",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L135",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_tcp",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L184",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_green",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L221",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_sh__entry",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_red",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L223",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_green",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L17",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_red",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L18",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_tcp",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L23",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_tcp",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L25",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_udp_local",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L32",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_port_udp_local",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L34",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_tcp",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L102",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_tcp",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L107",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_udp",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_ok",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L123",
+			"weight": 1.0,
+			"context": "call"
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_scripts_swarm_check_check_inbound_udp",
+			"target": "home_nunu27_projects_pa_vlab_scripts_swarm_check_fail",
+			"relation": "calls",
+			"confidence": "EXTRACTED",
+			"source_file": "scripts/swarm-check.sh",
+			"source_location": "L127",
+			"weight": 1.0,
+			"context": "call"
+		}
+	]
+}

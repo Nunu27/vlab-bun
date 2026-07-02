@@ -1,0 +1,102 @@
+{
+	"nodes": [
+		{
+			"id": "packages_vlab_clab_readme_containerlab_wrapper",
+			"label": "containerlab (TypeScript wrapper for Containerlab CLI)",
+			"file_type": "document",
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_readme_containerlab_class",
+			"label": "Containerlab class",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_readme_deploy_method",
+			"label": "Containerlab.deploy()",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_readme_destroy_method",
+			"label": "Containerlab.destroy()",
+			"file_type": "code",
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "packages_vlab_clab_readme_containerlab_cli",
+			"label": "Containerlab CLI (external tool)",
+			"file_type": "concept",
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "packages_vlab_clab_readme_containerlab_wrapper",
+			"target": "packages_vlab_clab_readme_containerlab_class",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_readme_containerlab_class",
+			"target": "packages_vlab_clab_readme_deploy_method",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_readme_containerlab_class",
+			"target": "packages_vlab_clab_readme_destroy_method",
+			"relation": "implements",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "packages_vlab_clab_readme_containerlab_wrapper",
+			"target": "packages_vlab_clab_readme_containerlab_cli",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "packages/@vlab/clab/README.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

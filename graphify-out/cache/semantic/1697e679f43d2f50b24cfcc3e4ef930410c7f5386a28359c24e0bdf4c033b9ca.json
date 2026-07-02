@@ -1,0 +1,28 @@
+{
+	"nodes": [
+		{
+			"id": "devtool_features_done_simplify_build_workflow_2026_06_12_simplifybuildworkflow",
+			"label": "Simplify Build Workflow",
+			"file_type": "document",
+			"source_file": ".devtool/features/done/simplify-build-workflow-2026-06-12.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "devtool_features_done_simplify_build_workflow_2026_06_12_simplifybuildworkflow",
+			"target": "github_workflows_build_yml",
+			"relation": "rationale_for",
+			"confidence": "INFERRED",
+			"confidence_score": 0.85,
+			"source_file": ".devtool/features/done/simplify-build-workflow-2026-06-12.md",
+			"source_location": null,
+			"weight": 0.85
+		}
+	],
+	"hyperedges": []
+}

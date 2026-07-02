@@ -132,17 +132,8 @@ for (const mod of parsedModules) {
 
 			const HEALTH_TIMEOUT = 300_000;
 			await Promise.all(
-				mikrotikNodes.map(
-					(nodeName) =>
-						new Promise<void>((resolve, reject) =>
-							monitor.waitForHealth(nodeName, resolve, HEALTH_TIMEOUT, (id) =>
-								reject(
-									new Error(
-										`Node ${id} did not become healthy within ${HEALTH_TIMEOUT}ms`,
-									),
-								),
-							),
-						),
+				mikrotikNodes.map((nodeName) =>
+					monitor.waitForHealth(nodeName, HEALTH_TIMEOUT),
 				),
 			);
 

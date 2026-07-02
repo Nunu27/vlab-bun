@@ -1,0 +1,206 @@
+{
+	"nodes": [
+		{
+			"id": "docs_system_evaluator_evaluator",
+			"label": "Lab Evaluation Engine Document",
+			"file_type": "document",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_rule_definition",
+			"label": "Rule Definition (Instructor-defined)",
+			"file_type": "concept",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_evaluation_flow",
+			"label": "Evaluation Flow (Dispatch, Execution, Scoring)",
+			"file_type": "concept",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_shared_package_rationale",
+			"label": "Rationale: Shared Evaluator Types Between Manager & Worker",
+			"file_type": "rationale",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_interface_ip_check",
+			"label": "Interface IP Check",
+			"file_type": "concept",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_routing_checks",
+			"label": "Routing Checks",
+			"file_type": "concept",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_ospf_checks",
+			"label": "OSPF Checks (Evaluator)",
+			"file_type": "concept",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_rip_checks",
+			"label": "RIP Checks (Evaluator)",
+			"file_type": "concept",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		},
+		{
+			"id": "docs_system_evaluator_evaluator_bgp_checks",
+			"label": "BGP Checks (Evaluator)",
+			"file_type": "concept",
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"source_url": null,
+			"captured_at": null,
+			"author": null,
+			"contributor": null
+		}
+	],
+	"edges": [
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_rule_definition",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_evaluation_flow",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_shared_package_rationale",
+			"relation": "rationale_for",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_interface_ip_check",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_routing_checks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_ospf_checks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_rip_checks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator",
+			"target": "docs_system_evaluator_evaluator_bgp_checks",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator_evaluation_flow",
+			"target": "docs_system_codebase_tour_codebase_tour_vlab_evaluator",
+			"relation": "references",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		},
+		{
+			"source": "docs_system_evaluator_evaluator_bgp_checks",
+			"target": "docs_system_external_libs_external_libs_mikro_routeros_fork",
+			"relation": "conceptually_related_to",
+			"confidence": "EXTRACTED",
+			"confidence_score": 1.0,
+			"source_file": "docs/system/evaluator/evaluator.md",
+			"source_location": null,
+			"weight": 1.0
+		}
+	],
+	"hyperedges": []
+}

@@ -232,7 +232,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			await redis.subscriber.subscribe(`vlab:worker-action:${workerId}`);
 		} catch (error) {
 			logger.error(
-				{ error, workerId },
+				{ err: error, workerId },
 				"Failed to subscribe to worker action channel",
 			);
 		}
@@ -284,7 +284,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				await redis.subscriber.unsubscribe(`vlab:worker-action:${workerId}`);
 			} catch (error) {
 				logger.error(
-					{ error, workerId },
+					{ err: error, workerId },
 					"Failed to unsubscribe from worker action channel",
 				);
 			}

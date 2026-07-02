@@ -18,12 +18,12 @@ client.on("connect", () => {
 	logger.debug("Connected to Redis");
 });
 client.on("error", (error) => {
-	logger.error({ error }, "Redis connection error");
+	logger.error({ err: error }, "Redis connection error");
 });
 
 const subscriber = client.duplicate();
 subscriber.on("error", (error) => {
-	logger.error({ error }, "Redis subscriber connection error");
+	logger.error({ err: error }, "Redis subscriber connection error");
 });
 
 export default {
@@ -36,7 +36,7 @@ export default {
 		try {
 			return decode(value) as T;
 		} catch (error) {
-			logger.warn({ key, error }, "Failed to decode Redis value");
+			logger.warn({ key, err: error }, "Failed to decode Redis value");
 			return null;
 		}
 	},

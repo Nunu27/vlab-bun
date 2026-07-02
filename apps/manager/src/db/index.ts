@@ -34,7 +34,7 @@ export async function checkAndRunMigration() {
 		});
 		logger.info("Migrations completed successfully.");
 	} catch (error) {
-		logger.error({ error }, "Migration failed");
+		logger.error({ err: error }, "Migration failed");
 		throw error;
 	}
 }

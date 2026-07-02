@@ -84,7 +84,10 @@ export async function stopEvaluationSession(sessionId: string) {
 	try {
 		await session.stop();
 	} catch (error) {
-		logger.warn({ error, sessionId }, "Failed to stop lab evaluation cleanly");
+		logger.warn(
+			{ err: error, sessionId },
+			"Failed to stop lab evaluation cleanly",
+		);
 	} finally {
 		activeEvaluations.delete(sessionId);
 		stoppingEvaluations.delete(sessionId);
