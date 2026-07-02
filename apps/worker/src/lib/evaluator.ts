@@ -11,6 +11,7 @@ const activeEvaluations = new Map<
 	ReturnType<typeof evaluator.createSession>
 >();
 const stoppingEvaluations = new Set<string>();
+const stopTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 evaluator.setSourceRead(
 	"node-interface.interfaces-ip",
@@ -31,6 +32,11 @@ export async function startLabEvaluation(
 			"Cancelling evaluation stop, session reconnected",
 		);
 		stoppingEvaluations.delete(sessionId);
+		const pendingStop = stopTimers.get(sessionId);
+		if (pendingStop) {
+			clearTimeout(pendingStop);
+			stopTimers.delete(sessionId);
+		}
 		session.check();
 		return session;
 	}
@@ -47,6 +53,13 @@ export async function startLabEvaluation(
 		},
 		values,
 	);
+
+	evalSession.onSourceError((sourceKey, error) => {
+		logger.warn(
+			{ sessionId, sourceKey, err: error },
+			"Lab evaluation source failed",
+		);
+	});
 
 	evalSession.onChange(async (id, value) => {
 		if (
@@ -103,6 +116,12 @@ export function stopLabEvaluation(
 	if (!activeEvaluations.has(sessionId)) return Promise.resolve();
 	stoppingEvaluations.add(sessionId);
 
+	const pendingStop = stopTimers.get(sessionId);
+	if (pendingStop) {
+		clearTimeout(pendingStop);
+		stopTimers.delete(sessionId);
+	}
+
 	if (options.immediate) {
 		logger.debug({ sessionId }, "Stopping lab evaluation immediately");
 		return stopEvaluationSession(sessionId);
@@ -112,8 +131,10 @@ export function stopLabEvaluation(
 
 	// A simple timeout for "debouncing" stop
 	return new Promise((resolve) => {
-		setTimeout(() => {
+		const timer = setTimeout(() => {
+			stopTimers.delete(sessionId);
 			stopEvaluationSession(sessionId).then(resolve);
 		}, 30000);
+		stopTimers.set(sessionId, timer);
 	});
 }

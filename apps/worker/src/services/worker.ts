@@ -9,7 +9,6 @@ import {
 	getStorageInfo,
 } from "../lib/system-metrics";
 import { metadata, workerClient } from "./client";
-import { monitorState } from "./monitor";
 
 const logger = baseLogger.child({ service: "grpc" });
 
@@ -74,7 +73,6 @@ export async function streamMetrics() {
 				cpuUsagePercent: cpuUsage.percentage,
 				memoryUsagePercent: memoryUsage.percentage,
 				storageUsagePercent: storageInfo.percentage,
-				activeNodes: monitorState.activeNodes,
 			},
 			{ metadata },
 		);

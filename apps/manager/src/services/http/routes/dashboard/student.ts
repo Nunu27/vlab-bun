@@ -7,9 +7,9 @@ import {
 	labs,
 	users,
 } from "@manager/db/schema";
+import { submitSession } from "@manager/domain/lab-session/submit";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-import { workerActions } from "@manager/services/worker-actions";
 import { and, desc, eq, isNull } from "drizzle-orm";
 
 export default createRouter()
@@ -92,9 +92,7 @@ export default createRouter()
 
 			if (!session) throw new Error("Session not found");
 
-			await workerActions.dispatch("lab:submitSession", session.workerId, {
-				sessionId,
-			});
+			await submitSession(sessionId, session.workerId);
 
 			return success({ data: { submitted: true } });
 		},

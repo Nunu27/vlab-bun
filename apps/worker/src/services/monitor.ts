@@ -1,40 +1,40 @@
 import evaluator from "@vlab/evaluator";
+import baseLogger from "@worker/lib/logger";
 import type { RpcServer } from "../handlers/server";
 import { clabMonitor } from "../lib/clab-monitor";
+import { LABELS } from "../lib/constants";
+import docker from "../lib/docker";
 
-export const monitorState = {
-	activeNodes: 0,
-};
+const logger = baseLogger.child({ service: "monitor" });
 
-export function bindMonitorEvents(_server: RpcServer) {
+const labSessionIdByNodeId = new Map<string, string>();
+
+export function bindMonitorEvents(server: RpcServer) {
 	const { emitter, init } = clabMonitor;
 
-	// clab-monitor now only tracks node health + interfaces (no session/lab
-	// label resolution, no stale-session detection) and emits exactly four
-	// events: node-create (also covers hydration of already-running nodes),
-	// node-remove, health-update, interface-update. The gRPC forwarding to
-	// apps/manager (monitor:snapshot, monitor:session-create/remove,
-	// monitor:node-create/health/interface-update/remove) and the
-	// destroyLab-on-stale-session / destroyLab-on-unexpected-node-death
-	// cleanup logic that used to live here need to be rebuilt manually,
-	// resolving the extra labels (ownerId, labId, labDue, labSessionId,
-	// labNodeId, deviceTemplateId) per node via docker inspect on
-	// node.containerId. See packages/@vlab/grpc/src/commands.ts for the
-	// expected monitor:* payload shapes.
-
-	emitter.on("node-create", (_node) => {
-		monitorState.activeNodes++;
-		// TODO: resolve labels for _node.containerId + forward monitor:node-create
-		// (also covers the former monitor:snapshot hydration path)
+	emitter.on("node-create", async (node) => {
+		try {
+			const info = await docker.getContainer(node.containerId).inspect();
+			const labSessionId = info.Config.Labels?.[LABELS.SESSION_ID];
+			if (labSessionId) labSessionIdByNodeId.set(node.id, labSessionId);
+		} catch (error) {
+			logger.error(
+				{ err: error, nodeId: node.id },
+				"Failed to resolve lab session id for node",
+			);
+		}
 	});
 
-	emitter.on("node-remove", (_id) => {
-		monitorState.activeNodes = Math.max(0, monitorState.activeNodes - 1);
-		// TODO: destroyLab-on-unexpected-death + forward monitor:node-remove
+	emitter.on("node-remove", (id) => {
+		labSessionIdByNodeId.delete(id);
 	});
 
-	emitter.on("health-update", (_node) => {
-		// TODO: forward monitor:node-health
+	emitter.on("health-update", (node) => {
+		const labSessionId = labSessionIdByNodeId.get(node.id);
+
+		server.emit("monitor:node-health", {
+			data: { node: { id: node.id, health: node.health, labSessionId } },
+		});
 	});
 
 	emitter.on("interface-update", (node) => {
@@ -43,7 +43,15 @@ export function bindMonitorEvents(_server: RpcServer) {
 			"node-interface.interfaces-ip",
 			node.interfaces,
 		);
-		// TODO: forward monitor:interface-update
+
+		const labSessionId = labSessionIdByNodeId.get(node.id);
+		if (!labSessionId) return;
+
+		server.emit("monitor:interface-update", {
+			data: {
+				node: { id: node.id, interfaces: node.interfaces, labSessionId },
+			},
+		});
 	});
 
 	init();

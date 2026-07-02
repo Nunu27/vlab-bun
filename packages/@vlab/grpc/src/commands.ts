@@ -2,15 +2,7 @@ import { Type as t } from "@sinclair/typebox";
 import { DeviceTemplateResourcesSchema } from "@vlab/shared/schemas/device-template";
 import { Router } from "waycast";
 
-const WorkerResolvedFields = {
-	ownerId: t.String(),
-	labId: t.Optional(t.String()),
-	labDue: t.Optional(t.String()),
-	labNodeId: t.Optional(t.String()),
-	deviceTemplateId: t.Optional(t.String()),
-};
-
-export const LabNodeSchema = t.Object({
+const LabNodeSchema = t.Object({
 	labNodeId: t.Optional(t.String()),
 	id: t.String(),
 	name: t.String(),
@@ -27,7 +19,7 @@ export const LabNodeSchema = t.Object({
 	deviceId: t.Optional(t.String()),
 });
 
-export const LabLinkSchema = t.Object({
+const LabLinkSchema = t.Object({
 	sourceId: t.String(),
 	sourceInterface: t.String(),
 	targetId: t.String(),
@@ -42,13 +34,14 @@ export const LabConfigSchema = t.Object({
 	links: t.Optional(t.Array(LabLinkSchema)),
 });
 
-export const DeployedNodeSchema = t.Object({
+const DeployedNodeSchema = t.Object({
 	id: t.String(),
 	ip: t.String(),
 	containerId: t.String(),
+	health: t.Union([t.String(), t.Null()]),
 });
 
-export const EvaluatorNodeInfoSchema = t.Object({
+const EvaluatorNodeInfoSchema = t.Object({
 	id: t.String(),
 	ip: t.String(),
 	containerId: t.String(),
@@ -60,14 +53,14 @@ export const EvaluatorNodeInfoSchema = t.Object({
 	),
 });
 
-export const EvaluatorSessionCheckSchema = t.Object({
+const EvaluatorSessionCheckSchema = t.Object({
 	id: t.String(),
 	nodeId: t.String(),
 	checkId: t.String(),
 	params: t.Record(t.String(), t.Unknown()),
 });
 
-export const StartEvaluationPayloadSchema = t.Object({
+const StartEvaluationPayloadSchema = t.Object({
 	sessionId: t.String(),
 	nodeMap: t.Record(t.String(), EvaluatorNodeInfoSchema),
 	sessionChecks: t.Array(EvaluatorSessionCheckSchema),
@@ -76,60 +69,13 @@ export const StartEvaluationPayloadSchema = t.Object({
 
 export const appRouter = new Router()
 	.data(
-		"monitor:snapshot",
-		t.Object({
-			sessions: t.Array(t.Object({ id: t.String(), ...WorkerResolvedFields })),
-			nodes: t.Array(
-				t.Object({
-					id: t.String(),
-					name: t.String(),
-					health: t.Union([t.String(), t.Null()]),
-					ip: t.String(),
-					interfaces: t.Record(t.String(), t.Array(t.String())),
-					containerId: t.String(),
-					labSessionId: t.String(),
-					...WorkerResolvedFields,
-				}),
-			),
-		}),
-	)
-	.data(
-		"monitor:session-create",
-		t.Object({
-			id: t.String(),
-			isTemp: t.Boolean(),
-			...WorkerResolvedFields,
-		}),
-	)
-	.data(
-		"monitor:session-remove",
-		t.Object({
-			sessionId: t.String(),
-			isTemp: t.Boolean(),
-		}),
-	)
-	.data(
-		"monitor:node-create",
-		t.Object({
-			id: t.String(),
-			name: t.String(),
-			health: t.Union([t.String(), t.Null()]),
-			ip: t.String(),
-			interfaces: t.Record(t.String(), t.Array(t.String())),
-			containerId: t.String(),
-			labSessionId: t.String(),
-			...WorkerResolvedFields,
-		}),
-	)
-	.data(
 		"monitor:node-health",
 		t.Object({
 			node: t.Object({
 				id: t.String(),
 				health: t.Union([t.String(), t.Null()]),
-				labSessionId: t.String(),
+				labSessionId: t.Optional(t.String()),
 			}),
-			isTemp: t.Boolean(),
 		}),
 	)
 	.data(
@@ -140,14 +86,6 @@ export const appRouter = new Router()
 				interfaces: t.Record(t.String(), t.Array(t.String())),
 				labSessionId: t.String(),
 			}),
-			isTemp: t.Boolean(),
-		}),
-	)
-	.data(
-		"monitor:node-remove",
-		t.Object({
-			id: t.String(),
-			isTemp: t.Boolean(),
 		}),
 	)
 	.rpc("clab:deployLab", {
@@ -155,20 +93,18 @@ export const appRouter = new Router()
 			sessionId: t.String(),
 			config: LabConfigSchema,
 		}),
-		replies: {
-			deployed: t.Array(DeployedNodeSchema),
-		},
+		response: t.Array(DeployedNodeSchema),
 	})
 	.rpc("clab:destroyLab", {
 		payload: t.Object({
 			sessionId: t.String(),
 		}),
 	})
-	.rpc("evaluator:start", {
-		payload: StartEvaluationPayloadSchema,
-		replies: {
-			checkChanged: t.Object({ id: t.String(), completed: t.Boolean() }),
-		},
+	.rpc("clab:reconcileSessions", {
+		payload: t.Object({
+			activeSessionIds: t.Array(t.String()),
+		}),
+		response: t.Array(t.String()),
 	})
 	.rpc("docker:pullImage", {
 		payload: t.Object({
@@ -179,8 +115,12 @@ export const appRouter = new Router()
 		payload: t.Object({
 			containerId: t.String(),
 		}),
+		response: t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+	})
+	.rpc("evaluator:start", {
+		payload: StartEvaluationPayloadSchema,
 		replies: {
-			result: t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+			checkChanged: t.Object({ id: t.String(), completed: t.Boolean() }),
 		},
 	})
 	.rpc("evaluator:stop", {

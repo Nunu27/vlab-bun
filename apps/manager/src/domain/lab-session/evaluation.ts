@@ -5,7 +5,7 @@ import ws from "@manager/services/ws";
 import type { NodeInfo } from "@vlab/evaluator/types";
 import { eq } from "drizzle-orm";
 
-export async function handleStartLabEvaluation(
+export async function startEvaluation(
 	workerId: string,
 	payload: {
 		sessionId: string;
@@ -96,7 +96,7 @@ export async function handleStartLabEvaluation(
 	);
 }
 
-export async function handleStopLabEvaluation(
+export async function stopEvaluation(
 	workerId: string,
 	payload: {
 		sessionId: string;

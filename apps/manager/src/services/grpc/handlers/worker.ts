@@ -1,13 +1,20 @@
 import db from "@manager/db";
-import { workers } from "@manager/db/schema";
+import {
+	deviceTemplates,
+	labSessionNodes,
+	labSessions,
+	workers,
+} from "@manager/db/schema";
 import env from "@manager/env";
 import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
+import guacamole from "@manager/services/guacamole-lite";
 import ws from "@manager/services/ws";
 import { decode, encode } from "@msgpack/msgpack";
-import type { Static, TSchema } from "@sinclair/typebox";
+import type { Static } from "@sinclair/typebox";
 import type {
 	GrpcDataMessage,
+	GrpcRpcCallbacks,
 	GrpcRpcReplyMessage,
 	GrpcRpcRoutes,
 } from "@vlab/grpc";
@@ -22,8 +29,8 @@ export const connectedWorkers = new Map<
 	ReturnType<typeof appRouter.buildClient>
 >();
 
-export const DEFAULT_CPU_COST_CORES = 1;
-export const DEFAULT_MEMORY_COST_MB = 1024;
+export const DEFAULT_CPU_COST_CORES = 0.5;
+export const DEFAULT_MEMORY_COST_MB = 512;
 
 async function tryGetAvailableWorkerId(
 	cpuCostCores: number,
@@ -105,7 +112,89 @@ export async function resetStaleWorkers() {
 		);
 }
 
-type ExtractReplyType<T> = T extends TSchema ? Static<T> : never;
+// Called right after a worker connects. The worker may have leftover local
+// containerlab deployments from a crash, restart, or a destroy command that
+// never reached it while it was disconnected — so the manager hands it the
+// sessions it still considers active, and the worker tears down anything
+// deployed locally that isn't on that list.
+async function reconcileWorkerSessions(workerId: string) {
+	const activeSessions = await db.query.labSessions.findMany({
+		columns: { id: true },
+		where: (labSessions, { eq, and, isNull }) =>
+			and(eq(labSessions.workerId, workerId), isNull(labSessions.submittedAt)),
+	});
+
+	const destroyed = await sendCommandToWorker(
+		workerId,
+		"clab:reconcileSessions",
+		{
+			activeSessionIds: activeSessions.map((s) => s.id),
+		},
+	);
+
+	if (destroyed.length) {
+		logger.warn(
+			{ workerId, destroyed },
+			"Worker destroyed stale lab sessions not tracked as active by the manager",
+		);
+	}
+}
+
+async function regenerateWorkerTokens(
+	workerId: string,
+	guacdHost: string,
+	guacdPort: number,
+) {
+	// Find all nodes that need token regeneration
+	const nodes = await db
+		.select({
+			nodeId: labSessionNodes.id,
+			ip: labSessionNodes.ip,
+			connection: deviceTemplates.connection,
+			kind: deviceTemplates.kind,
+		})
+		.from(labSessionNodes)
+		.innerJoin(labSessions, eq(labSessionNodes.labSessionId, labSessions.id))
+		.innerJoin(
+			deviceTemplates,
+			eq(labSessionNodes.deviceTemplateId, deviceTemplates.id),
+		)
+		.where(eq(labSessions.workerId, workerId));
+
+	if (nodes.length === 0) return;
+
+	// Batch update tokens
+	await db.transaction(async (tx) => {
+		for (const node of nodes) {
+			const newToken = guacamole.generateNodeToken(
+				node.connection,
+				node.kind,
+				node.ip,
+				guacdHost,
+				guacdPort,
+			);
+
+			await tx
+				.update(labSessionNodes)
+				.set({ token: newToken })
+				.where(eq(labSessionNodes.id, node.nodeId));
+		}
+	});
+
+	logger.info(
+		{ workerId, nodeCount: nodes.length },
+		"Successfully regenerated tokens for worker",
+	);
+}
+
+export async function getWorker(workerId: string) {
+	const worker = connectedWorkers.get(workerId);
+	if (!worker) {
+		throw new Error(`Worker ${workerId} is not connected to this manager!`);
+	}
+
+	return worker;
+}
 
 export async function sendCommandToWorker<
 	K extends Extract<keyof GrpcRpcRoutes, string>,
@@ -113,25 +202,17 @@ export async function sendCommandToWorker<
 	workerId: string,
 	command: K,
 	payload: Static<GrpcRpcRoutes[K]["payload"]>,
-	replies?: {
-		[R in keyof GrpcRpcRoutes[K]["replies"]]?: (
-			data: ExtractReplyType<GrpcRpcRoutes[K]["replies"][R]>,
-		) => void | Promise<void>;
-	},
-): Promise<void> {
-	const client = connectedWorkers.get(workerId);
-	if (!client) {
-		throw new Error(`Worker ${workerId} is not connected to this manager!`);
-	}
+	replies?: Omit<GrpcRpcCallbacks<K>, "response" | "error">,
+): Promise<Static<GrpcRpcRoutes[K]["response"]>> {
+	const client = await getWorker(workerId);
 
 	return new Promise((resolve, reject) => {
 		// @ts-expect-error: TS intersection of mapped types and spreads is too complex
 		client.rpc(command, {
-			params: undefined,
 			payload,
 			callbacks: {
 				...replies,
-				response: () => resolve(),
+				response: resolve,
 				error: (err: string) => reject(new Error(err)),
 			},
 		});
@@ -154,7 +235,13 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		const workerSpec = first.value.workerSpec;
 
-		// 2. Upsert worker into DB
+		// 2. Fetch old worker state to detect guacd changes
+		const oldWorker = await db.query.workers.findFirst({
+			where: eq(workers.id, workerId),
+			columns: { guacdHost: true, guacdPort: true },
+		});
+
+		// 3. Upsert worker into DB
 		const [{ createdAt, updatedAt, ...worker }] = await db
 			.insert(workers)
 			.values({
@@ -200,6 +287,27 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				updatedAt: workers.updatedAt,
 			});
 
+		if (
+			oldWorker &&
+			(oldWorker.guacdHost !== workerSpec.guacdHost ||
+				oldWorker.guacdPort !== workerSpec.guacdPort)
+		) {
+			logger.info(
+				{ workerId, oldWorker, newSpec: workerSpec },
+				"Worker guacd configuration changed, regenerating tokens...",
+			);
+			regenerateWorkerTokens(
+				workerId,
+				workerSpec.guacdHost,
+				workerSpec.guacdPort,
+			).catch((err) =>
+				logger.error(
+					{ err, workerId },
+					"Failed to regenerate tokens after worker guacd configuration change",
+				),
+			);
+		}
+
 		if (updatedAt?.getTime() === createdAt.getTime()) {
 			ws.server.emit("admin:worker:new", { data: worker });
 		} else {
@@ -237,12 +345,13 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			);
 		}
 
-		attachMonitorHandlers(workerId, client, {
-			guacdHost: workerSpec.guacdHost,
-			guacdPort: workerSpec.guacdPort,
-		});
+		attachMonitorHandlers(workerId, client);
 
 		connectedWorkers.set(workerId, client);
+
+		reconcileWorkerSessions(workerId).catch((err) => {
+			logger.error({ err, workerId }, "Failed to reconcile worker sessions");
+		});
 
 		const abortListener = () => {
 			msgQueue.close();
@@ -321,10 +430,12 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				cpuUsagePercent: request.cpuUsagePercent.toString(),
 				memoryUsagePercent: request.memoryUsagePercent.toString(),
 				storageUsagePercent: request.storageUsagePercent.toString(),
-				activeNodes: request.activeNodes,
 			})
 			.where(eq(workers.id, workerId))
-			.returning({ activeLabs: workers.activeLabs });
+			.returning({
+				activeLabs: workers.activeLabs,
+				activeNodes: workers.activeNodes,
+			});
 
 		ws.server.emit("admin:worker:metrics", {
 			data: {
@@ -333,7 +444,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				memoryUsagePercent: request.memoryUsagePercent.toString(),
 				storageUsagePercent: request.storageUsagePercent.toString(),
 				activeLabs: updated?.activeLabs ?? 0,
-				activeNodes: request.activeNodes,
+				activeNodes: updated?.activeNodes ?? 0,
 			},
 		});
 

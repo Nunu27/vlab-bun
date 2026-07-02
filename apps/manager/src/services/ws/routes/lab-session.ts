@@ -3,9 +3,9 @@ import { labSessions } from "@manager/db/schema";
 import {
 	DEFAULT_CPU_COST_CORES,
 	DEFAULT_MEMORY_COST_MB,
+	dispatchWorkerAction,
 	waitForAvailableWorkerId,
 } from "@manager/services/grpc";
-import { workerActions } from "@manager/services/worker-actions";
 import ws from "@manager/services/ws";
 import type { LabLink, LabNode } from "@manager/types/clab";
 import { eq } from "drizzle-orm";
@@ -51,8 +51,6 @@ ws.server.on(
 			({ submittedAt }) => !submittedAt,
 		);
 
-		// No worker has been reserved yet at this point, so we can return early
-		// here for free without leaking a worker's activeLabs slot.
 		if (existingSession) return existingSession.id;
 		if (lab.maxAttempt && lab.sessions.length >= lab.maxAttempt) {
 			throw new Error("Max attempts reached");
@@ -124,8 +122,8 @@ ws.server.on(
 		const sessionId = Bun.randomUUIDv7();
 
 		const workerId = await waitForAvailableWorkerId(
-			totalCpuCost || DEFAULT_CPU_COST_CORES,
-			totalMemoryCost || DEFAULT_MEMORY_COST_MB,
+			totalCpuCost,
+			totalMemoryCost,
 			{
 				onWait: (attempt) => {
 					if (attempt === 1) {
@@ -140,7 +138,7 @@ ws.server.on(
 
 		reply("info", "Provisioning lab...");
 
-		await workerActions.dispatch("lab:initSession", workerId, {
+		await dispatchWorkerAction("lab:initSession", workerId, {
 			requestId,
 			sessionId,
 			labId,
@@ -183,7 +181,7 @@ ws.server.on(
 			.set({ clientId: connectionId })
 			.where(eq(labSessions.id, sessionId));
 
-		await workerActions.dispatch("evaluator:start", session.workerId, {
+		await dispatchWorkerAction("evaluator:start", session.workerId, {
 			sessionId,
 			labId: session.labId,
 		});
@@ -205,7 +203,7 @@ ws.server.onDispose("lab-session:[sessionId]:connect", async (connectionId) => {
 		data: null,
 	});
 
-	await workerActions.dispatch("evaluator:stop", data.workerId, {
+	await dispatchWorkerAction("evaluator:stop", data.workerId, {
 		sessionId: data.id,
 	});
 });
