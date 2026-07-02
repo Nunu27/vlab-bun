@@ -1,4 +1,6 @@
 import {
+	type CodeBlockEditorDescriptor,
+	codeBlockPlugin,
 	headingsPlugin,
 	imagePlugin,
 	type JsxComponentDescriptor,
@@ -14,6 +16,16 @@ import {
 import "@mdxeditor/editor/style.css";
 import { cn } from "@web/lib/utils";
 import { useTheme } from "./theme-provider";
+
+const plainCodeBlockDescriptor: CodeBlockEditorDescriptor = {
+	match: () => true,
+	priority: 0,
+	Editor: ({ code }) => (
+		<pre className="wrap-break-word whitespace-pre-wrap">
+			<code>{code}</code>
+		</pre>
+	),
+};
 
 type MarkdownViewerProps = {
 	value?: string;
@@ -44,6 +56,9 @@ export function MarkdownViewer({
 					imagePlugin(),
 					tablePlugin(),
 					thematicBreakPlugin(),
+					codeBlockPlugin({
+						codeBlockEditorDescriptors: [plainCodeBlockDescriptor],
+					}),
 					markdownShortcutPlugin(),
 				]}
 			/>
