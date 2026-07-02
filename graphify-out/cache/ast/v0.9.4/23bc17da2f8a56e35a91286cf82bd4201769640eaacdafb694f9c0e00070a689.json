@@ -1,0 +1,127 @@
+{
+	"nodes": [
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_md",
+			"label": "instructions.md",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L1"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_a_skenario_topologi",
+			"label": "A. Skenario & Topologi",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L28"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_b_langkah_langkah_konfigurasi",
+			"label": "B. Langkah-Langkah Konfigurasi",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L64"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_i_konfigurasi_ip",
+			"label": "Tahap I: Konfigurasi IP",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L66"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_ii_konfigurasi_bgp_pada_r1_as_65001",
+			"label": "Tahap II: Konfigurasi BGP pada R1 (AS 65001)",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L71"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_iii_konfigurasi_bgp_pada_r2_as_65000_transit",
+			"label": "Tahap III: Konfigurasi BGP pada R2 (AS 65000, Transit)",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L86"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_iv_konfigurasi_bgp_pada_r3_as_65002",
+			"label": "Tahap IV: Konfigurasi BGP pada R3 (AS 65002)",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L103"
+		},
+		{
+			"id": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_v_verifikasi_bgp_dan_pengamatan_as_path",
+			"label": "Tahap V: Verifikasi BGP dan Pengamatan AS-Path",
+			"file_type": "document",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L118"
+		}
+	],
+	"edges": [
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_md",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_a_skenario_topologi",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L28",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_md",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_b_langkah_langkah_konfigurasi",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L64",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_b_langkah_langkah_konfigurasi",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_i_konfigurasi_ip",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L66",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_b_langkah_langkah_konfigurasi",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_ii_konfigurasi_bgp_pada_r1_as_65001",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L71",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_b_langkah_langkah_konfigurasi",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_iii_konfigurasi_bgp_pada_r2_as_65000_transit",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L86",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_b_langkah_langkah_konfigurasi",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_iv_konfigurasi_bgp_pada_r3_as_65002",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L103",
+			"weight": 1.0
+		},
+		{
+			"source": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_b_langkah_langkah_konfigurasi",
+			"target": "home_nunu27_projects_pa_vlab_docs_modules_6_konfigurasi_routing_bgp_instructions_tahap_v_verifikasi_bgp_dan_pengamatan_as_path",
+			"relation": "contains",
+			"confidence": "EXTRACTED",
+			"source_file": "docs/modules/6-konfigurasi-routing-bgp/instructions.md",
+			"source_location": "L118",
+			"weight": 1.0
+		}
+	],
+	"input_tokens": 0,
+	"output_tokens": 0
+}
