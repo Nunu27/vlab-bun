@@ -48,12 +48,7 @@ const monitor = createMonitor({
 		warn: () => {},
 	},
 	docker,
-	mapping: {
-		sessionId: "containerlab",
-		nodeId: "clab-node-name",
-		name: "clab-node-name",
-		deviceKind: "clab-node-kind",
-	},
+	nodeIdLabel: "clab-node-name",
 });
 
 evaluator.setSourceRead("node-interface.interfaces-ip", (ctx) => {
