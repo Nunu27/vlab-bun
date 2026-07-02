@@ -6,7 +6,20 @@ import type {
 	NodeInfo,
 	SessionCheckPayload,
 } from "../types";
+import { withRetry } from "../utils";
 import type { Evaluator } from "./evaluator";
+
+// After this many consecutive failures against a cached context, the context
+// is torn down and rebuilt from scratch (e.g. forces a fresh RouterOS
+// connect+login) instead of continuing to reuse a possibly-broken resource.
+const CONTEXT_FAILURE_THRESHOLD = 3;
+
+// Unbounded: a source keeps retrying (capped backoff) until it connects or
+// the session stops (retryAbort) — there's no other event that would tell us
+// a slow-booting node is never coming up.
+const SOURCE_START_RETRIES = Number.POSITIVE_INFINITY;
+const SOURCE_START_MIN_DELAY_MS = 500;
+const SOURCE_START_MAX_DELAY_MS = 15_000;
 
 export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 	private checkDefinitions: SessionCheckPayload<THandlers>[];
@@ -18,7 +31,14 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 	private checkResults = new Map<string, boolean>();
 	private onChangeCallbacks: Array<(checkId: string, result: boolean) => void> =
 		[];
+	private onSourceErrorCallbacks: Array<
+		(sourceKey: string, error: unknown) => void
+	> = [];
 	private startedSources = new Set<string>();
+	private startingSources = new Set<string>();
+
+	// Keyed by `${nodeId}::${handlerId}`.
+	private contextFailures = new Map<string, number>();
 
 	// Tracks emitter callbacks registered by this session, for cleanup
 	private sessionEmitterCleanups: Array<() => void> = [];
@@ -35,7 +55,13 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 
 	// Per-check emitter removal callbacks, used to stop oneTime checks from listening
 	private checkEmitterRemovals = new Map<string, () => void>();
+	// Keyed by sourceKey. Kept separate from checkEmitterRemovals so tearing
+	// a source down on reconnect doesn't disturb other sources subscribed to
+	// the same emitter (e.g. via `subscribe`).
+	private sourceCheckRemovals = new Map<string, () => void>();
 	private stopped = false;
+
+	private retryAbort = new AbortController();
 
 	constructor(
 		private evaluator: Evaluator<THandlers>,
@@ -124,6 +150,39 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		return extendedCtx;
 	}
 
+	/**
+	 * Tears down and forgets a cached context so the next `getContext` call
+	 * rebuilds it from scratch (e.g. a fresh RouterOS connect+login).
+	 */
+	private async invalidateContext(contextKey: string) {
+		this.contextFailures.delete(contextKey);
+		const cleanup = this.cleanups.get(contextKey);
+		this.cleanups.delete(contextKey);
+		this.contexts.delete(contextKey);
+		if (cleanup) {
+			try {
+				await cleanup();
+			} catch (error) {
+				console.error(
+					`Error cleaning up invalidated context ${contextKey}:`,
+					error,
+				);
+			}
+		}
+	}
+
+	private recordContextFailure(contextKey: string) {
+		const count = (this.contextFailures.get(contextKey) ?? 0) + 1;
+		this.contextFailures.set(contextKey, count);
+		if (count >= CONTEXT_FAILURE_THRESHOLD) {
+			void this.invalidateContext(contextKey);
+		}
+	}
+
+	private recordContextSuccess(contextKey: string) {
+		this.contextFailures.delete(contextKey);
+	}
+
 	private async waitNodeHealth(nodeId: string) {
 		if (!this.healthHooks) return;
 		if (this.healthHooks.isNodeHealthy(nodeId)) return;
@@ -148,6 +207,21 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 
 	onChange(cb: (checkId: string, result: boolean) => void) {
 		this.onChangeCallbacks.push(cb);
+	}
+
+	/**
+	 * Notified whenever a source fails to start (after exhausting retries) or
+	 * dies later on. Purely observational — does not affect retry/reconnect
+	 * behavior, which happens regardless of whether a listener is registered.
+	 */
+	onSourceError(cb: (sourceKey: string, error: unknown) => void) {
+		this.onSourceErrorCallbacks.push(cb);
+	}
+
+	private notifySourceError(sourceKey: string, error: unknown) {
+		for (const cb of this.onSourceErrorCallbacks) {
+			cb(sourceKey, error);
+		}
 	}
 
 	/**
@@ -192,6 +266,18 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		}
 	}
 
+	private async evaluateCheckSafely(
+		sessionCheck: SessionCheckPayload<THandlers>,
+		ctx: any,
+		data: any,
+	) {
+		try {
+			await this.evaluateCheck(sessionCheck, ctx, data);
+		} catch (error) {
+			console.error(`Error evaluating check ${sessionCheck.id}:`, error);
+		}
+	}
+
 	/**
 	 * Removes a specific check's callback from the shared emitter so the source
 	 * no longer triggers evaluation for this check.
@@ -204,29 +290,15 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		}
 	}
 
-	private async startSource(nodeId: string, sourceId: string) {
-		const sourceKey = `${sourceId}::${nodeId}`;
-		if (this.startedSources.has(sourceKey)) return;
-		this.startedSources.add(sourceKey);
-
-		const [hId, sId] = sourceId.split(".");
-		if (!hId || !sId) return;
-
-		const handler = this.evaluator.handlers[hId];
-		if (!handler) return;
-
-		const sourceDef = handler._sources[sId];
-		if (!sourceDef) return;
-
-		await this.waitNodeHealth(nodeId);
-
-		let ctx: any;
-		try {
-			ctx = await this.getContext(nodeId, hId);
-		} catch (err) {
-			console.error(`Failed to get context for ${sourceKey}`, err);
-			return;
-		}
+	/**
+	 * Registers the check-evaluation callback for a source's own directly
+	 * mapped checks onto the shared emitter. Returns a removal function scoped
+	 * to just this callback (cross-source `subscribe` listeners on the same
+	 * emitter are left untouched).
+	 */
+	private registerSourceCheckEmitter(sourceKey: string, ctx: any) {
+		const activeChecks = this.sourceToCheckMap.get(sourceKey) || [];
+		if (activeChecks.length === 0) return;
 
 		let emitters = this.evaluator._emitters.get(sourceKey);
 		if (!emitters) {
@@ -234,86 +306,190 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 			this.evaluator._emitters.set(sourceKey, emitters);
 		}
 
-		// Register check evaluator as a listener on the source emitter
-		const activeChecks = this.sourceToCheckMap.get(sourceKey) || [];
-		if (activeChecks.length > 0) {
-			const checkCb = async (data: any) => {
-				for (const sessionCheck of activeChecks) {
-					await this.evaluateCheck(sessionCheck, ctx, data);
-				}
-			};
-			emitters.push(checkCb);
-
-			const removeFromEmitter = () => {
-				const currentEmitters = this.evaluator._emitters.get(sourceKey);
-				if (currentEmitters) {
-					const idx = currentEmitters.indexOf(checkCb);
-					if (idx !== -1) currentEmitters.splice(idx, 1);
-					if (currentEmitters.length === 0)
-						this.evaluator._emitters.delete(sourceKey);
-				}
-			};
-
-			// Register per-check removal handles so individual oneTime checks can unsubscribe
+		const checkCb = async (data: any) => {
 			for (const sessionCheck of activeChecks) {
-				this.checkEmitterRemovals.set(sessionCheck.id, removeFromEmitter);
+				await this.evaluateCheckSafely(sessionCheck, ctx, data);
 			}
+		};
+		emitters.push(checkCb);
 
-			// Track session-level cleanup as a fallback
-			this.sessionEmitterCleanups.push(removeFromEmitter);
-		}
-
-		// Setup subscribe function (for sources that depend on other sources)
-		const subscribe = async (
-			targetSId: string,
-			cb: (data: any) => void | Promise<void>,
-		) => {
-			const targetSourceId = `${hId}.${targetSId}`;
-			const targetKey = `${targetSourceId}::${nodeId}`;
-
-			let targetEmitters = this.evaluator._emitters.get(targetKey);
-			if (!targetEmitters) {
-				targetEmitters = [];
-				this.evaluator._emitters.set(targetKey, targetEmitters);
+		const removeFromEmitter = () => {
+			const currentEmitters = this.evaluator._emitters.get(sourceKey);
+			if (currentEmitters) {
+				const idx = currentEmitters.indexOf(checkCb);
+				if (idx !== -1) currentEmitters.splice(idx, 1);
+				if (currentEmitters.length === 0)
+					this.evaluator._emitters.delete(sourceKey);
 			}
-			targetEmitters.push(cb);
-
-			await this.startSource(nodeId, targetSourceId); // Recursively start the dependency
-
-			const cleanup = () => {
-				const currentEmitters = this.evaluator._emitters.get(targetKey);
-				if (currentEmitters) {
-					const idx = currentEmitters.indexOf(cb);
-					if (idx !== -1) currentEmitters.splice(idx, 1);
-					if (currentEmitters.length === 0)
-						this.evaluator._emitters.delete(targetKey);
-				}
-			};
-
-			// Backup tracker just in case user listen functions fail to invoke cleanup
-			this.sessionEmitterCleanups.push(cleanup);
-			return cleanup;
 		};
 
-		// Setup the source's actual listener
-		if (sourceDef.listen) {
+		for (const sessionCheck of activeChecks) {
+			this.checkEmitterRemovals.set(sessionCheck.id, removeFromEmitter);
+		}
+		this.sourceCheckRemovals.set(sourceKey, removeFromEmitter);
+		this.sessionEmitterCleanups.push(removeFromEmitter);
+	}
+
+	/** Reacts to a source failing by tearing it down and re-attempting `startSource` — no polling involved. */
+	private async recoverSource(
+		nodeId: string,
+		sourceId: string,
+		error: unknown,
+	) {
+		const sourceKey = `${sourceId}::${nodeId}`;
+		if (!this.startedSources.has(sourceKey)) return; // already torn down/never started
+		this.startedSources.delete(sourceKey);
+
+		const cleanup = this.listeners.get(sourceKey);
+		this.listeners.delete(sourceKey);
+		if (cleanup) {
 			try {
-				// notify routes the data to `emitSource`, which hits ALL emitters (checks + subscribers)
-				const notifyFn = (data: any) => {
-					if (this.stopped) return;
-					this.evaluator.emitSource(nodeId, sourceId as any, data);
-				};
-				const cleanupListener = await sourceDef.listen(
-					ctx,
-					notifyFn,
-					subscribe,
+				await cleanup();
+			} catch (cleanupError) {
+				console.error(
+					`Error cleaning up failed source ${sourceKey}:`,
+					cleanupError,
 				);
-				if (cleanupListener) {
-					this.listeners.set(sourceKey, cleanupListener);
-				}
-			} catch (err) {
-				console.error(`Failed to setup listen for ${sourceKey}`, err);
 			}
+		}
+
+		const removeCheckCb = this.sourceCheckRemovals.get(sourceKey);
+		if (removeCheckCb) {
+			removeCheckCb();
+			this.sourceCheckRemovals.delete(sourceKey);
+		}
+
+		const [hId] = sourceId.split(".");
+		if (hId) this.recordContextFailure(`${nodeId}::${hId}`);
+
+		console.error(
+			`Source ${sourceKey} failed, will attempt to reconnect:`,
+			error,
+		);
+		this.notifySourceError(sourceKey, error);
+
+		if (this.stopped) return;
+		this.startSource(nodeId, sourceId).catch((err) => {
+			console.error(`Failed to reconnect source ${sourceKey}:`, err);
+		});
+	}
+
+	private async startSource(nodeId: string, sourceId: string) {
+		const sourceKey = `${sourceId}::${nodeId}`;
+		if (this.stopped) return;
+		if (
+			this.startedSources.has(sourceKey) ||
+			this.startingSources.has(sourceKey)
+		)
+			return;
+		this.startingSources.add(sourceKey);
+
+		try {
+			const [hId, sId] = sourceId.split(".");
+			if (!hId || !sId) return;
+
+			const handler = this.evaluator.handlers[hId];
+			if (!handler) return;
+
+			const sourceDef = handler._sources[sId];
+			if (!sourceDef) return;
+
+			await this.waitNodeHealth(nodeId);
+
+			let ctx: any;
+			let cleanupListener: (() => void) | undefined;
+
+			// Setup subscribe function (for sources that depend on other sources)
+			const subscribe = async (
+				targetSId: string,
+				cb: (data: any) => void | Promise<void>,
+			) => {
+				const targetSourceId = `${hId}.${targetSId}`;
+				const targetKey = `${targetSourceId}::${nodeId}`;
+
+				let targetEmitters = this.evaluator._emitters.get(targetKey);
+				if (!targetEmitters) {
+					targetEmitters = [];
+					this.evaluator._emitters.set(targetKey, targetEmitters);
+				}
+				targetEmitters.push(cb);
+
+				await this.startSource(nodeId, targetSourceId); // Recursively start the dependency
+
+				const cleanup = () => {
+					const currentEmitters = this.evaluator._emitters.get(targetKey);
+					if (currentEmitters) {
+						const idx = currentEmitters.indexOf(cb);
+						if (idx !== -1) currentEmitters.splice(idx, 1);
+						if (currentEmitters.length === 0)
+							this.evaluator._emitters.delete(targetKey);
+					}
+				};
+
+				// Backup tracker just in case user listen functions fail to invoke cleanup
+				this.sessionEmitterCleanups.push(cleanup);
+				return cleanup;
+			};
+
+			try {
+				await withRetry(
+					async () => {
+						ctx = await this.getContext(nodeId, hId);
+
+						if (sourceDef.listen) {
+							const notifyFn = (data: any) => {
+								if (this.stopped) return;
+								this.evaluator.emitSource(nodeId, sourceId as any, data);
+							};
+							const reportError = (error?: unknown) => {
+								this.recoverSource(
+									nodeId,
+									sourceId,
+									error ?? new Error("Source reported an error"),
+								).catch((err) =>
+									console.error(`Error recovering source ${sourceKey}:`, err),
+								);
+							};
+							cleanupListener = await sourceDef.listen(ctx, {
+								notify: notifyFn,
+								subscribe,
+								reportError,
+							});
+						}
+					},
+					{
+						retries: SOURCE_START_RETRIES,
+						minDelayMs: SOURCE_START_MIN_DELAY_MS,
+						maxDelayMs: SOURCE_START_MAX_DELAY_MS,
+						signal: this.retryAbort.signal,
+						onAttemptFailed: (error, attempt) => {
+							console.error(
+								`Attempt ${attempt} failed to start source ${sourceKey}:`,
+								error,
+							);
+						},
+					},
+				);
+			} catch (error) {
+				this.recordContextFailure(`${nodeId}::${hId}`);
+				this.notifySourceError(sourceKey, error);
+				return;
+			}
+
+			if (this.stopped) {
+				// Session stopped while we were retrying — undo what we just set up.
+				if (cleanupListener) await cleanupListener();
+				return;
+			}
+
+			this.recordContextSuccess(`${nodeId}::${hId}`);
+			this.startedSources.add(sourceKey);
+			this.registerSourceCheckEmitter(sourceKey, ctx);
+			if (cleanupListener) {
+				this.listeners.set(sourceKey, cleanupListener);
+			}
+		} finally {
+			this.startingSources.delete(sourceKey);
 		}
 	}
 
@@ -363,36 +539,43 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 			const sourceDef = handler._sources[sId];
 			if (!sourceDef) continue;
 
-			const ctx = await this.getContext(nodeId, hId);
+			const contextKey = `${nodeId}::${hId}`;
 
-			// Find correct read function (handle override)
-			const readFn =
-				this.evaluator._readOverrides.get(sourceId) || sourceDef.read;
-
-			if (!readFn) continue;
-
-			// Call read once, evaluate all dependent checks
+			// getContext is inside this try too, so one node with a dead context
+			// doesn't abort the cycle for unrelated nodes/sources.
 			try {
+				const ctx = await this.getContext(nodeId, hId);
+
+				// Find correct read function (handle override)
+				const readFn =
+					this.evaluator._readOverrides.get(sourceId) || sourceDef.read;
+				if (!readFn) continue;
+
 				let data = sourceDataCache.get(sourceKey);
 				if (!data) {
 					data = await readFn(ctx);
 					sourceDataCache.set(sourceKey, data);
 				}
 
+				this.recordContextSuccess(contextKey);
+
 				for (const sessionCheck of activeChecks) {
-					await this.evaluateCheck(sessionCheck, ctx, data);
+					await this.evaluateCheckSafely(sessionCheck, ctx, data);
 				}
 			} catch (err) {
 				console.error(
 					`Error reading source ${sourceId} on node ${nodeId}:`,
 					err,
 				);
+				this.recordContextFailure(contextKey);
+				this.notifySourceError(sourceKey, err);
 			}
 		}
 	}
 
 	async stop() {
 		this.stopped = true;
+		this.retryAbort.abort();
 
 		// Run all listener cleanups
 		for (const cleanup of this.listeners.values()) {
@@ -406,7 +589,9 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		}
 		this.cleanups.clear();
 		this.contexts.clear();
+		this.contextFailures.clear();
 		this.startedSources.clear();
+		this.startingSources.clear();
 
 		// Cleanup emitters
 		for (const cleanup of this.sessionEmitterCleanups) {
@@ -414,5 +599,6 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		}
 		this.sessionEmitterCleanups = [];
 		this.checkEmitterRemovals.clear();
+		this.sourceCheckRemovals.clear();
 	}
 }

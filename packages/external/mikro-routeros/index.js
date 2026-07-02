@@ -295,10 +295,13 @@ class RouterOSClient {
 				clearTimeout(req.timeoutId);
 				this.pendingRequests.delete(tag);
 				if (req.isStream) {
-					req.emitter.emit(
-						"error",
-						new Error(`RouterOS Error: ${errorMessage}`),
-					);
+					// RouterOS replies to our own cancel() with a trap on this tag — not a real error.
+					if (!req.cancelling) {
+						req.emitter.emit(
+							"error",
+							new Error(`RouterOS Error: ${errorMessage}`),
+						);
+					}
 				} else {
 					req.fail(new Error(`RouterOS Error: ${errorMessage}`));
 				}
@@ -459,6 +462,8 @@ class RouterOSClient {
 			if (isStream) {
 				emitter = new EventEmitter();
 				emitter.cancel = async () => {
+					// Must be set before the await below, not after.
+					reqObj.cancelling = true;
 					try {
 						await this._sendRaw("/cancel", { tag }, { requestTimeoutMs: 5000 });
 					} catch (_err) {}

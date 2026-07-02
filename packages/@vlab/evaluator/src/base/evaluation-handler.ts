@@ -47,11 +47,14 @@ export class EvaluationHandler<
 		) => Static<SData> | Promise<Static<SData>>;
 		listen?: (
 			ctx: BaseContext & TContext,
-			notify: (data: Static<SData>) => void | Promise<void>,
-			subscribe: <ReqSId extends keyof TSources & string>(
-				sourceId: ReqSId,
-				callback: (data: Static<TSources[ReqSId]>) => void | Promise<void>,
-			) => Promise<() => void>,
+			helpers: {
+				notify: (data: Static<SData>) => void | Promise<void>;
+				subscribe: <ReqSId extends keyof TSources & string>(
+					sourceId: ReqSId,
+					callback: (data: Static<TSources[ReqSId]>) => void | Promise<void>,
+				) => Promise<() => void>;
+				reportError: (error?: unknown) => void;
+			},
 		) => (() => void) | Promise<() => void>;
 	}): EvaluationHandler<TId, TContext, TSources & Record<SId, SData>, TChecks> {
 		this._sources[source.id] = source;

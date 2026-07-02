@@ -36,6 +36,10 @@ async function onContainerCreate(ctx: Context, event: ContainerEvent) {
 	};
 
 	eventEmitter.emit("node-create", nodeData);
+	eventEmitter.emit("health-update", {
+		id: nodeInfo.id,
+		health: nodeData.health,
+	});
 	networkMonitor.start(ctx, container, nodeInfo);
 }
 

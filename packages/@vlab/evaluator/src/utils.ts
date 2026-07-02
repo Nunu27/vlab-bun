@@ -73,6 +73,68 @@ export const throttle = <T extends unknown[], R>(
 	};
 };
 
+export interface RetryOptions {
+	/** Max attempts, including the first. */
+	retries?: number;
+	minDelayMs?: number;
+	maxDelayMs?: number;
+	factor?: number;
+	signal?: AbortSignal;
+	onAttemptFailed?: (error: unknown, attempt: number) => void;
+}
+
+function abortableSleep(ms: number, signal?: AbortSignal): Promise<void> {
+	if (signal?.aborted) return Promise.reject(new Error("Aborted"));
+	return new Promise((resolve, reject) => {
+		const timer = setTimeout(() => {
+			signal?.removeEventListener("abort", onAbort);
+			resolve();
+		}, ms);
+		const onAbort = () => {
+			clearTimeout(timer);
+			reject(new Error("Aborted"));
+		};
+		signal?.addEventListener("abort", onAbort, { once: true });
+	});
+}
+
+/**
+ * Retries `fn` with exponential backoff + jitter. Used to ride out transient
+ * failures (e.g. a container/device not being ready yet) at the moment a
+ * failure is observed — not on a schedule.
+ */
+export async function withRetry<T>(
+	fn: () => Promise<T>,
+	options: RetryOptions = {},
+): Promise<T> {
+	const {
+		retries = 5,
+		minDelayMs = 500,
+		maxDelayMs = 15_000,
+		factor = 2,
+		signal,
+		onAttemptFailed,
+	} = options;
+
+	let attempt = 0;
+	let delay = minDelayMs;
+
+	while (true) {
+		if (signal?.aborted) throw new Error("Aborted");
+		try {
+			return await fn();
+		} catch (error) {
+			attempt++;
+			onAttemptFailed?.(error, attempt);
+			if (attempt >= retries) throw error;
+
+			const jittered = delay * (0.5 + Math.random());
+			await abortableSleep(Math.min(jittered, maxDelayMs), signal);
+			delay = Math.min(delay * factor, maxDelayMs);
+		}
+	}
+}
+
 export function removeItemFromArray<T>(arr: T[], item: T) {
 	const index = arr.indexOf(item);
 	removeItemFromArrayByIndex(arr, index);
