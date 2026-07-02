@@ -14,14 +14,16 @@ import {
 import {
 	KeyboardIcon,
 	MaximizeIcon,
+	RotateCcwIcon,
 	ZoomInIcon,
 	ZoomOutIcon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useTopologyStore } from "../stores";
 
 interface ControlsProps {
 	canvasRef: React.RefObject<HTMLDivElement | null>;
+	onReplayTour?: () => void;
 }
 
 function Kbd({ children }: { children: ReactNode }) {
@@ -52,17 +54,21 @@ function ShortcutRow({ label, keys }: { label: string; keys: string[] }) {
 	);
 }
 
-function Controls({ canvasRef }: ControlsProps) {
+function Controls({ canvasRef, onReplayTour }: ControlsProps) {
 	const store = useTopologyStore();
 	const scale = store.use.view((view) => view.scale);
 	const isEditor = store.use.isEditor();
 	const { recenter, zoomIn, zoomOut } = store.use.actions();
 
 	const mod = navigator.userAgent.includes("Mac") ? "⌘" : "Ctrl";
+	const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
 	return (
 		<div className="absolute right-6 bottom-6 z-50 flex flex-col gap-2">
-			<div className="flex flex-col gap-1 rounded-xl border border-border bg-card/90 p-1.5 shadow-lg backdrop-blur-sm">
+			<div
+				data-tour="canvas-controls"
+				className="flex flex-col gap-1 rounded-xl border border-border bg-card/90 p-1.5 shadow-lg backdrop-blur-sm"
+			>
 				<ActionButton
 					icon={MaximizeIcon}
 					tooltip="Fit to Screen"
@@ -96,7 +102,7 @@ function Controls({ canvasRef }: ControlsProps) {
 
 				<Separator />
 
-				<Popover>
+				<Popover open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
 					<Tooltip delayDuration={250}>
 						<TooltipTrigger asChild>
 							<PopoverTrigger asChild>
@@ -118,6 +124,28 @@ function Controls({ canvasRef }: ControlsProps) {
 								<ShortcutRow label="Zoom In" keys={[mod, "="]} />
 								<ShortcutRow label="Zoom Out" keys={[mod, "-"]} />
 							</div>
+							{onReplayTour && (
+								<>
+									<Separator />
+									<div className="flex flex-col gap-1.5">
+										<span className="font-medium text-[10px] text-muted-foreground/70 uppercase tracking-wider">
+											Help
+										</span>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-7 justify-start gap-2 px-1.5 font-normal text-xs"
+											onClick={() => {
+												setShortcutsOpen(false);
+												onReplayTour();
+											}}
+										>
+											<RotateCcwIcon className="size-3.5" />
+											Replay Tour
+										</Button>
+									</div>
+								</>
+							)}
 							{isEditor && (
 								<>
 									<Separator />

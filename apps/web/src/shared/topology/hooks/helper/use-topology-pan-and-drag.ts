@@ -6,11 +6,13 @@ import { useTopologyStore } from "../../stores";
 interface UseTopologyPanAndDragProps {
 	backgroundRef: RefObject<HTMLDivElement>;
 	foregroundRef: RefObject<HTMLDivElement>;
+	panOnLeftClick?: boolean;
 }
 
 export const useTopologyPanAndDrag = ({
 	backgroundRef,
 	foregroundRef,
+	panOnLeftClick,
 }: UseTopologyPanAndDragProps) => {
 	const store = useTopologyStore();
 	const { setPanState, onPan, setDragState, onDrag } = store.use.actions();
@@ -22,7 +24,11 @@ export const useTopologyPanAndDrag = ({
 	};
 
 	const handleMouseDown = (e: MouseEvent) => {
-		if (e.button === 1 && setPanState({ x: e.clientX, y: e.clientY })) {
+		const isPanButton =
+			e.button === MouseButton.Wheel ||
+			(panOnLeftClick && e.button === MouseButton.Left);
+
+		if (isPanButton && setPanState({ x: e.clientX, y: e.clientY })) {
 			e.preventDefault();
 			e.stopPropagation();
 			backgroundRef.current.style.cursor = "grabbing";
