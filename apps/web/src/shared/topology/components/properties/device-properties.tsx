@@ -74,9 +74,8 @@ function DeviceProperties({ id }: { id: string }) {
 			<div className="grid grid-cols-2 gap-4">
 				<form.AppField name="resources.cpu">
 					{(field) => (
-						<field.TextField
+						<field.NumberField
 							label="CPU Cores"
-							type="number"
 							min="0.1"
 							placeholder={template?.resources.cpu?.toString() || undefined}
 						/>
