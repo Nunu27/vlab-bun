@@ -32,8 +32,8 @@ export function useWSConnectionState() {
 export function useWSData<Name extends WSDataRouteNames & string>(
 	name: Name,
 	options: {
-		params?: WSParamsOf<Name>;
-		initialData?: WSDataOf<Name>;
+		params?: NoInfer<WSParamsOf<Name>>;
+		initialData?: NoInfer<WSDataOf<Name>>;
 		enabled?: boolean;
 	} = {},
 ) {
@@ -65,8 +65,8 @@ export function useWSData<Name extends WSDataRouteNames & string>(
 export function useWSEvent<Name extends WSDataRouteNames & string>(
 	name: Name,
 	options: {
-		params?: WSParamsOf<Name>;
-		handler: (data: WSDataOf<Name>) => void;
+		params?: NoInfer<WSParamsOf<Name>>;
+		handler: (data: NoInfer<WSDataOf<Name>>) => void;
 	},
 ) {
 	const handlerRef = useRef(options.handler);

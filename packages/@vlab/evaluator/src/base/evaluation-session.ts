@@ -183,23 +183,37 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		this.contextFailures.delete(contextKey);
 	}
 
-	private async waitNodeHealth(nodeId: string) {
-		if (!this.healthHooks) return;
-		if (this.healthHooks.isNodeHealthy(nodeId)) return;
+	/**
+	 * Blocks until `nodeId` is confirmed healthy, the session stops, or this
+	 * node's wait is cancelled. Returns false in the latter two cases so the
+	 * caller can bail out instead of starting a source against a node that
+	 * was never confirmed ready. A node reporting `unhealthy` keeps waiting
+	 * for its next transition rather than giving up, since Docker health
+	 * checks commonly flap during boot.
+	 */
+	private async waitNodeHealth(nodeId: string): Promise<boolean> {
+		if (!this.healthHooks) return true;
+		if (this.healthHooks.isNodeHealthy(nodeId)) return true;
 
 		const controller = new AbortController();
 		this.cleanups.set(`health-wait::${nodeId}`, () => controller.abort());
 
 		try {
-			// Best-effort: if the node times out or becomes unhealthy, the source
-			// still starts against whatever context is available rather than hanging.
-			await this.healthHooks.waitForHealth(
-				nodeId,
-				undefined,
-				controller.signal,
-			);
-		} catch {
-			// swallow, proceed with a best-effort context
+			while (!controller.signal.aborted && !this.stopped) {
+				try {
+					// No timeout: wait purely on health events/abort so a source
+					// never starts before the node is actually confirmed healthy.
+					await this.healthHooks.waitForHealth(nodeId, 0, controller.signal);
+					return true;
+				} catch (error) {
+					if (controller.signal.aborted || this.stopped) return false;
+					console.warn(
+						`Node ${nodeId} reported unhealthy while waiting to start a source, still waiting:`,
+						error,
+					);
+				}
+			}
+			return false;
 		} finally {
 			this.cleanups.delete(`health-wait::${nodeId}`);
 		}
@@ -394,7 +408,8 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 			const sourceDef = handler._sources[sId];
 			if (!sourceDef) return;
 
-			await this.waitNodeHealth(nodeId);
+			const becameHealthy = await this.waitNodeHealth(nodeId);
+			if (!becameHealthy || this.stopped) return;
 
 			let ctx: any;
 			let cleanupListener: (() => void) | undefined;
