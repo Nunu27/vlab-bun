@@ -1,4 +1,5 @@
 import { cn } from "@web/lib/utils";
+import { useEffect, useRef } from "react";
 
 export type LogLevel = "info" | "warn" | "error";
 export type LogEntry = { type: LogLevel; message: string };
@@ -10,6 +11,12 @@ interface LogViewerProps {
 }
 
 export function LogViewer({ logs, emptyMessage, className }: LogViewerProps) {
+	const bottomRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		bottomRef.current?.scrollIntoView({ block: "end" });
+	}, [logs]);
+
 	return (
 		<div
 			className={cn(
@@ -40,6 +47,7 @@ export function LogViewer({ logs, emptyMessage, className }: LogViewerProps) {
 					{log.message}
 				</div>
 			))}
+			<div ref={bottomRef} />
 		</div>
 	);
 }

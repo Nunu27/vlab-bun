@@ -102,7 +102,7 @@ export async function waitForAvailableWorkerId(
 	}
 
 	throw new Error(
-		`No workers available after ${timeoutMs}ms. All workers are offline or at capacity.`,
+		`No worker nodes available after ${Math.round(timeoutMs / 1000)}s of retrying. All workers are offline or at capacity, please try again shortly.`,
 	);
 }
 

@@ -8,21 +8,15 @@ import ws from "@manager/services/ws";
 import type { TempNodeEvents } from "@manager/types/clab";
 import type { TypedEventEmitter } from "@manager/types/events";
 import Debouncer from "@manager/utils/debouncer";
-import Throttler from "@manager/utils/throttler";
 import type { appRouter } from "@vlab/grpc";
 import type { NodeHealth } from "@vlab/shared/enums";
 import { eq } from "drizzle-orm";
 
 const logger = baseLogger.child({ service: "monitor-grpc" });
 
-// Populated by the (not-yet-rebuilt) worker-side forwarding of temp-node
-// events for device-template test provisioning; see the TODOs in
-// apps/worker/src/services/monitor.ts. Kept here so
-// domain/device-template/test.ts still has something to await.
 export const tempNodeEvents: TypedEventEmitter<TempNodeEvents> =
 	new EventEmitter();
 
-const sessionThrottle = new Throttler(1000);
 const interfaceDebounce = new Debouncer(750);
 
 export function attachMonitorHandlers(
@@ -42,17 +36,12 @@ export function attachMonitorHandlers(
 			if (!node.labSessionId) return;
 
 			try {
-				await sessionThrottle.wait(node.labSessionId, {
-					id: "health",
-					execute: async () => {
-						await db
-							.update(labSessionNodes)
-							.set({ health })
-							.where(eq(labSessionNodes.id, node.id));
+				await db
+					.update(labSessionNodes)
+					.set({ health })
+					.where(eq(labSessionNodes.id, node.id));
 
-						await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
-					},
-				});
+				await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
 
 				ws.server.emit("node:[id]:health", {
 					params: { id: node.id },
@@ -96,9 +85,6 @@ export function attachMonitorHandlers(
 		},
 	});
 
-	// A node-filtered redeploy (auto-heal, see apps/worker/src/services/monitor.ts)
-	// destroys and recreates the container, so its ip/containerId change and the
-	// Guacamole token (derived from ip) goes stale — refresh all three here.
 	client.onData("monitor:node-redeployed", {
 		callback: async (event) => {
 			const { node } = event;
