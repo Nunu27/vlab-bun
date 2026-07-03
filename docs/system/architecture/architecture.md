@@ -1,67 +1,86 @@
 # System Architecture
 
-This document provides a deep dive into the vLab system architecture. It explains **why** the system is built the way it is and describes the high-level orchestration flow.
+This document explains **why** vLab is built the way it is, and walks through how its components interact at runtime.
 
-vLab utilizes a distributed, **Manager-Worker** architecture. This design was chosen specifically to orchestrate Containerlab topologies on remote, bare-metal or virtual machine hosts securely and efficiently, while maintaining a centralized source of truth.
+vLab uses a distributed **Manager-Worker** architecture, chosen to orchestrate Containerlab topologies on remote bare-metal or VM hosts securely, while keeping a single centralized source of truth.
 
-*(Please refer to the `architecture-overview.excalidraw` diagram in this directory for a high-level view of component interactions).*
+*(See `architecture-overview.excalidraw` and `lab-lifecycle.excalidraw` in this directory for diagrams — they still reflect the current shape of the system.)*
 
 ---
 
 ## 1. The Manager (`apps/manager`)
 
-The Manager is the "brain" of the vLab system. It is a centralized Elysia.js API server that maintains the database (PostgreSQL) and exposes endpoints to the Web UI. It also utilizes **Redis** and **BullMQ** for managing background tasks and enabling horizontal scalability.
+The Manager is an Elysia.js API server (running on Bun) and is the only component that connects to PostgreSQL. It also depends on **Redis** (sessions, pub/sub, and as the BullMQ backing store) and **RustFS** (S3-compatible object storage for lab attachments/covers/embedded files).
 
 **Why centralize?**
-- **Single Source of Truth:** Only the Manager connects to the PostgreSQL database. Workers do not need database credentials, reducing the attack surface.
-- **State Coordination:** The Manager tracks which Worker is running which lab session, ensuring no port conflicts or resource overallocation occurs across the cluster.
-- **Background Task Processing:** Heavy or scheduled tasks (such as Lab Session auto-expiration or File Storage Garbage Collection) are managed cluster-wide via BullMQ, guaranteeing they execute reliably and exactly once regardless of how many Manager replicas are running.
-- **User Management:** All authentication and authorization are handled centrally before any action is passed to a Worker.
-- **Remote Access Proxy (Guacamole):** The Manager acts as a secure proxy for student terminal connections (SSH, VNC, RDP, Telnet) into lab containers using `guacamole-lite`, hiding the Worker's direct IP from the end-user.
+- **Single source of truth:** only the Manager holds DB credentials. Workers never touch PostgreSQL.
+- **State coordination:** the Manager tracks which Worker runs which lab session so it can pick a Worker with headroom and avoid port/resource conflicts.
+- **Background task processing:** BullMQ (backed by Redis) runs the delayed per-session auto-submit job, the hourly orphan-file cleanup job, and the disconnect-grace-period scheduler for the WebSocket layer — all exactly-once regardless of how many Manager replicas are running.
+- **Auth:** all authentication (CAS SSO for students, password login for admin/instructor) is handled centrally before anything reaches a Worker.
+- **Remote access proxy (Guacamole):** the Manager proxies SSH/VNC/RDP/Telnet terminal sessions into lab containers via `guacamole-lite`, so the browser never learns a Worker's real IP. Guacamole session state is stored in Redis (24h TTL) rather than in-process, so any Manager instance can resume a proxied session.
+
+**Horizontal scaling.** The Manager is designed to run as multiple replicas. A Worker's gRPC stream is only attached to *one* Manager instance at a time, but an HTTP/WS request can land on any instance. To dispatch an action to a Worker connected elsewhere, the owning-instance check happens first (`connectedWorkers.has(workerId)`); if the Worker isn't local, the action is msgpack-encoded and published to a Redis channel (`vlab:worker-action:<workerId>`) for the instance that does own the connection to pick up and execute.
 
 ## 2. The Worker (`apps/worker`)
 
-The Worker is a long-running daemon installed directly on the host machines where the lab simulations will actually run. 
+The Worker is a daemon installed directly on each host machine where labs actually run.
 
-**Why use a Worker daemon?**
-- **Root/Docker Access:** Containerlab requires root privileges and Docker socket access to create network namespaces and containers. By using a Worker, the Manager does not need SSH or direct Docker API access to the host machines. The Worker safely executes these privileged commands locally.
-- **Telemetry Streaming:** The Worker monitors container lifecycle events, health status, and network interfaces using Docker events, while simultaneously streaming host-level system metrics (CPU, Memory, Storage) back to the Manager in real-time.
+**Why a separate daemon?**
+- **Root/Docker access:** Containerlab needs root privileges and Docker socket access to create network namespaces and containers. The Worker holds that privilege locally; the Manager never gets SSH or Docker API access to host machines.
+- **Telemetry:** the Worker watches Docker events for container lifecycle/health and interface changes (via `@vlab/clab-monitor`, fully event-driven — see [Containerlab Integration](../containerlab/containerlab.md)) and separately reports host-level CPU/memory/storage usage.
+
+Host-level metrics are currently sent on a **fixed 10-second timer** (`apps/worker/src/services/worker.ts`, a plain `setTimeout` loop calling a unary `sendMetrics` RPC) — this is the one polling loop left in the system; container-level telemetry (health, interfaces, evaluation checks) is push/event-driven end to end.
+
+Everything the Worker exposes to the Manager — deploy/destroy/reconcile a lab, pull an image, measure container stats, start/stop evaluation — is an RPC tunneled inside a single long-lived gRPC stream. See [Communication Protocols](../communication/communication.md).
 
 ## 3. The Web UI (`apps/web`)
 
-The Web UI is a React 19 application. It is a purely presentation layer that communicates exclusively with the Manager. It never communicates directly with a Worker.
+A React 19 SPA. Purely a presentation layer: it talks to the Manager over HTTP (via a typed Eden-Treaty + TanStack Query client) and over WebSocket (via Waycast), and never talks to a Worker directly.
 
 ---
 
 ## 4. Worker Selection
 
-When a user starts a lab, the Manager must choose which Worker to dispatch it to. It uses a **health-gated least connections** algorithm:
+When a lab session is started, the Manager picks a Worker using a **health-gated least-connections** algorithm (`apps/manager/src/services/grpc/handlers/worker.ts`, `tryGetAvailableWorkerId`):
 
-1. **Admission control:** Only Workers that are `online` and have sufficient absolute free resources for the requested lab are eligible. The gate checks that `(1 - cpuUsage%) × cpuCores ≥ labCpuCost` and `(1 - memoryUsage%) × memoryMB ≥ labMemoryCost`. Using absolute headroom (rather than a fixed percentage) ensures the threshold is fair across Workers with different hardware specs: a 2-core Worker and a 32-core Worker at the same CPU percentage have very different real headroom.
-2. **Least connections:** Among eligible Workers, the one with the fewest active lab sessions (`activeLabs`) is selected (`ORDER BY active_labs ASC`).
-3. **Atomic selection:** The selection and increment of `activeLabs` happen in a single database transaction with `FOR UPDATE SKIP LOCKED`, preventing two concurrent requests from landing on the same Worker based on a stale count.
+```sql
+SELECT id FROM workers
+WHERE status = 'online'
+  AND (1 - cpu_usage_percent / 100.0) * cpu_cores    >= :labCpuCost
+  AND (1 - memory_usage_percent / 100.0) * memory_mb >= :labMemoryCost
+ORDER BY active_labs ASC
+LIMIT 1
+FOR UPDATE SKIP LOCKED
+```
 
-The `activeLabs` counter is owned entirely by the Manager: incremented atomically at selection time, decremented when a session ends (or a deployment fails), and reset to `0` when the Worker disconnects.
+1. **Admission control:** only `online` Workers with enough *absolute* free CPU and memory headroom are eligible. Using absolute headroom (rather than a flat percentage threshold) keeps the gate fair across Workers with different hardware — a small and a large Worker at the same usage percentage have very different real headroom.
+2. **Least connections:** among eligible Workers, the one with the fewest active lab sessions (`activeLabs`) wins.
+3. **Atomic selection:** the select and the `activeLabs` increment happen in one transaction with `FOR UPDATE SKIP LOCKED`, so concurrent requests can't race onto the same Worker based on a stale read.
+
+If no Worker is available, `waitForAvailableWorkerId()` retries with exponential backoff (500ms initial, 5s cap, 30s total timeout) rather than failing immediately, surfacing an `onWait` callback the UI uses to show a "high demand" toast on the first retry.
+
+The `activeLabs` counter is owned entirely by the Manager: incremented atomically at selection, decremented when a session ends or a deployment fails, and reset to `0` whenever a Worker disconnects.
 
 ### Lab Cost Estimation
 
-`labCpuCost` and `labMemoryCost` are computed per-request by summing the `cpuCostCores` and `memoryCostMB` fields across all device templates in the lab's topology. If a template has not been measured yet, the per-device defaults (`DEFAULT_CPU_COST_CORES = 1` core, `DEFAULT_MEMORY_COST_MB = 1024` MB) are used as a fallback.
+`labCpuCost`/`labMemoryCost` are the sum of each device template's `cpuCostCores`/`memoryCostMB` across the lab's topology, falling back to `DEFAULT_CPU_COST_CORES = 0.5` cores / `DEFAULT_MEMORY_COST_MB = 512` MB per device when a template hasn't been measured yet.
 
-These cost fields can be populated automatically: when an admin runs **Test Connection** on a device template, the system boots the container on a Worker, waits 3 seconds for CPU to settle, reads the Docker stats API (`stats({ stream: false })`), and emits the measured values as a `stats` reply to the admin's browser. The admin can then click **Apply to cost fields** in the dialog to write the measured values directly into the form before saving.
+These cost fields are populated by the admin **Test Connection** flow: it boots the device template's image on a Worker, waits for CPU to settle, reads Docker's stats API (`docker:measureContainerStats` RPC, one-shot — not a stream), and streams the measured values back as a `stats` reply. The admin can then click **Apply to cost fields** to write them into the template before saving.
+
+*(Note: the `workers` table used to carry its own CPU/memory threshold columns for admission control; those were removed in favor of the per-device-template cost model above — Workers now only report live usage percentages and raw capacity, all the placement math is per-lab-request.)*
 
 ---
 
 ## Orchestration Lifecycle
 
-To understand how these components interact, let's look at the lifecycle of a typical Lab Provisioning event:
+*(See `lab-lifecycle.excalidraw` in this directory for the sequence diagram.)*
 
-*(Please refer to the `lab-lifecycle.excalidraw` diagram in this directory for a sequence diagram of the provisioning process).*
+1. **Request:** a student opens a lab and the frontend sends `lab:[id]:init` over the Waycast WebSocket connection to the Manager.
+2. **Worker selection:** the Manager validates the session, picks a Worker (see above), and creates the `lab_session` row.
+3. **Dispatch:** the Manager sends a `clab:deployLab` RPC to the chosen Worker over gRPC, carrying the resolved topology (nodes, links, credentials, per-node resource overrides).
+4. **Execution:** the Worker builds a `ContainerlabTopologyDefinition` in memory (injecting security-hardening execs and management routes), writes it as YAML, and runs `containerlab deploy`.
+5. **Telemetry:** once deployed, `@vlab/clab-monitor` starts watching the new containers; health/interface updates and evaluator check results stream back to the Manager over the same gRPC connection as they happen.
+6. **Delivery:** the Manager relays that stream to the browser over the Waycast WebSocket connection (`node:[id]:health`, `node:[id]:interfaces:[interface]`, `lab-session:[sessionId]:checks`), so the UI updates live as the lab boots and as the student configures it.
+7. **Teardown:** either the student submits, the session's duration elapses (BullMQ `lab-session` cleanup job), or the Manager loses the Worker connection (reconciled via `clab:reconcileSessions` on reconnect) — in each case `clab:destroyLab` tears the topology down and the evaluation session is stopped.
 
-1. **Request:** A user clicks "Start Lab" in the Web UI. An HTTP request is sent to the Manager.
-2. **Validation:** The Manager validates the user's session, ensures they are authorized to run the lab, and generates a Session ID in the database.
-3. **Dispatch:** The Manager looks up the appropriate Worker node and sends an orchestration command via **gRPC**. It transmits the parsed lab configuration (nodes, links, assets).
-4. **Execution:** The Worker receives the gRPC command, generates the Containerlab YAML topology, writes it to disk, and invokes the `containerlab deploy` CLI command.
-5. **Telemetry:** Once deployed, the Worker begins streaming container telemetry and logs back to the Manager via **gRPC**.
-6. **Delivery:** The Manager proxies this telemetry stream directly to the Web UI via **WebSockets/Waycast** so the user can see their lab booting up in real-time.
-
-For more details on exactly how the Manager and Worker talk to each other, see the [Communication Protocols](../communication/communication.md) documentation.
+For the full protocol details — the gRPC tunnel, the Waycast RPC framework, msgpack, and the session take-over fix — see [Communication Protocols](../communication/communication.md).

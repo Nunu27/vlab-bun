@@ -20,6 +20,14 @@ const clab = new Containerlab({
 	topologiesPath: env.CLAB_TOPOLOGIES_PATH,
 });
 
+// Container names follow containerlab's `clab-<sessionId>-<kebabName>` convention.
+export function stripLabPrefix(sessionId: string, containerName: string) {
+	const expectedPrefix = `clab-${sessionId}-`;
+	return containerName.startsWith(expectedPrefix)
+		? containerName.substring(expectedPrefix.length)
+		: containerName;
+}
+
 const startupExecs: Partial<Record<string, string[]>> = {
 	linux: [
 		"ip route del default",
@@ -142,11 +150,7 @@ export async function deployLab(
 		health: string | null;
 	}[] = [];
 	for (const node of inspected) {
-		let nodeName = node.name;
-		const expectedPrefix = `clab-${sessionId}-`;
-		if (nodeName.startsWith(expectedPrefix)) {
-			nodeName = nodeName.substring(expectedPrefix.length);
-		}
+		const nodeName = stripLabPrefix(sessionId, node.name);
 
 		const id = idByKebabName[nodeName];
 		if (!id) {
@@ -229,6 +233,51 @@ export async function reconcileSessions(activeSessionIds: string[]) {
 	}
 
 	return destroyed;
+}
+
+// Redeploys a single node against its existing topology file — safe against
+// containerlab-managed link wiring, unlike a raw `docker restart` (see
+// Containerlab#redeployNode).
+export async function redeployNode(sessionId: string, nodeName: string) {
+	return clab.redeployNode(sessionId, nodeName);
+}
+
+// Fire-and-forget auto-heal for a node that went unhealthy. Self-contained
+// error handling so callers can invoke this from an event handler without
+// risking an unhandled rejection. Returns the redeployed node's fresh
+// ip/containerId (both change on redeploy) so the caller can push them to the
+// manager, or null if the redeploy failed.
+export async function attemptNodeRecovery(sessionId: string, nodeName: string) {
+	logger.warn(
+		{ sessionId, nodeName },
+		"Node unhealthy, attempting auto-heal redeploy",
+	);
+
+	try {
+		const inspected = await redeployNode(sessionId, nodeName);
+		const node = inspected.find(
+			(n) => stripLabPrefix(sessionId, n.name) === nodeName,
+		);
+		const ip = node?.ipv4Address?.split("/")[0];
+		const containerId = node?.containerId;
+
+		if (!ip || !containerId) {
+			logger.error(
+				{ sessionId, nodeName },
+				"Auto-heal redeploy completed but node info is incomplete",
+			);
+			return null;
+		}
+
+		logger.info({ sessionId, nodeName }, "Auto-heal redeploy completed");
+		return { ip, containerId };
+	} catch (error) {
+		logger.error(
+			{ err: error, sessionId, nodeName },
+			"Auto-heal redeploy failed",
+		);
+		return null;
+	}
 }
 
 export default {

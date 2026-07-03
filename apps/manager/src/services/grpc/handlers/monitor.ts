@@ -1,7 +1,8 @@
 import EventEmitter from "node:events";
 import db from "@manager/db";
-import { labSessionNodes } from "@manager/db/schema";
+import { deviceTemplates, labSessionNodes } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
+import guacamole from "@manager/services/guacamole-lite";
 import { cache } from "@manager/services/http/middlewares/caching";
 import ws from "@manager/services/ws";
 import type { TempNodeEvents } from "@manager/types/clab";
@@ -27,6 +28,8 @@ const interfaceDebounce = new Debouncer(750);
 export function attachMonitorHandlers(
 	workerId: string,
 	client: ReturnType<typeof appRouter.buildClient>,
+	guacdHost: string,
+	guacdPort: number,
 ) {
 	client.onData("monitor:node-health", {
 		callback: async (event) => {
@@ -88,6 +91,58 @@ export function attachMonitorHandlers(
 				logger.error(
 					{ err, nodeId: node.id, workerId },
 					"Failed to process interface-update event",
+				);
+			}
+		},
+	});
+
+	// A node-filtered redeploy (auto-heal, see apps/worker/src/services/monitor.ts)
+	// destroys and recreates the container, so its ip/containerId change and the
+	// Guacamole token (derived from ip) goes stale — refresh all three here.
+	client.onData("monitor:node-redeployed", {
+		callback: async (event) => {
+			const { node } = event;
+
+			try {
+				const [info] = await db
+					.select({
+						connection: deviceTemplates.connection,
+						kind: deviceTemplates.kind,
+					})
+					.from(labSessionNodes)
+					.innerJoin(
+						deviceTemplates,
+						eq(labSessionNodes.deviceTemplateId, deviceTemplates.id),
+					)
+					.where(eq(labSessionNodes.id, node.id))
+					.limit(1);
+
+				if (!info) {
+					logger.error(
+						{ nodeId: node.id, workerId },
+						"Redeployed node not found for token regeneration",
+					);
+					return;
+				}
+
+				const token = guacamole.generateNodeToken(
+					info.connection,
+					info.kind,
+					node.ip,
+					guacdHost,
+					guacdPort,
+				);
+
+				await db
+					.update(labSessionNodes)
+					.set({ ip: node.ip, containerId: node.containerId, token })
+					.where(eq(labSessionNodes.id, node.id));
+
+				await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
+			} catch (err) {
+				logger.error(
+					{ err, nodeId: node.id, workerId },
+					"Failed to process node-redeployed event",
 				);
 			}
 		},

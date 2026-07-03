@@ -93,6 +93,19 @@ export const appRouter = new Waycast()
 			}),
 		),
 	)
+	.data(
+		"monitor:node-redeployed",
+		toStandardSchema(
+			t.Object({
+				node: t.Object({
+					id: t.String(),
+					ip: t.String(),
+					containerId: t.String(),
+					labSessionId: t.String(),
+				}),
+			}),
+		),
+	)
 	.rpc("clab:deployLab", {
 		payload: toStandardSchema(
 			t.Object({
