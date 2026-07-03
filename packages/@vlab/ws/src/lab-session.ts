@@ -1,43 +1,51 @@
 import { Type as t } from "@sinclair/typebox";
-import { Router } from "waycast";
+import { toStandardSchema } from "@vlab/shared/standard-schema";
+import Waycast from "waycast";
 import type { WSMeta } from "./types";
 
-export const labSessionRouter = new Router<WSMeta>()
+export const labSessionRouter = new Waycast<WSMeta>()
 	.rpc("lab:[id]:init", {
-		payload: t.Optional(t.Any()),
+		payload: toStandardSchema(t.Optional(t.Any())),
 		replies: {
-			info: t.String(),
-			warn: t.String(),
+			info: toStandardSchema(t.String()),
+			warn: toStandardSchema(t.String()),
 		},
-		response: t.String(),
+		response: toStandardSchema(t.String()),
 		meta: { private: ["student"] },
 	})
 	.rpc("lab-session:[sessionId]:connect", {
-		payload: t.Boolean(),
-		response: t.Boolean(),
+		payload: toStandardSchema(t.Boolean()),
+		response: toStandardSchema(t.Boolean()),
 		meta: { private: ["student"] },
 	})
 
 	.data(
 		"lab-session:[sessionId]:client-change",
-		t.Union([t.String(), t.Null()]),
+		toStandardSchema(t.Union([t.String(), t.Null()])),
 	)
-	.data("lab-session:[sessionId]:ended", t.Void())
+	.data("lab-session:[sessionId]:ended")
 	.data(
 		"lab-session:[sessionId]:checks",
-		t.Object({
-			id: t.String(),
-			completed: t.Boolean(),
-		}),
+		toStandardSchema(
+			t.Object({
+				id: t.String(),
+				completed: t.Boolean(),
+			}),
+		),
 	)
 	.data(
 		"node:[id]:health",
-		t.Union([
-			t.Null(),
-			t.Literal("deleted"),
-			t.Literal("healthy"),
-			t.Literal("unhealthy"),
-			t.Literal("starting"),
-		]),
+		toStandardSchema(
+			t.Union([
+				t.Null(),
+				t.Literal("deleted"),
+				t.Literal("healthy"),
+				t.Literal("unhealthy"),
+				t.Literal("starting"),
+			]),
+		),
 	)
-	.data("node:[id]:interfaces:[interface]", t.Array(t.String()));
+	.data(
+		"node:[id]:interfaces:[interface]",
+		toStandardSchema(t.Array(t.String())),
+	);

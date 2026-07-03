@@ -34,6 +34,11 @@ const chartConfig: ChartConfig = {
 	storageUsagePercent: { label: "Storage", color: "var(--color-yellow-400)" },
 };
 
+const countsChartConfig: ChartConfig = {
+	activeLabs: { label: "Active Labs", color: "var(--color-emerald-400)" },
+	activeNodes: { label: "Active Nodes", color: "var(--color-purple-400)" },
+};
+
 const SERIES = [
 	{
 		key: "cpuUsagePercent" as const,
@@ -55,6 +60,19 @@ const SERIES = [
 		color: "var(--color-storageUsagePercent)",
 		actual: (p: MetricsDataPoint) =>
 			`${formatMemory(p.usedStorageMB)} / ${formatMemory(p.totalStorageMB)}`,
+	},
+] as const;
+
+const COUNTS_SERIES = [
+	{
+		key: "activeLabs" as const,
+		label: "Active Labs",
+		color: "var(--color-activeLabs)",
+	},
+	{
+		key: "activeNodes" as const,
+		label: "Active Nodes",
+		color: "var(--color-activeNodes)",
 	},
 ] as const;
 
@@ -123,6 +141,51 @@ function MetricsTooltip({
 	);
 }
 
+function CountsTooltip({
+	active,
+	payload,
+}: {
+	active?: boolean;
+	payload?: { payload: MetricsDataPoint }[];
+}) {
+	if (!active || !payload?.length) return null;
+	const point = payload[0]?.payload as MetricsDataPoint | undefined;
+	if (!point) return null;
+
+	return (
+		<div className="min-w-56 rounded-lg border border-border/50 bg-background p-3 shadow-xl">
+			{/* Timestamp header */}
+			<p className="mb-2 border-border/50 border-b pb-2 font-medium text-foreground text-xs">
+				{formatTime(point.timestamp)}
+			</p>
+
+			{/* Metric rows */}
+			<div className="grid gap-1.5">
+				{COUNTS_SERIES.map(({ key, label, color }) => (
+					<div
+						key={key}
+						className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2"
+					>
+						{/* Colour dot + label */}
+						<div
+							className="h-2 w-2 shrink-0 rounded-sm"
+							style={{ backgroundColor: color }}
+						/>
+						<span className="text-muted-foreground text-xs">{label}</span>
+
+						{/* Values, right-aligned */}
+						<div className="flex flex-col items-end">
+							<span className="font-medium font-mono text-foreground text-xs tabular-nums">
+								{point[key]}
+							</span>
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
 // ---------------------------------------------------------------------------
 // Main chart component
 // ---------------------------------------------------------------------------
@@ -147,6 +210,8 @@ export function MetricsHistoryChart() {
 			"Used CPU Cores",
 			"Used Memory (MB)",
 			"Used Storage (MB)",
+			"Active Labs",
+			"Active Nodes",
 		];
 		const rows = history.map((p) => [
 			new Date(p.timestamp).toISOString(),
@@ -156,6 +221,8 @@ export function MetricsHistoryChart() {
 			p.usedCpuCores.toFixed(2),
 			p.usedMemoryMB.toFixed(2),
 			p.usedStorageMB.toFixed(2),
+			p.activeLabs.toString(),
+			p.activeNodes.toString(),
 		]);
 		const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
 		const blob = new Blob([csv], { type: "text/csv" });
@@ -238,68 +305,140 @@ export function MetricsHistoryChart() {
 						Waiting for data…
 					</p>
 				) : (
-					<ChartContainer
-						config={chartConfig}
-						className="h-70 w-full"
-						initialDimension={{ width: 800, height: 280 }}
-					>
-						<ComposedChart
-							data={displayedData}
-							onMouseDown={handleMouseDown}
-							onMouseMove={handleMouseMove}
-							onMouseUp={handleMouseUp}
-							style={{ userSelect: "none" }}
+					<div className="flex flex-col gap-6">
+						<ChartContainer
+							config={chartConfig}
+							className="h-70 w-full"
+							initialDimension={{ width: 800, height: 280 }}
 						>
-							<CartesianGrid
-								strokeDasharray="3 3"
-								stroke="var(--border)"
-								opacity={0.5}
-							/>
-							<XAxis
-								dataKey="timestamp"
-								type="number"
-								scale="time"
-								domain={["dataMin", "dataMax"]}
-								tickFormatter={formatTime}
-								tick={{ fontSize: 11 }}
-								tickLine={false}
-								axisLine={false}
-								minTickGap={60}
-							/>
-							<YAxis
-								domain={[0, 100]}
-								tickFormatter={(v) => `${v}%`}
-								tick={{ fontSize: 11 }}
-								tickLine={false}
-								axisLine={false}
-								width={40}
-							/>
-							<ChartTooltip
-								content={<MetricsTooltip />}
-								cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
-							/>
-							<ChartLegend content={<ChartLegendContent />} />
-							{SERIES.map(({ key, color }) => (
-								<Line
-									key={key}
-									dataKey={key}
-									stroke={color}
-									dot={false}
-									strokeWidth={1.5}
-									isAnimationActive={false}
+							<ComposedChart
+								data={displayedData}
+								onMouseDown={handleMouseDown}
+								onMouseMove={handleMouseMove}
+								onMouseUp={handleMouseUp}
+								style={{ userSelect: "none" }}
+							>
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke="var(--border)"
+									opacity={0.5}
 								/>
-							))}
-							{selecting.left !== null && selecting.right !== null && (
-								<ReferenceArea
-									x1={Math.min(selecting.left, selecting.right)}
-									x2={Math.max(selecting.left, selecting.right)}
-									strokeOpacity={0.3}
-									fill="var(--color-muted)"
-									fillOpacity={0.3}
+								<XAxis
+									dataKey="timestamp"
+									type="number"
+									scale="time"
+									domain={["dataMin", "dataMax"]}
+									tickFormatter={formatTime}
+									tick={{ fontSize: 11 }}
+									tickLine={false}
+									axisLine={false}
+									minTickGap={60}
 								/>
-							)}
-						</ComposedChart>
-					</ChartContainer>
+								<YAxis
+									domain={[0, 100]}
+									tickFormatter={(v) => `${v}%`}
+									tick={{ fontSize: 11 }}
+									tickLine={false}
+									axisLine={false}
+									width={40}
+								/>
+								<ChartTooltip
+									content={<MetricsTooltip />}
+									cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
+								/>
+								<ChartLegend content={<ChartLegendContent />} />
+								{SERIES.map(({ key, color }) => (
+									<Line
+										key={key}
+										dataKey={key}
+										stroke={color}
+										dot={{ r: 2, fill: color, strokeWidth: 0 }}
+										activeDot={{ r: 5, strokeWidth: 0 }}
+										strokeWidth={2}
+										isAnimationActive={false}
+									/>
+								))}
+								{selecting.left !== null && selecting.right !== null && (
+									<ReferenceArea
+										x1={Math.min(selecting.left, selecting.right)}
+										x2={Math.max(selecting.left, selecting.right)}
+										strokeOpacity={0.3}
+										fill="var(--color-muted)"
+										fillOpacity={0.3}
+									/>
+								)}
+							</ComposedChart>
+						</ChartContainer>
+
+						<div className="flex flex-col gap-1">
+							<h4 className="font-medium text-foreground text-sm">
+								Active Labs and Nodes
+							</h4>
+							<ChartContainer
+								config={countsChartConfig}
+								className="h-40 w-full"
+								initialDimension={{ width: 800, height: 160 }}
+							>
+								<ComposedChart
+									data={displayedData}
+									onMouseDown={handleMouseDown}
+									onMouseMove={handleMouseMove}
+									onMouseUp={handleMouseUp}
+									style={{ userSelect: "none" }}
+								>
+									<CartesianGrid
+										strokeDasharray="3 3"
+										stroke="var(--border)"
+										opacity={0.5}
+									/>
+									<XAxis
+										dataKey="timestamp"
+										type="number"
+										scale="time"
+										domain={["dataMin", "dataMax"]}
+										tickFormatter={formatTime}
+										tick={{ fontSize: 11 }}
+										tickLine={false}
+										axisLine={false}
+										minTickGap={60}
+										hide
+									/>
+									<YAxis
+										tick={{ fontSize: 11 }}
+										tickLine={false}
+										axisLine={false}
+										width={40}
+										allowDecimals={false}
+									/>
+									<ChartTooltip
+										content={<CountsTooltip />}
+										cursor={{ stroke: "var(--border)", strokeWidth: 1 }}
+									/>
+									<ChartLegend content={<ChartLegendContent />} />
+									{COUNTS_SERIES.map(({ key, color }) => (
+										<Line
+											key={key}
+											dataKey={key}
+											stroke={color}
+											dot={{ r: 2, fill: color, strokeWidth: 0 }}
+											activeDot={{ r: 5, strokeWidth: 0 }}
+											strokeWidth={2}
+											isAnimationActive={false}
+										/>
+									))}
+									{selecting.left !== null && selecting.right !== null && (
+										<ReferenceArea
+											x1={Math.min(selecting.left, selecting.right)}
+											x2={Math.max(selecting.left, selecting.right)}
+											strokeOpacity={0.3}
+											fill="var(--color-muted)"
+											fillOpacity={0.3}
+										/>
+									)}
+								</ComposedChart>
+							</ChartContainer>
+						</div>
+					</div>
 				)}
 			</CardContent>
 		</Card>

@@ -111,9 +111,8 @@ export async function initSession(
 			);
 			await rollbackSession(sessionId, workerId);
 
-			ws.server.replyError(
-				"lab:[id]:init",
-				requestId,
+			ws.server.reply("lab:[id]:init", requestId)(
+				"error",
 				"Some devices failed to start. Please try again.",
 			);
 			return;
@@ -191,11 +190,9 @@ export async function initSession(
 				.where(eq(workers.id, workerId));
 		}
 
-		ws.server.reply("lab:[id]:init", requestId)(
-			"info",
-			"Lab provisioned successfully.",
-		);
-		ws.server.replyResponse("lab:[id]:init", requestId, sessionId);
+		const reply = ws.server.reply("lab:[id]:init", requestId);
+		reply("info", "Lab provisioned successfully.");
+		reply("response", sessionId);
 
 		await labSessionQueue.add(
 			"cleanup",
@@ -211,9 +208,8 @@ export async function initSession(
 			logger.error({ err, sessionId }, "Failed to roll back lab session"),
 		);
 
-		ws.server.replyError(
-			"lab:[id]:init",
-			requestId,
+		ws.server.reply("lab:[id]:init", requestId)(
+			"error",
 			error instanceof Error ? error.message : String(error),
 		);
 	}

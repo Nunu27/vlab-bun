@@ -12,7 +12,7 @@
 	"dependencies": {
 		"@sinclair/typebox": "^0.34.49",
 		"@vlab/shared": "workspace:*",
-		"waycast": "^2.0.0"
+		"waycast": "^3.0.2"
 	},
 	"peerDependencies": {
 		"@vlab/shared": "workspace:*",

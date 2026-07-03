@@ -4,6 +4,7 @@ import {
 	waitForAvailableWorkerId,
 } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
+import { DEFER } from "waycast";
 
 const PREFIX = "test-lab-worker:";
 
@@ -20,7 +21,9 @@ ws.server.on(
 			data: payload,
 		});
 
-		return ws.server.defer;
+		// dispatchWorkerAction resolves the deferred reply asynchronously via
+		// ws.server.reply("device-template:test", requestId)
+		return DEFER;
 	},
 );
 

@@ -1,6 +1,7 @@
 import { Type as t } from "@sinclair/typebox";
 import { DeviceTemplateResourcesSchema } from "@vlab/shared/schemas/device-template";
-import { Router } from "waycast";
+import { toStandardSchema } from "@vlab/shared/standard-schema";
+import Waycast from "waycast";
 
 const LabNodeSchema = t.Object({
 	labNodeId: t.Optional(t.String()),
@@ -67,67 +68,87 @@ const StartEvaluationPayloadSchema = t.Object({
 	values: t.Record(t.String(), t.Boolean()),
 });
 
-export const appRouter = new Router()
+export const appRouter = new Waycast()
 	.data(
 		"monitor:node-health",
-		t.Object({
-			node: t.Object({
-				id: t.String(),
-				health: t.Union([t.String(), t.Null()]),
-				labSessionId: t.Optional(t.String()),
+		toStandardSchema(
+			t.Object({
+				node: t.Object({
+					id: t.String(),
+					health: t.Union([t.String(), t.Null()]),
+					labSessionId: t.Optional(t.String()),
+				}),
 			}),
-		}),
+		),
 	)
 	.data(
 		"monitor:interface-update",
-		t.Object({
-			node: t.Object({
-				id: t.String(),
-				interfaces: t.Record(t.String(), t.Array(t.String())),
-				labSessionId: t.String(),
+		toStandardSchema(
+			t.Object({
+				node: t.Object({
+					id: t.String(),
+					interfaces: t.Record(t.String(), t.Array(t.String())),
+					labSessionId: t.String(),
+				}),
 			}),
-		}),
+		),
 	)
 	.rpc("clab:deployLab", {
-		payload: t.Object({
-			sessionId: t.String(),
-			config: LabConfigSchema,
-		}),
-		response: t.Array(DeployedNodeSchema),
+		payload: toStandardSchema(
+			t.Object({
+				sessionId: t.String(),
+				config: LabConfigSchema,
+			}),
+		),
+		response: toStandardSchema(t.Array(DeployedNodeSchema)),
 	})
 	.rpc("clab:destroyLab", {
-		payload: t.Object({
-			sessionId: t.String(),
-		}),
+		payload: toStandardSchema(
+			t.Object({
+				sessionId: t.String(),
+			}),
+		),
 	})
 	.rpc("clab:reconcileSessions", {
-		payload: t.Object({
-			activeSessionIds: t.Array(t.String()),
-		}),
-		response: t.Array(t.String()),
+		payload: toStandardSchema(
+			t.Object({
+				activeSessionIds: t.Array(t.String()),
+			}),
+		),
+		response: toStandardSchema(t.Array(t.String())),
 	})
 	.rpc("docker:pullImage", {
-		payload: t.Object({
-			image: t.String(),
-		}),
+		payload: toStandardSchema(
+			t.Object({
+				image: t.String(),
+			}),
+		),
 	})
 	.rpc("docker:measureContainerStats", {
-		payload: t.Object({
-			containerId: t.String(),
-		}),
-		response: t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+		payload: toStandardSchema(
+			t.Object({
+				containerId: t.String(),
+			}),
+		),
+		response: toStandardSchema(
+			t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+		),
 	})
 	.rpc("evaluator:start", {
-		payload: StartEvaluationPayloadSchema,
+		payload: toStandardSchema(StartEvaluationPayloadSchema),
 		replies: {
-			checkChanged: t.Object({ id: t.String(), completed: t.Boolean() }),
+			checkChanged: toStandardSchema(
+				t.Object({ id: t.String(), completed: t.Boolean() }),
+			),
 		},
 	})
 	.rpc("evaluator:stop", {
-		payload: t.Object({
-			sessionId: t.String(),
-			immediate: t.Optional(t.Boolean()),
-		}),
+		payload: toStandardSchema(
+			t.Object({
+				sessionId: t.String(),
+				immediate: t.Optional(t.Boolean()),
+			}),
+		),
 	});
 
 export type AppRouter = typeof appRouter;

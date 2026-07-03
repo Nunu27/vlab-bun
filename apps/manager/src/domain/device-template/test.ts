@@ -112,7 +112,7 @@ export async function testDeviceOnWorker(
 		);
 
 		reply("info", "Access token generated.");
-		ws.server.replyResponse("device-template:test", executionId, token);
+		reply("response", token);
 
 		// Measure container resource usage and emit as suggested cost values
 		await sleep(3000); // let CPU settle after boot
@@ -123,11 +123,7 @@ export async function testDeviceOnWorker(
 		);
 		reply("stats", stats);
 	} catch (error) {
-		ws.server.replyError(
-			"device-template:test",
-			executionId,
-			error instanceof Error ? error.message : String(error),
-		);
+		reply("error", error instanceof Error ? error.message : String(error));
 		throw error;
 	}
 }

@@ -1,5 +1,6 @@
 import { Type as t } from "@sinclair/typebox";
-import { Router } from "waycast";
+import { toStandardSchema } from "@vlab/shared/standard-schema";
+import Waycast from "waycast";
 import type { WSMeta } from "./types";
 
 const WorkerSchema = t.Object({
@@ -16,20 +17,22 @@ const WorkerSchema = t.Object({
 	activeNodes: t.Number(),
 });
 
-export const adminRouter = new Router<WSMeta>()
-	.data("admin:worker:new", WorkerSchema)
+export const adminRouter = new Waycast<WSMeta>()
+	.data("admin:worker:new", toStandardSchema(WorkerSchema))
 	.data(
 		"admin:worker:status",
-		t.Pick(WorkerSchema, ["id", "status", "lastSeen"]),
+		toStandardSchema(t.Pick(WorkerSchema, ["id", "status", "lastSeen"])),
 	)
 	.data(
 		"admin:worker:metrics",
-		t.Pick(WorkerSchema, [
-			"id",
-			"cpuUsagePercent",
-			"memoryUsagePercent",
-			"storageUsagePercent",
-			"activeLabs",
-			"activeNodes",
-		]),
+		toStandardSchema(
+			t.Pick(WorkerSchema, [
+				"id",
+				"cpuUsagePercent",
+				"memoryUsagePercent",
+				"storageUsagePercent",
+				"activeLabs",
+				"activeNodes",
+			]),
+		),
 	);

@@ -1,8 +1,6 @@
 import os from "node:os";
-import { decode } from "@msgpack/msgpack";
-import type { AsyncQueue, GrpcRequestMessage, WorkerProto } from "@vlab/grpc";
+import type { AsyncQueue, WorkerProto } from "@vlab/grpc";
 import baseLogger from "@worker/lib/logger";
-import type { RpcServer } from "../handlers/server";
 import {
 	getCpuUsage,
 	getMemoryUsage,
@@ -33,7 +31,7 @@ async function* createReplyStream(
 }
 
 export async function listenToCommands(
-	server: RpcServer,
+	feedMessage: (raw: string) => void,
 	replyQueue: AsyncQueue<WorkerProto.CommandPayload>,
 ) {
 	try {
@@ -47,8 +45,7 @@ export async function listenToCommands(
 		);
 		for await (const req of requestStream) {
 			try {
-				const message = decode(req.payload) as GrpcRequestMessage;
-				server.handle("manager", message);
+				feedMessage(Buffer.from(req.payload).toString("base64"));
 			} catch (err) {
 				logger.error({ err }, "Failed to parse or handle command");
 			}
@@ -58,7 +55,7 @@ export async function listenToCommands(
 			{ err },
 			"ListenCommand stream disconnected or ended with error. Reconnecting in 5s...",
 		);
-		setTimeout(() => listenToCommands(server, replyQueue), 5000);
+		setTimeout(() => listenToCommands(feedMessage, replyQueue), 5000);
 	}
 }
 
