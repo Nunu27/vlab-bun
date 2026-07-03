@@ -123,6 +123,15 @@ function Controls({ canvasRef, onReplayTour }: ControlsProps) {
 								</span>
 								<ShortcutRow label="Zoom In" keys={[mod, "="]} />
 								<ShortcutRow label="Zoom Out" keys={[mod, "-"]} />
+								<ShortcutRow label="Zoom In / Out" keys={[mod, "Scroll"]} />
+								<ShortcutRow label="Pan Vertically" keys={["Scroll"]} />
+								<span className="text-[9px] text-muted-foreground/50">
+									Alt + Scroll also works
+								</span>
+								<ShortcutRow
+									label="Pan Horizontally"
+									keys={["Shift", "Scroll"]}
+								/>
 							</div>
 							{onReplayTour && (
 								<>
