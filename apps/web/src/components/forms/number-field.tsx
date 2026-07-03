@@ -12,6 +12,7 @@ function NumberField(props: NumberFieldProps) {
 
 	return (
 		<TextInput
+			step="any"
 			{...props}
 			type={props.type ?? "number"}
 			id={field.name}

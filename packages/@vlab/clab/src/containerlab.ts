@@ -149,21 +149,27 @@ export class Containerlab {
 		return this.inspect(id);
 	}
 
-	// Redeploys a single node against the topology file already written by the
-	// original deploy(), instead of a raw `docker restart` — containerlab
-	// re-reads the topology's link definitions and re-wires that node's veth
-	// interfaces correctly; `docker restart` recreates the container's network
-	// namespace and permanently strands it with no data-plane interface.
+	// Restarts a single node in place via containerlab's own node-scoped
+	// restart, which reconnects the node's veth links against the topology
+	// after the container comes back up — unlike a raw `docker restart`,
+	// which recreates the container's network namespace and permanently
+	// strands it with no data-plane interface.
+	//
+	// This intentionally does NOT use `deploy --reconfigure --node-filter`:
+	// containerlab's internal reconfigure-destroy only tears down the
+	// filtered node, but the "already deployed" uniqueness check that deploy
+	// runs afterwards scans ALL containers carrying the lab's name label,
+	// filter or not. On any lab with more than one node it aborts with
+	// "The '<lab>' lab has already been deployed" — after having already
+	// removed the target node's container and wiped the lab's shared
+	// directory, /etc/hosts entries, and SSH config out from under the still
+	// running nodes. `restart` never touches lab-wide state, so it can't hit
+	// that check (confirmed against containerlab 0.76.1).
 	async redeployNode(id: string, nodeName: string) {
 		const topologyPath = this.#getTopologyPath(id);
 
 		await this.ready();
-		await this.#run([
-			"deploy",
-			"--topo",
-			topologyPath,
-			...buildDeployArgs({ reconfigure: true, nodeFilter: nodeName }),
-		]);
+		await this.#run(["restart", "--topo", topologyPath, "--node", nodeName]);
 
 		return this.inspect(id);
 	}

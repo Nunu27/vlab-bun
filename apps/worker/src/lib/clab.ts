@@ -235,22 +235,24 @@ export async function reconcileSessions(activeSessionIds: string[]) {
 	return destroyed;
 }
 
-// Redeploys a single node against its existing topology file — safe against
-// containerlab-managed link wiring, unlike a raw `docker restart` (see
-// Containerlab#redeployNode).
+// Restarts a single node in place against its existing topology file — safe
+// against containerlab-managed link wiring, unlike a raw `docker restart`,
+// and unlike `deploy --reconfigure --node-filter` doesn't touch any other
+// node in the lab (see Containerlab#redeployNode).
 export async function redeployNode(sessionId: string, nodeName: string) {
 	return clab.redeployNode(sessionId, nodeName);
 }
 
 // Fire-and-forget auto-heal for a node that went unhealthy. Self-contained
 // error handling so callers can invoke this from an event handler without
-// risking an unhandled rejection. Returns the redeployed node's fresh
-// ip/containerId (both change on redeploy) so the caller can push them to the
-// manager, or null if the redeploy failed.
+// risking an unhandled rejection. Returns the node's current ip/containerId
+// (the container is restarted in place, not recreated, so these are
+// typically unchanged) so the caller can confirm the heal to the manager, or
+// null if the restart failed.
 export async function attemptNodeRecovery(sessionId: string, nodeName: string) {
 	logger.warn(
 		{ sessionId, nodeName },
-		"Node unhealthy, attempting auto-heal redeploy",
+		"Node unhealthy, attempting auto-heal restart",
 	);
 
 	try {
@@ -264,17 +266,17 @@ export async function attemptNodeRecovery(sessionId: string, nodeName: string) {
 		if (!ip || !containerId) {
 			logger.error(
 				{ sessionId, nodeName },
-				"Auto-heal redeploy completed but node info is incomplete",
+				"Auto-heal restart completed but node info is incomplete",
 			);
 			return null;
 		}
 
-		logger.info({ sessionId, nodeName }, "Auto-heal redeploy completed");
+		logger.info({ sessionId, nodeName }, "Auto-heal restart completed");
 		return { ip, containerId };
 	} catch (error) {
 		logger.error(
 			{ err: error, sessionId, nodeName },
-			"Auto-heal redeploy failed",
+			"Auto-heal restart failed",
 		);
 		return null;
 	}
