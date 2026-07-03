@@ -166,6 +166,8 @@ function AdminDashboardPage() {
 					totalMemoryMB: totalMem,
 					usedStorageMB: usedSto,
 					totalStorageMB: totalSto,
+					activeLabs: online.reduce((acc, w) => acc + w.activeLabs, 0),
+					activeNodes: online.reduce((acc, w) => acc + w.activeNodes, 0),
 				});
 
 				return updated;

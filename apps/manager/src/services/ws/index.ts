@@ -1,16 +1,17 @@
 import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import { sessions } from "@manager/services/http/middlewares/auth";
-import { wsDisposalQueue } from "@manager/services/queue/ws-disposal";
+import { wsDisposalScheduler } from "@manager/services/queue/ws-disposal";
 import type { WSContext } from "@manager/types/ws";
 import { Server as Engine } from "@socket.io/bun-engine";
 import { createAdapter } from "@socket.io/redis-streams-adapter";
-import appRouter, {
-	type ClientToServerEvents,
-	type ServerToClientEvents,
-} from "@vlab/ws";
+import appRouter from "@vlab/ws";
 import { type DefaultEventsMap, Server } from "socket.io";
 import parser from "socket.io-msgpack-parser";
+import type { WaycastAdapter, WaycastServerTransport } from "waycast";
+
+type ClientToServerEvents = { message: (raw: string) => void };
+type ServerToClientEvents = { message: (raw: string) => void };
 
 const io = new Server<
 	ClientToServerEvents,
@@ -27,36 +28,6 @@ io.bind(engine);
 
 const logger = baseLogger.child({ service: "ws" });
 
-const server = appRouter.buildServer<WSContext>({
-	logger,
-	topic: {
-		subscribe: (connId, ...topics) => {
-			io.sockets.sockets.get(connId)?.join(topics);
-		},
-		unsubscribe: (connId, ...topics) => {
-			const socket = io.sockets.sockets.get(connId);
-			if (!socket) return;
-
-			for (const t of topics) socket.leave(t);
-		},
-	},
-	disposal: {
-		schedule: async (connectionId, topic, duration) => {
-			await wsDisposalQueue.add(
-				"dispose",
-				{ connectionId, topic },
-				{ delay: duration, jobId: `dispose:${topic}` },
-			);
-		},
-		cancel: async (topic) => {
-			const job = await wsDisposalQueue.getJob(`dispose:${topic}`);
-			await job?.remove();
-		},
-	},
-	emit: (topic, message) => io.to(topic).emit("data", message),
-	reply: (topic, message) => io.to(topic).emit("reply", message),
-});
-
 io.use(async (socket, next) => {
 	const sessionId = socket.handshake.auth.session;
 	if (typeof sessionId !== "string") return next(new Error("Unauthorized"));
@@ -68,18 +39,52 @@ io.use(async (socket, next) => {
 	next();
 });
 
-io.of("/").adapter.on("leave-room", (room, id) => {
-	if (room.endsWith("|reply")) server.handleUnsubscribe(id, room);
-});
-
-io.on("connection", (socket) => {
-	socket.on("rpc", (message) => {
-		server.handle(socket.id, message, async (meta) => {
-			const allowed = meta?.private?.includes(socket.data.session.role) ?? true;
-			if (!allowed) throw new Error("Unauthorized");
-			return { session: socket.data.session };
+const transport: WaycastServerTransport<WSContext> = {
+	start({ onConnection, onMessage, onDisconnection }) {
+		io.on("connection", (socket) => {
+			onConnection(socket.id, socket.data);
+			socket.on("message", (raw) => onMessage(socket.id, raw));
+			socket.on("disconnect", () => onDisconnection(socket.id));
 		});
-	});
+	},
+	send(connectionId, raw) {
+		io.to(connectionId).emit("message", raw);
+	},
+	disconnect(connectionId) {
+		io.sockets.sockets.get(connectionId)?.disconnect(true);
+	},
+	stop() {
+		io.close();
+	},
+};
+
+const adapter: WaycastAdapter = {
+	subscribe(connectionId, topic) {
+		io.sockets.sockets.get(connectionId)?.join(topic);
+	},
+	unsubscribe(connectionId, topic) {
+		io.sockets.sockets.get(connectionId)?.leave(topic);
+	},
+	publish(topic, raw) {
+		io.to(topic).emit("message", raw);
+	},
+	onMessage() {
+		// no-op — socket.io already delivered the message above via room broadcast
+	},
+};
+
+const server = appRouter.buildServer<WSContext>({
+	logger,
+	transport,
+	adapter,
+	disposalScheduler: wsDisposalScheduler,
+	middlewares: [
+		async ({ meta, context, next }) => {
+			const allowed = meta?.private?.includes(context.session.role) ?? true;
+			if (!allowed) throw new Error("Unauthorized");
+			return next();
+		},
+	],
 });
 
 export default { engine, server, io };

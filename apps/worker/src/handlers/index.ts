@@ -5,11 +5,11 @@ import { registerEvaluatorHandlers } from "./evaluator";
 import { createRpcServer } from "./server";
 
 export function initRpc(replyQueue: AsyncQueue<WorkerProto.CommandPayload>) {
-	const server = createRpcServer(replyQueue);
+	const { server, feedMessage } = createRpcServer(replyQueue);
 
 	registerClabHandlers(server);
 	registerEvaluatorHandlers(server);
 	registerDockerHandlers(server);
 
-	return server;
+	return { server, feedMessage };
 }

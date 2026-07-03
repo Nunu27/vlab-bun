@@ -9,6 +9,7 @@ import {
 import ws from "@manager/services/ws";
 import type { LabLink, LabNode } from "@manager/types/clab";
 import { eq } from "drizzle-orm";
+import { DEFER } from "waycast";
 
 ws.server.on(
 	"lab:[id]:init",
@@ -148,13 +149,30 @@ ws.server.on(
 			dueDate,
 		});
 
-		return ws.server.defer;
+		// dispatchWorkerAction resolves the deferred reply asynchronously via
+		// ws.server.reply("lab:[id]:init", requestId)
+		return DEFER;
 	},
 );
 
+// clientId is stored as "<connectionId>:<requestId>" rather than the bare connectionId.
+// A single connection can issue this RPC more than once (e.g. the conflict-check call
+// followed by "take over"), and useWSAction cancels the prior call when a new one is
+// sent. Keying ownership on connectionId alone let a stale call's dispose handler tear
+// down the session that a newer call on the *same* connection had just re-claimed.
+function ownerConnectionId(clientId: string) {
+	return clientId.slice(0, clientId.indexOf(":"));
+}
+
 ws.server.on(
 	"lab-session:[sessionId]:connect",
-	async ({ params: { sessionId }, payload: force, connectionId, context }) => {
+	async ({
+		params: { sessionId },
+		payload: force,
+		connectionId,
+		requestId,
+		context,
+	}) => {
 		const session = await db.query.labSessions.findFirst({
 			columns: { clientId: true, labId: true, workerId: true },
 			where: (session, { eq, and, isNull }) => {
@@ -167,7 +185,11 @@ ws.server.on(
 		});
 
 		if (!session) throw new Error("Session not found");
-		if (!force && session.clientId && session.clientId !== connectionId) {
+		if (
+			!force &&
+			session.clientId &&
+			ownerConnectionId(session.clientId) !== connectionId
+		) {
 			return true;
 		}
 
@@ -178,7 +200,7 @@ ws.server.on(
 
 		await db
 			.update(labSessions)
-			.set({ clientId: connectionId })
+			.set({ clientId: `${connectionId}:${requestId}` })
 			.where(eq(labSessions.id, sessionId));
 
 		await dispatchWorkerAction("evaluator:start", session.workerId, {
@@ -190,20 +212,23 @@ ws.server.on(
 	},
 );
 
-ws.server.onDispose("lab-session:[sessionId]:connect", async (connectionId) => {
-	const [data] = await db
-		.update(labSessions)
-		.set({ clientId: null })
-		.where(eq(labSessions.clientId, connectionId))
-		.returning({ id: labSessions.id, workerId: labSessions.workerId });
-	if (!data) return;
+ws.server.onDispose(
+	"lab-session:[sessionId]:connect",
+	async (connectionId, requestId) => {
+		const [data] = await db
+			.update(labSessions)
+			.set({ clientId: null })
+			.where(eq(labSessions.clientId, `${connectionId}:${requestId}`))
+			.returning({ id: labSessions.id, workerId: labSessions.workerId });
+		if (!data) return;
 
-	ws.server.emit("lab-session:[sessionId]:client-change", {
-		params: { sessionId: data.id },
-		data: null,
-	});
+		ws.server.emit("lab-session:[sessionId]:client-change", {
+			params: { sessionId: data.id },
+			data: null,
+		});
 
-	await dispatchWorkerAction("evaluator:stop", data.workerId, {
-		sessionId: data.id,
-	});
-});
+		await dispatchWorkerAction("evaluator:stop", data.workerId, {
+			sessionId: data.id,
+		});
+	},
+);

@@ -10,16 +10,15 @@ import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import guacamole from "@manager/services/guacamole-lite";
 import ws from "@manager/services/ws";
-import { decode, encode } from "@msgpack/msgpack";
-import type { Static } from "@sinclair/typebox";
 import type {
-	GrpcDataMessage,
+	GrpcRoutes,
 	GrpcRpcCallbacks,
-	GrpcRpcReplyMessage,
-	GrpcRpcRoutes,
+	GrpcRpcPayloadOf,
+	GrpcRpcResponseOf,
 } from "@vlab/grpc";
-import { AsyncQueue, appRouter, WorkerProto } from "@vlab/grpc";
+import { AsyncQueue, appRouter, msgpackCodec, WorkerProto } from "@vlab/grpc";
 import { and, asc, eq, sql } from "drizzle-orm";
+import type { WaycastClientTransport } from "waycast";
 import { attachMonitorHandlers } from "./monitor";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
@@ -197,13 +196,13 @@ export async function getWorker(workerId: string) {
 }
 
 export async function sendCommandToWorker<
-	K extends Extract<keyof GrpcRpcRoutes, string>,
+	K extends Extract<keyof GrpcRoutes, string>,
 >(
 	workerId: string,
 	command: K,
-	payload: Static<GrpcRpcRoutes[K]["payload"]>,
+	payload: GrpcRpcPayloadOf<K>,
 	replies?: Omit<GrpcRpcCallbacks<K>, "response" | "error">,
-): Promise<Static<GrpcRpcRoutes[K]["response"]>> {
+): Promise<GrpcRpcResponseOf<K>> {
 	const client = await getWorker(workerId);
 
 	return new Promise((resolve, reject) => {
@@ -325,15 +324,31 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 		// 3. Create RPC client for this worker
 		const msgQueue = new AsyncQueue<WorkerProto.CommandRequest>();
 
-		const client = appRouter.buildClient({
-			logger,
-			send: async (message) => {
+		let deliverMessage: ((raw: string) => void) | undefined;
+		let notifyClosed: (() => void) | undefined;
+
+		const transport: WaycastClientTransport = {
+			connect({ onOpen, onMessage, onClose }) {
+				deliverMessage = onMessage;
+				notifyClosed = onClose;
+				onOpen();
+			},
+			send(raw) {
 				msgQueue.push(
 					WorkerProto.CommandRequest.create({
-						payload: Buffer.from(encode(message)),
+						payload: Buffer.from(raw, "base64"),
 					}),
 				);
 			},
+			disconnect() {
+				msgQueue.close();
+			},
+		};
+
+		const client = appRouter.buildClient({
+			logger,
+			transport,
+			codec: msgpackCodec,
 		});
 
 		try {
@@ -362,16 +377,9 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 		const processReplies = async () => {
 			for await (const requestPayload of request) {
 				if (requestPayload.payload) {
-					// Route message back to caller
-					const msg = decode(requestPayload.payload) as
-						| GrpcRpcReplyMessage
-						| GrpcDataMessage;
-
-					if ("data" in msg) {
-						client.handleData(msg);
-					} else {
-						client.handleReply(msg);
-					}
+					deliverMessage?.(
+						Buffer.from(requestPayload.payload).toString("base64"),
+					);
 				}
 			}
 		};
@@ -389,6 +397,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			context.signal.removeEventListener("abort", abortListener);
 			logger.info({ workerId }, "Worker stream ended");
 			connectedWorkers.delete(workerId);
+			notifyClosed?.();
 			try {
 				await redis.subscriber.unsubscribe(`vlab:worker-action:${workerId}`);
 			} catch (error) {

@@ -1,10 +1,11 @@
-import appRouter, {
-	type ClientToServerEvents,
-	type ServerToClientEvents,
-} from "@vlab/ws";
+import appRouter from "@vlab/ws";
 import { useAuthStore } from "@web/stores/auth-store";
 import { io, type Socket } from "socket.io-client";
 import parser from "socket.io-msgpack-parser";
+import type { WaycastClientTransport } from "waycast";
+
+type ClientToServerEvents = { message: (raw: string) => void };
+type ServerToClientEvents = { message: (raw: string) => void };
 
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 	window.location.origin,
@@ -23,11 +24,23 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
 	},
 );
 
+const transport: WaycastClientTransport = {
+	connect({ onOpen, onMessage, onClose }) {
+		socket.on("connect", onOpen);
+		socket.on("message", onMessage);
+		socket.on("disconnect", onClose);
+	},
+	send(raw) {
+		socket.emit("message", raw);
+	},
+	disconnect() {
+		socket.disconnect();
+	},
+};
+
 const ws = appRouter.buildClient({
 	logger: console,
-	send: (message) => {
-		socket.emit("rpc", message);
-	},
+	transport,
 });
 
 socket.on("connect_error", (err) => {
@@ -38,24 +51,15 @@ socket.on("connect", () => {
 	console.log("[WebSocket] Connected");
 });
 
+socket.on("disconnect", (reason) => {
+	console.log("[WebSocket] Disconnected:", reason);
+});
+
 useAuthStore.subscribe((state) => {
 	const user = state.user;
 
 	if (user) socket.connect();
 	else socket.disconnect();
-});
-
-socket.io.on("reconnect", () => ws.resubscribe());
-socket.on("data", (msg) => ws.handleData(msg));
-socket.on("reply", (msg) => ws.handleReply(msg));
-socket.on("disconnect", (reason) => {
-	console.log("[WebSocket] Disconnected:", reason);
-
-	if (reason === "io client disconnect") {
-		ws.clear();
-	} else {
-		ws.handleDisconnect();
-	}
 });
 
 export { socket };

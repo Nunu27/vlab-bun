@@ -25,9 +25,9 @@ try {
 }
 
 const replyQueue = new AsyncQueue<WorkerProto.CommandPayload>();
-const server = initRpc(replyQueue);
+const { server, feedMessage } = initRpc(replyQueue);
 
-listenToCommands(server, replyQueue);
+listenToCommands(feedMessage, replyQueue);
 streamMetrics();
 bindMonitorEvents(server);
 

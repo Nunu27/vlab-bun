@@ -1,5 +1,12 @@
-import type { Static } from "@sinclair/typebox";
-import type { WSDataRoutes, WSParamsOf, WSRpcRoutes } from "@vlab/ws";
+import type {
+	WSDataOf,
+	WSDataRouteNames,
+	WSParamsOf,
+	WSRpcPayloadOf,
+	WSRpcRepliesOf,
+	WSRpcResponseOf,
+	WSRpcRouteNames,
+} from "@vlab/ws";
 import ws, { socket } from "@web/lib/ws";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -22,15 +29,15 @@ export function useWSConnectionState() {
 	return connected;
 }
 
-export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
+export function useWSData<Name extends WSDataRouteNames & string>(
 	name: Name,
 	options: {
 		params?: WSParamsOf<Name>;
-		initialData?: Static<WSDataRoutes[Name]>;
+		initialData?: WSDataOf<Name>;
 		enabled?: boolean;
 	} = {},
 ) {
-	const [data, setData] = useState<Static<WSDataRoutes[Name]> | undefined>(
+	const [data, setData] = useState<WSDataOf<Name> | undefined>(
 		options.initialData,
 	);
 
@@ -55,11 +62,11 @@ export function useWSData<Name extends Extract<keyof WSDataRoutes, string>>(
 	return data;
 }
 
-export function useWSEvent<Name extends Extract<keyof WSDataRoutes, string>>(
+export function useWSEvent<Name extends WSDataRouteNames & string>(
 	name: Name,
 	options: {
 		params?: WSParamsOf<Name>;
-		handler: (data: Static<WSDataRoutes[Name]>) => void;
+		handler: (data: WSDataOf<Name>) => void;
 	},
 ) {
 	const handlerRef = useRef(options.handler);
@@ -85,19 +92,17 @@ export function useWSEvent<Name extends Extract<keyof WSDataRoutes, string>>(
 	}, [name, memoizedParams]);
 }
 
-export function useWSAction<Name extends Extract<keyof WSRpcRoutes, string>>(
-	name: Name,
-) {
+export function useWSAction<Name extends WSRpcRouteNames & string>(name: Name) {
 	const disposeRef = useRef<() => void>(undefined);
 
 	const send = useCallback(
 		(args: {
-			data?: Static<WSRpcRoutes[Name]["payload"]>;
+			data?: WSRpcPayloadOf<Name>;
 			params?: WSParamsOf<Name>;
 			onError?: (error: string) => void;
-			onResponse?: (res: Static<WSRpcRoutes[Name]["response"]>) => void;
+			onResponse?: (res: WSRpcResponseOf<Name>) => void;
 			callbacks?: Partial<
-				Record<keyof WSRpcRoutes[Name]["replies"], (data: any) => void>
+				Record<keyof WSRpcRepliesOf<Name>, (data: any) => void>
 			>;
 		}) => {
 			disposeRef.current?.();

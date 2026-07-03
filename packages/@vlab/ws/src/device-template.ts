@@ -5,7 +5,8 @@ import {
 	DeviceTemplateResourcesSchema,
 } from "@vlab/shared/schemas";
 import { NonEmptyString } from "@vlab/shared/schemas/common";
-import { Router } from "waycast";
+import { toStandardSchema } from "@vlab/shared/standard-schema";
+import Waycast from "waycast";
 import type { WSMeta } from "./types";
 
 export const TestDeviceTemplateRequest = t.Object({
@@ -17,16 +18,18 @@ export const TestDeviceTemplateRequest = t.Object({
 	connection: DeviceTemplateConnectionSchema,
 });
 
-export const deviceTemplateRouter = new Router<WSMeta>().rpc(
+export const deviceTemplateRouter = new Waycast<WSMeta>().rpc(
 	"device-template:test",
 	{
-		payload: TestDeviceTemplateRequest,
+		payload: toStandardSchema(TestDeviceTemplateRequest),
 		replies: {
-			info: t.String(),
-			warn: t.String(),
-			stats: t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+			info: toStandardSchema(t.String()),
+			warn: toStandardSchema(t.String()),
+			stats: toStandardSchema(
+				t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+			),
 		},
-		response: t.String(),
+		response: toStandardSchema(t.String()),
 		meta: { private: ["admin"] },
 	},
 );

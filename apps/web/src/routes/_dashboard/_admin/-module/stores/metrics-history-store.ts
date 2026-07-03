@@ -13,6 +13,8 @@ export type MetricsDataPoint = {
 	totalMemoryMB: number;
 	usedStorageMB: number;
 	totalStorageMB: number;
+	activeLabs: number;
+	activeNodes: number;
 };
 
 type MetricsHistoryState = {
