@@ -1,36 +1,34 @@
 # vLab System Documentation
 
-Welcome to the internal system documentation for vLab. This documentation is structured to help future developers rapidly build a mental model of the vLab monorepo and understand its core architecture.
+Internal system documentation for vLab, meant to get a new developer to a working mental model of the monorepo quickly.
 
 ## Getting Started
 
-If you are new to the project, we highly recommend reading the documentation in the following order:
+Read in this order:
 
-1. **[Codebase Tour](./codebase-tour/codebase-tour.md)**  
-   Start here. A guided tour of the monorepo explaining the role of `apps/manager`, `apps/worker`, `apps/web`, and `packages/*`.
+1. **[Codebase Tour](./codebase-tour/codebase-tour.md)**
+   Start here. What `apps/manager`, `apps/worker`, `apps/web`, and each `packages/*` module actually does.
 
-2. **[System Architecture](./architecture/architecture.md)**  
-   A deep dive into the Manager-Worker architecture, why it was chosen, and the orchestration flow of a lab session.
+2. **[System Architecture](./architecture/architecture.md)**
+   Why the Manager-Worker split exists, how Worker selection works, and the full lifecycle of a lab session, from "Start Lab" to teardown.
 
-3. **[Communication Protocols](./communication/communication.md)**  
-   Understand how the Manager and Worker communicate via gRPC, and how the Manager and Web UI communicate via Waycast (WebSockets).
+3. **[Communication Protocols](./communication/communication.md)**
+   The Waycast RPC framework that underlies both the Manager<->Worker gRPC tunnel and the Manager<->Browser WebSocket channel — msgpack codec, standard-schema validation, and the session take-over race fix.
 
-4. **[Data Model & Database](./data-model/data-model.md)**  
-   Learn about the core entities (Users, Labs, Sessions, etc.), PostgreSQL, and how Drizzle ORM is utilized in the Manager.
+4. **[Data Model & Database](./data-model/data-model.md)**
+   PostgreSQL via Drizzle ORM: users/labs/sessions, the JSONB-encoded topology and grading rules, and the Worker capacity/cost model.
 
-5. **[Frontend Architecture](./frontend/frontend.md)**  
-   An overview of the React 19 web application, state management, routing, and data fetching.
+5. **[Frontend Architecture](./frontend/frontend.md)**
+   The React 19 web app: TanStack Router/Query, Zustand, the typed Eden-Treaty API client, and the real-time WebSocket hooks.
 
 ## Core Engines
 
-Once you have a grasp on the high-level architecture, you can dive into the specifics of vLab's core capabilities:
-
-- **[Containerlab Integration](./containerlab/containerlab.md)**: How vLab parses topology files, interfaces with Containerlab on the Worker, and monitors container lifecycle events and interfaces.
-- **[Lab Evaluation Engine](./evaluator/evaluator.md)**: How the system evaluates lab session rules and calculates scores.
+- **[Containerlab Integration](./containerlab/containerlab.md)** — how vLab builds topologies, invokes the Containerlab CLI, hardens lab nodes, and monitors container lifecycle/health/interfaces.
+- **[Lab Evaluation Engine](./evaluator/evaluator.md)** — the push-driven check/scoring engine that grades a student's lab session.
 
 ## Additional References
 
-- **[External Libraries](./external-libs/external-libs.md)**: Details on specific vendor integrations (e.g., Mikro-RouterOS).
+- **[External Libraries](./external-libs/external-libs.md)** — vendored forks (Mikro-RouterOS) and first-party dependencies worth knowing about (Waycast).
 
 ---
-*Note: Diagrams are stored as `.excalidraw` files and can be viewed or edited directly within VS Code using the [Excalidraw extension](https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor).*
+*Diagrams are stored as `.excalidraw` files, viewable/editable in VS Code via the [Excalidraw extension](https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor).*

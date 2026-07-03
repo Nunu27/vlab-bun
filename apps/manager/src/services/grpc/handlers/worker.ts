@@ -234,32 +234,14 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		const workerSpec = first.value.workerSpec;
 
-		// 2. Fetch old worker state to detect guacd changes
-		const oldWorker = await db.query.workers.findFirst({
-			where: eq(workers.id, workerId),
-			columns: { guacdHost: true, guacdPort: true },
-		});
-
-		// 3. Upsert worker into DB
-		const [{ createdAt, updatedAt, ...worker }] = await db
-			.insert(workers)
-			.values({
-				id: workerId,
-				status: "online",
-				managerId: env.MANAGER_ID,
-				lastSeen: new Date(),
-				cpuCores: workerSpec.cpuCores,
-				memoryMB: workerSpec.memoryMb,
-				storageMB: workerSpec.storageMb,
-				guacdHost: workerSpec.guacdHost,
-				guacdPort: workerSpec.guacdPort,
-				cpuUsagePercent: "0",
-				memoryUsagePercent: "0",
-				storageUsagePercent: "0",
-			})
-			.onConflictDoUpdate({
-				target: workers.id,
-				set: {
+		// 2. Upsert worker into DB, pulling the pre-upsert guacd config out of the
+		// same statement via Postgres 18's `RETURNING old.col`/`new.col` — no
+		// separate SELECT needed to detect a guacd change.
+		const [{ createdAt, updatedAt, oldGuacdHost, oldGuacdPort, ...worker }] =
+			await db
+				.insert(workers)
+				.values({
+					id: workerId,
 					status: "online",
 					managerId: env.MANAGER_ID,
 					lastSeen: new Date(),
@@ -268,31 +250,52 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 					storageMB: workerSpec.storageMb,
 					guacdHost: workerSpec.guacdHost,
 					guacdPort: workerSpec.guacdPort,
-				},
-			})
-			.returning({
-				id: workers.id,
-				status: workers.status,
-				lastSeen: workers.lastSeen,
-				cpuCores: workers.cpuCores,
-				memoryMB: workers.memoryMB,
-				storageMB: workers.storageMB,
-				cpuUsagePercent: workers.cpuUsagePercent,
-				memoryUsagePercent: workers.memoryUsagePercent,
-				storageUsagePercent: workers.storageUsagePercent,
-				activeLabs: workers.activeLabs,
-				activeNodes: workers.activeNodes,
-				createdAt: workers.createdAt,
-				updatedAt: workers.updatedAt,
-			});
+					cpuUsagePercent: "0",
+					memoryUsagePercent: "0",
+					storageUsagePercent: "0",
+				})
+				.onConflictDoUpdate({
+					target: workers.id,
+					set: {
+						status: "online",
+						managerId: env.MANAGER_ID,
+						lastSeen: new Date(),
+						cpuCores: workerSpec.cpuCores,
+						memoryMB: workerSpec.memoryMb,
+						storageMB: workerSpec.storageMb,
+						guacdHost: workerSpec.guacdHost,
+						guacdPort: workerSpec.guacdPort,
+					},
+				})
+				.returning({
+					id: workers.id,
+					status: workers.status,
+					lastSeen: workers.lastSeen,
+					cpuCores: workers.cpuCores,
+					memoryMB: workers.memoryMB,
+					storageMB: workers.storageMB,
+					cpuUsagePercent: workers.cpuUsagePercent,
+					memoryUsagePercent: workers.memoryUsagePercent,
+					storageUsagePercent: workers.storageUsagePercent,
+					activeLabs: workers.activeLabs,
+					activeNodes: workers.activeNodes,
+					createdAt: workers.createdAt,
+					updatedAt: workers.updatedAt,
+					oldGuacdHost: sql<string | null>`old.guacd_host`,
+					oldGuacdPort: sql<number | null>`old.guacd_port`,
+				});
 
 		if (
-			oldWorker &&
-			(oldWorker.guacdHost !== workerSpec.guacdHost ||
-				oldWorker.guacdPort !== workerSpec.guacdPort)
+			oldGuacdHost !== null &&
+			(oldGuacdHost !== workerSpec.guacdHost ||
+				oldGuacdPort !== workerSpec.guacdPort)
 		) {
 			logger.info(
-				{ workerId, oldWorker, newSpec: workerSpec },
+				{
+					workerId,
+					oldWorker: { guacdHost: oldGuacdHost, guacdPort: oldGuacdPort },
+					newSpec: workerSpec,
+				},
 				"Worker guacd configuration changed, regenerating tokens...",
 			);
 			regenerateWorkerTokens(
@@ -360,7 +363,12 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			);
 		}
 
-		attachMonitorHandlers(workerId, client);
+		attachMonitorHandlers(
+			workerId,
+			client,
+			workerSpec.guacdHost,
+			workerSpec.guacdPort,
+		);
 
 		connectedWorkers.set(workerId, client);
 

@@ -149,6 +149,25 @@ export class Containerlab {
 		return this.inspect(id);
 	}
 
+	// Redeploys a single node against the topology file already written by the
+	// original deploy(), instead of a raw `docker restart` — containerlab
+	// re-reads the topology's link definitions and re-wires that node's veth
+	// interfaces correctly; `docker restart` recreates the container's network
+	// namespace and permanently strands it with no data-plane interface.
+	async redeployNode(id: string, nodeName: string) {
+		const topologyPath = this.#getTopologyPath(id);
+
+		await this.ready();
+		await this.#run([
+			"deploy",
+			"--topo",
+			topologyPath,
+			...buildDeployArgs({ reconfigure: true, nodeFilter: nodeName }),
+		]);
+
+		return this.inspect(id);
+	}
+
 	async destroy(id: string, options: DestroyOptions = {}) {
 		const labDirectory = this.#getLabDirectory(id);
 		const topologyPath = this.#getTopologyPath(id);
