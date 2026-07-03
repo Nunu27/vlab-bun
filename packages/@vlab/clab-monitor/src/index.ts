@@ -74,6 +74,10 @@ async function emitInitialState(ctx: Context) {
 			containerId: container.Id,
 			interfaces,
 		});
+		eventEmitter.emit("health-update", {
+			id: nodeInfo.id,
+			health: nodeInfo.health,
+		});
 		networkMonitor.start(ctx, containerHandle, nodeInfo);
 	}
 }
@@ -120,12 +124,12 @@ async function initMonitoring(
 				},
 			});
 
-			stream.on("data", (chunk: string) => {
+			stream.on("data", async (chunk: string) => {
 				try {
 					const str = chunk.toString();
 					const lines = str.split("\n").filter((l) => l.trim());
 					for (const line of lines) {
-						handleDockerEvent(ctx, JSON.parse(line));
+						await handleDockerEvent(ctx, JSON.parse(line));
 					}
 				} catch (error) {
 					logger.error({ err: error }, "Error parsing docker event");

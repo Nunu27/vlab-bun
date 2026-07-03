@@ -31,7 +31,7 @@ apps/manager/src/
     guacamole-lite/  remote-desktop (RDP/VNC/SSH/Telnet) proxy
   seeders/          admin.ts, department.ts, instructor.ts, study-program.ts
   types/            clab.ts, db.ts, events.ts, ws.ts
-  utils/            db.ts, debouncer.ts, error-formatter.ts, events.ts, file.ts, hash.ts, nrp.ts, string.ts, throttler.ts
+  utils/            db.ts, debouncer.ts, error-formatter.ts, events.ts, file.ts, hash.ts, nrp.ts, string.ts
 ```
 
 - **HTTP routes** (`services/http/routes/`) follow a resource-per-folder convention — `auth/`, `dashboard/`, `department/`, `device-category/`, `device-template/`, `evaluator/`, `file/`, `lab/` (with nested `enrollment/` and `session/`), `study-program/`, `topology-template/`, `user/` — each folder exports an `index.ts` that composes its own `create.ts`/`update.ts`/`delete.ts`/`detail.ts`/`pagination.ts` files.
@@ -90,24 +90,24 @@ See [Frontend Architecture](../frontend/frontend.md) for routing, state, and the
 
 ### `@vlab/*` — domain logic
 
-| Package | What it actually does |
-|---|---|
-| `@vlab/shared` | Central TypeBox schemas, enums (`deviceKindValues`, `roleValues`, `nodeHealthValues`, ...), utils, and the `standard-schema.ts` adapter (`toStandardSchema()`) that lets TypeBox schemas satisfy Waycast's `@standard-schema/spec` validation contract. |
-| `@vlab/grpc` | The Manager<->Worker gRPC contract: a minimal `worker.proto` (one bidi-stream RPC + one unary metrics RPC) plus the `waycast` command router (`commands.ts`) and msgpack `Codec` (`codec.ts`) that ride inside it. |
-| `@vlab/ws` | The Waycast router definitions for Manager<->Browser traffic: lab-session lifecycle/telemetry, lab enrollment events, admin worker-status pushes, device-template test streaming. |
-| `@vlab/clab` | Thin, typed wrapper around the `containerlab` CLI — topology types, YAML writing (`Bun.YAML.stringify`), and `deploy`/`destroy`/`inspect`/`checkPrerequisites` via `Bun.spawn`. No custom YAML builder beyond the type definitions. |
+| Package              | What it actually does                                                                                                                                                                                                                                                |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@vlab/shared`       | Central TypeBox schemas, enums (`deviceKindValues`, `roleValues`, `nodeHealthValues`, ...), utils, and the `standard-schema.ts` adapter (`toStandardSchema()`) that lets TypeBox schemas satisfy Waycast's `@standard-schema/spec` validation contract.              |
+| `@vlab/grpc`         | The Manager<->Worker gRPC contract: a minimal `worker.proto` (one bidi-stream RPC + one unary metrics RPC) plus the `waycast` command router (`commands.ts`) and msgpack `Codec` (`codec.ts`) that ride inside it.                                                   |
+| `@vlab/ws`           | The Waycast router definitions for Manager<->Browser traffic: lab-session lifecycle/telemetry, lab enrollment events, admin worker-status pushes, device-template test streaming.                                                                                    |
+| `@vlab/clab`         | Thin, typed wrapper around the `containerlab` CLI — topology types, YAML writing (`Bun.YAML.stringify`), and `deploy`/`destroy`/`inspect`/`checkPrerequisites` via `Bun.spawn`. No custom YAML builder beyond the type definitions.                                  |
 | `@vlab/clab-monitor` | Event-driven container lifecycle/health/interface watcher. Streams the Docker events API plus per-kind interface monitors (`ip monitor` execs for Linux, RouterOS API `listen` streams for MikroTik). No polling loop except a 5s reconnect backoff on stream error. |
-| `@vlab/evaluator` | The lab grading engine: a plugin registry of per-device-kind `EvaluationHandler`s (`linux`, `mikrotik`, `node-interface`), each exposing typed, push-driven checks. See [Lab Evaluation Engine](../evaluator/evaluator.md). |
+| `@vlab/evaluator`    | The lab grading engine: a plugin registry of per-device-kind `EvaluationHandler`s (`linux`, `mikrotik`, `node-interface`), each exposing typed, push-driven checks. See [Lab Evaluation Engine](../evaluator/evaluator.md).                                          |
 
 ### `@jawit/*` — general-purpose utilities
 
-| Package | What it does |
-|---|---|
-| `@jawit/common` | `success()`/`failure()` response-shape helpers and canned responses (`notFound`, `created`, `updated`, `deleted`) used across the Manager's HTTP routes. |
-| `@jawit/query` | Wraps an Elysia Eden-Treaty client in a `Proxy` that exposes typed TanStack Query hooks (`useQuery`, `useSuspenseQuery`, `useMutation`, `usePagination`, ...) directly off the API route tree — this is what `apps/web/src/lib/api.ts`'s `api.*` object actually is. |
-| `@jawit/elysia-caching` | Elysia plugin providing ETag/Last-Modified HTTP response caching via a pluggable `CacheAdapter`. |
-| `@jawit/paginator` | Drizzle-ORM-aware pagination/filtering/search builder, used by the Manager's `pagination.ts` route handlers. |
-| `@jawit/zustand-helper` | `createSelectors()` (adds a `.use.<field>()` accessor to a Zustand store) and `createModalStore()` (declarative modal-state factory) — used by nearly every feature store in `apps/web`. |
+| Package                 | What it does                                                                                                                                                                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@jawit/common`         | `success()`/`failure()` response-shape helpers and canned responses (`notFound`, `created`, `updated`, `deleted`) used across the Manager's HTTP routes.                                                                                                             |
+| `@jawit/query`          | Wraps an Elysia Eden-Treaty client in a `Proxy` that exposes typed TanStack Query hooks (`useQuery`, `useSuspenseQuery`, `useMutation`, `usePagination`, ...) directly off the API route tree — this is what `apps/web/src/lib/api.ts`'s `api.*` object actually is. |
+| `@jawit/elysia-caching` | Elysia plugin providing ETag/Last-Modified HTTP response caching via a pluggable `CacheAdapter`.                                                                                                                                                                     |
+| `@jawit/paginator`      | Drizzle-ORM-aware pagination/filtering/search builder, used by the Manager's `pagination.ts` route handlers.                                                                                                                                                         |
+| `@jawit/zustand-helper` | `createSelectors()` (adds a `.use.<field>()` accessor to a Zustand store) and `createModalStore()` (declarative modal-state factory) — used by nearly every feature store in `apps/web`.                                                                             |
 
 ### `packages/external/`
 
@@ -115,7 +115,7 @@ Forked third-party packages maintained in-repo. Currently just `mikro-routeros` 
 
 ### A first-party dependency that isn't vendored: `waycast`
 
-Both `@vlab/grpc` and `@vlab/ws` are built on **`waycast`**, a generic RPC/pub-sub-over-socket framework (separate repo, `github.com/Nunu27/waycast`, currently `^3.0.2`). It is not forked into `packages/external` — it's a normal npm dependency the team maintains separately — but since it owns the connection lifecycle, request/reply protocol, and disconnect-grace-period bookkeeping for *both* the Manager<->Worker and Manager<->Browser channels, understanding it is central to understanding vLab's real-time behavior. See [Communication Protocols](../communication/communication.md).
+Both `@vlab/grpc` and `@vlab/ws` are built on **`waycast`**, a generic RPC/pub-sub-over-socket framework (separate repo, `github.com/Nunu27/waycast`, currently `^3.0.2`). It is not forked into `packages/external` — it's a normal npm dependency the team maintains separately — but since it owns the connection lifecycle, request/reply protocol, and disconnect-grace-period bookkeeping for _both_ the Manager<->Worker and Manager<->Browser channels, understanding it is central to understanding vLab's real-time behavior. See [Communication Protocols](../communication/communication.md).
 
 ## Next Steps
 

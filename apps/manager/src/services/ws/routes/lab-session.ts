@@ -126,13 +126,13 @@ ws.server.on(
 			totalCpuCost,
 			totalMemoryCost,
 			{
-				onWait: (attempt) => {
-					if (attempt === 1) {
-						reply(
-							"warn",
-							"High demand: waiting for an available worker node...",
-						);
-					}
+				onWait: (attempt, delayMs) => {
+					reply(
+						"warn",
+						attempt === 1
+							? "High demand: waiting for an available worker node..."
+							: `High demand: still waiting for an available worker node (attempt ${attempt}, retrying in ${Math.round(delayMs / 1000)}s)...`,
+					);
 				},
 			},
 		);

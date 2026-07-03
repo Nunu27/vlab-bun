@@ -41,6 +41,8 @@ export function StartLabSessionButton({
 	const [open, setOpen] = useState(false);
 	const [logs, setLogs] = useState<LogEntry[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [hasFailed, setHasFailed] = useState(false);
+	const [waitAttempt, setWaitAttempt] = useState<number | null>(null);
 	const [disposeFn, setDisposeFn] = useState<(() => void) | null>(null);
 	const [now, setNow] = useState(() => Date.now());
 
@@ -86,6 +88,8 @@ export function StartLabSessionButton({
 		setOpen(true);
 		setLogs([]);
 		setIsLoading(true);
+		setHasFailed(false);
+		setWaitAttempt(null);
 		setDisposeFn(() => dispose);
 
 		send({
@@ -93,6 +97,7 @@ export function StartLabSessionButton({
 			onError: (error) => {
 				setLogs((prev) => [...prev, { type: "error", message: error }]);
 				setIsLoading(false);
+				setHasFailed(true);
 			},
 			onResponse: (sessionId) => {
 				setIsLoading(false);
@@ -110,6 +115,8 @@ export function StartLabSessionButton({
 					return setLogs((prev) => [...prev, { type: "info", message: msg }]);
 				},
 				warn: (msg) => {
+					const attemptMatch = msg.match(/attempt (\d+)/);
+					if (attemptMatch) setWaitAttempt(Number(attemptMatch[1]));
 					return setLogs((prev) => [...prev, { type: "warn", message: msg }]);
 				},
 			},
@@ -139,7 +146,11 @@ export function StartLabSessionButton({
 			<Dialog open={open} onOpenChange={handleOpenChange}>
 				<DialogContent className="p-0 sm:max-w-200">
 					<DialogHeader className="p-6 pb-0">
-						<DialogTitle>Starting Lab Session...</DialogTitle>
+						<DialogTitle>
+							{hasFailed
+								? "Failed to start lab session"
+								: "Starting Lab Session..."}
+						</DialogTitle>
 					</DialogHeader>
 
 					<div className="flex aspect-video w-full overflow-hidden bg-slate-950">
@@ -151,12 +162,20 @@ export function StartLabSessionButton({
 						<WaitingDistraction active={isHighDemand} sessionKey={open} />
 					</div>
 
+					{isHighDemand && waitAttempt !== null && (
+						<p className="px-6 text-muted-foreground text-xs">
+							Still waiting for an available worker node — retry attempt{" "}
+							{waitAttempt}, retrying automatically...
+						</p>
+					)}
+
 					<DialogFooter className="p-4 pt-0">
 						<DialogClose asChild>
 							<Button variant="secondary" disabled={isLoading}>
 								Cancel
 							</Button>
 						</DialogClose>
+						{hasFailed && <Button onClick={handleStartPhase}>Retry</Button>}
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
