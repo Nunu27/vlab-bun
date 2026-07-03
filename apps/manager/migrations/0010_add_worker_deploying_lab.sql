@@ -1,0 +1,1 @@
+ALTER TABLE "worker" ADD COLUMN "deploying_lab" integer DEFAULT 0 NOT NULL;

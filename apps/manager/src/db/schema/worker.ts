@@ -30,6 +30,7 @@ export const workers = pgTable(
 		storageUsagePercent: numeric().notNull(),
 		activeLabs: integer().default(0).notNull(),
 		activeNodes: integer().default(0).notNull(),
+		deployingLab: integer().default(0).notNull(),
 	},
 	(t) => [
 		check("worker_cpu_cores_positive", sql`${t.cpuCores} > 0`),

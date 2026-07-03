@@ -44,6 +44,7 @@ async function tryGetAvailableWorkerId(
 					eq(workers.status, "online"),
 					sql`(1 - ${workers.cpuUsagePercent} / 100.0) * ${workers.cpuCores} >= ${cpuCostCores}`,
 					sql`(1 - ${workers.memoryUsagePercent} / 100.0) * ${workers.memoryMB} >= ${memoryCostMB}`,
+					sql`${workers.deployingLab} < ${workers.cpuCores}`,
 				),
 			)
 			.orderBy(asc(workers.activeLabs))
@@ -56,7 +57,10 @@ async function tryGetAvailableWorkerId(
 
 		await tx
 			.update(workers)
-			.set({ activeLabs: sql`${workers.activeLabs} + 1` })
+			.set({
+				activeLabs: sql`${workers.activeLabs} + 1`,
+				deployingLab: sql`${workers.deployingLab} + 1`,
+			})
 			.where(eq(workers.id, selected.id));
 
 		return selected.id;
@@ -422,6 +426,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 					lastSeen: now,
 					activeLabs: 0,
 					activeNodes: 0,
+					deployingLab: 0,
 				})
 				.where(eq(workers.id, workerId));
 

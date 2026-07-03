@@ -49,33 +49,34 @@ export async function initSession(
 		const now = new Date();
 		const dueDateObj = new Date(dueDate);
 
-		await db
-			.insert(labSessions)
-			.values({
-				id: sessionId,
-				labId,
-				studentId: userId,
-				workerId,
-				dueDate: dueDateObj,
-				createdAt: now,
-				updatedAt: now,
-			})
-			.onConflictDoNothing();
+		let deployedNodes: Awaited<
+			ReturnType<typeof sendCommandToWorker<"clab:deployLab">>
+		>;
+		try {
+			await db
+				.insert(labSessions)
+				.values({
+					id: sessionId,
+					labId,
+					studentId: userId,
+					workerId,
+					dueDate: dueDateObj,
+					createdAt: now,
+					updatedAt: now,
+				})
+				.onConflictDoNothing();
 
-		await cache.delete(`lab:${labId}:lab-session:list:${userId}`);
-		ws.server.emit("lab:[labId]:enrollment:update", {
-			params: { labId },
-			data: {
-				id: userId,
-				status: "In Progress",
-				lastUpdated: now,
-			},
-		});
+			await cache.delete(`lab:${labId}:lab-session:list:${userId}`);
+			ws.server.emit("lab:[labId]:enrollment:update", {
+				params: { labId },
+				data: {
+					id: userId,
+					status: "In Progress",
+					lastUpdated: now,
+				},
+			});
 
-		const deployedNodes = await sendCommandToWorker(
-			workerId,
-			"clab:deployLab",
-			{
+			deployedNodes = await sendCommandToWorker(workerId, "clab:deployLab", {
 				sessionId,
 				config: {
 					labId,
@@ -84,8 +85,13 @@ export async function initSession(
 					links,
 					dueDate,
 				},
-			},
-		);
+			});
+		} finally {
+			await db
+				.update(workers)
+				.set({ deployingLab: sql`GREATEST(${workers.deployingLab} - 1, 0)` })
+				.where(eq(workers.id, workerId));
+		}
 
 		const deployedNodeIds = new Set(deployedNodes.map((n) => n.id));
 		const missing = nodes.filter((n) => !deployedNodeIds.has(n.id));
