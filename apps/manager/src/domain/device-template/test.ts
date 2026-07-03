@@ -25,29 +25,32 @@ export async function testDeviceOnWorker(
 	const reply = ws.server.reply("device-template:test", payload.requestId);
 
 	try {
-		reply("info", `Pulling image ${data.image}...`);
+		let deployedNodes: Awaited<
+			ReturnType<typeof sendCommandToWorker<"clab:deployLab">>
+		>;
+		let healthPromise: Promise<unknown>;
 
-		await sendCommandToWorker(workerId, "docker:pullImage", {
-			image: data.image,
-		});
+		try {
+			reply("info", `Pulling image ${data.image}...`);
 
-		reply("info", "Image pulled successfully.");
+			await sendCommandToWorker(workerId, "docker:pullImage", {
+				image: data.image,
+			});
 
-		// Lab provisioning
-		reply("info", "Provisioning device...");
+			reply("info", "Image pulled successfully.");
 
-		const healthPromise = waitForEvent(tempNodeEvents, `${nodeId}:health`, {
-			predicate: (health) => {
-				if (!health) return null;
-				else return health === "healthy" || undefined;
-			},
-			timeout: 120000,
-		});
+			// Lab provisioning
+			reply("info", "Provisioning device...");
 
-		const deployedNodes = await sendCommandToWorker(
-			workerId,
-			"clab:deployLab",
-			{
+			healthPromise = waitForEvent(tempNodeEvents, `${nodeId}:health`, {
+				predicate: (health) => {
+					if (!health) return null;
+					else return health === "healthy" || undefined;
+				},
+				timeout: 120000,
+			});
+
+			deployedNodes = await sendCommandToWorker(workerId, "clab:deployLab", {
 				sessionId: executionId,
 				config: {
 					ownerId: payload.userId,
@@ -66,12 +69,17 @@ export async function testDeviceOnWorker(
 						},
 					],
 				},
-			},
-		).catch((error) => {
-			throw new Error(
-				`Provisioning failed: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		});
+			}).catch((error) => {
+				throw new Error(
+					`Provisioning failed: ${error instanceof Error ? error.message : String(error)}`,
+				);
+			});
+		} finally {
+			await db
+				.update(workers)
+				.set({ deployingLab: sql`GREATEST(${workers.deployingLab} - 1, 0)` })
+				.where(eq(workers.id, workerId));
+		}
 
 		reply("info", "Device provisioned.");
 

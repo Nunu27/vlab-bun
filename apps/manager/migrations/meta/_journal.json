@@ -71,6 +71,13 @@
 			"when": 1782363385375,
 			"tag": "0009_remove_worker_thresholds_add_device_template_costs",
 			"breakpoints": true
+		},
+		{
+			"idx": 10,
+			"version": "7",
+			"when": 1783079016101,
+			"tag": "0010_add_worker_deploying_lab",
+			"breakpoints": true
 		}
 	]
 }
