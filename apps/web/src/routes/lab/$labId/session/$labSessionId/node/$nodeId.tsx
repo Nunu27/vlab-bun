@@ -66,6 +66,18 @@ function RouteComponent() {
 		);
 	}
 
+	if (health === "unhealthy") {
+		return (
+			<div className="relative h-screen w-screen overflow-hidden bg-black">
+				<GuacamoleConnectionStates
+					state="error"
+					title="Node Unhealthy"
+					description="This node is currently unhealthy. Please wait for it to recover before connecting."
+				/>
+			</div>
+		);
+	}
+
 	return (
 		<GuacamoleConnectionProvider>
 			<div className="h-screen w-screen overflow-hidden bg-black">

@@ -169,6 +169,34 @@ export function createMonitor(options: Options) {
 	const nodeHealths = new Map<string, string | null>();
 	const healthEmitter = new EventEmitter();
 
+	// Self-heal against a dropped `health_status` docker event: reconcile the
+	// node's real health via a single inspect call right as we start waiting,
+	// instead of trusting the event stream never missed one. One-shot, not a
+	// poll loop — subsequent transitions still arrive via `healthEmitter`.
+	const reconcileHealth = async (id: string) => {
+		try {
+			const containers = await options.docker.listContainers({
+				filters: { label: [`${options.nodeIdLabel}=${id}`] },
+			});
+			const containerInfo = containers[0];
+			if (!containerInfo) return;
+
+			const info = await options.docker
+				.getContainer(containerInfo.Id)
+				.inspect();
+			const health = info.State.Health?.Status ?? null;
+
+			if (nodeHealths.get(id) !== health) {
+				emitter.emit("health-update", { id, health });
+			}
+		} catch (error) {
+			options.logger.warn(
+				{ err: error, nodeId: id },
+				"Failed to reconcile node health via inspect",
+			);
+		}
+	};
+
 	const waitForHealth = (
 		id: string,
 		timeoutMs = 120000,
@@ -191,14 +219,22 @@ export function createMonitor(options: Options) {
 				signal?.removeEventListener("abort", onAbort);
 			};
 
-			const timer = setTimeout(() => {
-				cleanup();
-				options.logger.warn(
-					"Timeout waiting for node %s to become healthy",
-					id,
-				);
-				reject(new Error(`Timed out waiting for node ${id} to become healthy`));
-			}, timeoutMs);
+			// timeoutMs <= 0 (or non-finite) means: wait indefinitely, only
+			// cancelable via the abort signal. Used by callers that must not
+			// proceed until the node is actually confirmed healthy.
+			const timer =
+				Number.isFinite(timeoutMs) && timeoutMs > 0
+					? setTimeout(() => {
+							cleanup();
+							options.logger.warn(
+								"Timeout waiting for node %s to become healthy",
+								id,
+							);
+							reject(
+								new Error(`Timed out waiting for node ${id} to become healthy`),
+							);
+						}, timeoutMs)
+					: undefined;
 
 			const handler = (health: string | null) => {
 				if (healthyStatus.has(health)) {
@@ -226,6 +262,7 @@ export function createMonitor(options: Options) {
 			}
 
 			healthEmitter.on(id, handler);
+			void reconcileHealth(id);
 		});
 	};
 
