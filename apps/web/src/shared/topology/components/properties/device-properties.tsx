@@ -77,7 +77,7 @@ function DeviceProperties({ id }: { id: string }) {
 						<field.TextField
 							label="CPU Cores"
 							type="number"
-							min="1"
+							min="0.1"
 							placeholder={template?.resources.cpu?.toString() || undefined}
 						/>
 					)}
