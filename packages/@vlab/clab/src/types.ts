@@ -212,7 +212,7 @@ export interface ContainerlabInspectNode {
 	image: string;
 	kind: string;
 	state: string;
-	status?: string;
+	status: string | null;
 	ipv4Address?: string;
 	ipv6Address?: string;
 	owner?: string;

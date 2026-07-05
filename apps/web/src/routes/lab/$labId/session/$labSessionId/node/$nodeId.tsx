@@ -54,7 +54,7 @@ function RouteComponent() {
 		);
 	}
 
-	if (health === "deleted") {
+	if (health === "destroyed") {
 		return (
 			<div className="relative h-screen w-screen overflow-hidden bg-black">
 				<GuacamoleConnectionStates
@@ -66,7 +66,7 @@ function RouteComponent() {
 		);
 	}
 
-	if (health === "unhealthy") {
+	if (health === "unhealthy" || health === "died") {
 		return (
 			<div className="relative h-screen w-screen overflow-hidden bg-black">
 				<GuacamoleConnectionStates

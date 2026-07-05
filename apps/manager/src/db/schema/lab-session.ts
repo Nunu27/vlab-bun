@@ -76,13 +76,14 @@ export const labSessionChecksRelations = relations(
 );
 
 export const labSessionNodes = pgTable("lab_session_node", {
-	...base,
+	id: text().primaryKey(),
+	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
 	name: text().notNull(),
 	health: nodeHealthEnum(),
 	ip: text().notNull(),
 	interfaces: jsonb().$type<Record<string, string[]>>().notNull(),
 	labNodeId: uuid().notNull(),
-	containerId: text().notNull(),
 	token: text().notNull(),
 	labSessionId: uuid()
 		.notNull()

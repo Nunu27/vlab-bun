@@ -8,7 +8,7 @@ import evaluator from "@vlab/evaluator";
 import type { NodeInfo, SessionCheckPayload } from "@vlab/evaluator/types";
 import Docker from "dockerode";
 import { RouterOSClient } from "mikro-routeros";
-import type { TestContext } from "./context";
+import type { DeployedNode, TestContext } from "./context";
 import { testLinux } from "./suites/linux";
 import { testMikrotik } from "./suites/mikrotik";
 import { testNodeInterface } from "./suites/node-interface";
@@ -53,7 +53,7 @@ const clab = new Containerlab({
 const docker = new Docker();
 
 let session: ReturnType<typeof evaluator.createSession>;
-const nodeMap: Record<string, NodeInfo> = {};
+const nodeMap: Record<string, DeployedNode> = {};
 
 let router1Client: RouterOSClient;
 let router2Client: RouterOSClient;
@@ -66,12 +66,11 @@ const clabMonitor = createMonitor({
 		warn: () => {},
 	},
 	docker,
-	nodeIdLabel: "clab-node-name",
 });
 
 // Add node interface read override
 evaluator.setSourceRead("node-interface.interfaces-ip", (ctx) => {
-	return clabMonitor.nodeInterfaceMap.get(ctx.node.id) || {};
+	return clabMonitor.interfaceMap.get(ctx.node.id) || {};
 });
 
 const checks: SessionCheckPayload<typeof evaluator.handlers>[] = [
@@ -216,14 +215,13 @@ function waitForCheck(checkId: string, timeout = 30000) {
 
 describe("Evaluator E2E", () => {
 	beforeAll(async () => {
-		await clabMonitor.init();
+		await clabMonitor.monitor.start();
 
 		const inspectData = await clab.deploy(LAB_NAME, topo);
 
 		for (const node of inspectData) {
 			const nodeName = node.name.replace(`clab-${LAB_NAME}-`, "");
 			nodeMap[nodeName] = {
-				id: nodeName,
 				ip: node.ipv4Address?.split("/")[0] || "",
 				containerId: node.containerId,
 			};
@@ -238,9 +236,9 @@ describe("Evaluator E2E", () => {
 			}
 		}
 
-		await clabMonitor.waitForHealth("router1");
-		await clabMonitor.waitForHealth("router2");
-		await clabMonitor.waitForHealth("linux1");
+		await clabMonitor.health.wait(nodeMap.router1?.containerId ?? "router1");
+		await clabMonitor.health.wait(nodeMap.router2?.containerId ?? "router2");
+		await clabMonitor.health.wait(nodeMap.linux1?.containerId ?? "linux1");
 
 		router1Client = new RouterOSClient(nodeMap.router1?.ip || "");
 		await connectWithRetry(router1Client);
@@ -250,13 +248,23 @@ describe("Evaluator E2E", () => {
 		await connectWithRetry(router2Client);
 		await router2Client.login("admin", "admin");
 
-		clabMonitor.emitter.on("interface-update", ({ id, interfaces }) => {
-			evaluator.emitSource(id, "node-interface.interfaces-ip", interfaces);
+		clabMonitor.emitter.on("interface-update", (node, interfaces) => {
+			evaluator.emitSource(node.id, "node-interface.interfaces-ip", interfaces);
 		});
 
-		session = evaluator.createSession(docker, nodeMap, checks, {
-			isNodeHealthy: clabMonitor.isNodeHealthy,
-			waitForHealth: clabMonitor.waitForHealth,
+		const evalNodeMap: Record<string, NodeInfo> = {};
+		for (const info of Object.values(nodeMap)) {
+			evalNodeMap[info.containerId] = { id: info.containerId, ip: info.ip };
+		}
+		const sessionChecks = checks.map((check) => ({
+			...check,
+			nodeId: nodeMap[check.nodeId]?.containerId ?? check.nodeId,
+		}));
+
+		session = evaluator.createSession(docker, evalNodeMap, sessionChecks, {
+			isNodeHealthy: clabMonitor.health.isHealthy,
+			waitForHealth: (nodeId, timeoutMs, signal) =>
+				clabMonitor.health.wait(nodeId, { timeout: timeoutMs, signal }),
 		});
 
 		session.onChange((id, value) => {

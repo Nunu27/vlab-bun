@@ -93,7 +93,7 @@ export async function initSession(
 				.where(eq(workers.id, workerId));
 		}
 
-		const deployedNodeIds = new Set(deployedNodes.map((n) => n.id));
+		const deployedNodeIds = new Set(deployedNodes.map((n) => n.nodeId));
 		const missing = nodes.filter((n) => !deployedNodeIds.has(n.id));
 
 		if (missing.length) {
@@ -148,32 +148,25 @@ export async function initSession(
 		if (!worker) throw new Error(`Worker ${workerId} not found`);
 
 		const rows = deployedNodes.flatMap((deployedNode) => {
-			const node = nodesById.get(deployedNode.id);
-			if (!node?.labNodeId || !node.deviceId) return [];
+			const node = nodesById.get(deployedNode.nodeId);
+			if (!node?.deviceId) return [];
 
 			const template = templatesMap.get(node.deviceId);
 			if (!template) {
 				logger.error(
-					{ sessionId, nodeId: deployedNode.id, deviceId: node.deviceId },
+					{ sessionId, nodeId: deployedNode.nodeId, deviceId: node.deviceId },
 					"Device template not found for deployed node, skipping",
 				);
 				return [];
 			}
-
-			const healthValue =
-				deployedNode.health != null &&
-				["healthy", "unhealthy", "starting"].includes(deployedNode.health)
-					? deployedNode.health
-					: null;
 
 			return [
 				{
 					id: deployedNode.id,
 					name: node.name,
 					ip: deployedNode.ip,
-					health: healthValue as "healthy" | "unhealthy" | "starting" | null,
+					health: deployedNode.health,
 					interfaces: {},
-					containerId: deployedNode.containerId,
 					token: guacamole.generateNodeToken(
 						template.connection,
 						template.kind,
@@ -182,7 +175,7 @@ export async function initSession(
 						worker.guacdPort,
 					),
 					labSessionId: sessionId,
-					labNodeId: node.labNodeId,
+					labNodeId: node.id,
 					deviceTemplateId: node.deviceId,
 				},
 			];

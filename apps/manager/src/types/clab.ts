@@ -1,7 +1,6 @@
 import type { NodeHealth } from "@vlab/shared/enums";
 
 export interface LabNode {
-	labNodeId?: string;
 	id: string;
 	name: string;
 	image: string;
@@ -29,13 +28,4 @@ export interface LabConfig {
 	links?: LabLink[];
 }
 
-type TempNodeHealthEvent = Record<
-	`${string}:health`,
-	[NodeHealth | "deleted" | null]
->;
-type TempNodeIpEvent = Record<`${string}:ip`, [string]>;
-type TempNodeContainerIdEvent = Record<`${string}:containerId`, [string]>;
-
-export type TempNodeEvents = TempNodeHealthEvent &
-	TempNodeIpEvent &
-	TempNodeContainerIdEvent;
+export type TempNodeEvents = Record<`${string}:health`, [NodeHealth]>;

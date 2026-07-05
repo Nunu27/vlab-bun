@@ -1,20 +1,22 @@
-import { startLabEvaluation, stopLabEvaluation } from "../lib/evaluator";
-import type { RpcServer } from "./server";
+import {
+	startLabEvaluation,
+	stopLabEvaluation,
+} from "@worker/domain/evaluation";
+import type { RpcServer } from "../transport";
 
 export function registerEvaluatorHandlers(server: RpcServer) {
 	server.on(
 		"evaluator:start",
-		async ({
-			payload: { sessionId, nodeMap, values, sessionChecks },
-			reply,
-		}) => {
+		async ({ payload: { sessionId, nodeMap, values, sessionChecks } }) => {
 			await startLabEvaluation(
 				sessionId,
 				nodeMap,
 				sessionChecks as Parameters<typeof startLabEvaluation>[2],
 				values,
 				(id, completed) => {
-					reply("checkChanged", { id, completed });
+					server.emit("evaluator:checkChanged", {
+						data: { sessionId, id, completed },
+					});
 				},
 			);
 		},

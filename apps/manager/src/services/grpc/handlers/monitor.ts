@@ -1,15 +1,13 @@
 import EventEmitter from "node:events";
 import db from "@manager/db";
-import { deviceTemplates, labSessionNodes } from "@manager/db/schema";
+import { labSessionNodes } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
-import guacamole from "@manager/services/guacamole-lite";
 import { cache } from "@manager/services/http/middlewares/caching";
 import ws from "@manager/services/ws";
 import type { TempNodeEvents } from "@manager/types/clab";
 import type { TypedEventEmitter } from "@manager/types/events";
 import Debouncer from "@manager/utils/debouncer";
 import type { appRouter } from "@vlab/grpc";
-import type { NodeHealth } from "@vlab/shared/enums";
 import { eq } from "drizzle-orm";
 
 const logger = baseLogger.child({ service: "monitor-grpc" });
@@ -22,34 +20,29 @@ const interfaceDebounce = new Debouncer(750);
 export function attachMonitorHandlers(
 	workerId: string,
 	client: ReturnType<typeof appRouter.buildClient>,
-	guacdHost: string,
-	guacdPort: number,
 ) {
 	client.onData("monitor:node-health", {
-		callback: async (event) => {
-			const { node } = event;
-			const health =
-				node.health === "none" ? null : (node.health as NodeHealth | null);
-
-			tempNodeEvents.emit(`${node.id}:health`, health);
-
-			if (!node.labSessionId) return;
+		callback: async ({ id, lab, health }) => {
+			if (lab.startsWith("test-")) {
+				tempNodeEvents.emit(`${id}:health`, health);
+				return;
+			}
 
 			try {
 				await db
 					.update(labSessionNodes)
 					.set({ health })
-					.where(eq(labSessionNodes.id, node.id));
+					.where(eq(labSessionNodes.id, id));
 
-				await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
+				await cache.delete(`lab:*:lab-session:${lab}`);
 
 				ws.server.emit("node:[id]:health", {
-					params: { id: node.id },
+					params: { id },
 					data: health,
 				});
 			} catch (err) {
 				logger.error(
-					{ err, nodeId: node.id, workerId },
+					{ err, nodeId: id, workerId },
 					"Failed to process node-health event",
 				);
 			}
@@ -57,78 +50,29 @@ export function attachMonitorHandlers(
 	});
 
 	client.onData("monitor:interface-update", {
-		callback: async (event) => {
-			const { node } = event;
+		callback: async ({ id, lab, interfaces }) => {
+			if (lab.startsWith("test-")) return;
 
 			try {
-				for (const [iface, ips] of Object.entries(node.interfaces)) {
+				for (const [iface, ips] of Object.entries(interfaces)) {
 					ws.server.emit("node:[id]:interfaces:[interface]", {
-						params: { id: node.id, interface: iface },
+						params: { id, interface: iface },
 						data: ips,
 					});
 				}
 
-				await interfaceDebounce.run(node.id, async () => {
+				await interfaceDebounce.run(id, async () => {
 					await db
 						.update(labSessionNodes)
-						.set({ interfaces: node.interfaces })
-						.where(eq(labSessionNodes.id, node.id));
+						.set({ interfaces })
+						.where(eq(labSessionNodes.id, id));
 
-					await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
+					await cache.delete(`lab:*:lab-session:${lab}`);
 				});
 			} catch (err) {
 				logger.error(
-					{ err, nodeId: node.id, workerId },
+					{ err, nodeId: id, workerId },
 					"Failed to process interface-update event",
-				);
-			}
-		},
-	});
-
-	client.onData("monitor:node-redeployed", {
-		callback: async (event) => {
-			const { node } = event;
-
-			try {
-				const [info] = await db
-					.select({
-						connection: deviceTemplates.connection,
-						kind: deviceTemplates.kind,
-					})
-					.from(labSessionNodes)
-					.innerJoin(
-						deviceTemplates,
-						eq(labSessionNodes.deviceTemplateId, deviceTemplates.id),
-					)
-					.where(eq(labSessionNodes.id, node.id))
-					.limit(1);
-
-				if (!info) {
-					logger.error(
-						{ nodeId: node.id, workerId },
-						"Redeployed node not found for token regeneration",
-					);
-					return;
-				}
-
-				const token = guacamole.generateNodeToken(
-					info.connection,
-					info.kind,
-					node.ip,
-					guacdHost,
-					guacdPort,
-				);
-
-				await db
-					.update(labSessionNodes)
-					.set({ ip: node.ip, containerId: node.containerId, token })
-					.where(eq(labSessionNodes.id, node.id));
-
-				await cache.delete(`lab:*:lab-session:${node.labSessionId}`);
-			} catch (err) {
-				logger.error(
-					{ err, nodeId: node.id, workerId },
-					"Failed to process node-redeployed event",
 				);
 			}
 		},

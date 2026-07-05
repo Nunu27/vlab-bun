@@ -1,8 +1,8 @@
 import evaluator from "@vlab/evaluator";
 import type { NodeInfo } from "@vlab/evaluator/types";
+import docker from "@worker/lib/docker";
 import baseLogger from "@worker/lib/logger";
-import { clabMonitor } from "./clab-monitor";
-import docker from "./docker";
+import { monitor } from "@worker/lib/monitor";
 
 const logger = baseLogger.child({ service: "evaluator" });
 
@@ -15,7 +15,7 @@ const stopTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 evaluator.setSourceRead(
 	"node-interface.interfaces-ip",
-	({ node }) => clabMonitor.nodeInterfaceMap.get(node.id) || {},
+	({ node }) => monitor.interfaceMap.get(node.id) ?? {},
 );
 
 export async function startLabEvaluation(
@@ -48,8 +48,9 @@ export async function startLabEvaluation(
 		nodeMap,
 		sessionChecks,
 		{
-			isNodeHealthy: clabMonitor.isNodeHealthy,
-			waitForHealth: clabMonitor.waitForHealth,
+			isNodeHealthy: monitor.health.isHealthy,
+			waitForHealth: (nodeId, timeoutMs, signal) =>
+				monitor.health.wait(nodeId, { timeout: timeoutMs, signal }),
 		},
 		values,
 	);
@@ -135,4 +136,12 @@ export function stopLabEvaluation(
 		}, 30000);
 		stopTimers.set(sessionId, timer);
 	});
+}
+
+export function stopAllEvaluationsImmediately() {
+	return Promise.all(
+		[...activeEvaluations.keys()].map((sessionId) =>
+			stopLabEvaluation(sessionId, { immediate: true }),
+		),
+	);
 }

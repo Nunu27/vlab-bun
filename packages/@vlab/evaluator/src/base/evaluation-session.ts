@@ -183,14 +183,9 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		this.contextFailures.delete(contextKey);
 	}
 
-	/**
-	 * Blocks until `nodeId` is confirmed healthy, the session stops, or this
-	 * node's wait is cancelled. Returns false in the latter two cases so the
-	 * caller can bail out instead of starting a source against a node that
-	 * was never confirmed ready. A node reporting `unhealthy` keeps waiting
-	 * for its next transition rather than giving up, since Docker health
-	 * checks commonly flap during boot.
-	 */
+	// Returns false if the session stopped or this wait was cancelled before
+	// the node became healthy. Retries through "unhealthy" instead of giving
+	// up, since Docker health checks commonly flap during boot.
 	private async waitNodeHealth(nodeId: string): Promise<boolean> {
 		if (!this.healthHooks) return true;
 		if (this.healthHooks.isNodeHealthy(nodeId)) return true;
@@ -201,8 +196,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		try {
 			while (!controller.signal.aborted && !this.stopped) {
 				try {
-					// No timeout: wait purely on health events/abort so a source
-					// never starts before the node is actually confirmed healthy.
+					// timeoutMs=0: wait indefinitely, only health events/abort settle this.
 					await this.healthHooks.waitForHealth(nodeId, 0, controller.signal);
 					return true;
 				} catch (error) {

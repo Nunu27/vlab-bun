@@ -1,7 +1,6 @@
 import db from "@manager/db";
 import { labSessionChecks, labSessionNodes, labs } from "@manager/db/schema";
 import { sendCommandToWorker } from "@manager/services/grpc";
-import ws from "@manager/services/ws";
 import type { NodeInfo } from "@vlab/evaluator/types";
 import { eq } from "drizzle-orm";
 
@@ -20,7 +19,7 @@ export async function startEvaluation(
 	if (!lab) return;
 
 	const nodes = await db.query.labSessionNodes.findMany({
-		columns: { id: true, ip: true, containerId: true, labNodeId: true },
+		columns: { id: true, ip: true, labNodeId: true },
 		where: eq(labSessionNodes.labSessionId, sessionId),
 		with: {
 			deviceTemplate: { columns: { connection: true } },
@@ -47,7 +46,6 @@ export async function startEvaluation(
 		nodeMap[n.id] = {
 			id: n.id,
 			ip: n.ip,
-			containerId: n.containerId,
 			credentials: {
 				username: topologyCredentials?.username || templateCredentials.username,
 				password: topologyCredentials?.password || templateCredentials.password,
@@ -62,38 +60,12 @@ export async function startEvaluation(
 		params: check.params,
 	}));
 
-	await sendCommandToWorker(
-		workerId,
-		"evaluator:start",
-		{
-			sessionId,
-			nodeMap,
-			sessionChecks,
-			values,
-		},
-		{
-			checkChanged: async ({ id, completed }) => {
-				await db
-					.insert(labSessionChecks)
-					.values({
-						labSessionId: sessionId,
-						checkId: id,
-						completed,
-					})
-					.onConflictDoUpdate({
-						target: [labSessionChecks.labSessionId, labSessionChecks.checkId],
-						set: {
-							completed,
-						},
-					});
-
-				ws.server.emit("lab-session:[sessionId]:checks", {
-					params: { sessionId },
-					data: { id, completed },
-				});
-			},
-		},
-	);
+	await sendCommandToWorker(workerId, "evaluator:start", {
+		sessionId,
+		nodeMap,
+		sessionChecks,
+		values,
+	});
 }
 
 export async function stopEvaluation(

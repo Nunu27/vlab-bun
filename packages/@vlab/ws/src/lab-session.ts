@@ -38,7 +38,8 @@ export const labSessionRouter = new Waycast<WSMeta>()
 		toStandardSchema(
 			t.Union([
 				t.Null(),
-				t.Literal("deleted"),
+				t.Literal("died"),
+				t.Literal("destroyed"),
 				t.Literal("healthy"),
 				t.Literal("unhealthy"),
 				t.Literal("starting"),
