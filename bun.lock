@@ -155,31 +155,6 @@
         "typescript": "^6.0.3",
       },
     },
-    "apps/worker-old": {
-      "name": "@vlab/worker-old",
-      "dependencies": {
-        "@msgpack/msgpack": "^3.1.3",
-        "@sinclair/typebox": "^0.34.49",
-        "@vlab/clab": "workspace:*",
-        "@vlab/clab-monitor": "workspace:*",
-        "@vlab/evaluator": "workspace:*",
-        "@vlab/grpc": "workspace:*",
-        "@vlab/shared": "workspace:*",
-        "dockerode": "^5.0.0",
-        "dotenv": "^17.3.1",
-        "nice-grpc": "^2.1.16",
-        "nice-grpc-common": "^2.0.3",
-        "pino": "^10.3.1",
-        "waycast": "^3.0.2",
-      },
-      "devDependencies": {
-        "@types/bun": "1.3.11",
-        "@types/dockerode": "^4.0.1",
-      },
-      "peerDependencies": {
-        "typescript": "^6.0.3",
-      },
-    },
     "packages/@jawit/common": {
       "name": "@jawit/common",
       "devDependencies": {
@@ -1305,8 +1280,6 @@
     "@vlab/web": ["@vlab/web@workspace:apps/web"],
 
     "@vlab/worker": ["@vlab/worker@workspace:apps/worker"],
-
-    "@vlab/worker-old": ["@vlab/worker-old@workspace:apps/worker-old"],
 
     "@vlab/ws": ["@vlab/ws@workspace:packages/@vlab/ws"],
 
@@ -2718,8 +2691,6 @@
 
     "@vlab/worker/@types/bun": ["@types/bun@1.3.11", "", { "dependencies": { "bun-types": "1.3.11" } }, "sha512-5vPne5QvtpjGpsGYXiFyycfpDF2ECyPcTSsFBMa0fraoxiQyMJ3SmuQIGhzPg2WJuWxVBoxWJ2kClYTcw/4fAg=="],
 
-    "@vlab/worker-old/@types/bun": ["@types/bun@1.3.11", "", { "dependencies": { "bun-types": "1.3.11" } }, "sha512-5vPne5QvtpjGpsGYXiFyycfpDF2ECyPcTSsFBMa0fraoxiQyMJ3SmuQIGhzPg2WJuWxVBoxWJ2kClYTcw/4fAg=="],
-
     "@vlab/ws/@types/bun": ["@types/bun@1.3.11", "", { "dependencies": { "bun-types": "1.3.11" } }, "sha512-5vPne5QvtpjGpsGYXiFyycfpDF2ECyPcTSsFBMa0fraoxiQyMJ3SmuQIGhzPg2WJuWxVBoxWJ2kClYTcw/4fAg=="],
 
     "bl/buffer": ["buffer@5.7.1", "", { "dependencies": { "base64-js": "^1.3.1", "ieee754": "^1.1.13" } }, "sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ=="],
@@ -2955,8 +2926,6 @@
     "@vlab/manager/@types/bun/bun-types": ["bun-types@1.3.11", "", { "dependencies": { "@types/node": "*" } }, "sha512-1KGPpoxQWl9f6wcZh57LvrPIInQMn2TQ7jsgxqpRzg+l0QPOFvJVH7HmvHo/AiPgwXy+/Thf6Ov3EdVn1vOabg=="],
 
     "@vlab/shared/@types/bun/bun-types": ["bun-types@1.3.11", "", { "dependencies": { "@types/node": "*" } }, "sha512-1KGPpoxQWl9f6wcZh57LvrPIInQMn2TQ7jsgxqpRzg+l0QPOFvJVH7HmvHo/AiPgwXy+/Thf6Ov3EdVn1vOabg=="],
-
-    "@vlab/worker-old/@types/bun/bun-types": ["bun-types@1.3.11", "", { "dependencies": { "@types/node": "*" } }, "sha512-1KGPpoxQWl9f6wcZh57LvrPIInQMn2TQ7jsgxqpRzg+l0QPOFvJVH7HmvHo/AiPgwXy+/Thf6Ov3EdVn1vOabg=="],
 
     "@vlab/worker/@types/bun/bun-types": ["bun-types@1.3.11", "", { "dependencies": { "@types/node": "*" } }, "sha512-1KGPpoxQWl9f6wcZh57LvrPIInQMn2TQ7jsgxqpRzg+l0QPOFvJVH7HmvHo/AiPgwXy+/Thf6Ov3EdVn1vOabg=="],
 
