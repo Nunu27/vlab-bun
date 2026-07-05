@@ -19,6 +19,7 @@ import type {
 import { AsyncQueue, appRouter, msgpackCodec, WorkerProto } from "@vlab/grpc";
 import { and, asc, eq, sql } from "drizzle-orm";
 import type { WaycastClientTransport } from "waycast";
+import { attachEvaluatorHandlers } from "./evaluator";
 import { attachMonitorHandlers } from "./monitor";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
@@ -115,11 +116,7 @@ export async function resetStaleWorkers() {
 		);
 }
 
-// Called right after a worker connects. The worker may have leftover local
-// containerlab deployments from a crash, restart, or a destroy command that
-// never reached it while it was disconnected, so the manager hands it the
-// sessions it still considers active, and the worker tears down anything
-// deployed locally that isn't on that list.
+// Called right after a worker connects. Used to tear down any left over sessions
 async function reconcileWorkerSessions(workerId: string) {
 	const activeSessions = await db.query.labSessions.findMany({
 		columns: { id: true },
@@ -238,9 +235,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 
 		const workerSpec = first.value.workerSpec;
 
-		// 2. Upsert worker into DB, pulling the pre-upsert guacd config out of the
-		// same statement via Postgres 18's `RETURNING old.col`/`new.col` — no
-		// separate SELECT needed to detect a guacd change.
+		// 2. Upsert worker into DB
 		const [{ createdAt, updatedAt, oldGuacdHost, oldGuacdPort, ...worker }] =
 			await db
 				.insert(workers)
@@ -367,12 +362,8 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 			);
 		}
 
-		attachMonitorHandlers(
-			workerId,
-			client,
-			workerSpec.guacdHost,
-			workerSpec.guacdPort,
-		);
+		attachMonitorHandlers(workerId, client);
+		attachEvaluatorHandlers(workerId, client);
 
 		connectedWorkers.set(workerId, client);
 

@@ -1,6 +1,6 @@
-import type { NodeInfo } from "@vlab/evaluator/types";
 import type Docker from "dockerode";
 import type { RouterOSClient } from "mikro-routeros";
+import type { DeployedNode } from "./context";
 import type { ParsedCheck, TopologyMarkdown } from "./module-parser";
 
 type DeviceTypes = Record<string, "mikrotik" | "linux" | "unknown">;
@@ -307,7 +307,7 @@ async function applyLinuxCheck(
 export async function applyConfigurations(
 	mikrotikClients: Record<string, RouterOSClient>,
 	docker: Docker,
-	nodeMap: Record<string, NodeInfo>,
+	nodeMap: Record<string, DeployedNode>,
 	deviceTypes: DeviceTypes,
 	checks: ParsedCheck[],
 	topology: TopologyMarkdown,

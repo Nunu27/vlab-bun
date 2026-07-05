@@ -1,10 +1,16 @@
 import { Type as t } from "@sinclair/typebox";
+import { nodeHealthValues } from "@vlab/shared/enums";
 import { DeviceTemplateResourcesSchema } from "@vlab/shared/schemas/device-template";
 import { toStandardSchema } from "@vlab/shared/standard-schema";
 import Waycast from "waycast";
 
+// Mirrors @vlab/shared's NodeHealth
+const NodeHealthSchema = t.Union([
+	...nodeHealthValues.map((value) => t.Literal(value)),
+	t.Null(),
+]);
+
 const LabNodeSchema = t.Object({
-	labNodeId: t.Optional(t.String()),
 	id: t.String(),
 	name: t.String(),
 	image: t.String(),
@@ -38,14 +44,13 @@ export const LabConfigSchema = t.Object({
 const DeployedNodeSchema = t.Object({
 	id: t.String(),
 	ip: t.String(),
-	containerId: t.String(),
-	health: t.Union([t.String(), t.Null()]),
+	health: NodeHealthSchema,
+	nodeId: t.String(),
 });
 
 const EvaluatorNodeInfoSchema = t.Object({
 	id: t.String(),
 	ip: t.String(),
-	containerId: t.String(),
 	credentials: t.Optional(
 		t.Object({
 			username: t.Optional(t.String()),
@@ -73,11 +78,9 @@ export const appRouter = new Waycast()
 		"monitor:node-health",
 		toStandardSchema(
 			t.Object({
-				node: t.Object({
-					id: t.String(),
-					health: t.Union([t.String(), t.Null()]),
-					labSessionId: t.Optional(t.String()),
-				}),
+				id: t.String(),
+				health: NodeHealthSchema,
+				lab: t.String(),
 			}),
 		),
 	)
@@ -85,24 +88,19 @@ export const appRouter = new Waycast()
 		"monitor:interface-update",
 		toStandardSchema(
 			t.Object({
-				node: t.Object({
-					id: t.String(),
-					interfaces: t.Record(t.String(), t.Array(t.String())),
-					labSessionId: t.String(),
-				}),
+				id: t.String(),
+				interfaces: t.Record(t.String(), t.Array(t.String())),
+				lab: t.String(),
 			}),
 		),
 	)
 	.data(
-		"monitor:node-redeployed",
+		"evaluator:checkChanged",
 		toStandardSchema(
 			t.Object({
-				node: t.Object({
-					id: t.String(),
-					ip: t.String(),
-					containerId: t.String(),
-					labSessionId: t.String(),
-				}),
+				sessionId: t.String(),
+				id: t.String(),
+				completed: t.Boolean(),
 			}),
 		),
 	)
@@ -140,7 +138,7 @@ export const appRouter = new Waycast()
 	.rpc("docker:measureContainerStats", {
 		payload: toStandardSchema(
 			t.Object({
-				containerId: t.String(),
+				id: t.String(),
 			}),
 		),
 		response: toStandardSchema(
@@ -149,11 +147,6 @@ export const appRouter = new Waycast()
 	})
 	.rpc("evaluator:start", {
 		payload: toStandardSchema(StartEvaluationPayloadSchema),
-		replies: {
-			checkChanged: toStandardSchema(
-				t.Object({ id: t.String(), completed: t.Boolean() }),
-			),
-		},
 	})
 	.rpc("evaluator:stop", {
 		payload: toStandardSchema(

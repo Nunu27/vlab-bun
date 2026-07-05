@@ -1,3 +1,5 @@
+import type { NodeHealth } from "@vlab/shared/enums";
+
 export type Position = {
 	x: number;
 	y: number;
@@ -22,7 +24,7 @@ export interface ViewState extends Position {
 export type NodeData = {
 	id: string;
 	interfaces: Record<string, string[]>;
-	health: "healthy" | "unhealthy" | "starting" | null;
+	health: NodeHealth;
 };
 
 export type ConnectionEntry = {

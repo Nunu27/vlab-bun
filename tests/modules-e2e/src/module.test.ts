@@ -9,6 +9,7 @@ import type { NodeInfo, SessionCheckPayload } from "@vlab/evaluator/types";
 import Docker from "dockerode";
 import { RouterOSClient } from "mikro-routeros";
 import { applyConfigurations } from "./configurator";
+import type { DeployedNode } from "./context";
 import { parseModule } from "./module-parser";
 import { buildContainerlabTopology, getDeviceType } from "./topology-builder";
 
@@ -48,18 +49,17 @@ const monitor = createMonitor({
 		warn: () => {},
 	},
 	docker,
-	nodeIdLabel: "clab-node-name",
 });
 
 evaluator.setSourceRead("node-interface.interfaces-ip", (ctx) => {
-	return monitor.nodeInterfaceMap.get(ctx.node.id) ?? {};
+	return monitor.interfaceMap.get(ctx.node.id) ?? {};
 });
 
-monitor.emitter.on("interface-update", ({ id, interfaces }) => {
-	evaluator.emitSource(id, "node-interface.interfaces-ip", interfaces);
+monitor.emitter.on("interface-update", (node, interfaces) => {
+	evaluator.emitSource(node.id, "node-interface.interfaces-ip", interfaces);
 });
 
-await monitor.init();
+await monitor.monitor.start();
 
 // Timeouts per check category: convergence checks (OSPF/BGP) need more time.
 function checkTimeout(checkId: string): number {
@@ -78,7 +78,7 @@ for (const mod of parsedModules) {
 
 		let session: ReturnType<typeof evaluator.createSession>;
 		const mikrotikClients: Record<string, RouterOSClient> = {};
-		let nodeMap: Record<string, NodeInfo> = {};
+		let nodeMap: Record<string, DeployedNode> = {};
 
 		// Track which checks have passed and resolve waiting promises.
 		const checkPassed = new Set<string>();
@@ -109,12 +109,11 @@ for (const mod of parsedModules) {
 			const clabTopo = buildContainerlabTopology(LAB_NAME, mod.topology);
 			const inspectData = await clab.deploy(LAB_NAME, clabTopo);
 
-			// Map container names → NodeInfo
+			// Map container names → deployed node info
 			nodeMap = {};
 			for (const node of inspectData) {
 				const nodeName = node.name.replace(`clab-${LAB_NAME}-`, "");
 				nodeMap[nodeName] = {
-					id: nodeName,
 					ip: node.ipv4Address?.split("/")[0] ?? "",
 					containerId: node.containerId,
 				};
@@ -128,7 +127,9 @@ for (const mod of parsedModules) {
 			const HEALTH_TIMEOUT = 300_000;
 			await Promise.all(
 				mikrotikNodes.map((nodeName) =>
-					monitor.waitForHealth(nodeName, HEALTH_TIMEOUT),
+					monitor.health.wait(nodeMap[nodeName]?.containerId ?? nodeName, {
+						timeout: HEALTH_TIMEOUT,
+					}),
 				),
 			);
 
@@ -155,10 +156,13 @@ for (const mod of parsedModules) {
 				mikrotikClients[nodeName] = client;
 			}
 
-			// Build the evaluator check list from parsed module checks
+			// Build the evaluator check list from parsed module checks. The
+			// evaluator session operates in Docker container-ID space (matching
+			// clab-monitor's NodeInfo.id), so translate each check's human-readable
+			// target node into its container ID.
 			const sessionChecks = mod.checks.map((check) => ({
 				id: check.id,
-				nodeId: check.targetNode,
+				nodeId: nodeMap[check.targetNode]?.containerId ?? check.targetNode,
 				checkId: check.checkId as SessionCheckPayload<
 					typeof evaluator.handlers
 				>["checkId"],
@@ -167,10 +171,16 @@ for (const mod of parsedModules) {
 				>["params"],
 			})) as SessionCheckPayload<typeof evaluator.handlers>[];
 
+			const evalNodeMap: Record<string, NodeInfo> = {};
+			for (const info of Object.values(nodeMap)) {
+				evalNodeMap[info.containerId] = { id: info.containerId, ip: info.ip };
+			}
+
 			// Create the evaluator session
-			session = evaluator.createSession(docker, nodeMap, sessionChecks, {
-				isNodeHealthy: monitor.isNodeHealthy,
-				waitForHealth: monitor.waitForHealth,
+			session = evaluator.createSession(docker, evalNodeMap, sessionChecks, {
+				isNodeHealthy: monitor.health.isHealthy,
+				waitForHealth: (nodeId, timeoutMs, signal) =>
+					monitor.health.wait(nodeId, { timeout: timeoutMs, signal }),
 			});
 
 			session.onChange((id, value) => {

@@ -19,44 +19,33 @@ export async function testDeviceOnWorker(
 	},
 ) {
 	const data = payload.data;
-	const executionId = payload.requestId;
-	const nodeId = Bun.randomUUIDv7();
+	const sessionId = `test-${payload.requestId}`;
 
 	const reply = ws.server.reply("device-template:test", payload.requestId);
 
 	try {
-		let deployedNodes: Awaited<
-			ReturnType<typeof sendCommandToWorker<"clab:deployLab">>
-		>;
-		let healthPromise: Promise<unknown>;
+		reply("info", `Pulling image ${data.image}...`);
 
-		try {
-			reply("info", `Pulling image ${data.image}...`);
+		await sendCommandToWorker(workerId, "docker:pullImage", {
+			image: data.image,
+		});
 
-			await sendCommandToWorker(workerId, "docker:pullImage", {
-				image: data.image,
-			});
+		reply("info", "Image pulled successfully.");
 
-			reply("info", "Image pulled successfully.");
+		// Lab provisioning
+		reply("info", "Provisioning device...");
 
-			// Lab provisioning
-			reply("info", "Provisioning device...");
-
-			healthPromise = waitForEvent(tempNodeEvents, `${nodeId}:health`, {
-				predicate: (health) => {
-					if (!health) return null;
-					else return health === "healthy" || undefined;
-				},
-				timeout: 120000,
-			});
-
-			deployedNodes = await sendCommandToWorker(workerId, "clab:deployLab", {
-				sessionId: executionId,
+		const deployedNodes = await sendCommandToWorker(
+			workerId,
+			"clab:deployLab",
+			{
+				sessionId,
 				config: {
 					ownerId: payload.userId,
 					nodes: [
 						{
-							id: nodeId,
+							// Only one node in this topology, so the session id is fine to use
+							id: sessionId,
 							name: data.name,
 							image: data.image,
 							kind: data.kind,
@@ -69,30 +58,33 @@ export async function testDeviceOnWorker(
 						},
 					],
 				},
-			}).catch((error) => {
-				throw new Error(
-					`Provisioning failed: ${error instanceof Error ? error.message : String(error)}`,
-				);
-			});
-		} finally {
+			},
+		).finally(async () => {
 			await db
 				.update(workers)
 				.set({ deployingLab: sql`GREATEST(${workers.deployingLab} - 1, 0)` })
 				.where(eq(workers.id, workerId));
-		}
+		});
 
 		reply("info", "Device provisioned.");
 
-		const deployed = deployedNodes.find((n) => n.id === nodeId);
+		const deployed = deployedNodes[0];
 		if (!deployed) {
 			throw new Error("Failed to retrieve deployed device info.");
 		}
-		const { ip, containerId } = deployed;
+		const { id, ip, health } = deployed;
 
 		// Health check
 		reply("info", "Waiting for device to become healthy...");
 
-		const isHealthy = await healthPromise;
+		const isHealthy = await waitForEvent(tempNodeEvents, `${id}:health`, {
+			initialValue: health,
+			predicate: (health) => {
+				if (!health) return null;
+				else return health === "healthy" || undefined;
+			},
+			timeout: 120000,
+		});
 		if (isHealthy) {
 			reply("info", "Device is healthy.");
 		} else if (isHealthy === null) {
@@ -127,7 +119,7 @@ export async function testDeviceOnWorker(
 		const stats = await sendCommandToWorker(
 			workerId,
 			"docker:measureContainerStats",
-			{ containerId },
+			{ id },
 		);
 		reply("stats", stats);
 	} catch (error) {
@@ -143,7 +135,7 @@ export async function cleanupDeviceTest(
 	},
 ) {
 	await sendCommandToWorker(workerId, "clab:destroyLab", {
-		sessionId: payload.sessionId,
+		sessionId: `test-${payload.sessionId}`,
 	});
 
 	await db

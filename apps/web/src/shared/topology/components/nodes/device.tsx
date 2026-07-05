@@ -8,17 +8,18 @@ import useTopologyDevice from "../../hooks/store/use-topology-device";
 import useTopologyTemplate from "../../hooks/store/use-topology-template";
 import Icon from "../icon";
 
-const healthColorMap: Record<NodeHealth, string> = {
+const healthColorMap: Record<Exclude<NodeHealth, null>, string> = {
 	starting: "bg-yellow-500 animate-pulse",
 	healthy: "bg-green-500",
 	unhealthy: "bg-red-500",
+	died: "bg-red-500",
+	destroyed: "bg-red-500",
 };
 
-const getHealthColor = (health: string | null | undefined) => {
+const getHealthColor = (health: NodeHealth | undefined) => {
 	if (!health) return healthColorMap.healthy;
-	if (health === "deleted") return healthColorMap.unhealthy;
 
-	return healthColorMap[health as NodeHealth];
+	return healthColorMap[health];
 };
 
 function Device({ id }: { id: string }) {

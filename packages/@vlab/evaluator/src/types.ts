@@ -7,7 +7,6 @@ import type { EvaluationHandler } from "./base/evaluation-handler";
 export interface NodeInfo {
 	id: string;
 	ip: string;
-	containerId: string;
 	credentials?: {
 		username?: string;
 		password?: string;

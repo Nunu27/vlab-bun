@@ -309,7 +309,7 @@ async function getRoutes(container: Container) {
 export default new EvaluationHandler("linux")
 	.kinds(["linux"])
 	.withContext(async ({ node, docker }) => {
-		const container = docker.getContainer(node.containerId);
+		const container = docker.getContainer(node.id);
 		return { container };
 	})
 	.addSource({

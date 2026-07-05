@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-import { promises as dns } from "node:dns";
 import { Type as t } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Value } from "@sinclair/typebox/value";
@@ -25,7 +24,7 @@ const EnvSchema = t.Object({
 	WORKER_ID: t.String({ minLength: 1 }),
 	MANAGER_GRPC_URL: t.String({ default: "manager:50051" }),
 	GUACD_HOST: t.String({ default: "guacd" }),
-	// GUACD_IP will be automatically inferred from GUACD_HOST if not provided
+	// GUACD_IP is resolved from GUACD_HOST at startup if not provided (see lib/guacd.ts).
 	GUACD_IP: t.String({ default: "" }),
 	GUACD_PORT: t.Number({ default: 4822 }),
 
@@ -50,16 +49,6 @@ if (errors.length) {
 }
 
 const env = validator.Decode(casted);
-
-if (!env.GUACD_IP) {
-	const { address } = await dns.lookup(env.GUACD_HOST).catch(() => {
-		console.error(
-			`❌ GUACD_HOST Failed to resolve '${env.GUACD_HOST}' hostname`,
-		);
-		process.exit(1);
-	});
-	env.GUACD_IP = address;
-}
 
 export default env;
 export const inProduction = env.NODE_ENV === "production";

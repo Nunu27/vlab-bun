@@ -3,6 +3,7 @@ import db from "@manager/db";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { RequestWithId } from "@vlab/shared/schemas/common";
+import { t } from "elysia";
 
 export default createRouter()
 	.use(auth)
@@ -34,6 +35,9 @@ export default createRouter()
 		},
 		{
 			private: ["student"],
-			params: RequestWithId(["labId", "labSessionId", "id"]),
+			params: t.Object({
+				...RequestWithId(["labId", "labSessionId"]).properties,
+				id: t.String(),
+			}),
 		},
 	);

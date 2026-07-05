@@ -76,8 +76,7 @@ ws.server.on(
 			}
 
 			return {
-				id: Bun.randomUUIDv7(),
-				labNodeId: id,
+				id,
 				name: device.name,
 				kind: template.kind,
 				image: template.image,
@@ -149,17 +148,11 @@ ws.server.on(
 			dueDate,
 		});
 
-		// dispatchWorkerAction resolves the deferred reply asynchronously via
-		// ws.server.reply("lab:[id]:init", requestId)
 		return DEFER;
 	},
 );
 
 // clientId is stored as "<connectionId>:<requestId>" rather than the bare connectionId.
-// A single connection can issue this RPC more than once (e.g. the conflict-check call
-// followed by "take over"), and useWSAction cancels the prior call when a new one is
-// sent. Keying ownership on connectionId alone let a stale call's dispose handler tear
-// down the session that a newer call on the *same* connection had just re-claimed.
 function ownerConnectionId(clientId: string) {
 	return clientId.slice(0, clientId.indexOf(":"));
 }

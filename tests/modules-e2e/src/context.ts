@@ -1,10 +1,17 @@
-import type { NodeInfo } from "@vlab/evaluator/types";
 import type Docker from "dockerode";
 import type { RouterOSClient } from "mikro-routeros";
 
+// Deployed node bookkeeping local to these tests, keyed by human topology
+// node name. Distinct from evaluator's NodeInfo, which is keyed and
+// identified by container ID.
+export interface DeployedNode {
+	ip: string;
+	containerId: string;
+}
+
 export interface ModuleTestContext {
 	mikrotikClients: Record<string, RouterOSClient>;
-	nodeMap: Record<string, NodeInfo>;
+	nodeMap: Record<string, DeployedNode>;
 	docker: Docker;
 	waitForCheck: (checkId: string, timeout?: number) => Promise<void>;
 }

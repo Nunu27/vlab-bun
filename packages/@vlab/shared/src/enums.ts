@@ -65,5 +65,12 @@ export type Role = (typeof roleValues)[number];
 export const labTypeValues = ["user", "device-test"] as const;
 export type LabType = (typeof labTypeValues)[number];
 
-export const nodeHealthValues = ["healthy", "unhealthy", "starting"] as const;
-export type NodeHealth = (typeof nodeHealthValues)[number];
+// Mirrors @vlab/clab-monitor's NodeHealth
+export const nodeHealthValues = [
+	"healthy",
+	"unhealthy",
+	"starting",
+	"died",
+	"destroyed",
+] as const;
+export type NodeHealth = (typeof nodeHealthValues)[number] | null;

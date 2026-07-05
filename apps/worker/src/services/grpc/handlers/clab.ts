@@ -1,5 +1,7 @@
-import { deployLab, destroyLab, reconcileSessions } from "../lib/clab";
-import type { RpcServer } from "./server";
+import { deployLab } from "@worker/domain/lab/deploy";
+import { destroyLab } from "@worker/domain/lab/destroy";
+import { reconcileSessions } from "@worker/domain/lab/reconcile";
+import type { RpcServer } from "../transport";
 
 export function registerClabHandlers(server: RpcServer) {
 	server.on("clab:deployLab", async ({ payload: { sessionId, config } }) => {

@@ -1,6 +1,6 @@
 import { WorkerProto } from "@vlab/grpc";
+import env from "@worker/env";
 import { createChannel, createClient, Metadata } from "nice-grpc";
-import env from "../env";
 
 export const channel = createChannel(env.MANAGER_GRPC_URL);
 
