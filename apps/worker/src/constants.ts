@@ -17,6 +17,10 @@ export const HEAL_COOLDOWN_MS = 60_000;
 export const HEAL_MAX_ATTEMPTS = 3;
 export const HEAL_RETRY_BASE_MS = 5_000;
 export const HEAL_RETRY_FACTOR = 3;
+// Random delay before the first heal attempt, so a batch of nodes going
+// unhealthy at the same instant (e.g. a multi-lab deploy) doesn't restart
+// them all simultaneously and pile onto host contention.
+export const HEAL_TRIGGER_JITTER_MS = 3_000;
 
 // gRPC reconnect tuning: full-jitter exponential backoff.
 export const RECONNECT_BASE_MS = 1_000;
