@@ -129,7 +129,6 @@ function Edge({ id }: { id: string }) {
 	const controlX = midX + perpX * curvature;
 	const controlY = midY + perpY * curvature;
 
-	// Create curved path
 	const pathData =
 		curvature === 0
 			? `M ${sx} ${sy} L ${tx} ${ty}`
@@ -145,7 +144,6 @@ function Edge({ id }: { id: string }) {
 	let tLabelX = tx - labelOffset * Math.cos(angle);
 	let tLabelY = ty - labelOffset * Math.sin(angle);
 
-	// Add curvature offset if edge is curved
 	if (curvature !== 0) {
 		// Apply perpendicular offset based on curvature
 		const curveOffsetRatio = 0.3; // How much curve affects label position

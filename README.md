@@ -1,10 +1,10 @@
 # vLab
 
+## Overview
+
 A distributed virtual network lab management platform that orchestrates [Containerlab](https://containerlab.dev/) topologies on remote hosts. Built for network engineering courses and hands-on lab exercises, vLab lets instructors define labs and evaluations while students provision, interact with, and get assessed on live container-based network environments.
 
----
-
-## Architecture
+### Architecture
 
 vLab uses a **Manager-Worker** architecture designed to run Containerlab on bare-metal or VM hosts without giving the central server direct Docker or SSH access.
 
@@ -49,6 +49,16 @@ vLab uses a **Manager-Worker** architecture designed to run Containerlab on bare
 
 ---
 
+## Key Features
+
+- **Automated Orchestration**: Automates the deployment, lifecycle management, and destruction of Containerlab network topologies on remote hosts.
+- **Evaluation Engine**: Automated grading and configuration verification of Linux and MikroTik RouterOS nodes.
+- **In-Browser Terminal**: Out-of-the-box terminal access (SSH, VNC, Telnet) via Apache Guacamole Integration.
+- **Manager-Worker Architecture**: A decoupled backend architecture that allows remote execution without exposing host Docker sockets or SSH to the central server.
+- **Real-Time Telemetry**: Real-time state synchronization using WebSockets for monitoring topology and node status.
+
+---
+
 ## Project Structure
 
 ```
@@ -58,14 +68,22 @@ vlab/
 │   ├── worker/           # Host daemon (gRPC server + Containerlab)
 │   └── web/              # React 19 frontend
 ├── packages/
-│   └── @vlab/
-│       ├── shared/       # Shared types, enums, constants
-│       ├── grpc/         # Generated gRPC definitions
-│       ├── ws/           # WebSocket message schemas
-│       ├── evaluator/    # Lab evaluation engine
-│       ├── clab/         # TypeScript Containerlab wrapper
-│       └── clab-monitor/ # Docker event monitor for lab lifecycle
-├── docs/                 # Architecture, deployment, and module docs
+│   ├── @jawit/           # Shared ecosystem utilities
+│   │   ├── common/       # Standard API responses and constants
+│   │   ├── elysia-caching/ # Elysia.js caching plugin
+│   │   ├── paginator/    # Drizzle ORM pagination and TypeBox schemas
+│   │   ├── query/        # TanStack query wrapper for Elysia Eden
+│   │   └── zustand-helper/ # Zustand store and selector utilities
+│   ├── @vlab/            # Core vLab domain logic
+│   │   ├── shared/       # Shared types, enums, constants
+│   │   ├── grpc/         # Generated gRPC definitions
+│   │   ├── ws/           # WebSocket message schemas
+│   │   ├── evaluator/    # Lab evaluation engine
+│   │   ├── clab/         # TypeScript Containerlab wrapper
+│   │   └── clab-monitor/ # Docker event monitor for lab lifecycle
+│   └── external/         # External service integrations
+│       └── mikro-routeros/ # MikroTik RouterOS API client
+├── docs/                 # Deployment guides and lab course modules
 ├── scripts/              # Dev tooling and deployment automation
 ├── docker-compose.yml    # Docker Swarm stack definition
 ├── Dockerfile.manager
@@ -75,7 +93,7 @@ vlab/
 
 ---
 
-## Getting Started
+## Prerequisites & Configuration
 
 ### Prerequisites
 
@@ -83,19 +101,7 @@ vlab/
 - Docker with Swarm initialized (for production)
 - PostgreSQL and Redis (provided via Docker Compose in development)
 
-### Development
-
-```bash
-# Install all workspace dependencies
-bun install
-```
-
-Copy the example env files and adjust values as needed:
-
-```bash
-cp apps/manager/.env.example apps/manager/.env
-cp apps/worker/.env.example apps/worker/.env
-```
+### Configuration
 
 **`apps/manager/.env`**
 
@@ -132,6 +138,24 @@ cp apps/worker/.env.example apps/worker/.env
 | `CLAB_MGMT_NETWORK` | `clab-mgmt` | Docker network name for Containerlab management |
 | `LOG_LEVEL` | `debug` | Pino log level |
 
+---
+
+## Development & Scripts
+
+### Development
+
+```bash
+# Install all workspace dependencies
+bun install
+```
+
+Copy the example env files and adjust values as needed:
+
+```bash
+cp apps/manager/.env.example apps/manager/.env
+cp apps/worker/.env.example apps/worker/.env
+```
+
 Then start all apps:
 
 ```bash
@@ -166,9 +190,7 @@ The stack includes: Manager, Worker auto-installer (deployed globally to every S
 
 See the [full deployment guide](docs/deployment/index.md) for environment variable reference and a manual deployment option.
 
----
-
-## Manager CLI
+### Manager CLI
 
 The Manager binary doubles as a maintenance CLI:
 
@@ -178,21 +200,18 @@ bun run manager seed            # Seed the database
 bun run manager backup          # Backup DB + object storage to lab_backup/
 bun run manager restore         # Restore from lab_backup/
 bun run manager reset-sessions  # Clear all active lab sessions
+bun run manager sync-modules    # Sync lab modules from docs/modules to the DB
 ```
 
----
+### Lab Evaluation
 
-## Lab Evaluation
+vLab has a built-in evaluation engine (`@vlab/evaluator`) that checks student lab configurations automatically. Supported node types and checks:
 
-vLab has a built-in evaluation engine (`@vlab/evaluator`) that checks student lab configurations automatically. Supported node types:
+- **Linux**: routing tables, user accounts
+- **MikroTik RouterOS**: OSPF, RIP, BGP, routing tables, system identity, user accounts
+- **Generic**: interface IP address verification
 
-- **Linux**: systemd services, routing tables, user accounts
-- **MikroTik RouterOS**: OSPF, RIP, BGP, interface state
-- **Generic**: ping reachability, custom command output
-
----
-
-## Linting & Type Checking
+### Linting & Type Checking
 
 ```bash
 bun run typecheck    # TypeScript check across all workspaces
@@ -203,18 +222,11 @@ bun run format       # Biome format
 
 > This project uses **Biome** exclusively. Do not use ESLint or Prettier.
 
----
+### Documentation
 
-## Documentation
-
-Internal developer docs live in [`docs/`](docs/):
+Project documentation and lab materials live in [`docs/`](docs/):
 
 | Doc | Description |
 |---|---|
-| [Architecture](docs/system/architecture/architecture.md) | Manager-Worker design rationale |
-| [Communication](docs/system/communication/communication.md) | gRPC, WebSocket, Waycast protocol |
-| [Data Model](docs/system/data-model/data-model.md) | Database schema and entity relationships |
-| [Frontend](docs/system/frontend/frontend.md) | React, routing, state management |
-| [Containerlab](docs/system/containerlab/containerlab.md) | Topology parsing and container lifecycle |
-| [Evaluator](docs/system/evaluator/evaluator.md) | Evaluation engine and check handlers |
-| [Deployment](docs/deployment/index.md) | Docker Swarm and manual deployment guides |
+| [Deployment Guides](docs/deployment/index.md) | Docker Swarm and manual deployment instructions |
+| [Lab Modules](docs/modules/) | Course materials, topologies, and instructions for lab sessions |

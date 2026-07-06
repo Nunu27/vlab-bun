@@ -1,101 +1,86 @@
 # @jawit/paginator
 
-A powerful, type-safe pagination and filtering library for [Drizzle ORM](https://orm.drizzle.team/) and [TypeBox](https://github.com/sinclairzx81/typebox).
+## Overview
 
-It automatically generates TypeBox schemas for your API endpoints based on your Drizzle schema, and dynamically translates incoming requests (pagination, sorting, filtering, and searching) into optimized SQL queries.
+A powerful and type-safe pagination, filtering, and sorting helper for Drizzle ORM (PostgreSQL) using TypeBox for schema validation.
 
 ## Installation
 
 ```bash
-bun add @jawit/drizzle-paginator drizzle-orm @sinclair/typebox
+bun add @jawit/paginator
 ```
 
-## Usage
+## Key Features
 
-### 1. Create a Paginator
+- **Type-Safe Pagination**: Strongly typed pagination request schemas and responses.
+- **Dynamic Filtering**: Automatic TypeBox schema generation for filtering and ranging on database columns.
+- **Search capabilities**: Full-text or partial search conditions automatically built for specified columns.
+- **Sorting**: Easy ascending/descending sorting integration.
+- **Seamless Drizzle Integration**: Works directly with Drizzle ORM's relational query builder.
 
-Initialize a paginator for a specific table in your schema. You can specify which columns are allowed for sorting/filtering and which columns should be included in global text searches.
+## Usage & API Examples
+
+### 1. Define a Paginator
 
 ```typescript
-import { createPaginator } from "@jawit/drizzle-paginator";
-import { db } from "./db"; // Your Drizzle DB instance (must have schema defined)
+import { createPaginator } from "@jawit/paginator";
+import { db } from "./db";
 
-const userPaginator = createPaginator(db, "users", {
-	usableColumns: ["id", "name", "email", "createdAt"], // Columns allowed for sorting & filtering
-	searchableColumns: ["name", "email"] // Columns to search when `search` query is provided
+export const userPaginator = createPaginator(db, "users", {
+  usableColumns: ["id", "name", "email", "createdAt"],
+  searchableColumns: ["name", "email"],
 });
 ```
 
-### 2. Validate API Requests
+### 2. Validate Requests
 
-The paginator automatically generates a TypeBox schema (`userPaginator.schema`) that you can use directly in your API frameworks (like Elysia, Fastify, etc.) to validate incoming query parameters.
-
-The generated schema expects:
-- `page` (number, default: 1)
-- `perPage` (number, default: 10)
-- `sortBy` (optional string, must be one of `usableColumns`)
-- `sortOrder` (optional `"asc" | "desc"`)
-- `search` (optional string)
-- `filters` (optional array of filter objects)
+The paginator automatically exposes a TypeBox schema representing valid pagination, filtering, and search inputs for your table.
 
 ```typescript
-// Example using Elysia
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 
 const app = new Elysia()
-	.get("/users", async ({ query }) => {
-		// `query` is automatically validated against userPaginator.schema
-		const data = await userPaginator.paginate(query);
-		return data;
-	}, {
-		query: userPaginator.schema
-	});
+  .get("/users", async ({ query }) => {
+    return await userPaginator.paginate(query);
+  }, {
+    query: userPaginator.schema // Automatically validates `page`, `perPage`, `search`, `filters`, `sortBy`, `sortOrder`
+  });
 ```
 
-### 3. Fetch Paginated Data
+### 3. Request Format
 
-Call `.paginate()` with the validated request object. You can optionally pass standard Drizzle `findMany` options (like `with` for relational queries, or additional `where` conditions).
-
-```typescript
-const result = await userPaginator.paginate(validatedQuery, {
-	// Optional Drizzle query options
-	with: {
-		profile: true
-	},
-	where: (users, { eq }) => eq(users.isActive, true) // Additional base conditions
-});
-
-/* Result format:
-{
-	items: [
-		{ id: 1, name: "Alice", index: 1, profile: { ... } },
-		{ id: 2, name: "Bob", index: 2, profile: { ... } }
-	],
-	pageInfo: {
-		page: 1,
-		perPage: 10,
-		total: 42,
-		totalPages: 5
-	}
-}
-*/
-```
-
-## Advanced Filtering
-
-The `filters` array in the request schema supports precise operations depending on the column's data type:
+Clients can request paginated data using complex filters:
 
 ```json
 {
-	"filters": [
-		{ "field": "name", "op": "ilike", "value": "john" },
-		{ "field": "createdAt", "op": "gte", "value": "2024-01-01" },
-		{ "field": "age", "op": "bt", "value": [18, 30] }
-	]
+  "page": 1,
+  "perPage": 20,
+  "sortBy": "createdAt",
+  "sortOrder": "desc",
+  "search": "john",
+  "filters": [
+    {
+      "field": "createdAt",
+      "op": "between",
+      "value": ["2023-01-01T00:00:00Z", "2024-01-01T00:00:00Z"]
+    }
+  ]
 }
 ```
 
-**Supported Operators (`op`):**
-- Strings: `eq`, `ne`, `like`, `ilike`, `nlike`
-- Numbers/Dates: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `bt` (between), `nb` (not between)
-- Booleans: `eq`, `ne`
+The response will automatically be shaped as `PaginatedData<T>`:
+```json
+{
+  "items": [...],
+  "pageInfo": {
+    "page": 1,
+    "perPage": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+```
+
+## Development & Scripts
+
+This package is consumed directly from source and has no package-specific build or development scripts.

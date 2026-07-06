@@ -29,6 +29,7 @@
 		"lint": "biome lint --write --unsafe .",
 		"format": "biome format --write .",
 		"typecheck": "bun --filter='*' run typecheck",
+		"validate-readmes": "bun test tests/readme-validator/validate.test.ts",
 		"prepare": "husky"
 	},
 	"type": "module",
