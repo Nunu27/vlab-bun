@@ -1,0 +1,29 @@
+stateDiagram-v2
+    [*] --> starting: Docker "start" event
+    starting --> healthy: health_status healthy / no healthcheck configured (null)
+    healthy --> unhealthy: health_status unhealthy
+    unhealthy --> healthy: health_status healthy (self-recovered or auto-heal restart succeeded)
+    unhealthy --> died: "die" event
+    starting --> died: "die" event
+    healthy --> died: "die" event
+    died --> destroyed: "destroy" event
+    healthy --> destroyed: "destroy" event
+    unhealthy --> destroyed: "destroy" event
+
+    state unhealthy {
+        [*] --> heal_idle
+        heal_idle --> heal_cooldown_check
+        heal_cooldown_check --> heal_jitter_wait: within cooldown or attempts<3
+        heal_cooldown_check --> heal_gave_up: attempts >= HEAL_MAX_ATTEMPTS (3)
+        heal_jitter_wait --> heal_attempting: jitter elapsed [0-3s], calls containerlab restart --node
+        heal_attempting --> heal_idle: restart succeeded (health-update resets heal state)
+        heal_attempting --> heal_backoff_wait: restart failed
+        heal_backoff_wait --> heal_jitter_wait: exponential backoff elapsed (base 5s, factor 3, cap 60s)
+    }
+
+    note right of heal_attempting
+        containerlab restart is an in-place Docker
+        restart (stop+start), not a recreate, so the
+        container ID is preserved across a heal cycle.
+        Chosen deliberately over redeploy for this reason.
+    end note

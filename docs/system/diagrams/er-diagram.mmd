@@ -1,0 +1,145 @@
+erDiagram
+    DEPARTMENT ||--o{ STUDY_PROGRAM : has
+    STUDY_PROGRAM ||--o{ STUDENT : has
+    USER ||--o| STUDENT : "extends (PK=user.id)"
+    USER ||--o| INSTRUCTOR : "extends (PK=user.id)"
+    INSTRUCTOR ||--o{ LAB : owns
+    LAB ||--o{ LAB_ATTACHMENTS : has
+    LAB ||--o{ LAB_EMBEDDED_FILE : has
+    LAB ||--o{ LAB_ENROLLMENT : has
+    STUDENT ||--o{ LAB_ENROLLMENT : "enrolled via"
+    LAB ||--o{ LAB_SESSION : "attempted as"
+    STUDENT ||--o{ LAB_SESSION : attempts
+    WORKER ||--o{ LAB_SESSION : hosts
+    LAB_SESSION ||--o{ LAB_SESSION_CHECK : has
+    LAB_SESSION ||--o{ LAB_SESSION_NODE : has
+    DEVICE_TEMPLATE ||--o{ LAB_SESSION_NODE : instantiated_as
+    DEVICE_CATEGORY ||--o{ DEVICE_TEMPLATE : groups
+    FILE ||--o{ LAB : "referenced by (cover)"
+    FILE ||--o{ LAB_ATTACHMENTS : "referenced by"
+    FILE ||--o{ LAB_EMBEDDED_FILE : "referenced by"
+
+    DEPARTMENT {
+        uuid id PK
+        string name
+    }
+    STUDY_PROGRAM {
+        uuid id PK
+        string name
+        uuid departmentId FK
+    }
+    USER {
+        uuid id PK
+        string name
+        string email
+        string passwordHash "nullable, null = CAS-only"
+        enum role "student|instructor|admin"
+    }
+    STUDENT {
+        uuid id PK "= user.id"
+        string nrp
+        int year
+        enum degreeLevel "D3|LJ|D4|S2"
+        uuid studyProgramId FK
+    }
+    INSTRUCTOR {
+        uuid id PK "= user.id"
+        string nip
+    }
+    LAB {
+        uuid id PK
+        string name
+        string cover
+        text content
+        text instructions
+        jsonb topology "LabTopology"
+        jsonb checks "LabChecksMap"
+        int maxAttempt
+        int sessionDuration "minutes, default 180"
+        timestamp startAt
+        timestamp endAt
+        bool isPublished
+        uuid instructorId FK
+    }
+    LAB_ATTACHMENTS {
+        uuid labId FK
+        string file
+        string name
+    }
+    LAB_EMBEDDED_FILE {
+        uuid labId FK
+        string file
+    }
+    LAB_ENROLLMENT {
+        uuid labId FK
+        uuid studentId FK
+    }
+    LAB_SESSION {
+        uuid id PK
+        uuid labId FK
+        uuid studentId FK
+        string workerId FK
+        string clientId "connection:request owner lock"
+        numeric score
+        timestamp submittedAt "null = in progress"
+        timestamp dueDate
+    }
+    LAB_SESSION_CHECK {
+        uuid labSessionId FK
+        string checkId
+        bool completed
+    }
+    LAB_SESSION_NODE {
+        string id PK "docker container id"
+        uuid labSessionId FK
+        uuid deviceTemplateId FK
+        enum health
+        string ip
+        jsonb interfaces
+        uuid labNodeId "topology node uuid"
+        string token "signed guacamole token"
+    }
+    WORKER {
+        string id PK
+        enum status "online|offline"
+        string managerId
+        string guacdHost
+        int guacdPort
+        int cpuCores
+        int memoryMB
+        int storageMB
+        int cpuUsagePercent
+        int memoryUsagePercent
+        int storageUsagePercent
+        int activeLabs
+        int activeNodes
+        int deployingLab
+    }
+    DEVICE_CATEGORY {
+        uuid id PK
+        string name
+        string color
+    }
+    DEVICE_TEMPLATE {
+        uuid id PK
+        string name
+        string icon
+        string kind "containerlab kind"
+        string image
+        jsonb env
+        jsonb resources
+        jsonb connection
+        jsonb interfaces
+        numeric cpuCostCores
+        int memoryCostMB
+        uuid deviceCategoryId FK
+    }
+    TOPOLOGY_TEMPLATE {
+        uuid id PK
+        string name
+        jsonb topology
+    }
+    FILE {
+        uuid id PK
+        string name "content-hash S3 key, unique"
+    }

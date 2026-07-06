@@ -75,9 +75,6 @@ export function createDockerEventMonitor(ctx: Context) {
 		if (!running) return;
 
 		try {
-			logger?.debug("Rehydrating");
-			await rehydrate();
-
 			logger?.debug("Connecting to Docker events");
 
 			stream = (await docker.getEvents({
@@ -90,6 +87,28 @@ export function createDockerEventMonitor(ctx: Context) {
 			logger?.debug("Connected to Docker events");
 
 			let buffer = "";
+
+			// Events received while rehydrating are queued here instead of being
+			// processed immediately: rehydrate() mutates `nodes` and starts/stops
+			// network monitors directly (outside the KeyedQueue), so handling a
+			// live event concurrently with it could race (e.g. a duplicate network
+			// monitor). They're drained in order once rehydrate() finishes.
+			let rehydrating = true;
+			const pending: Array<{ event: DockerContainerEvent; node: NodeInfo }> =
+				[];
+
+			const dispatch = (event: DockerContainerEvent, node: NodeInfo) => {
+				const key = event.Action.startsWith("health_status:")
+					? "health_status"
+					: event.Action;
+
+				const handler = handlers[key];
+				if (!handler) return;
+
+				logger?.debug(`[event] Handling ${event.Action} event from ${node.id}`);
+
+				queue.enqueue(node.id, handler, ctx, event, node);
+			};
 
 			const cleanup = () => {
 				if (!stream) {
@@ -143,21 +162,16 @@ export function createDockerEventMonitor(ctx: Context) {
 
 					try {
 						const event: DockerContainerEvent = JSON.parse(line);
-						const key = event.Action.startsWith("health_status:")
-							? "health_status"
-							: event.Action;
-
-						const handler = handlers[key];
-						if (!handler) continue;
 
 						const node = resolveNode(event.Actor.ID, event.Actor.Attributes);
 						if (!node) continue;
 
-						logger?.debug(
-							`[event] Handling ${event.Action} event from ${node.id}`,
-						);
+						if (rehydrating) {
+							pending.push({ event, node });
+							continue;
+						}
 
-						queue.enqueue(node.id, handler, ctx, event, node);
+						dispatch(event, node);
 					} catch (err) {
 						logger?.error({ err, line }, "Failed to parse Docker event");
 					}
@@ -194,6 +208,15 @@ export function createDockerEventMonitor(ctx: Context) {
 				},
 				{ once: true },
 			);
+
+			logger?.debug("Rehydrating");
+			await rehydrate();
+			rehydrating = false;
+
+			for (const { event, node } of pending) {
+				dispatch(event, node);
+			}
+			pending.length = 0;
 		} catch (err) {
 			logger?.error({ err }, "Failed to connect to Docker events");
 

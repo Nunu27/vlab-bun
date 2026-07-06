@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> Initializing: student calls lab:[id]:init
+    Initializing --> WaitingForWorker: no worker capacity available
+    WaitingForWorker --> Initializing: worker becomes available (backoff retry)
+    Initializing --> Deploying: worker selected, clab:deployLab dispatched
+    Deploying --> Failed: partial/total deploy failure
+    Failed --> [*]: session row rolled back, worker counters decremented
+    Deploying --> Active: all nodes deployed, lab_session_node rows inserted
+
+    Active --> Active: node health/interface updates stream in
+    Active --> Active: evaluator check pass/fail transitions stream in
+    Active --> Overridden: another tab/device takes over (force connect)
+    Overridden --> Active: original tab reconnects and takes back over
+
+    Active --> Submitting: student manually submits OR dueDate BullMQ job fires
+    Submitting --> Scored: weighted score computed from lab_session_check rows
+    Scored --> Destroying: clab:destroyLab dispatched (tolerant of worker unreachable)
+    Destroying --> Ended: containers removed, lab_session_node rows deleted
+    Ended --> [*]

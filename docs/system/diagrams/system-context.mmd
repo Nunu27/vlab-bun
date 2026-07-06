@@ -1,0 +1,54 @@
+flowchart TB
+    subgraph Browser["Browser"]
+        WEB["apps/web (React 19 SPA)"]
+    end
+
+    subgraph ManagerHost["Manager (apps/manager, Elysia.js/Bun)"]
+        HTTP["HTTP API (/api/*, Eden Treaty)"]
+        WS["Socket.IO + Waycast (/ws)"]
+        GRPCSRV["gRPC server (:50051)"]
+        GUAC["guacamole-lite (:8080)"]
+    end
+
+    PG[("Postgres (Drizzle ORM)")]
+    REDIS[("Redis (sessions, cache, pub/sub, BullMQ)")]
+    S3[("S3 / MinIO / RustFS (files)")]
+
+    subgraph WorkerHost1["Worker Host 1 (apps/worker)"]
+        W1["worker daemon"]
+        CLAB1["containerlab CLI"]
+        MON1["@vlab/clab-monitor"]
+        EVAL1["@vlab/evaluator"]
+        DOCKER1["Docker Engine"]
+        GUACD1["guacd"]
+        NODES1["Deployed lab containers"]
+    end
+
+    subgraph WorkerHostN["Worker Host N"]
+        WN["worker daemon (same shape)"]
+    end
+
+    WEB -- "HTTP REST (Eden Treaty)" --> HTTP
+    WEB -- "WebSocket (Socket.IO/Waycast)" --> WS
+    WEB -- "in-browser console (RDP/VNC/SSH/Telnet)" --> GUAC
+
+    HTTP --> PG
+    HTTP --> REDIS
+    HTTP --> S3
+    WS --> REDIS
+
+    GRPCSRV -- "bidi gRPC stream, one per worker (ListenCommand)" --> W1
+    GRPCSRV -. "bidi gRPC stream" .-> WN
+
+    W1 --> CLAB1
+    W1 --> MON1
+    W1 --> EVAL1
+    CLAB1 --> DOCKER1
+    MON1 -- "Docker events" --> DOCKER1
+    CLAB1 -- "deploy/destroy" --> NODES1
+    DOCKER1 --> NODES1
+    GUAC -- "routes per worker guacdHost/guacdPort" --> GUACD1
+    GUACD1 --> NODES1
+
+    HTTP -.->|dispatchWorkerAction cross-replica relay| REDIS
+    REDIS -.-> GRPCSRV
