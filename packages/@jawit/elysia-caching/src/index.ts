@@ -1,6 +1,5 @@
 import Elysia from "elysia";
-import type { Logger } from "pino";
-import type { CacheAdapter, CacheOptions } from "./types";
+import type { CacheAdapter, CacheOptions, Logger } from "./types";
 
 export * from "./types";
 
@@ -9,10 +8,20 @@ const parseHTTPDate = (dateString: string) => {
 	return Number.isNaN(date.getTime()) ? null : date;
 };
 
-export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
+// Ensures the ETag value has exactly one layer of double-quotes,
+// regardless of what the adapter's generateETag returns.
+const toETag = (raw: string): string => {
+	const stripped = raw.replace(/^"(.*)"$/, "$1");
+	return `"${stripped}"`;
+};
+
+export const createCachingPlugin = <T>(
+	adapter: CacheAdapter<T>,
+	logger?: Logger,
+) =>
 	new Elysia({ name: "@jawit/caching" })
 		.derive(() => {
-			const cache = {
+			const cacheState = {
 				key: undefined as string | undefined,
 				prefix: "",
 				suffix: "",
@@ -21,19 +30,21 @@ export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 			return {
 				cache: {
 					set: (key: string) => {
-						cache.key = key;
+						cacheState.key = key;
 					},
 					get: () => {
-						const { key, prefix, suffix } = cache;
+						const { key, prefix, suffix } = cacheState;
 						if (!key) return null;
 						return `${prefix}${key}${suffix}`;
 					},
 					addPrefix: (prefix: string) => {
-						cache.prefix += `${prefix}:`;
+						cacheState.prefix += `${prefix}:`;
 					},
 					addSuffix: (suffix: string) => {
-						cache.suffix += `:${suffix}`;
+						cacheState.suffix += `:${suffix}`;
 					},
+					invalidate: (...keys: string[]) => adapter.delete(...keys),
+					invalidateAll: () => adapter.clear(),
 				},
 			};
 		})
@@ -47,6 +58,17 @@ export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 					useETag = true,
 					useLastModified = true,
 				} = options === true ? {} : options;
+
+				if (!useETag && !useLastModified) {
+					logger?.warn(
+						"cached: both `useETag` and `useLastModified` are false — caching will be disabled for this route.",
+					);
+					return;
+				}
+
+				const cacheControl = ttl
+					? `max-age=${ttl}, must-revalidate`
+					: `max-age=0, must-revalidate`;
 
 				return {
 					transform({ cache }) {
@@ -62,7 +84,7 @@ export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 						const clientETag = headers["if-none-match"];
 						const clientModifiedSince = headers["if-modified-since"];
 
-						set.headers["cache-control"] = `no-cache`;
+						set.headers["cache-control"] = cacheControl;
 						set.headers.etag = useETag ? metadata.etag : undefined;
 						set.headers["last-modified"] = useLastModified
 							? metadata.lastModified.toISOString()
@@ -108,9 +130,9 @@ export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 							set.headers["x-cache"] = "HIT";
 						} else if (isSuccess) {
 							set.headers["x-cache"] = "MISS";
-							set.headers["cache-control"] = `no-cache`;
+							set.headers["cache-control"] = cacheControl;
 							set.headers.etag = useETag
-								? `"${adapter.generateETag(responseValue)}"`
+								? toETag(adapter.generateETag(responseValue as T))
 								: undefined;
 							set.headers["last-modified"] = useLastModified
 								? new Date().toISOString()
@@ -129,7 +151,7 @@ export const createCachingPlugin = (adapter: CacheAdapter, logger?: Logger) =>
 						);
 
 						await Promise.all([
-							adapter.set(cacheKey, responseValue, ttl),
+							adapter.set(cacheKey, responseValue as T, ttl),
 							adapter.meta.set(
 								cacheKey,
 								{
