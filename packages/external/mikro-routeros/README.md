@@ -1,23 +1,27 @@
-# MikroTik API (RouterOS) Client for Node.js
+# mikro-routeros
+
+## Overview
 
 Node.js client for the MikroTik RouterOS API. Simple, fast, and lightweight with automatic parameter detection and parsed responses. Ideal for PPPoE, Hotspot, Firewall, Wireless, and general RouterOS automation.
-
-## Features
-
-- ✅ **Automatic parameter detection** for RouterOS commands (query vs action)
-- ✅ **Streams until `!done`** to handle multi-packet MikroTik API responses
-- ✅ **Proper error handling** for `!trap` and `!fatal`
-- ✅ **Parsed responses** into clean JavaScript objects
-- ✅ **Configurable connection timeout** to prevent hanging connections
-- ✅ **Covers PPPoE, Hotspot, Firewall, Wireless** and more
 
 ## Installation
 
 ```bash
-npm install mikro-routeros
+bun add mikro-routeros
 ```
 
-## Quick start
+## Key Features
+
+- ✅ **Automatic parameter detection** for RouterOS commands (query vs action)
+- ✅ **Proper error handling** for `!trap` and `!fatal`
+- ✅ **Parsed responses** into clean JavaScript objects
+- ✅ **Configurable connection timeout** to prevent hanging connections
+- ✅ **Covers PPPoE, Hotspot, Firewall, Wireless** and more
+- ✅ **Streaming support** for commands like `/interface/monitor-traffic` using EventEmitters
+
+## Usage & API Examples
+
+### Quick Start
 
 ```javascript
 const { RouterOSClient } = require('mikro-routeros');
@@ -37,14 +41,8 @@ async function main() {
 main().catch(console.error);
 ```
 
-## Usage
+### Library Examples
 
-### Run tests (optional)
-```bash
-npm test
-```
-
-### Library examples
 ```javascript
 const { RouterOSClient } = require('mikro-routeros');
 
@@ -83,7 +81,32 @@ await client.runQuery('/ppp/active/remove', { '.id': '*456' });
 await client.close();
 ```
 
-### More MikroTik API examples
+### Streaming API Example (e.g., monitor-traffic)
+
+```javascript
+const stream = await client.stream('/interface/monitor-traffic', { 
+  interface: 'ether1',
+  once: '' // optional
+});
+
+stream.on('data', (data) => {
+  console.log('Traffic data:', data);
+});
+
+stream.on('error', (err) => {
+  console.error('Stream error:', err);
+});
+
+stream.on('end', () => {
+  console.log('Stream ended');
+});
+
+// To cancel a stream early:
+// await stream.cancel();
+```
+
+### More MikroTik API Examples
+
 ```javascript
 // Firewall rules
 await client.runQuery('/ip/firewall/filter/print');
@@ -98,30 +121,30 @@ await client.runQuery('/interface/wireless/registration-table/print');
 await client.runQuery('/system/identity/print');
 ```
 
-## API reference
+### API Reference
 
-### RouterOSClient
+#### RouterOSClient Constructor
 
-#### Constructor
 ```javascript
 new RouterOSClient(host, port = 8728, timeout = 30000)
 ```
 
 **Parameters:**
 - `host` (string): MikroTik RouterOS IP address or hostname
-- `port` (number, optional): API port, default is 8728 (TCP) or 8729 (TLS)
+- `port` (number, optional): API port, default is 8728 (TCP)
 - `timeout` (number, optional): Connection timeout in milliseconds, default is 30000 (30 seconds)
 
 #### Methods
 
-- `connect()` - Connect to RouterOS API (TCP)
-- `login(username, password)` - Authenticate with RouterOS
-- `runQuery(command, params = {})` - Execute command and return parsed objects
-- `close()` - Close connection
+- `connect(): Promise<void>` - Connect to RouterOS API (TCP)
+- `login(username, password): Promise<void>` - Authenticate with RouterOS
+- `runQuery(command, params = {}): Promise<object[]>` - Execute command and return parsed objects
+- `stream(command, params = {}): Promise<RouterOSStream>` - Execute continuous command and return an EventEmitter for stream responses. Returns objects via `'data'` events. Can be stopped via `stream.cancel()`.
+- `close(): void` - Close connection
 
 TypeScript typings are included via `index.d.ts`.
 
-## Error handling
+### Error Handling
 
 ```javascript
 try {
@@ -135,7 +158,7 @@ try {
 }
 ```
 
-### Connection timeout
+#### Connection Timeout
 
 If the connection takes longer than the specified timeout, the promise will reject with a timeout error:
 
@@ -151,22 +174,7 @@ try {
 }
 ```
 
-## Test suite
-
-The test suite demonstrates:
-
-1. **CREATE** - Add new PPPoE secret user
-2. **READ** - Query user by name
-3. **UPDATE** - Modify user password and comment
-4. **DELETE** - Remove user
-5. **DISCONNECT** - Disconnect active user and verify
-
-Run locally:
-```bash
-npm start
-```
-
-## Requirements
+### Requirements
 
 - Node.js 12.0.0 or higher
 - Access to MikroTik RouterOS with API enabled
@@ -175,11 +183,25 @@ Notes:
 - RouterOS API default ports: 8728 (plain TCP), 8729 (TLS). This client uses TCP.
 - Works with RouterOS v6/v7 command paths.
 
-## Links
+### Links
 
 - MikroTik RouterOS API docs: [help.mikrotik.com/docs/display/ROS/API](https://help.mikrotik.com/docs/display/ROS/API)
 - RouterOS command reference: [wiki.mikrotik.com/wiki/Manual:TOC](https://wiki.mikrotik.com/wiki/Manual:TOC)
 
-## License
+### License
 
 ISC
+
+## Development & Scripts
+
+This package has scripts defined in `package.json` for testing:
+
+| Script | Command | Description |
+|---|---|---|
+| `test` | `bun run test.js` | Runs local tests using test.js |
+| `start` | `bun run test.js` | Runs local tests (alias) |
+
+To run the tests:
+```bash
+bun run test
+```

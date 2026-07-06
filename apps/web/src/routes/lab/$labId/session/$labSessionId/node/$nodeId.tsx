@@ -12,11 +12,13 @@ export const Route = createFileRoute(
 )({
 	component: RouteComponent,
 	loader: async ({ params: { labId, labSessionId, nodeId } }) => {
-		await api
-			.lab({ labId })
-			.session({ labSessionId })
-			.node({ id: nodeId })
-			.get.ensureQueryData(queryClient);
+		await queryClient.fetchQuery(
+			api
+				.lab({ labId })
+				.session({ labSessionId })
+				.node({ id: nodeId })
+				.get.queryOptions(),
+		);
 	},
 });
 

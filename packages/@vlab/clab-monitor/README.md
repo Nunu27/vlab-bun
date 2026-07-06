@@ -1,16 +1,8 @@
 # @vlab/clab-monitor
 
+## Overview
+
 A real-time Docker container and network interface monitor for [Containerlab](https://containerlab.dev/) topologies. It subscribes to Docker events, tracks node health state transitions, and maintains a live map of per-node IP addresses — with automatic reconnection and per-node event serialisation.
-
-## Features
-
-- **Docker event streaming** — subscribes to `start`, `health_status`, `kill`, `die`, and `destroy` events filtered to container type.
-- **Health tracking** — maps Docker health states (`starting`, `healthy`, `unhealthy`) and lifecycle events (`died`, `destroyed`) to a typed `NodeHealth` value.
-- **`waitForHealth`** — promise-based helper that resolves when a node becomes healthy, with optional timeout and `AbortSignal` support.
-- **Live interface maps** — reads and streams IP address changes per node. Emits an `interface-update` event on every change.
-- **Per-kind network monitors** — pluggable handlers for `linux` (via `ip monitor`) and `mikrotik_ros` (via RouterOS API streams).
-- **Auto-reconnect** — if the Docker event stream drops, the monitor rehydrates all running containers and reconnects automatically (default 3 s back-off).
-- **Serialised per-node processing** — a `KeyedQueue` ensures Docker events for the same node are handled one at a time, preventing race conditions.
 
 ## Installation
 
@@ -32,7 +24,17 @@ Peer dependencies that must be installed in the consuming app:
 | `mikro-routeros` | `workspace:*` |
 | `typescript` | `^6.0.3` |
 
-## Quick Start
+## Key Features
+
+- **Docker event streaming** — subscribes to `start`, `health_status`, `kill`, `die`, and `destroy` events filtered to container type.
+- **Health tracking** — maps Docker health states (`starting`, `healthy`, `unhealthy`) and lifecycle events (`died`, `destroyed`) to a typed `NodeHealth` value.
+- **`waitForHealth`** — promise-based helper that resolves when a node becomes healthy, with optional timeout and `AbortSignal` support.
+- **Live interface maps** — reads and streams IP address changes per node. Emits an `interface-update` event on every change.
+- **Per-kind network monitors** — pluggable handlers for `linux` (via `ip monitor`) and `mikrotik_ros` (via RouterOS API streams).
+- **Auto-reconnect** — if the Docker event stream drops, the monitor rehydrates all running containers and reconnects automatically (default 3 s back-off).
+- **Serialised per-node processing** — a `KeyedQueue` ensures Docker events for the same node are handled one at a time, preventing race conditions.
+
+## Usage & API Examples
 
 ```ts
 import Dockerode from "dockerode";
@@ -71,9 +73,9 @@ try {
 await monitor.stop();
 ```
 
-## API
+### API Reference
 
-### `createMonitor(options)`
+#### `createMonitor(options)`
 
 Creates a monitor instance.
 
@@ -94,7 +96,7 @@ Returns a `MonitorInstance` object:
 | `interfaceMap` | `Map<string, NodeInterfaces>` | Live snapshot of `{ ifaceName: string[] }` per node ID. |
 | `waitForHealth` | `(id, options?) => Promise<void>` | Resolves when the node reaches a healthy state (see below). |
 
-### `waitForHealth(id, options?)`
+#### `waitForHealth(id, options?)`
 
 ```ts
 waitForHealth(
@@ -112,7 +114,7 @@ waitForHealth(
 - Rejects with `signal.reason` if the provided `AbortSignal` is aborted.
 - Throws synchronously if `id` is not in the monitored `nodes` set.
 
-### Events
+#### Events
 
 ```ts
 interface Events {
@@ -121,7 +123,7 @@ interface Events {
 }
 ```
 
-#### `NodeHealth`
+##### `NodeHealth`
 
 ```ts
 type NodeHealth =
@@ -133,14 +135,14 @@ type NodeHealth =
   | null;         // unknown / not yet determined
 ```
 
-#### `NodeInterfaces`
+##### `NodeInterfaces`
 
 ```ts
 type NodeInterfaces = Record<string, string[]>;
 // e.g. { "eth0": ["192.168.1.1/24"], "eth1": ["10.0.0.1/30"] }
 ```
 
-## Architecture
+### Architecture
 
 ```
 createMonitor()
@@ -159,7 +161,7 @@ createMonitor()
     └── mikrotik_ros     (src/network/mikrotik_ros.ts) — RouterOS API /ip/address
 ```
 
-### Node Discovery
+#### Node Discovery
 
 A container is tracked only when it has **both** Containerlab labels:
 
@@ -174,7 +176,7 @@ The management IP is resolved from the container's network settings. Priority or
 2. A network named `bridge` or `management`
 3. Any network with a non-empty `IPAddress`
 
-### Credentials
+#### Credentials
 
 Per-node credentials are extracted from the container's environment variables:
 
@@ -185,23 +187,23 @@ Per-node credentials are extracted from the container's environment variables:
 
 Defaults (`admin` / `admin`) are applied when not set (MikroTik only).
 
-### Network Monitors
+#### Network Monitors
 
-#### `linux`
+##### `linux`
 
 Uses `docker exec` to run:
 
 - `ip -j addr` — one-shot read of all interfaces at startup.
 - `ip -o monitor address` — long-running stream; parses `Deleted` lines to handle address removal. Skips the loopback (`lo`) interface.
 
-#### `mikrotik_ros`
+##### `mikrotik_ros`
 
 Connects to the RouterOS API (`mikro-routeros`) on port **8728**:
 
 - `/ip/address/print` — reads the current address table.
 - `/ip/address/listen` — streams address additions/deletions. Uses RouterOS entry `.id` values to match updates to previous entries.
 
-## Health State Machine
+### Health State Machine
 
 ```
            start event
@@ -229,7 +231,7 @@ kill       die event  health_status: unhealthy
 `HEALTHY_STATUS` = `{ "healthy", null }`  
 `TERMINAL_HEALTH_STATUS` = `{ "unhealthy", "died", "destroyed" }`
 
-## Exec Utilities (`src/exec.ts`)
+### Exec Utilities (`src/exec.ts`)
 
 Low-level helpers for running commands inside containers via `docker exec`:
 
@@ -239,7 +241,7 @@ Low-level helpers for running commands inside containers via `docker exec`:
 | `execOutput(docker, container, cmd)` | Collects all stdout and returns it as a `string`. |
 | `execLines(docker, container, cmd, onLine, onError?)` | Calls `onLine` for each newline-delimited output line. Returns the underlying stream. |
 
-## `KeyedQueue`
+### `KeyedQueue`
 
 A per-key FIFO queue (`src/container/utils.ts`) that serialises async tasks by a string key. Used to ensure Docker events for the same container ID are processed sequentially:
 
@@ -250,3 +252,14 @@ queue.enqueue(containerId, handlerFn, ctx, event, node);
 ```
 
 Public methods: `enqueue`, `has`, `size`, `clear`, `clearAll`.
+
+## Development & Scripts
+
+This package does not define any package-specific scripts. Code checking, formatting, and testing are orchestrated from the repository root.
+
+Commands:
+
+| Script | Description |
+|---|---|
+| `bun run check` | Run linter and formatting checks globally |
+| `bun run typecheck` | Run TypeScript type checks globally |

@@ -41,10 +41,9 @@ export const Route = createFileRoute("/lab/$labId/session/$labSessionId/")({
 	loader: async ({ params: { labId, labSessionId } }) => {
 		const [lab] = await Promise.all([
 			api.lab({ labId }).get.ensureQueryData(queryClient),
-			api
-				.lab({ labId })
-				.session({ labSessionId })
-				.get.ensureQueryData(queryClient),
+			queryClient.fetchQuery(
+				api.lab({ labId }).session({ labSessionId }).get.queryOptions(),
+			),
 			api["device-template"].list.get.ensureQueryData(queryClient),
 			api.evaluator.list.get.ensureQueryData(queryClient),
 		]);
