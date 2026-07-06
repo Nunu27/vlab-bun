@@ -20,7 +20,6 @@ export default {
 		}
 
 		nodes.add(node.id);
-		emitter.emit("node-create", node);
 		emitter.emit("health-update", node, health);
 
 		network.start(ctx, {
@@ -35,11 +34,10 @@ export default {
 		emitter.emit("health-update", node, health);
 	},
 	kill: (ctx, _, node) => {
-		const { docker, nodes, logger, emitter } = ctx;
+		const { docker, nodes, logger } = ctx;
 		logger?.debug(`[kill] Handling kill event from ${node.id}`);
 
 		nodes.delete(node.id);
-		emitter.emit("node-remove", node);
 		network.stop(ctx, {
 			container: docker.getContainer(node.id),
 			info: node,

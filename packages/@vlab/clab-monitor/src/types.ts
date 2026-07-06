@@ -16,8 +16,6 @@ export type NodeInterfaces = Record<string, string[]>;
 export interface Events {
 	"health-update": [NodeInfo, NodeHealth];
 	"interface-update": [NodeInfo, NodeInterfaces];
-	"node-create": [NodeInfo];
-	"node-remove": [NodeInfo];
 }
 
 export type Context = {

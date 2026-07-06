@@ -58,7 +58,6 @@ export function createDockerEventMonitor(ctx: Context) {
 			}
 
 			nodes.add(node.id);
-			emitter.emit("node-create", node);
 			emitter.emit("health-update", node, health);
 			network.start(ctx, {
 				container: docker.getContainer(node.id),
