@@ -238,14 +238,12 @@ export async function runSyncModules() {
 				logger.warn(`No checks.md found for ${mod}`);
 			}
 
-			// Extract title from description.md
 			const titleMatch = desc.match(/^#\s+(.+)$/m);
 			let title = mod;
 			if (titleMatch) {
 				title = titleMatch[1].trim();
 			}
 
-			// Find matching lab in db (may be null for new modules)
 			const lab = existingLabs.find((l) => l.name === title || l.name === mod);
 
 			const pdfPath = path.resolve(
@@ -304,7 +302,6 @@ export async function runSyncModules() {
 				logger.warn(`No topology block found in instructions.md for ${mod}`);
 			}
 
-			// Parse checks.md
 			const lines = checksMd.split("\n");
 			const newChecks: LabChecksMap = {};
 			const appendedCheckUuids: Array<{
@@ -396,7 +393,6 @@ export async function runSyncModules() {
 				}
 			}
 
-			// Replace <LabCheck node="X" id="Y" /> in instructions
 			let finalInst = instWithoutTopology;
 			finalInst = finalInst.replace(
 				/<LabCheck\s+node="([^"]+)"\s+id="([^"]+)"\s*\/>/g,
@@ -438,7 +434,6 @@ export async function runSyncModules() {
 			}
 
 			if (lab) {
-				// Update existing lab
 				await db
 					.update(labs)
 					.set({

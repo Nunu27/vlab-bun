@@ -145,7 +145,6 @@ async function regenerateWorkerTokens(
 	guacdHost: string,
 	guacdPort: number,
 ) {
-	// Find all nodes that need token regeneration
 	const nodes = await db
 		.select({
 			nodeId: labSessionNodes.id,
@@ -163,7 +162,6 @@ async function regenerateWorkerTokens(
 
 	if (nodes.length === 0) return;
 
-	// Batch update tokens
 	await db.transaction(async (tx) => {
 		for (const node of nodes) {
 			const newToken = guacamole.generateNodeToken(

@@ -32,7 +32,6 @@ export async function testDeviceOnWorker(
 
 		reply("info", "Image pulled successfully.");
 
-		// Lab provisioning
 		reply("info", "Provisioning device...");
 
 		const deployedNodes = await sendCommandToWorker(
@@ -74,7 +73,6 @@ export async function testDeviceOnWorker(
 		}
 		const { id, ip, health } = deployed;
 
-		// Health check
 		reply("info", "Waiting for device to become healthy...");
 
 		const isHealthy = await waitForEvent(tempNodeEvents, `${id}:health`, {
