@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant Student as Student (browser)
+    participant Manager as Manager
+    participant Redis as Redis
+    participant DB as Postgres
+    participant Worker as Worker (selected)
+    participant Clab as containerlab CLI
+
+    Note over Worker,Manager: Worker connects at boot (or reconnect after crash)
+    Worker->>Manager: ListenCommand() opens bidi stream
+    Worker->>Manager: CommandPayload{workerSpec} (cpu/mem/storage, guacd host/port)
+    Manager->>DB: upsert worker row, status=online
+    Manager->>Worker: clab:reconcileSessions{activeSessionIds}
+    Worker->>Worker: destroy any on-disk labs not in activeSessionIds
+    Worker-->>Manager: destroyed lab ids
+
+    Note over Student,Worker: Student starts a lab session
+    Student->>Manager: WS RPC lab:[labId]:init
+    Manager->>DB: tryGetAvailableWorkerId (SELECT ... FOR UPDATE SKIP LOCKED)
+    alt no worker available
+        Manager-->>Student: reply "warn": high demand, waiting...
+        Manager->>Manager: waitForAvailableWorkerId (backoff loop)
+    end
+    Manager->>DB: insert lab_session row
+    Manager->>Redis: dispatchWorkerAction("lab:initSession", workerId, payload)
+    Redis-->>Manager: (same-replica: direct call; cross-replica: pubsub relay)
+    Manager->>Worker: RPC clab:deployLab{sessionId, config}
+    Worker->>Worker: buildTopology() -> LabConfig to Containerlab YAML
+    Worker->>Clab: containerlab deploy --topo <path>
+    Clab-->>Worker: deployed containers
+    Worker->>Clab: containerlab inspect --details
+    Clab-->>Worker: ContainerlabInspectNode[]
+    Worker-->>Manager: DeployedNode[] {id, nodeId, ip, health}
+    Manager->>DB: insert lab_session_node rows (+ guac tokens)
+    Manager->>Manager: schedule BullMQ auto-submit job at dueDate
+    Manager-->>Student: resolve deferred RPC reply {sessionId}
+
+    Note over Worker,Manager: Ongoing: health + evaluator streaming
+    Worker->>Manager: data monitor:node-health{id, health, lab}
+    Manager->>DB: update lab_session_node.health
+    Manager-->>Student: WS data node:[id]:health
+    Worker->>Manager: data evaluator:checkChanged{sessionId, id, completed}
+    Manager->>DB: upsert lab_session_check
+    Manager-->>Student: WS data lab-session:[sessionId]:checks
+
+    Note over Student,Worker: Session ends (manual submit or dueDate reached)
+    Manager->>DB: compute weighted score, set submittedAt
+    Manager->>Worker: RPC clab:destroyLab{sessionId}
+    Worker->>Clab: containerlab destroy --keep-mgmt-net --cleanup
+    Manager-->>Student: WS data lab-session:[sessionId]:ended

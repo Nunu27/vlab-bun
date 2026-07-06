@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant Browser
+    participant Web as apps/web
+    participant Manager
+    participant CAS as Institutional CAS server
+    participant Redis
+
+    rect rgb(230, 240, 255)
+    Note over Browser,CAS: Flow A - CAS SSO (students)
+    Browser->>Web: click "Login with CAS"
+    Web->>Manager: full page redirect GET /api/auth/cas
+    Manager->>CAS: redirect to CAS login (service=BASE_URL/api/auth/cas)
+    CAS->>Browser: institutional login page
+    Browser->>CAS: submit credentials
+    CAS->>Manager: redirect back with service ticket
+    Manager->>CAS: serviceValidate (XML) ticket check
+    CAS-->>Manager: XML attributes (NRP, Jurusan, name, ...)
+    alt first login
+        Manager->>Manager: parse NRP -> year/degreeLevel, match Jurusan -> study_program
+        Manager->>Manager: auto-provision user + student row
+    end
+    Manager->>Redis: create session (session:rest / session:data)
+    Manager->>Browser: Set-Cookie session=...; redirect to / with toast cookie
+    end
+
+    rect rgb(255, 240, 230)
+    Note over Browser,Manager: Flow B - Password login (instructor/admin)
+    Browser->>Web: submit email/password on /login
+    Web->>Manager: POST /api/auth/login
+    Manager->>Manager: Bun.password.verify(password, user.passwordHash)
+    Manager->>Redis: create session
+    Manager-->>Web: 200 OK, Set-Cookie session=...
+    Web->>Manager: GET /api/auth/me (refresh)
+    Manager-->>Web: user + role profile
+    Web->>Web: useAuthStore.user = data, navigate to /
+    end
+
+    rect rgb(235, 255, 235)
+    Note over Browser,Manager: Every subsequent request
+    Browser->>Manager: HTTP request with session cookie
+    Manager->>Redis: sessions.get(cookieValue) -> user id -> Session data
+    Redis-->>Manager: {id, role}
+    Manager->>Manager: auth/protected/private(roles) macros authorize
+    Manager->>Redis: extend TTL (sliding expiry, SESSION_TTL=3h)
+
+    Browser->>Manager: WebSocket connect, auth={session: cookie}
+    Manager->>Redis: sessions.get(session) (same store as HTTP)
+    Manager-->>Browser: connection accepted, socket.data.session set
+    end

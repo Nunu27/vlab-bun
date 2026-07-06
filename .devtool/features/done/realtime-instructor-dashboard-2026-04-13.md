@@ -1,16 +1,16 @@
 ---
 id: "realtime-instructor-dashboard-2026-04-13"
-status: "todo"
+status: "done"
 priority: "medium"
 assignee: null
+epic: null
 dueDate: null
 created: "2026-04-13T03:29:24.035Z"
-modified: "2026-06-11T05:22:00.000Z"
-completedAt: null
+modified: "2026-07-06T08:40:26.145Z"
+completedAt: "2026-07-06T08:40:26.145Z"
 labels: ["frontend", "websocket", "instructor"]
-order: "a7"
+order: "Zs"
 ---
-
 # Realtime Instructor Dashboard
 
 Implement real-time monitoring of student lab sessions for instructors.

@@ -17,7 +17,6 @@
 		"./schemas": "./src/schemas/index.ts",
 		"./schemas/*": "./src/schemas/*.ts",
 		"./utils": "./src/utils.ts",
-		"./commands": "./src/commands.ts",
 		"./standard-schema": "./src/standard-schema.ts"
 	},
 	"type": "module"
