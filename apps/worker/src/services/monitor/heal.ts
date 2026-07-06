@@ -4,6 +4,7 @@ import {
 	HEAL_MAX_ATTEMPTS,
 	HEAL_RETRY_BASE_MS,
 	HEAL_RETRY_FACTOR,
+	HEAL_TRIGGER_JITTER_MS,
 } from "@worker/constants";
 import clab from "@worker/lib/clab";
 import baseLogger from "@worker/lib/logger";
@@ -52,7 +53,11 @@ export function trigger(node: NodeInfo) {
 		return;
 	}
 
-	void attempt(node, state);
+	const jitter = Math.random() * HEAL_TRIGGER_JITTER_MS;
+	state.retryTimer = setTimeout(() => {
+		state.retryTimer = undefined;
+		void attempt(node, state);
+	}, jitter);
 }
 
 async function attempt(node: NodeInfo, state: HealState) {

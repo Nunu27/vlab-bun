@@ -18,7 +18,11 @@ export function startMonitorService(server: RpcServer) {
 
 		if (health === "unhealthy") {
 			heal.trigger(node);
-		} else if (health === "healthy" || health === null) {
+		} else if (
+			health === "healthy" ||
+			health === null ||
+			health === "destroyed"
+		) {
 			heal.reset(node.id);
 		}
 	});
