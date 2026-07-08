@@ -92,6 +92,13 @@
 			"when": 1783260141111,
 			"tag": "0012_alter_node_health_value",
 			"breakpoints": true
+		},
+		{
+			"idx": 13,
+			"version": "7",
+			"when": 1783545620813,
+			"tag": "0013_alter_device_template_cpu_cost_cores_to_numeric",
+			"breakpoints": true
 		}
 	]
 }
