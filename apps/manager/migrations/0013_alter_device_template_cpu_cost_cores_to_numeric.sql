@@ -1,0 +1,1 @@
+ALTER TABLE "device_template" ALTER COLUMN "cpu_cost_cores" SET DATA TYPE numeric;
