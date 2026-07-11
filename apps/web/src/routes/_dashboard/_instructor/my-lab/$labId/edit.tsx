@@ -8,8 +8,10 @@ import { useApiForm } from "@web/hooks/form/use-api-form";
 import api from "@web/lib/api";
 import { queryClient } from "@web/lib/query";
 import { TopologyStoreProvider } from "@web/shared/topology/stores";
+import { HelpCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 import { LabForm } from "../-module/components/forms/lab-form";
+import { useLabAuthoringTour } from "../-module/onboarding/use-lab-authoring-tour";
 
 const validator = Compile(LabRequestSchema);
 
@@ -38,6 +40,7 @@ export const Route = createFileRoute(
 function RouteComponent() {
 	const { labId } = Route.useParams();
 	const navigate = useNavigate();
+	const { activeTab, setActiveTab, start: startTour } = useLabAuthoringTour();
 	const { data: lab } = api.lab({ labId }).get.useSuspenseQuery();
 	const { data: categorizedTemplates } =
 		api["device-template"].list.get.useSuspenseQuery();
@@ -85,6 +88,12 @@ function RouteComponent() {
 					title="Edit Lab"
 					subtitle="Update lab settings and topology"
 					back={{ to: "/my-lab" }}
+					actions={
+						<Button type="button" variant="ghost" size="sm" onClick={startTour}>
+							<HelpCircleIcon className="mr-2 h-4 w-4" />
+							Take a Tour
+						</Button>
+					}
 				/>
 
 				<TopologyStoreProvider
@@ -92,7 +101,11 @@ function RouteComponent() {
 					categorizedTemplates={categorizedTemplates}
 					topology={lab.topology}
 				>
-					<LabForm form={form as never} />
+					<LabForm
+						form={form as never}
+						activeTab={activeTab}
+						setActiveTab={setActiveTab}
+					/>
 				</TopologyStoreProvider>
 
 				<div className="flex justify-end gap-4">

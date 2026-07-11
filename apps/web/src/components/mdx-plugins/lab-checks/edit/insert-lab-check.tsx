@@ -17,6 +17,7 @@ export const InsertLabCheck = () => {
 
 	return (
 		<ButtonWithTooltip
+			data-tour="insert-lab-check"
 			title="Insert Lab Checks (⌘L/Ctrl+L)"
 			onClick={handleInsert}
 		>
