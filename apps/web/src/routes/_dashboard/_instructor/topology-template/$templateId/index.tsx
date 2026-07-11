@@ -11,7 +11,9 @@ import { useApiForm } from "@web/hooks/form/use-api-form";
 import api from "@web/lib/api";
 import { queryClient } from "@web/lib/query";
 import { TopologyStoreProvider } from "@web/shared/topology/stores";
+import { HelpCircleIcon } from "lucide-react";
 import { TopologyTemplateForm } from "../-module/components/forms/topology-template-form";
+import { useTopologyTemplateTour } from "../-module/onboarding/use-topology-template-tour";
 
 const validator = Compile(TopologyTemplateRequestSchema);
 
@@ -44,6 +46,8 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { templateId } = Route.useParams();
+
+	const { start: startTour } = useTopologyTemplateTour();
 
 	const { data: categorizedTemplates } =
 		api["device-template"].list.get.useSuspenseQuery();
@@ -82,6 +86,12 @@ function RouteComponent() {
 					title="Edit Topology Template"
 					subtitle="Modify reusable network topology"
 					back={{ to: "/topology-template" }}
+					actions={
+						<Button type="button" variant="ghost" size="sm" onClick={startTour}>
+							<HelpCircleIcon className="mr-2 h-4 w-4" />
+							Take a Tour
+						</Button>
+					}
 				/>
 
 				<TopologyStoreProvider
