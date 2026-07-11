@@ -91,14 +91,16 @@ export const LabInstructionForm = withFieldGroup({
 							}
 						</group.AppField>
 
-						<group.AppField name="content">
-							{(field) => (
-								<field.MarkdownField
-									className="rounded-none border-none"
-									checks
-								/>
-							)}
-						</group.AppField>
+						<div data-tour="lab-instructions-editor">
+							<group.AppField name="content">
+								{(field) => (
+									<field.MarkdownField
+										className="rounded-none border-none"
+										checks
+									/>
+								)}
+							</group.AppField>
+						</div>
 
 						<LabCheckModal />
 					</group.AppForm>

@@ -27,6 +27,7 @@ import { withForm } from "@web/hooks/form/use-app-form";
 import { useTopologyStore } from "@web/shared/topology/stores";
 import { useCallback, useEffect, useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
+import type { LabFormTab } from "../../onboarding/tour-steps";
 import { LabBasicInfoForm } from "./lab-basic-info-form";
 import { LabInstructionForm } from "./lab-instruction-form";
 import LabTopologyForm from "./lab-topology-form";
@@ -62,7 +63,11 @@ function TabErrorDot() {
 
 export const LabForm = withForm({
 	defaultValues: {} as LabRequest,
-	render: ({ form }) => {
+	props: {} as {
+		activeTab: LabFormTab;
+		setActiveTab: (tab: LabFormTab) => void;
+	},
+	render: ({ form, activeTab, setActiveTab }) => {
 		const store = useTopologyStore();
 
 		const [deletePrompt, setDeletePrompt] = useState<{
@@ -210,9 +215,12 @@ export const LabForm = withForm({
 				</AlertDialog>
 
 				<Tabs
-					defaultValue="basic"
+					value={activeTab}
 					className="space-y-4"
-					onValueChange={revalidateForm}
+					onValueChange={(value) => {
+						setActiveTab(value as LabFormTab);
+						revalidateForm();
+					}}
 				>
 					<TabsList className="grid w-full grid-cols-3">
 						<TabsTrigger value="basic">

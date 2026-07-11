@@ -19,13 +19,16 @@ export const LabBasicInfoForm = withFieldGroup({
 			<div className="space-y-4">
 				{/* Top: cover left, core fields right */}
 				<div className="flex flex-col gap-4 sm:flex-row">
-					<div className="w-full sm:w-56 sm:shrink-0">
+					<div className="w-full sm:w-56 sm:shrink-0" data-tour="lab-cover">
 						<group.AppField name="cover">
 							{(field) => <field.ImageField label="Cover Image" />}
 						</group.AppField>
 					</div>
 
-					<div className="flex flex-1 flex-col gap-3">
+					<div
+						className="flex flex-1 flex-col gap-3"
+						data-tour="lab-basic-fields"
+					>
 						<group.AppField name="name">
 							{(field) => (
 								<field.TextField
@@ -73,19 +76,23 @@ export const LabBasicInfoForm = withFieldGroup({
 				</group.AppField>
 
 				{/* Attachments */}
-				<LabAttachmentForm
-					form={group}
-					fields={{ attachments: "attachments" }}
-				/>
+				<div data-tour="lab-attachments">
+					<LabAttachmentForm
+						form={group}
+						fields={{ attachments: "attachments" }}
+					/>
+				</div>
 
-				<group.AppField name="isPublished">
-					{(field) => (
-						<field.SwitchField
-							label="Published"
-							description="Make this lab visible to students"
-						/>
-					)}
-				</group.AppField>
+				<div data-tour="lab-published-toggle">
+					<group.AppField name="isPublished">
+						{(field) => (
+							<field.SwitchField
+								label="Published"
+								description="Make this lab visible to students"
+							/>
+						)}
+					</group.AppField>
+				</div>
 			</div>
 		);
 	},
