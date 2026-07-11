@@ -1,5 +1,4 @@
 import { driver } from "driver.js";
-import "driver.js/dist/driver.css";
 import { useCallback } from "react";
 import { markTourSeen } from "./constants";
 import { buildTourSteps } from "./tour-steps";

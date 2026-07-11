@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
+@import "driver.js/dist/driver.css" layer(driver-vendor);
 
 @custom-variant dark (&:is(.dark *));
 @plugin "@tailwindcss/typography";
@@ -232,6 +233,11 @@
 	}
 }
 
+/*
+ * driver.js's own CSS lives in the `driver-vendor` layer (see the @import
+ * above), so these unlayered rules always win over its light-theme defaults
+ * regardless of specificity or which stylesheet loads last.
+ */
 .driver-popover {
 	background-color: var(--popover);
 	color: var(--popover-foreground);

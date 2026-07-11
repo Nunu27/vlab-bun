@@ -6,7 +6,10 @@ function DevicePalette() {
 		api["device-template"].list.get.useSuspenseQuery();
 
 	return (
-		<div className="z-10 flex w-64 flex-col border-gray-200 border-r bg-gray-50 shadow-lg dark:border-border dark:bg-background">
+		<div
+			data-tour="device-palette"
+			className="z-10 flex w-64 flex-col border-gray-200 border-r bg-gray-50 shadow-lg dark:border-border dark:bg-background"
+		>
 			<div className="border-gray-200 border-b bg-white p-4 dark:border-border dark:bg-card">
 				<h2 className="font-semibold text-gray-500 text-xs uppercase tracking-wider dark:text-muted-foreground">
 					Device Palette
