@@ -92,7 +92,11 @@ const TestConnectionButton = withForm({
 
 		return (
 			<>
-				<Button onClick={handleTestDevice} type="button">
+				<Button
+					data-tour="test-connection-button"
+					onClick={handleTestDevice}
+					type="button"
+				>
 					Test Connection
 				</Button>
 

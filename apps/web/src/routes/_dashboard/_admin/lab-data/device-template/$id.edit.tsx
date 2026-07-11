@@ -14,6 +14,7 @@ import {
 import { useApiForm } from "@web/hooks/form/use-api-form";
 import api from "@web/lib/api";
 import { queryClient } from "@web/lib/query";
+import { HelpCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 import TestConnectionButton from "./-module/components/buttons/test-connection-button";
 import { DeviceBasicInfoForm } from "./-module/components/forms/device-basic-info-form";
@@ -22,6 +23,7 @@ import { DeviceCostForm } from "./-module/components/forms/device-cost-form";
 import { DeviceEnvForm } from "./-module/components/forms/device-env-form";
 import { DeviceNetworkInterfacesForm } from "./-module/components/forms/device-network-interfaces-form";
 import { DeviceResourcesForm } from "./-module/components/forms/device-resources-form";
+import { useDeviceTemplateTour } from "./-module/onboarding/use-device-template-tour";
 import { EnvFormStoreProvider } from "./-module/stores/env-form-store";
 import { TestDeviceStoreProvider } from "./-module/stores/test-device-store";
 
@@ -50,6 +52,7 @@ export const Route = createFileRoute(
 function RouteComponent() {
 	const { id } = Route.useParams();
 	const navigate = useNavigate();
+	const { start: startTour } = useDeviceTemplateTour();
 	const { data: device } = api["device-template"]({
 		id,
 	}).get.useSuspenseQuery();
@@ -83,6 +86,17 @@ function RouteComponent() {
 						back={{
 							to: "/lab-data/device-template",
 						}}
+						actions={
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								onClick={startTour}
+							>
+								<HelpCircleIcon className="mr-2 h-4 w-4" />
+								Take a Tour
+							</Button>
+						}
 					/>
 					<form
 						onSubmit={(e) => {
@@ -93,7 +107,7 @@ function RouteComponent() {
 					>
 						<form.AppForm>
 							{/* Basic Information */}
-							<Card>
+							<Card data-tour="device-basic-info">
 								<CardHeader className="border-b">
 									<CardTitle>Basic Information</CardTitle>
 									<CardDescription>
@@ -114,7 +128,7 @@ function RouteComponent() {
 								</CardContent>
 							</Card>
 
-							<Card>
+							<Card data-tour="device-resources">
 								<CardHeader className="border-b">
 									<CardTitle>Resources</CardTitle>
 									<CardDescription>CPU and memory allocation</CardDescription>
@@ -124,7 +138,7 @@ function RouteComponent() {
 								</CardContent>
 							</Card>
 
-							<Card>
+							<Card data-tour="device-cost">
 								<CardHeader className="border-b">
 									<CardTitle>Worker Cost</CardTitle>
 									<CardDescription>
@@ -143,7 +157,7 @@ function RouteComponent() {
 								</CardContent>
 							</Card>
 
-							<Card>
+							<Card data-tour="device-env">
 								<CardHeader className="border-b">
 									<CardTitle>Environment Variables</CardTitle>
 									<CardDescription>
@@ -155,7 +169,7 @@ function RouteComponent() {
 								</CardContent>
 							</Card>
 
-							<Card>
+							<Card data-tour="device-connection">
 								<CardHeader className="flex justify-between border-b">
 									<div>
 										<CardTitle>Connection</CardTitle>
@@ -170,7 +184,7 @@ function RouteComponent() {
 								</CardContent>
 							</Card>
 
-							<Card>
+							<Card data-tour="device-interfaces">
 								<CardHeader className="border-b">
 									<CardTitle>Network Interfaces</CardTitle>
 									<CardDescription>
