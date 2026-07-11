@@ -7,7 +7,10 @@ import UngroupButton from "./buttons/ungroup-button";
 
 function Toolbar() {
 	return (
-		<div className="absolute top-6 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-border/50 bg-card p-1.5 shadow-xl backdrop-blur-sm">
+		<div
+			data-tour="topology-toolbar"
+			className="absolute top-6 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-border/50 bg-card p-1.5 shadow-xl backdrop-blur-sm"
+		>
 			<ConnectModeButton />
 			<Separator orientation="vertical" className="h-8!" />
 			<GroupButton />
