@@ -50,15 +50,17 @@ export function TopologyTemplateForm({
 
 	return (
 		<div className="space-y-6">
-			<form.AppField name="name">
-				{(field) => (
-					<field.TextField
-						label="Template Name"
-						placeholder="E.g. OSPF Basic Topology"
-						required
-					/>
-				)}
-			</form.AppField>
+			<div data-tour="topology-template-name">
+				<form.AppField name="name">
+					{(field) => (
+						<field.TextField
+							label="Template Name"
+							placeholder="E.g. OSPF Basic Topology"
+							required
+						/>
+					)}
+				</form.AppField>
+			</div>
 
 			<div
 				ref={ref}
@@ -66,6 +68,7 @@ export function TopologyTemplateForm({
 			>
 				<button
 					type="button"
+					data-tour="topology-fullscreen-toggle"
 					onClick={toggleFullscreen}
 					className="absolute top-4 right-4 z-10 rounded-md bg-background/80 p-2 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-accent hover:text-accent-foreground"
 				>
