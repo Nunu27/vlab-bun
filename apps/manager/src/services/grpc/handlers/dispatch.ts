@@ -2,7 +2,7 @@ import baseLogger from "@manager/lib/logger";
 import redis from "@manager/lib/redis";
 import { encode } from "@msgpack/msgpack";
 import { type ActionName, type ActionPayload, actionHandlers } from "./actions";
-import { connectedWorkers } from "./worker";
+import { connectedWorkers } from "./worker-registry";
 
 const logger = baseLogger.child({ name: "worker-action" });
 

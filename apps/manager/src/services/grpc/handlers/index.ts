@@ -8,6 +8,9 @@ export * from "./actions";
 export * from "./dispatch";
 export * from "./monitor";
 export * from "./worker";
+export * from "./worker-capacity";
+export { resetStaleWorkers } from "./worker-reconcile";
+export * from "./worker-registry";
 
 type DecodedAction = {
 	[K in ActionName]: { actionName: K; payload: ActionPayload<K> };

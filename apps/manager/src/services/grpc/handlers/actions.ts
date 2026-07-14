@@ -8,7 +8,7 @@ import {
 } from "@manager/domain/lab-session/evaluation";
 import { initSession } from "@manager/domain/lab-session/init";
 import { labSessionQueue } from "@manager/services/queue";
-import { sendCommandToWorker } from "./worker";
+import { sendCommandToWorker } from "./worker-registry";
 
 async function destroySessionOnWorker(
 	workerId: string,
