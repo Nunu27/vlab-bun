@@ -205,6 +205,8 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 						`Node ${nodeId} reported unhealthy while waiting to start a source, still waiting:`,
 						error,
 					);
+					// Avoid busy loop if waitForHealth rejects synchronously
+					await new Promise((resolve) => setTimeout(resolve, 1000));
 				}
 			}
 			return false;
