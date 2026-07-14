@@ -40,6 +40,8 @@ export default createRouter()
 			});
 			const data = parser.parse(await res.text()) as CASResponse;
 
+			logger.info({ ticket, data }, "CAS response");
+
 			if (
 				!CASResponseValidator.Check(data) ||
 				!data.serviceResponse.authenticationSuccess

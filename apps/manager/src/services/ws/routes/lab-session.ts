@@ -13,7 +13,7 @@ import { DEFER } from "waycast";
 
 ws.server.on(
 	"lab:[id]:init",
-	async ({ params: { id: labId }, context, requestId, reply }) => {
+	async ({ params: { id: labId }, context, requestId, reply, signal }) => {
 		const userId = context.session.id;
 
 		reply("info", "Getting lab configuration...");
@@ -125,6 +125,7 @@ ws.server.on(
 			totalCpuCost,
 			totalMemoryCost,
 			{
+				signal,
 				onWait: (attempt, delayMs) => {
 					reply(
 						"warn",
