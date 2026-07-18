@@ -15,7 +15,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: nunu27/vlab-bun
 
 jobs:
   changes:
@@ -105,10 +105,18 @@ jobs:
       (needs.evaluator-test.result == 'success' || needs.evaluator-test.result == 'skipped') &&
       (needs.modules-test.result == 'success' || needs.modules-test.result == 'skipped') &&
       needs.changes.result == 'success'
-    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         component: [manager, worker, installer]
+        platform:
+          - arch: linux/amd64
+            safe_arch: linux-amd64
+            runner: ubuntu-latest
+          - arch: linux/arm64
+            safe_arch: linux-arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       contents: read
       packages: write
@@ -117,8 +125,58 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.${{ matrix.component }}
+          platforms: ${{ matrix.platform.arch }}
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.component }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.component }}-${{ matrix.platform.safe_arch }}
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.component }}-${{ matrix.platform.safe_arch }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.component }}-${{ matrix.platform.safe_arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: build-and-push
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [manager, worker, installer]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-${{ matrix.component }}-*
+          merge-multiple: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -140,14 +198,8 @@ jobs:
             type=sha
             type=raw,value=latest
 
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile.${{ matrix.component }}
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.component }}
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.component }}
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.component }}@sha256:%s " *)
