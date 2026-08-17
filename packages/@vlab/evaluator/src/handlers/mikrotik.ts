@@ -1,9 +1,9 @@
 import { Type as t } from "@sinclair/typebox";
 import { RouterOSClient } from "mikro-routeros";
 import { EvaluationHandler } from "../base/evaluation-handler";
-import { removeItemFromArrayByIndex, throttle } from "../utils";
+import { applyRosListEvent, throttle } from "../utils";
 
-const compareFlag = (
+export const compareFlag = (
 	flags: Set<string>,
 	flagChar: string,
 	routeValue: string | undefined,
@@ -12,7 +12,7 @@ const compareFlag = (
 	return flags.has(flagChar) === value;
 };
 
-const IPRouteSchema = t.Array(
+export const IPRouteSchema = t.Array(
 	t.Object({
 		"dst-address": t.String(),
 		gateway: t.String(),
@@ -37,7 +37,7 @@ const IPRouteSchema = t.Array(
 
 // OSPF Schema
 
-const OSPFInstanceSchema = t.Array(
+export const OSPFInstanceSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		name: t.String(),
@@ -49,7 +49,7 @@ const OSPFInstanceSchema = t.Array(
 	}),
 );
 
-const OSPFAreaSchema = t.Array(
+export const OSPFAreaSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		name: t.String(),
@@ -63,7 +63,7 @@ const OSPFAreaSchema = t.Array(
 	}),
 );
 
-const OSPFInterfaceTemplateSchema = t.Array(
+export const OSPFInterfaceTemplateSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		".nextid": t.String(),
@@ -83,7 +83,7 @@ const OSPFInterfaceTemplateSchema = t.Array(
 	}),
 );
 
-const OSPFNeighborSchema = t.Array(
+export const OSPFNeighborSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		instance: t.String(),
@@ -105,7 +105,7 @@ const OSPFNeighborSchema = t.Array(
 
 // RIP Schema
 
-const RIPInstanceSchema = t.Array(
+export const RIPInstanceSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		name: t.String(),
@@ -114,7 +114,7 @@ const RIPInstanceSchema = t.Array(
 	}),
 );
 
-const RIPInterfaceTemplateSchema = t.Array(
+export const RIPInterfaceTemplateSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		instance: t.String(),
@@ -125,7 +125,7 @@ const RIPInterfaceTemplateSchema = t.Array(
 
 // BGP Schema
 
-const BGPConnectionSchema = t.Array(
+export const BGPConnectionSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		name: t.String(),
@@ -138,7 +138,7 @@ const BGPConnectionSchema = t.Array(
 	}),
 );
 
-const BGPSessionSchema = t.Array(
+export const BGPSessionSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		name: t.String(),
@@ -148,7 +148,7 @@ const BGPSessionSchema = t.Array(
 	}),
 );
 
-const BGPInstanceSchema = t.Array(
+export const BGPInstanceSchema = t.Array(
 	t.Object({
 		".id": t.String(),
 		name: t.String(),
@@ -159,13 +159,13 @@ const BGPInstanceSchema = t.Array(
 	}),
 );
 
-const SystemIdentitySchema = t.Array(
+export const SystemIdentitySchema = t.Array(
 	t.Object({
 		name: t.String(),
 	}),
 );
 
-const UserSchema = t.Array(
+export const UserSchema = t.Array(
 	t.Object({
 		name: t.String(),
 		group: t.String(),
@@ -311,18 +311,7 @@ export default new EvaluationHandler("mikrotik")
 			const listener = await client.stream("/routing/ospf/instance/listen");
 
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item[".id"]);
 				notify(list);
 			});
 			listener.on("error", reportError);
@@ -406,18 +395,7 @@ export default new EvaluationHandler("mikrotik")
 			//   ".dead": "true",
 			// }
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item[".id"]);
 				notify(list);
 			});
 			listener.on("error", reportError);
@@ -561,18 +539,7 @@ export default new EvaluationHandler("mikrotik")
 			const listener = await client.stream("/routing/ospf/neighbor/listen");
 
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item[".id"]);
 				notify(list);
 			});
 			listener.on("error", reportError);
@@ -625,18 +592,7 @@ export default new EvaluationHandler("mikrotik")
 			const listener = await client.stream("/routing/rip/instance/listen");
 
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item[".id"]);
 				notify(list);
 			});
 			listener.on("error", reportError);
@@ -696,18 +652,7 @@ export default new EvaluationHandler("mikrotik")
 			);
 
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item[".id"]);
 				notify(list);
 			});
 			listener.on("error", reportError);
@@ -762,18 +707,7 @@ export default new EvaluationHandler("mikrotik")
 			const listener = await client.stream("/routing/bgp/instance/listen");
 
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item[".id"]);
 				notify(list);
 			});
 			listener.on("error", reportError);
@@ -832,18 +766,7 @@ export default new EvaluationHandler("mikrotik")
 			const listener = await client.stream("/routing/bgp/connection/listen");
 
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item[".id"] === data[".id"]);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item[".id"]);
 				notify(list);
 			});
 			listener.on("error", reportError);
@@ -990,18 +913,7 @@ export default new EvaluationHandler("mikrotik")
 			const listener = await client.stream("/user/listen");
 
 			listener.on("data", (data) => {
-				const index = list.findIndex((item) => item.name === data.name);
-				const isDead = data[".dead"] === "true";
-
-				if (index === -1) {
-					if (isDead) return;
-					list.push(data);
-				} else if (isDead) {
-					removeItemFromArrayByIndex(list, index);
-				} else {
-					list[index] = data;
-				}
-
+				applyRosListEvent(list, data, (item) => item.name);
 				notify(list);
 			});
 			listener.on("error", reportError);

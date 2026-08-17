@@ -3,7 +3,8 @@
 	"module": "src/index.ts",
 	"type": "module",
 	"scripts": {
-		"typecheck": "bun x tsc --noEmit"
+		"typecheck": "bun x tsc --noEmit",
+		"test": "bun test src"
 	},
 	"exports": {
 		".": "./src/index.ts",

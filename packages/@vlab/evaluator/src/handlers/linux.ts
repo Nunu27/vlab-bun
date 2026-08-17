@@ -106,7 +106,7 @@ import { getModem, throttle } from "../utils";
 //   }
 // ]
 
-const UserSchema = t.Array(
+export const UserSchema = t.Array(
 	t.Object({
 		username: t.String(),
 		uid: t.Number(),
@@ -115,6 +115,23 @@ const UserSchema = t.Array(
 		shell: t.String(),
 	}),
 );
+
+export function parsePasswd(output: string): typeof UserSchema.static {
+	return output
+		.split("\n")
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.map((line) => {
+			const parts = line.split(":");
+			return {
+				username: parts[0] || "",
+				uid: Number.parseInt(parts[2] || "0", 10),
+				gid: Number.parseInt(parts[3] || "0", 10),
+				home: parts[5] || "",
+				shell: parts[6] || "",
+			};
+		});
+}
 
 const RouteNextHopSchema = t.Object(
 	{
@@ -126,7 +143,7 @@ const RouteNextHopSchema = t.Object(
 	{ additionalProperties: true },
 );
 
-const RouteEntrySchema = t.Object({
+export const RouteEntrySchema = t.Object({
 	dst: t.String({
 		description: "Destination prefix (e.g., '192.168.1.0/24') or 'default'",
 	}),
@@ -182,7 +199,7 @@ const RouteEntrySchema = t.Object({
 	),
 });
 
-const IpRouteSchema = t.Array(RouteEntrySchema);
+export const IpRouteSchema = t.Array(RouteEntrySchema);
 
 async function getUsers(container: Container) {
 	try {
@@ -217,21 +234,7 @@ async function getUsers(container: Container) {
 
 					stream.on("end", () => {
 						try {
-							const users = output
-								.split("\n")
-								.map((line) => line.trim())
-								.filter(Boolean)
-								.map((line) => {
-									const parts = line.split(":");
-									return {
-										username: parts[0] || "",
-										uid: Number.parseInt(parts[2] || "0", 10),
-										gid: Number.parseInt(parts[3] || "0", 10),
-										home: parts[5] || "",
-										shell: parts[6] || "",
-									};
-								});
-							resolve(users);
+							resolve(parsePasswd(output));
 						} catch (parseError) {
 							reject(new Error(`Failed to parse passwd output: ${parseError}`));
 						}

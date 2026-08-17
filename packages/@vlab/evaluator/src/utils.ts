@@ -147,3 +147,27 @@ export function removeItemFromArrayByIndex<T>(arr: T[], index: number) {
 	arr[index] = lastItem;
 	arr.pop();
 }
+
+/**
+ * Applies a RouterOS `/.../listen` event to a locally-held list snapshot,
+ * matching the `.id`-based add/update/remove protocol used across
+ * `/routing/*` and `/user` listeners (a `.dead: "true"` event removes the
+ * matching entry instead of updating it). Mutates `list` in place.
+ */
+export function applyRosListEvent<T extends Record<string, unknown>>(
+	list: T[],
+	event: T & { ".dead"?: string },
+	keyOf: (item: T) => string,
+): void {
+	const key = keyOf(event);
+	const index = list.findIndex((item) => keyOf(item) === key);
+	const isDead = event[".dead"] === "true";
+
+	if (index === -1) {
+		if (!isDead) list.push(event);
+	} else if (isDead) {
+		removeItemFromArrayByIndex(list, index);
+	} else {
+		list[index] = event;
+	}
+}
