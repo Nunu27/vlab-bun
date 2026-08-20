@@ -36,7 +36,7 @@
 		"elysia-helmet": "^3.1.0",
 		"fast-xml-parser": "^5.11.0",
 		"guacamole-lite": "^1.2.0",
-		"ioredis": "5.10.1",
+		"ioredis": "5.11.1",
 		"nice-grpc": "^2.1.17",
 		"pino": "^10.3.1",
 		"s3mini": "^0.9.5",
