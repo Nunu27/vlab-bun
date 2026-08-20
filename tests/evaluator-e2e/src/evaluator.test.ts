@@ -54,6 +54,7 @@ const docker = new Docker();
 
 let session: ReturnType<typeof evaluator.createSession>;
 const nodeMap: Record<string, DeployedNode> = {};
+let deployed = false;
 
 let router1Client: RouterOSClient;
 let router2Client: RouterOSClient;
@@ -218,6 +219,7 @@ describe("Evaluator E2E", () => {
 		await clabMonitor.monitor.start();
 
 		const inspectData = await clab.deploy(LAB_NAME, topo);
+		deployed = true;
 
 		for (const node of inspectData) {
 			const nodeName = node.name.replace(`clab-${LAB_NAME}-`, "");
@@ -282,7 +284,7 @@ describe("Evaluator E2E", () => {
 		if (session) await session.stop();
 		if (router1Client) router1Client.close();
 		if (router2Client) router2Client.close();
-		await clab.destroy(LAB_NAME, { graceful: false });
+		if (deployed) await clab.destroy(LAB_NAME, { graceful: false });
 	}, 60_000);
 
 	const getCtx = (): TestContext => ({

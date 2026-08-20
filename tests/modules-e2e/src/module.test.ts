@@ -86,6 +86,7 @@ for (const mod of parsedModules) {
 		let session: ReturnType<typeof evaluator.createSession>;
 		const mikrotikClients: Record<string, RouterOSClient> = {};
 		let nodeMap: Record<string, DeployedNode> = {};
+		let deployed = false;
 
 		// Track which checks have passed and resolve waiting promises.
 		const checkPassed = new Set<string>();
@@ -113,6 +114,7 @@ for (const mod of parsedModules) {
 				TOPOLOGIES_DIR,
 			);
 			const inspectData = await clab.deploy(LAB_NAME, clabTopo);
+			deployed = true;
 
 			// Map container names → deployed node info
 			nodeMap = {};
@@ -227,7 +229,7 @@ for (const mod of parsedModules) {
 			for (const client of Object.values(mikrotikClients)) {
 				client.close();
 			}
-			await clab.destroy(LAB_NAME, { graceful: false });
+			if (deployed) await clab.destroy(LAB_NAME, { graceful: false });
 		}, 60_000);
 
 		// One it-block per check for granular pass/fail reporting

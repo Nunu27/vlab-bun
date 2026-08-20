@@ -20,9 +20,12 @@ env:
 jobs:
   changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     outputs:
-      evaluator: ${{ steps.filter.outputs.evaluator }}
-      modules: ${{ steps.filter.outputs.modules }}
+      evaluator: ${{ steps.decide.outputs.evaluator }}
+      modules: ${{ steps.decide.outputs.modules }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v4
@@ -36,6 +39,56 @@ jobs:
               - 'docs/modules/**'
               - 'packages/@vlab/evaluator/**'
               - 'tests/modules-e2e/**'
+
+      # A job that failed last time keeps re-running on every push, even with
+      # no relevant path changes, so a broken evaluator/modules suite doesn't
+      # go quiet just because nobody touched those paths.
+      - name: Check previous run status
+        id: previous
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This step is best-effort: `run:` steps fail closed (set -e) by
+          # default, and a transient `gh` API error here must not cascade
+          # into failing the whole `changes` job (which would block
+          # build-and-push entirely, per its needs.changes.result check).
+          # Every gh/jq call below falls back to an empty result on failure
+          # instead of aborting, degrading to path-filter-only behavior.
+          run_id=$(gh run list --workflow=build.yml --branch="${{ github.ref_name }}" \
+            --status=completed --limit=1 --json databaseId --jq '.[0].databaseId' || echo "")
+
+          eval_ok=true
+          mod_ok=true
+          if [ -n "$run_id" ] && [ "$run_id" != "null" ]; then
+            eval_conclusion=$(gh run view "$run_id" --json jobs \
+              --jq '.jobs[] | select(.name == "Evaluator E2E Tests") | .conclusion' || echo "")
+            mod_conclusion=$(gh run view "$run_id" --json jobs \
+              --jq '.jobs[] | select(.name == "Modules E2E Tests") | .conclusion' || echo "")
+
+            if [ -n "$eval_conclusion" ] && [ "$eval_conclusion" != "success" ] && [ "$eval_conclusion" != "skipped" ]; then
+              eval_ok=false
+            fi
+            if [ -n "$mod_conclusion" ] && [ "$mod_conclusion" != "success" ] && [ "$mod_conclusion" != "skipped" ]; then
+              mod_ok=false
+            fi
+          fi
+
+          echo "evaluator-ok=$eval_ok" >> "$GITHUB_OUTPUT"
+          echo "modules-ok=$mod_ok" >> "$GITHUB_OUTPUT"
+
+      - name: Decide
+        id: decide
+        run: |
+          if [ "${{ steps.filter.outputs.evaluator }}" = "true" ] || [ "${{ steps.previous.outputs.evaluator-ok }}" = "false" ]; then
+            echo "evaluator=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "evaluator=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "${{ steps.filter.outputs.modules }}" = "true" ] || [ "${{ steps.previous.outputs.modules-ok }}" = "false" ]; then
+            echo "modules=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "modules=false" >> "$GITHUB_OUTPUT"
+          fi
 
   evaluator-unit-test:
     needs: changes

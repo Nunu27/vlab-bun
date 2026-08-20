@@ -9,6 +9,10 @@ type AddrEntry = {
 };
 
 const streams = new Map<string, PassThrough>();
+// Node ids whose stream close was requested by stop()/stopAll(), so the
+// close handler below can tell an intentional teardown apart from the
+// docker exec pipe dying on its own (which must reject to trigger a retry).
+const stopping = new Set<string>();
 
 function parseAddrJson(json: string): NodeInterfaces {
 	const entries = JSON.parse(json) as AddrEntry[];
@@ -67,19 +71,38 @@ export default {
 				},
 				(error) => reject(error),
 			).then((stream) => {
-				stream.on("close", () => streams.delete(node.id));
+				stream.on("close", () => {
+					// A newer stream may have already replaced this one for the
+					// same node id (rapid stop-then-restart); only touch shared
+					// state if this close still belongs to the registered stream.
+					if (streams.get(node.id) !== stream) return;
+
+					streams.delete(node.id);
+					if (!stopping.delete(node.id)) {
+						reject(
+							new Error(
+								`Interface monitor stream for ${node.id} closed unexpectedly`,
+							),
+						);
+					}
+				});
 				streams.set(node.id, stream);
 			}, reject);
 		});
 	},
 	stop(_, { info: { id } }) {
-		streams.get(id)?.destroy();
+		const stream = streams.get(id);
+		if (!stream || stopping.has(id)) return;
+
+		stopping.add(id);
+		stream.destroy();
 		streams.delete(id);
 	},
 	stopAll(_) {
-		for (const stream of streams.values()) {
-			stream.destroy();
-		}
-		streams.clear();
+		const ids = [...streams.keys()].filter((id) => !stopping.has(id));
+		for (const id of ids) stopping.add(id);
+
+		for (const id of ids) streams.get(id)?.destroy();
+		for (const id of ids) streams.delete(id);
 	},
 } satisfies NetworkMonitor;

@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type {
 	ContainerlabMgmtConfig,
@@ -64,6 +64,7 @@ const LINUX_STARTUP_EXECS = [
  * `api` alive, so the labs are tested against the same router a student gets.
  */
 function writeMikrotikGuard(topologiesPath: string): string {
+	mkdirSync(topologiesPath, { recursive: true });
 	const target = join(topologiesPath, MIKROTIK_GUARD_FILENAME);
 	writeFileSync(target, MIKROTIK_GUARD_CONTENT);
 	return target;
