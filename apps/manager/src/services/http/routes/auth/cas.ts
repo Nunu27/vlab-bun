@@ -29,88 +29,94 @@ export default createRouter()
 	.get(
 		"/cas",
 		async ({ session, redirect, query: { ticket }, setToast }) => {
-			if (session.data) throw new Error("You are already logged in");
-			else if (!ticket) return redirect(CAS_LOGIN);
+			try {
+				if (session.data) throw new Error("You are already logged in");
+				else if (!ticket) return redirect(CAS_LOGIN);
 
-			const res = await fetch(CAS_VALIDATE + encodeURIComponent(ticket), {
-				signal: AbortSignal.timeout(10000),
-			});
-			const data = parser.parse(await res.text()) as CASResponse;
+				const res = await fetch(CAS_VALIDATE + encodeURIComponent(ticket), {
+					signal: AbortSignal.timeout(10000),
+				});
+				const data = parser.parse(await res.text()) as CASResponse;
 
-			logger.info({ ticket, data }, "CAS response");
+				logger.info({ ticket, data }, "CAS response");
 
-			if (
-				!CASResponseValidator.Check(data) ||
-				!data.serviceResponse.authenticationSuccess
-			) {
-				throw new Error("CAS authentication failed");
-			}
+				if (
+					!CASResponseValidator.Check(data) ||
+					!data.serviceResponse.authenticationSuccess
+				) {
+					throw new Error("CAS authentication failed");
+				}
 
-			const userInfo = data.serviceResponse.authenticationSuccess.attributes;
-			let user = await db.query.users.findFirst({
-				where: (user, { eq }) => eq(user.email, userInfo.mail),
-				columns: { id: true, role: true },
-			});
-
-			if (!user) {
-				const userId = await db.transaction(async (tx) => {
-					const [user] = await tx
-						.insert(users)
-						.values({
-							email: userInfo.mail,
-							name: userInfo.Name,
-						})
-						.returning({ id: users.id });
-
-					const nrpStr = userInfo.NRP.toString();
-					const parsedNRP = parseNRP(nrpStr);
-
-					if (!parsedNRP) {
-						throw new Error("Invalid NRP");
-					}
-
-					if (userInfo.Jurusan !== parsedNRP.programName) {
-						logger.debug({ userInfo, parsedNRP }, "NRP mismatch");
-					}
-
-					const studyProgram = await tx.query.studyPrograms.findFirst({
-						columns: { id: true },
-						where: ({ name }, { eq }) => eq(name, userInfo.Jurusan),
-					});
-
-					if (!studyProgram) {
-						throw new Error("Study program not found");
-					}
-
-					await tx.insert(students).values({
-						id: user.id,
-						nrp: nrpStr,
-						year: parsedNRP.year,
-						degreeLevel: parsedNRP.degreeLevel,
-						studyProgramId: studyProgram.id,
-					});
-
-					return user.id;
+				const userInfo = data.serviceResponse.authenticationSuccess.attributes;
+				let user = await db.query.users.findFirst({
+					where: (user, { eq }) => eq(user.email, userInfo.mail),
+					columns: { id: true, role: true },
 				});
 
-				user = {
-					id: userId,
-					role: "student",
-				};
+				if (!user) {
+					const userId = await db.transaction(async (tx) => {
+						const [user] = await tx
+							.insert(users)
+							.values({
+								email: userInfo.mail,
+								name: userInfo.Name,
+							})
+							.returning({ id: users.id });
 
-				await cache.delete("student:pagination:*");
+						const nrpStr = userInfo.NRP.toString();
+						const parsedNRP = parseNRP(nrpStr);
+
+						if (!parsedNRP) {
+							throw new Error("Invalid NRP");
+						}
+
+						if (userInfo.Jurusan !== parsedNRP.programName) {
+							logger.debug({ userInfo, parsedNRP }, "NRP mismatch");
+						}
+
+						const studyProgram = await tx.query.studyPrograms.findFirst({
+							columns: { id: true },
+							where: ({ name }, { eq }) => eq(name, userInfo.Jurusan),
+						});
+
+						if (!studyProgram) {
+							throw new Error("Study program not found");
+						}
+
+						await tx.insert(students).values({
+							id: user.id,
+							nrp: nrpStr,
+							year: parsedNRP.year,
+							degreeLevel: parsedNRP.degreeLevel,
+							studyProgramId: studyProgram.id,
+						});
+
+						return user.id;
+					});
+
+					user = {
+						id: userId,
+						role: "student",
+					};
+
+					await cache.delete("student:pagination:*");
+				}
+
+				await session.set({ ...user, useCAS: true });
+				setToast("success", "Logged in successfully via CAS");
+
+				return redirect(BASE_URL);
+			} catch (error) {
+				setToast(
+					"error",
+					error instanceof Error ? error.message : "Internal Server Error",
+				);
+
+				return redirect(BASE_URL);
 			}
-
-			await session.set({ ...user, useCAS: true });
-			setToast("success", "Logged in successfully via CAS");
-
-			return redirect(BASE_URL);
 		},
 		{
 			auth: true,
 			detail: { hide: true },
-			error: ({ setToast, error, code }) => {
-				if (code === "UNKNOWN") setToast?.("error", error.message);
-			},
 		},
 	);
