@@ -3,7 +3,9 @@ import mikrotik, {
 	type BGPConnectionSchema,
 	type BGPInstanceSchema,
 	type BGPSessionSchema,
+	gatewayMatches,
 	type IPRouteSchema,
+	type IPServiceSchema,
 	type OSPFAreaSchema,
 	type OSPFInstanceSchema,
 	type OSPFInterfaceTemplateSchema,
@@ -11,6 +13,7 @@ import mikrotik, {
 	type RIPInstanceSchema,
 	type RIPInterfaceTemplateSchema,
 	type SystemIdentitySchema,
+	type SystemNoteSchema,
 	type UserSchema,
 } from "./mikrotik";
 
@@ -406,5 +409,122 @@ describe("mikrotik user-exist check", () => {
 
 	test("does not match a missing user", () => {
 		expect(handler(ctx, { username: "guest" }, users)).toBe(false);
+	});
+});
+
+describe("gatewayMatches", () => {
+	test("matches a bare next-hop, as static routes report it", () => {
+		expect(gatewayMatches("10.10.10.2", "10.10.10.2")).toBe(true);
+	});
+
+	test("matches a next-hop qualified with the resolved interface", () => {
+		// OSPF and BGP routes come back as "<address>%<interface>".
+		expect(gatewayMatches("10.10.10.2%ether3", "10.10.10.2")).toBe(true);
+	});
+
+	test("still rejects a different next-hop on the same interface", () => {
+		expect(gatewayMatches("10.10.30.2%ether4", "10.10.10.2")).toBe(false);
+	});
+
+	test("handles a connected route, where the gateway is an interface name", () => {
+		expect(gatewayMatches("ether2", "ether2")).toBe(true);
+		expect(gatewayMatches("ether2", "10.10.10.2")).toBe(false);
+	});
+});
+
+describe("mikrotik.system-note", () => {
+	const check = mikrotik._checks["system-note"];
+	const run = (
+		params: { note: string; showAtLogin?: string },
+		data: typeof SystemNoteSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	// RouterOS reports show-at-login as "true"/"false" even though it is set
+	// with yes/no, so the check has to bridge the two spellings.
+	const banner: typeof SystemNoteSchema.static = [
+		{ note: "Lab Jaringan", "show-at-login": "true" },
+	];
+
+	test("passes when the banner text matches", () => {
+		expect(run({ note: "Lab Jaringan" }, banner)).toBe(true);
+	});
+
+	test("fails on different banner text", () => {
+		expect(run({ note: "Salah" }, banner)).toBe(false);
+	});
+
+	test("checks show-at-login when asked", () => {
+		expect(run({ note: "Lab Jaringan", showAtLogin: "yes" }, banner)).toBe(
+			true,
+		);
+		expect(run({ note: "Lab Jaringan", showAtLogin: "no" }, banner)).toBe(
+			false,
+		);
+	});
+
+	test("treats a banner that is not shown at login as disabled", () => {
+		const hidden = [{ note: "Lab Jaringan", "show-at-login": "false" }];
+		expect(run({ note: "Lab Jaringan", showAtLogin: "yes" }, hidden)).toBe(
+			false,
+		);
+		expect(run({ note: "Lab Jaringan", showAtLogin: "no" }, hidden)).toBe(true);
+	});
+
+	test("fails when no note is configured", () => {
+		expect(run({ note: "Lab Jaringan" }, [])).toBe(false);
+	});
+});
+
+describe("mikrotik.ip-service", () => {
+	const check = mikrotik._checks["ip-service"];
+	const run = (
+		params: { name: string; disabled: string },
+		data: typeof IPServiceSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	const services: typeof IPServiceSchema.static = [
+		{ ".id": "*0", name: "telnet", disabled: "true" },
+		{ ".id": "*2", name: "ssh", disabled: "false" },
+	];
+
+	test("passes when a service is disabled as required", () => {
+		expect(run({ name: "telnet", disabled: "yes" }, services)).toBe(true);
+	});
+
+	test("passes when a service is left enabled as required", () => {
+		expect(run({ name: "ssh", disabled: "no" }, services)).toBe(true);
+	});
+
+	test("fails when a service that should be off is still on", () => {
+		expect(run({ name: "ssh", disabled: "yes" }, services)).toBe(false);
+	});
+
+	test("fails when the service does not exist", () => {
+		expect(run({ name: "ftp", disabled: "yes" }, services)).toBe(false);
+	});
+});
+
+describe("mikrotik.user-exist group", () => {
+	const check = mikrotik._checks["user-exist"];
+	const run = (
+		params: { username: string; group?: string },
+		data: typeof UserSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	const users: typeof UserSchema.static = [
+		{ name: "admin", group: "full" },
+		{ name: "siswa", group: "read" },
+	];
+
+	test("still matches on username alone", () => {
+		expect(run({ username: "siswa" }, users)).toBe(true);
+	});
+
+	test("matches when the group also matches", () => {
+		expect(run({ username: "siswa", group: "read" }, users)).toBe(true);
+	});
+
+	test("fails when the user exists but in the wrong group", () => {
+		expect(run({ username: "siswa", group: "full" }, users)).toBe(false);
 	});
 });

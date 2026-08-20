@@ -18,7 +18,32 @@ export interface BaseContext {
 	node: NodeInfo;
 }
 
-export type AnyHandler = EvaluationHandler<string, any, any, any>;
+export type AnyHandler = EvaluationHandler<string, any, any, any, any>;
+
+/**
+ * Identifies the source that emitted, delivered to `subscribeAny` listeners.
+ * Given as parts rather than a concatenated key so listeners never have to
+ * parse one back apart.
+ */
+export interface SourceChange {
+	handlerId: string;
+	sourceId: string;
+	nodeId: string;
+}
+
+/** Params a source requires from checks bound to it, as a static type. */
+export type ExtractSourceCheckParams<
+	THandlers extends Record<string, AnyHandler>,
+	TargetId extends string,
+> = TargetId extends `${infer HId}.${infer SId}`
+	? HId extends keyof THandlers
+		? SId extends keyof THandlers[HId]["__sourceChecks"]
+			? THandlers[HId]["__sourceChecks"][SId] extends TProperties
+				? Static<TObject<THandlers[HId]["__sourceChecks"][SId]>>
+				: never
+			: never
+		: never
+	: never;
 
 export type ExtractValidSourceIds<
 	THandlers extends Record<string, AnyHandler>,

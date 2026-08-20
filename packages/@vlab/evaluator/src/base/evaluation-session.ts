@@ -5,6 +5,7 @@ import type {
 	BaseContext,
 	NodeInfo,
 	SessionCheckPayload,
+	SourceChange,
 } from "../types";
 import { withRetry } from "../utils";
 import type { Evaluator } from "./evaluator";
@@ -42,6 +43,15 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 
 	// Tracks emitter callbacks registered by this session, for cleanup
 	private sessionEmitterCleanups: Array<() => void> = [];
+
+	// Listeners registered via the `subscribeAny` helper. `ownerKey` is the
+	// sourceKey that registered the callback, so a source is never woken by its
+	// own emission (which would loop).
+	private anySourceListeners: Array<{
+		ownerKey: string;
+		callback: (changed: SourceChange) => void | Promise<void>;
+	}> = [];
+	private anySourceDispatch?: (changed: SourceChange) => void;
 
 	// Dependency optimization Maps
 	private sourceToCheckMap = new Map<
@@ -239,6 +249,32 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 	 * If the check is `oneTime` and just resolved to `true`, it removes itself from
 	 * the emitter so the listener stops firing for this check going forward.
 	 */
+	/** Params of every check bound to a source, for measuring sources. */
+	private checkParamsFor(sourceKey: string) {
+		return (this.sourceToCheckMap.get(sourceKey) ?? []).map(
+			(check) => check.params,
+		);
+	}
+
+	/**
+	 * Wakes `subscribeAny` listeners after a source emits. Errors are contained
+	 * so one bad listener cannot break the emitting source.
+	 */
+	private fireAnySource(changed: SourceChange) {
+		const sourceKey = `${changed.handlerId}.${changed.sourceId}::${changed.nodeId}`;
+		for (const listener of this.anySourceListeners) {
+			if (listener.ownerKey === sourceKey) continue;
+			try {
+				void listener.callback(changed);
+			} catch (error) {
+				console.error(
+					`Error in subscribeAny listener for ${listener.ownerKey}:`,
+					error,
+				);
+			}
+		}
+	}
+
 	private async evaluateCheck(
 		sessionCheck: SessionCheckPayload<THandlers>,
 		ctx: any,
@@ -452,6 +488,18 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 								if (this.stopped) return;
 								this.evaluator.emitSource(nodeId, sourceId as any, data);
 							};
+							const subscribeAny = (
+								callback: (changed: SourceChange) => void | Promise<void>,
+							) => {
+								const entry = { ownerKey: sourceKey, callback };
+								this.anySourceListeners.push(entry);
+								const cleanup = () => {
+									const idx = this.anySourceListeners.indexOf(entry);
+									if (idx !== -1) this.anySourceListeners.splice(idx, 1);
+								};
+								this.sessionEmitterCleanups.push(cleanup);
+								return cleanup;
+							};
 							const reportError = (error?: unknown) => {
 								this.recoverSource(
 									nodeId,
@@ -464,6 +512,8 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 							cleanupListener = await sourceDef.listen(ctx, {
 								notify: notifyFn,
 								subscribe,
+								subscribeAny,
+								checkParams: this.checkParamsFor(sourceKey),
 								reportError,
 							});
 						}
@@ -506,6 +556,18 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 
 	async start() {
 		this.stopped = false;
+
+		// The evaluator is shared between sessions, so filter its any-source
+		// stream down to the nodes this session owns before waking listeners.
+		if (!this.anySourceDispatch) {
+			this.anySourceDispatch = (changed) => {
+				if (this.stopped) return;
+				if (!this.nodeMapping[changed.nodeId]) return;
+				this.fireAnySource(changed);
+			};
+			this.evaluator._anyEmitters.push(this.anySourceDispatch);
+		}
+
 		// Start listeners only for sources that are actively used by our checks.
 		// This will recursively start dependent sources via startSource and subscribe.
 		const promises = [];
@@ -564,7 +626,7 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 
 				let data = sourceDataCache.get(sourceKey);
 				if (!data) {
-					data = await readFn(ctx);
+					data = await readFn(ctx, this.checkParamsFor(sourceKey));
 					sourceDataCache.set(sourceKey, data);
 				}
 
@@ -611,5 +673,12 @@ export class EvaluationSession<THandlers extends Record<string, AnyHandler>> {
 		this.sessionEmitterCleanups = [];
 		this.checkEmitterRemovals.clear();
 		this.sourceCheckRemovals.clear();
+		this.anySourceListeners = [];
+
+		if (this.anySourceDispatch) {
+			const idx = this.evaluator._anyEmitters.indexOf(this.anySourceDispatch);
+			if (idx !== -1) this.evaluator._anyEmitters.splice(idx, 1);
+			this.anySourceDispatch = undefined;
+		}
 	}
 }

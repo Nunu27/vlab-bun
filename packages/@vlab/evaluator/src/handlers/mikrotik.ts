@@ -3,6 +3,19 @@ import { RouterOSClient } from "mikro-routeros";
 import { EvaluationHandler } from "../base/evaluation-handler";
 import { applyRosListEvent, throttle } from "../utils";
 
+/**
+ * RouterOS reports a route's next-hop as either a bare address ("10.10.10.2",
+ * typical for static routes) or an address qualified with the resolved
+ * interface ("10.10.10.2%ether3", typical for routes learned from OSPF/BGP).
+ * Module authors should be able to write the next-hop they configured without
+ * knowing which form the router will hand back, so compare on the address and
+ * accept the qualified form too.
+ */
+export const gatewayMatches = (actual: string, expected: string): boolean => {
+	if (actual === expected) return true;
+	return (actual.split("%")[0] ?? actual) === expected;
+};
+
 export const compareFlag = (
 	flags: Set<string>,
 	flagChar: string,
@@ -165,6 +178,27 @@ export const SystemIdentitySchema = t.Array(
 	}),
 );
 
+// /system/note/print returns show-at-login as "true"/"false", even though it
+// is set with yes/no. The check accepts either spelling.
+export const SystemNoteSchema = t.Array(
+	t.Object({
+		note: t.Optional(t.String()),
+		"show-at-login": t.Optional(t.String()),
+		"show-at-cli-login": t.Optional(t.String()),
+	}),
+);
+
+export const IPServiceSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		port: t.Optional(t.String()),
+		proto: t.Optional(t.String()),
+		disabled: t.Optional(t.String()),
+		invalid: t.Optional(t.String()),
+	}),
+);
+
 export const UserSchema = t.Array(
 	t.Object({
 		name: t.String(),
@@ -266,7 +300,7 @@ export default new EvaluationHandler("mikrotik")
 				return (
 					route.active &&
 					route["dst-address"] === params.dst &&
-					(!params.gateway || route.gateway === params.gateway) &&
+					(!params.gateway || gatewayMatches(route.gateway, params.gateway)) &&
 					compareFlag(flags, "D", route.dynamic) &&
 					compareFlag(flags, "X", route.disabled) &&
 					compareFlag(flags, "I", route.inactive) &&
@@ -500,6 +534,12 @@ export default new EvaluationHandler("mikrotik")
 					description: "yes, no",
 				}),
 			),
+			cost: t.Optional(
+				t.String({
+					title: "Cost",
+					description: "OSPF interface cost, e.g. 10",
+				}),
+			),
 			flag: t.Optional(
 				t.String({
 					title: "Flag",
@@ -515,6 +555,7 @@ export default new EvaluationHandler("mikrotik")
 					template.interfaces.includes(params.interfaces) &&
 					template.area === params.area &&
 					(!params.type || template.type === params.type) &&
+					(!params.cost || template.cost === params.cost) &&
 					(!params.passive ||
 						(params.passive === "yes" &&
 							(template.passive === "true" || template.passive === "")) ||
@@ -902,6 +943,91 @@ export default new EvaluationHandler("mikrotik")
 			return data.length > 0 && data[0]?.name === params.name;
 		},
 	})
+	.addSource({
+		id: "system-note",
+		data: SystemNoteSchema,
+		listen: async ({ client }, { notify, subscribe }) => {
+			const doUpdate = throttle(async () => {
+				const data = await client.runQuery("/system/note/print");
+				notify(data);
+			}, 100);
+
+			return subscribe("log", async (data) => {
+				if (!data.includes("system note")) return;
+				doUpdate();
+			});
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/system/note/print");
+		},
+	})
+	.addCheck({
+		id: "system-note",
+		name: "System Note (Banner)",
+		text: "Login banner should be set to '{note}'",
+		source: "system-note",
+		params: {
+			note: t.String({
+				title: "Note",
+				description: "Banner text shown at login",
+			}),
+			showAtLogin: t.Optional(
+				t.String({
+					title: "Show At Login",
+					description: "yes, no",
+				}),
+			),
+		},
+		handler: (_, params, data) => {
+			const entry = data[0];
+			if (!entry || entry.note !== params.note) return false;
+			if (!params.showAtLogin) return true;
+
+			const shown = entry["show-at-login"] === "true";
+			return params.showAtLogin === "yes" ? shown : !shown;
+		},
+	})
+	.addSource({
+		id: "ip-services",
+		data: IPServiceSchema,
+		listen: async ({ client }, { notify, subscribe }) => {
+			const doUpdate = throttle(async () => {
+				const data = await client.runQuery("/ip/service/print");
+				notify(data);
+			}, 100);
+
+			return subscribe("log", async (data) => {
+				if (!data.includes("ip service")) return;
+				doUpdate();
+			});
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/ip/service/print");
+		},
+	})
+	.addCheck({
+		id: "ip-service",
+		name: "IP Service State",
+		text: "Service {name} should be disabled={disabled}",
+		source: "ip-services",
+		params: {
+			name: t.String({
+				title: "Service Name",
+				description: "e.g. telnet, ftp, www, ssh, api, winbox",
+			}),
+			disabled: t.String({
+				title: "Disabled",
+				description: "yes, no",
+			}),
+		},
+		handler: (_, params, data) => {
+			const service = data.find((entry) => entry.name === params.name);
+			if (!service) return false;
+
+			const isDisabled = service.disabled === "true";
+			return params.disabled === "yes" ? isDisabled : !isDisabled;
+		},
+	})
 	// Users
 	.addSource({
 		id: "users",
@@ -933,8 +1059,18 @@ export default new EvaluationHandler("mikrotik")
 			username: t.String({
 				title: "Username",
 			}),
+			group: t.Optional(
+				t.String({
+					title: "Group",
+					description: "e.g. read, write, full",
+				}),
+			),
 		},
 		handler: (_, params, data) => {
-			return data.some((user) => user.name === params.username);
+			return data.some(
+				(user) =>
+					user.name === params.username &&
+					(!params.group || user.group === params.group),
+			);
 		},
 	});

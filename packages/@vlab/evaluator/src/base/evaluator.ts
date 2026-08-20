@@ -5,10 +5,12 @@ import type Dockerode from "dockerode";
 import type {
 	AnyHandler,
 	ExtractContext,
+	ExtractSourceCheckParams,
 	ExtractSourceData,
 	ExtractValidSourceIds,
 	NodeInfo,
 	SessionCheckPayload,
+	SourceChange,
 } from "../types";
 import { EvaluationSession } from "./evaluation-session";
 
@@ -16,11 +18,17 @@ export class Evaluator<THandlers extends Record<string, AnyHandler> = {}> {
 	public handlers: THandlers = {} as THandlers;
 
 	// Internal overrides
-	public _readOverrides = new Map<string, (ctx: any) => any>();
+	public _readOverrides = new Map<
+		string,
+		(ctx: any, checkParams: any[]) => any
+	>();
 	public _emitters = new Map<
 		string,
 		Array<(data: any) => void | Promise<void>>
 	>();
+	// Session-registered listeners woken by any source emission, including
+	// sources fed externally through `emitSource` (interface data, for one).
+	public _anyEmitters: Array<(change: SourceChange) => void> = [];
 
 	register<H extends AnyHandler>(
 		handler: H,
@@ -58,6 +66,7 @@ export class Evaluator<THandlers extends Record<string, AnyHandler> = {}> {
 		sourceId: TargetId,
 		read: (
 			ctx: ExtractContext<THandlers, TargetId>,
+			checkParams: ExtractSourceCheckParams<THandlers, TargetId>[],
 		) =>
 			| ExtractSourceData<THandlers, TargetId>
 			| Promise<ExtractSourceData<THandlers, TargetId>>,
@@ -76,6 +85,12 @@ export class Evaluator<THandlers extends Record<string, AnyHandler> = {}> {
 			for (const fn of listeners) {
 				void fn(data);
 			}
+		}
+
+		const [handlerId, sId] = (sourceId as string).split(".");
+		if (!handlerId || !sId) return;
+		for (const fn of this._anyEmitters) {
+			fn({ handlerId, sourceId: sId, nodeId });
 		}
 	}
 
