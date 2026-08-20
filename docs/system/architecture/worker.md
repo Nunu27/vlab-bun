@@ -51,7 +51,7 @@ apps/worker/src/
 
 1. **`checkPrerequisites()`** (`domain/lab/reconcile.ts` → `@vlab/clab`'s `checkPrerequisites()`) — verifies the containerlab binary is runnable, checks root/SUID/`clab_admins` group membership, and ensures `CLAB_TOPOLOGIES_PATH` is read/writable. Throws (and the whole process exits fatally) if any check fails.
 2. **`resolveGuacdIp()`** — resolves `GUACD_HOST` via DNS (unless `GUACD_IP` is preset), stored back into `env.GUACD_IP` for later re-use by node startup-exec scripts and the `sendMetrics`/worker-spec handshake.
-3. Ensures `CLAB_TOPOLOGIES_PATH` exists and writes a static MikroTik "no reboot" RouterOS script (`mikrotik-noreboot.rsc`) into it once, up front (shared by all `mikrotik_ros` nodes via `startup-config`).
+3. Ensures `CLAB_TOPOLOGIES_PATH` exists and writes the shared MikroTik guard script (`mikrotik-guard.rsc`) into it once, up front (used by all `mikrotik_ros` nodes via `startup-config`).
 4. **`startMonitorService(server)`** — wires `@vlab/clab-monitor` events into the RPC layer and starts the Docker event stream (`monitor.start()`).
 5. **`startMetricsLoop()`** — begins the periodic host-metrics `sendMetrics` unary calls.
 6. **`runConnectionLoop()`** (fire-and-forget) — the persistent outbound gRPC stream to the Manager; the main "always retrying" loop for the whole daemon's life.
@@ -80,7 +80,9 @@ Full wire-protocol detail: [protocols/grpc-manager-worker.md](../protocols/grpc-
 - For `kind: "linux"` nodes with credentials, injects `USERNAME`/`PASSWORD` as env vars (consumed by `@vlab/clab-monitor`'s `extractCredentials`).
 - Maps `resources.cpu`/`resources.memory` (from `@vlab/shared`'s `DeviceTemplateResourcesSchema`) straight onto containerlab's per-node `cpu`/`memory` fields — this is the **resource-limiting mechanism**; containerlab passes these through to the Docker runtime's container resource limits. No additional throttling happens in the worker itself.
 - Injects a `stages.configure.exec` "on-exit" startup script per kind (`buildStartupExecs()`): for `linux` nodes it deletes the default route, re-adds a route to the resolved Guacd IP via `eth0`, forces a public DNS resolver, and **disables shutdown/reboot/poweroff/halt** by replacing those binaries with a script that exits 1 (defense against students shutting down their VM).
-- For `mikrotik_ros` nodes, sets `startup-config` to the shared `mikrotik-noreboot.rsc` file (written once at daemon boot) which strips the `reboot` policy from the RouterOS default user group.
+- For `mikrotik_ros` nodes, sets `startup-config` to the shared `mikrotik-guard.rsc` file (written once at daemon boot), which does two things:
+  - strips the `reboot` policy from every RouterOS user group, so a lab session cannot restart the router;
+  - installs a `vlab-service-guard` scheduler that re-enables `ssh` (port 22) and `api` (port 8728) if either is disabled. Those are the two services the platform itself depends on: `ssh` is the student's Guacamole console and `api` is how the evaluator reads their configuration, so losing either ends the lab silently. Labs legitimately teach disabling telnet/ftp, and over-applying that to ssh/api is an easy mistake. The scheduler only acts when a service is actually disabled (`find ... disabled=yes`), which keeps it out of the RouterOS log — important because `mikrotik.ip-services` re-reads on log activity and `subscribeAny` wakes connectivity probes from it, so an unconditional enable would turn those event-driven checks into a 10s poll.
 - `mgmt.network` is fixed to `env.CLAB_MGMT_NETWORK` (default `clab-mgmt`) for every lab.
 
 ### Deploy (`domain/lab/deploy.ts`)
@@ -138,6 +140,6 @@ Key deps: `@vlab/clab`, `@vlab/clab-monitor`, `@vlab/evaluator`, `@vlab/grpc`, `
 - `RECONNECT_BASE_MS = 1_000`, `RECONNECT_FACTOR = 2`, `RECONNECT_CAP_MS = 30_000` — gRPC reconnect backoff.
 - `METRICS_INTERVAL_MS = 10_000` — host metrics push interval.
 - `LABELS` — the `vlab.*` Docker label keys injected into every deployed container.
-- `MIKROTIK_NOREBOOT_FILENAME`/`MIKROTIK_NOREBOOT_CONTENT` — the shared RouterOS anti-reboot script.
+- `MIKROTIK_GUARD_FILENAME`/`MIKROTIK_GUARD_CONTENT` — the shared RouterOS guard script (anti-reboot policy + `vlab-service-guard` scheduler keeping ssh/api alive).
 
 **Host prerequisites** (`apps/worker/README.md`): Docker reachable at the default socket (`/var/run/docker.sock`); `containerlab` installed and runnable as root, SUID-root, or by a user in the `clab_admins` group (enforced by `checkPrerequisites()`).

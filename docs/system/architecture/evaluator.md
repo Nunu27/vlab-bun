@@ -9,15 +9,16 @@ Related: [worker.md](worker.md) · [clab-monitor.md](clab-monitor.md) (health-ga
 - **`EvaluationHandler`** (`base/evaluation-handler.ts`) — a builder class per node-kind (`linux`, `mikrotik`, `node-interface`) defining:
   - `.kinds([...])` — which Containerlab kinds it applies to.
   - `.withContext(builder, cleanup)` — how to open/close a connection (e.g. a Docker exec "session" for Linux, a RouterOS API login for MikroTik).
-  - `.addSource({...})` — a typed state extractor with `read()` and optional `listen()`.
+  - `.addSource({...})` — a typed state extractor with `read()` and optional `listen()`. A source that *measures* rather than enumerates can declare `checkParams`, the params it needs from every check bound to it; `addCheck` then requires those params at compile time, and the session supplies their values to `read()`/`listen()`.
   - `.addCheck({...})` — a declarative rule bound to one source, with `params`, a boolean `handler()`, and an optional `oneTime` flag to stop listening once passed.
 - **`Evaluator`** (`base/evaluator.ts`) — the central registry:
   - `.register(handler)` accumulates handlers.
   - `.getChecks()` returns the full catalog (for the UI check-picker, exposed via the manager's `GET /api/evaluator`).
   - `.setSourceRead()` lets callers override how a source is read (used heavily by tests to inject fake interface data, and by `apps/worker` to source `node-interface.interfaces-ip` from `@vlab/clab-monitor`'s live interface map instead of a generic reader).
-  - `.emitSource()` pushes new source data to all subscribed sessions.
+  - `.emitSource()` pushes new source data to all subscribed sessions, and wakes any `subscribeAny` listeners (see below).
   - `.createSession(docker, nodeMapping, checks, healthHooks?, initialValues?)` — the session factory.
 - **`EvaluationSession`** (`base/evaluation-session.ts`) — the runtime engine; only connects to/streams from sources that are actually required by the active check set (dependency mapping via `sourceToCheckMap`), debounces reads, and fires `onChange(checkId, passed)` events on pass/fail transitions.
+  - The `listen()` helpers include `subscribeAny(cb)`, which fires whenever any *other* source in the session emits — on any node, from any handler, including sources fed externally through `emitSource()`. It exists for state that has no event of its own: reachability cannot be watched the way a routing table can, so the `connectivity` source re-measures whenever something that could affect it changes. The session filters the evaluator-wide stream down to its own nodes, and a source is never woken by its own emission.
 
 ## Reliability / self-healing design
 
@@ -68,7 +69,11 @@ Per `packages/@vlab/evaluator/README.md` (cross-check against `tests/evaluator-e
   - `rip-instance` / `rip-interface-template` → matching checks.
   - `bgp-instance` → `bgp-instance-exist`.
   - `system-identity` → `system-identity` check.
-  - Also exercised in `tests/evaluator-e2e` but **not yet in the README table**: `mikrotik.user-exist`, `mikrotik.bgp-connection-exist`, `mikrotik.bgp-session-established` — check the test suite (`tests/evaluator-e2e/src/suites/mikrotik.ts`) as the more current source of truth if the README looks stale.
+  - `system-note` → `system-note` (`note`, optional `showAtLogin`) — the login banner/MOTD. RouterOS reports `show-at-login` as `true`/`false` although it is set with `yes`/`no`; the check accepts the `yes`/`no` spelling.
+  - `ip-services` → `ip-service` (`name`, `disabled`) — whether a service such as `telnet`, `ftp`, or `ssh` is off. Note that a lab must never ask a student to change the `admin` password: the evaluator authenticates as `admin`, so doing so severs its connection and every check on that node stops reporting.
+  - Also exercised in `tests/evaluator-e2e` but **not yet in the README table**: `mikrotik.user-exist` (which also takes an optional `group`), `mikrotik.bgp-connection-exist`, `mikrotik.bgp-session-established` — check the test suite (`tests/evaluator-e2e/src/suites/mikrotik.ts`) as the more current source of truth if the README looks stale.
+- **`connectivity`** (`kinds: ["linux"]`):
+  - Source `reachability` → check `ping` (`target`). Probes each target its checks name with a bounded `ping -c 1 -W 1` and reports reachability per target. Because reachability is not enumerable, the source declares `checkParams: { target }` and the session passes the bound checks' targets to `read()`/`listen()`. Re-probes are driven by `subscribeAny` — a router installing a route, an interface gaining an address — so the check converges without polling. This is what verifies a module's actual objective (PC1 can reach PC2) rather than only its ingredients.
 - **`node-interface`**: generic static handler, source `interfaces-ip` → check `check-ip` (`interface`, `ip`) — used for basic connectivity checks outside container-runtime-specific tooling. In `apps/worker`, its `read` is overridden via `evaluator.setSourceRead()` to source data from `@vlab/clab-monitor`'s live interface map rather than shelling out itself.
 
 ## How checks reach the evaluator

@@ -21,9 +21,11 @@ Tests the full [`@vlab/evaluator`](architecture/evaluator.md) pipeline against a
 
 Tests the full lifecycle (deploy → evaluate → teardown) of each student-facing lab module defined in [`docs/modules/`](course-content.md) — this validates the course content itself is functionally correct. See [course-content.md](course-content.md#parsing-details-testsmodules-e2esrcmodule-parserts) for the parser details.
 
-- `src/module-parser.ts` — `parseModule(modulePath)` parses `description.md`/`instructions.md`/`checks.md` into a structured test fixture.
-- `src/topology-builder.ts` / `src/configurator.ts` — turn the parsed topology into a real Containerlab topology and apply base device configuration.
-- `src/module.test.ts` — for each module (or one selected via `MODULE=<name> bun run test:module`, wired through the `VLAB_MODULE` env var), deploys the topology, waits for node health, runs the parsed checks through `@vlab/evaluator`, and tears the lab down.
+- `src/module-parser.ts` — `parseModule(modulePath)` parses `description.md`/`instructions.md`/`checks.md` into a structured test fixture, including the ordered `<LabCheck>` tags.
+- `src/solution-parser.ts` / `src/solution-runner.ts` — parse `solution.md` into an ordered command list and execute it against the deployed nodes. Running the module's own documented solution is what makes this a real test: a solution that has drifted from the instructions or the checks fails here rather than in front of a student.
+- `src/topology-builder.ts` — turns the parsed topology into a real Containerlab topology. `LINUX_STARTUP_EXECS` mirrors the worker's own startup execs (`buildStartupExecs()` in `apps/worker/src/domain/lab/topology.ts`); keep them in step, or the test environment diverges from a real lab session.
+- `src/module.test.ts` — for each module (or one selected via `MODULE=<name> bun run test:module`, wired through the `VLAB_MODULE` env var), deploys the topology, waits for node health, runs the solution, evaluates the parsed checks through `@vlab/evaluator`, and tears the lab down.
+- `src/module-docs.test.ts` — static cross-validation of the four module files, with no Docker required (`bun run test:module-docs`). Runs as its own CI job gating the expensive suite. See [tests/modules-e2e/README.md](../../tests/modules-e2e/README.md) for running the heavy suite locally.
 
 ## CI/CD pipeline (`.github/workflows/build.yml`, "Build vLab")
 
