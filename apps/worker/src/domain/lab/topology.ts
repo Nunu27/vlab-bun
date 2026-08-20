@@ -6,7 +6,11 @@ import type {
 } from "@vlab/clab";
 import type { LabConfigSchema } from "@vlab/grpc";
 import { toKebabCase } from "@vlab/shared/utils";
-import { LABELS, MIKROTIK_NOREBOOT_FILENAME } from "@worker/constants";
+import {
+	LABELS,
+	LINUX_NAME_RESOLUTION_EXECS,
+	MIKROTIK_GUARD_FILENAME,
+} from "@worker/constants";
 import env from "@worker/env";
 
 // Built per-call
@@ -16,7 +20,7 @@ function buildStartupExecs(): Partial<Record<string, string[]>> {
 		linux: [
 			"ip route del default",
 			`ip route add ${env.GUACD_IP} dev eth0`,
-			`sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'`,
+			...LINUX_NAME_RESOLUTION_EXECS,
 			"sh -c 'rm -f /sbin/shutdown /sbin/poweroff /sbin/reboot /sbin/halt /usr/sbin/shutdown /usr/sbin/poweroff /usr/sbin/reboot /usr/sbin/halt || true'",
 			'sh -c \'printf "#!/bin/sh\\necho \\"Shutdown is disabled in this lab.\\" >&2\\nexit 1\\n" > /sbin/shutdown\'',
 			"sh -c 'chmod +x /sbin/shutdown'",
@@ -94,7 +98,7 @@ export function buildTopology(
 
 		if (rest.kind === "mikrotik_ros") {
 			nodes[kebabName]["startup-config"] =
-				`${env.CLAB_TOPOLOGIES_PATH}/${MIKROTIK_NOREBOOT_FILENAME}`;
+				`${env.CLAB_TOPOLOGIES_PATH}/${MIKROTIK_GUARD_FILENAME}`;
 		}
 	}
 

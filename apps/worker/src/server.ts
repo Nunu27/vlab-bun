@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
-	MIKROTIK_NOREBOOT_CONTENT,
-	MIKROTIK_NOREBOOT_FILENAME,
+	MIKROTIK_GUARD_CONTENT,
+	MIKROTIK_GUARD_FILENAME,
 } from "@worker/constants";
 import { stopAllEvaluationsImmediately } from "@worker/domain/evaluation";
 import { checkPrerequisites } from "@worker/domain/lab/reconcile";
@@ -36,8 +36,8 @@ export async function startServer() {
 
 	await mkdir(env.CLAB_TOPOLOGIES_PATH, { recursive: true });
 	await writeFile(
-		path.join(env.CLAB_TOPOLOGIES_PATH, MIKROTIK_NOREBOOT_FILENAME),
-		MIKROTIK_NOREBOOT_CONTENT,
+		path.join(env.CLAB_TOPOLOGIES_PATH, MIKROTIK_GUARD_FILENAME),
+		MIKROTIK_GUARD_CONTENT,
 	);
 
 	startMonitorService(server);
