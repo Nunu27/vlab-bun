@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, it } from "bun:test";
 import { randomUUID } from "node:crypto";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Containerlab } from "@vlab/clab";
 import { createMonitor } from "@vlab/clab-monitor";
@@ -8,9 +8,10 @@ import evaluator from "@vlab/evaluator";
 import type { NodeInfo, SessionCheckPayload } from "@vlab/evaluator/types";
 import Docker from "dockerode";
 import { RouterOSClient } from "mikro-routeros";
-import { applyConfigurations } from "./configurator";
 import type { DeployedNode } from "./context";
 import { parseModule } from "./module-parser";
+import { parseSolution } from "./solution-parser";
+import { formatFailures, runSolution } from "./solution-runner";
 import { buildContainerlabTopology, getDeviceType } from "./topology-builder";
 
 const DOCS_DIR = resolve(process.cwd(), "../../docs/modules");
@@ -76,6 +77,12 @@ for (const mod of parsedModules) {
 	describe(`Module: ${mod.name}`, () => {
 		const LAB_NAME = `mod-${randomUUID().slice(0, 6)}`;
 
+		// Parsed up front so a malformed solution.md fails before deploying a lab.
+		const { commands: solutionCommands } = parseSolution(
+			readFileSync(join(DOCS_DIR, mod.name, "solution.md"), "utf-8"),
+			Object.keys(mod.topology.devices),
+		);
+
 		let session: ReturnType<typeof evaluator.createSession>;
 		const mikrotikClients: Record<string, RouterOSClient> = {};
 		let nodeMap: Record<string, DeployedNode> = {};
@@ -99,14 +106,12 @@ for (const mod of parsedModules) {
 		}
 
 		beforeAll(async () => {
-			// Build device type map from topology
-			const deviceTypes: Record<string, "mikrotik" | "linux" | "unknown"> = {};
-			for (const [name, device] of Object.entries(mod.topology.devices)) {
-				deviceTypes[name] = getDeviceType(device.template);
-			}
-
 			// Deploy lab
-			const clabTopo = buildContainerlabTopology(LAB_NAME, mod.topology);
+			const clabTopo = buildContainerlabTopology(
+				LAB_NAME,
+				mod.topology,
+				TOPOLOGIES_DIR,
+			);
 			const inspectData = await clab.deploy(LAB_NAME, clabTopo);
 
 			// Map container names → deployed node info
@@ -195,15 +200,22 @@ for (const mod of parsedModules) {
 
 			await session.start();
 
-			// Apply all configurations derived from the module's checks
-			await applyConfigurations(
+			// Run the module's documented solution. Executing solution.md (rather
+			// than synthesising config from checks.md) is what makes this a real
+			// test: it exercises the same commands a student is given, so a
+			// solution that has drifted from the instructions or the checks fails
+			// here instead of in front of a student.
+			const failures = await runSolution(
+				solutionCommands,
 				mikrotikClients,
 				docker,
 				nodeMap,
-				deviceTypes,
-				mod.checks,
-				mod.topology,
 			);
+			if (failures.length > 0) {
+				throw new Error(
+					`${failures.length} command(s) in ${mod.name}/solution.md failed:\n${formatFailures(failures)}`,
+				);
+			}
 
 			// Force an immediate evaluation cycle so checks that already pass
 			// (e.g. IP address was configured synchronously) are picked up.

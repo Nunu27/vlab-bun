@@ -85,8 +85,28 @@ jobs:
         run: sg clab_admins -c "bun run test"
         working-directory: ./tests/evaluator-e2e
 
-  modules-test:
+  module-docs-test:
     needs: changes
+    if: ${{ needs.changes.outputs.modules == 'true' }}
+    name: Module Docs Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Validate module docs
+        run: bun run test:module-docs
+
+  modules-test:
+    needs: [changes, module-docs-test]
     if: ${{ needs.changes.outputs.modules == 'true' }}
     name: Modules E2E Tests
     runs-on: ubuntu-latest
@@ -119,11 +139,19 @@ jobs:
         working-directory: ./tests/modules-e2e
 
   build-and-push:
-    needs: [changes, evaluator-unit-test, evaluator-test, modules-test]
+    needs:
+      [
+        changes,
+        evaluator-unit-test,
+        evaluator-test,
+        module-docs-test,
+        modules-test,
+      ]
     if: |
       always() &&
       (needs.evaluator-unit-test.result == 'success' || needs.evaluator-unit-test.result == 'skipped') &&
       (needs.evaluator-test.result == 'success' || needs.evaluator-test.result == 'skipped') &&
+      (needs.module-docs-test.result == 'success' || needs.module-docs-test.result == 'skipped') &&
       (needs.modules-test.result == 'success' || needs.modules-test.result == 'skipped') &&
       needs.changes.result == 'success'
     strategy:

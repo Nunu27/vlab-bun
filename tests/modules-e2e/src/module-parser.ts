@@ -31,11 +31,75 @@ export interface ParsedCheck {
 	weight: number;
 }
 
+export interface ParsedLabCheckTag {
+	node: string;
+	checkId: string;
+	/** 1-indexed line in instructions.md, for actionable failure messages. */
+	line: number;
+}
+
 export interface ParsedModule {
 	name: string;
 	title: string;
 	topology: TopologyMarkdown;
 	checks: ParsedCheck[];
+	tags: ParsedLabCheckTag[];
+}
+
+const LAB_CHECK_TAG = /<LabCheck\s+([^>]*?)\/?>/g;
+
+/**
+ * Scrapes <LabCheck node="..." id="..." /> tags from instructions.md in
+ * document order. The platform binds these to checks.md rows positionally,
+ * so order is the contract and must be preserved exactly.
+ *
+ * Fenced code blocks and HTML comments (the topology block) are skipped so
+ * example markup can never be mistaken for a real anchor.
+ */
+export function parseLabCheckTags(markdown: string): ParsedLabCheckTag[] {
+	const tags: ParsedLabCheckTag[] = [];
+	let inFence = false;
+	let inComment = false;
+
+	const lines = markdown.split("\n");
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i] ?? "";
+		const trimmed = line.trim();
+
+		if (trimmed.startsWith("```")) {
+			inFence = !inFence;
+			continue;
+		}
+		if (inFence) continue;
+
+		if (inComment) {
+			if (trimmed.includes("-->")) inComment = false;
+			continue;
+		}
+		if (trimmed.startsWith("<!--") && !trimmed.includes("-->")) {
+			inComment = true;
+			continue;
+		}
+
+		LAB_CHECK_TAG.lastIndex = 0;
+		let match = LAB_CHECK_TAG.exec(line);
+		while (match) {
+			const attrs = match[1] ?? "";
+			const node = attrs.match(/node="([^"]*)"/)?.[1];
+			const checkId = attrs.match(/id="([^"]*)"/)?.[1];
+
+			if (!node || !checkId) {
+				throw new Error(
+					`Malformed LabCheck tag at line ${i + 1}: "${match[0]}" (needs both node and id)`,
+				);
+			}
+
+			tags.push({ node, checkId, line: i + 1 });
+			match = LAB_CHECK_TAG.exec(line);
+		}
+	}
+
+	return tags;
 }
 
 export async function parseModule(modulePath: string): Promise<ParsedModule> {
@@ -118,5 +182,5 @@ export async function parseModule(modulePath: string): Promise<ParsedModule> {
 		});
 	}
 
-	return { name, title, topology, checks };
+	return { name, title, topology, checks, tags: parseLabCheckTags(inst) };
 }

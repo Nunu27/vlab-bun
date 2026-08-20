@@ -5,7 +5,8 @@
 	"private": true,
 	"scripts": {
 		"test": "bun test",
-		"test:module": "VLAB_MODULE=$MODULE bun test"
+		"test:module": "VLAB_MODULE=$MODULE bun test",
+		"test:docs": "bun test src/module-docs.test.ts"
 	},
 	"dependencies": {
 		"@sinclair/typebox": "^0.34.49",

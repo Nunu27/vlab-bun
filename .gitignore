@@ -34,3 +34,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 
 lab_backup/
+
+# modules-e2e writes generated containerlab topologies and the shared
+# MikroTik guard script here at run time
+tests/modules-e2e/topologies/
