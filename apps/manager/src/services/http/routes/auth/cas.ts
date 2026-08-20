@@ -29,14 +29,11 @@ export default createRouter()
 	.get(
 		"/cas",
 		async ({ session, redirect, query: { ticket }, setToast }) => {
-			if (session.data) {
-				setToast("error", "You are already logged in");
-
-				return redirect(BASE_URL);
-			} else if (!ticket) return redirect(CAS_LOGIN);
+			if (session.data) throw new Error("You are already logged in");
+			else if (!ticket) return redirect(CAS_LOGIN);
 
 			const res = await fetch(CAS_VALIDATE + encodeURIComponent(ticket), {
-				signal: AbortSignal.timeout(3000),
+				signal: AbortSignal.timeout(10000),
 			});
 			const data = parser.parse(await res.text()) as CASResponse;
 
@@ -46,9 +43,7 @@ export default createRouter()
 				!CASResponseValidator.Check(data) ||
 				!data.serviceResponse.authenticationSuccess
 			) {
-				setToast("error", "CAS authentication failed");
-
-				return redirect(BASE_URL);
+				throw new Error("CAS authentication failed");
 			}
 
 			const userInfo = data.serviceResponse.authenticationSuccess.attributes;
@@ -111,5 +106,11 @@ export default createRouter()
 
 			return redirect(BASE_URL);
 		},
-		{ auth: true, detail: { hide: true } },
+		{
+			auth: true,
+			detail: { hide: true },
+			error: ({ setToast, error, code }) => {
+				if (code === "UNKNOWN") setToast?.("error", error.message);
+			},
+		},
 	);
