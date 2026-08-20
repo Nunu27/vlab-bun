@@ -25,13 +25,14 @@ export const Route = createFileRoute(
 			{ title: "Edit" },
 		],
 	},
-	loader: async ({ params: { labId }, context }) => {
+	loader: async ({ params: { labId }, context, abortController }) => {
 		const [{ name }] = await Promise.all([
 			api.lab({ labId }).get.ensureQueryData(queryClient),
 			api["device-template"].list.get.ensureQueryData(queryClient),
 			api.evaluator.list.get.ensureQueryData(queryClient),
 		]);
 
+		if (abortController.signal.aborted) return;
 		context.breadcrumbData.set("name", name);
 	},
 	component: RouteComponent,

@@ -19,7 +19,9 @@ import { toast } from "sonner";
 import "@web/lib/ws";
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-	beforeLoad: async () => {
+	beforeLoad: async ({ context }) => {
+		context.breadcrumbData.clear();
+
 		const { user, actions } = useAuthStore.getState();
 
 		if (user === undefined) {
@@ -35,9 +37,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 		toast[type](message);
 
 		await cookieStore.delete("toast");
-	},
-	onStay: ({ context }) => {
-		context.breadcrumbData.clear();
 	},
 	pendingComponent: AppLoadingPage,
 	component: RouteComponent,

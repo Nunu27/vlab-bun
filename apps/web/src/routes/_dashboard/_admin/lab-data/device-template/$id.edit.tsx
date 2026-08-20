@@ -40,10 +40,11 @@ export const Route = createFileRoute(
 			{ title: "Edit" },
 		],
 	},
-	loader: async ({ params: { id }, context }) => {
+	loader: async ({ params: { id }, context, abortController }) => {
 		const { name } = await api["device-template"]({ id }).get.ensureQueryData(
 			queryClient,
 		);
+		if (abortController.signal.aborted) return;
 		context.breadcrumbData.set("name", name);
 	},
 	component: RouteComponent,
