@@ -9,41 +9,41 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
-import { Route as DashboardStudentRouteImport } from './routes/_dashboard/_student'
-import { Route as DashboardInstructorRouteImport } from './routes/_dashboard/_instructor'
 import { Route as DashboardAdminRouteImport } from './routes/_dashboard/_admin'
-import { Route as DashboardInstructorTopologyTemplateIndexRouteImport } from './routes/_dashboard/_instructor/topology-template/index'
+import { Route as DashboardInstructorRouteImport } from './routes/_dashboard/_instructor'
+import { Route as DashboardStudentRouteImport } from './routes/_dashboard/_student'
 import { Route as DashboardInstructorMyLabIndexRouteImport } from './routes/_dashboard/_instructor/my-lab/index'
-import { Route as DashboardStudentLabEnrolledRouteImport } from './routes/_dashboard/_student/lab/enrolled'
-import { Route as DashboardStudentLabBrowseRouteImport } from './routes/_dashboard/_student/lab/browse'
-import { Route as DashboardInstructorTopologyTemplateCreateRouteImport } from './routes/_dashboard/_instructor/topology-template/create'
 import { Route as DashboardInstructorMyLabCreateRouteImport } from './routes/_dashboard/_instructor/my-lab/create'
-import { Route as LabLabIdSessionLabSessionIdIndexRouteImport } from './routes/lab/$labId/session/$labSessionId/index'
-import { Route as DashboardStudentLabLabIdIndexRouteImport } from './routes/_dashboard/_student/lab/$labId/index'
-import { Route as DashboardInstructorTopologyTemplateTemplateIdIndexRouteImport } from './routes/_dashboard/_instructor/topology-template/$templateId/index'
-import { Route as DashboardInstructorMyLabLabIdIndexRouteImport } from './routes/_dashboard/_instructor/my-lab/$labId/index'
-import { Route as DashboardAdminUserStudentIndexRouteImport } from './routes/_dashboard/_admin/user/student/index'
-import { Route as DashboardAdminUserInstructorIndexRouteImport } from './routes/_dashboard/_admin/user/instructor/index'
-import { Route as DashboardAdminUserAdminIndexRouteImport } from './routes/_dashboard/_admin/user/admin/index'
-import { Route as DashboardAdminMasterStudyProgramIndexRouteImport } from './routes/_dashboard/_admin/master/study-program/index'
-import { Route as DashboardAdminMasterDepartmentIndexRouteImport } from './routes/_dashboard/_admin/master/department/index'
-import { Route as DashboardAdminLabDataDeviceTemplateIndexRouteImport } from './routes/_dashboard/_admin/lab-data/device-template/index'
+import { Route as DashboardInstructorTopologyTemplateIndexRouteImport } from './routes/_dashboard/_instructor/topology-template/index'
+import { Route as DashboardInstructorTopologyTemplateCreateRouteImport } from './routes/_dashboard/_instructor/topology-template/create'
+import { Route as DashboardStudentLabBrowseRouteImport } from './routes/_dashboard/_student/lab/browse'
+import { Route as DashboardStudentLabEnrolledRouteImport } from './routes/_dashboard/_student/lab/enrolled'
 import { Route as DashboardAdminLabDataDeviceCategoryIndexRouteImport } from './routes/_dashboard/_admin/lab-data/device-category/index'
-import { Route as DashboardInstructorMyLabLabIdEditRouteImport } from './routes/_dashboard/_instructor/my-lab/$labId/edit'
+import { Route as DashboardAdminLabDataDeviceTemplateIndexRouteImport } from './routes/_dashboard/_admin/lab-data/device-template/index'
 import { Route as DashboardAdminLabDataDeviceTemplateCreateRouteImport } from './routes/_dashboard/_admin/lab-data/device-template/create'
-import { Route as LabLabIdSessionLabSessionIdNodeNodeIdRouteImport } from './routes/lab/$labId/session/$labSessionId/node/$nodeId'
+import { Route as DashboardAdminMasterDepartmentIndexRouteImport } from './routes/_dashboard/_admin/master/department/index'
+import { Route as DashboardAdminMasterStudyProgramIndexRouteImport } from './routes/_dashboard/_admin/master/study-program/index'
+import { Route as DashboardAdminUserAdminIndexRouteImport } from './routes/_dashboard/_admin/user/admin/index'
+import { Route as DashboardAdminUserInstructorIndexRouteImport } from './routes/_dashboard/_admin/user/instructor/index'
+import { Route as DashboardAdminUserStudentIndexRouteImport } from './routes/_dashboard/_admin/user/student/index'
+import { Route as DashboardInstructorMyLabLabIdIndexRouteImport } from './routes/_dashboard/_instructor/my-lab/$labId/index'
+import { Route as DashboardInstructorMyLabLabIdEditRouteImport } from './routes/_dashboard/_instructor/my-lab/$labId/edit'
+import { Route as DashboardInstructorTopologyTemplateTemplateIdIndexRouteImport } from './routes/_dashboard/_instructor/topology-template/$templateId/index'
+import { Route as DashboardStudentLabLabIdIndexRouteImport } from './routes/_dashboard/_student/lab/$labId/index'
+import { Route as LabLabIdSessionLabSessionIdIndexRouteImport } from './routes/lab/$labId/session/$labSessionId/index'
 import { Route as DashboardAdminLabDataDeviceTemplateIdEditRouteImport } from './routes/_dashboard/_admin/lab-data/device-template/$id.edit'
+import { Route as LabLabIdSessionLabSessionIdNodeNodeIdRouteImport } from './routes/lab/$labId/session/$labSessionId/node/$nodeId'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -51,46 +51,22 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardStudentRoute = DashboardStudentRouteImport.update({
-  id: '/_student',
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/_admin',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardInstructorRoute = DashboardInstructorRouteImport.update({
   id: '/_instructor',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardAdminRoute = DashboardAdminRouteImport.update({
-  id: '/_admin',
+const DashboardStudentRoute = DashboardStudentRouteImport.update({
+  id: '/_student',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardInstructorTopologyTemplateIndexRoute =
-  DashboardInstructorTopologyTemplateIndexRouteImport.update({
-    id: '/topology-template/',
-    path: '/topology-template/',
-    getParentRoute: () => DashboardInstructorRoute,
-  } as any)
 const DashboardInstructorMyLabIndexRoute =
   DashboardInstructorMyLabIndexRouteImport.update({
     id: '/my-lab/',
     path: '/my-lab/',
-    getParentRoute: () => DashboardInstructorRoute,
-  } as any)
-const DashboardStudentLabEnrolledRoute =
-  DashboardStudentLabEnrolledRouteImport.update({
-    id: '/lab/enrolled',
-    path: '/lab/enrolled',
-    getParentRoute: () => DashboardStudentRoute,
-  } as any)
-const DashboardStudentLabBrowseRoute =
-  DashboardStudentLabBrowseRouteImport.update({
-    id: '/lab/browse',
-    path: '/lab/browse',
-    getParentRoute: () => DashboardStudentRoute,
-  } as any)
-const DashboardInstructorTopologyTemplateCreateRoute =
-  DashboardInstructorTopologyTemplateCreateRouteImport.update({
-    id: '/topology-template/create',
-    path: '/topology-template/create',
     getParentRoute: () => DashboardInstructorRoute,
   } as any)
 const DashboardInstructorMyLabCreateRoute =
@@ -99,58 +75,34 @@ const DashboardInstructorMyLabCreateRoute =
     path: '/my-lab/create',
     getParentRoute: () => DashboardInstructorRoute,
   } as any)
-const LabLabIdSessionLabSessionIdIndexRoute =
-  LabLabIdSessionLabSessionIdIndexRouteImport.update({
-    id: '/lab/$labId/session/$labSessionId/',
-    path: '/lab/$labId/session/$labSessionId/',
-    getParentRoute: () => rootRouteImport,
+const DashboardInstructorTopologyTemplateIndexRoute =
+  DashboardInstructorTopologyTemplateIndexRouteImport.update({
+    id: '/topology-template/',
+    path: '/topology-template/',
+    getParentRoute: () => DashboardInstructorRoute,
   } as any)
-const DashboardStudentLabLabIdIndexRoute =
-  DashboardStudentLabLabIdIndexRouteImport.update({
-    id: '/lab/$labId/',
-    path: '/lab/$labId/',
+const DashboardInstructorTopologyTemplateCreateRoute =
+  DashboardInstructorTopologyTemplateCreateRouteImport.update({
+    id: '/topology-template/create',
+    path: '/topology-template/create',
+    getParentRoute: () => DashboardInstructorRoute,
+  } as any)
+const DashboardStudentLabBrowseRoute =
+  DashboardStudentLabBrowseRouteImport.update({
+    id: '/lab/browse',
+    path: '/lab/browse',
     getParentRoute: () => DashboardStudentRoute,
   } as any)
-const DashboardInstructorTopologyTemplateTemplateIdIndexRoute =
-  DashboardInstructorTopologyTemplateTemplateIdIndexRouteImport.update({
-    id: '/topology-template/$templateId/',
-    path: '/topology-template/$templateId/',
-    getParentRoute: () => DashboardInstructorRoute,
+const DashboardStudentLabEnrolledRoute =
+  DashboardStudentLabEnrolledRouteImport.update({
+    id: '/lab/enrolled',
+    path: '/lab/enrolled',
+    getParentRoute: () => DashboardStudentRoute,
   } as any)
-const DashboardInstructorMyLabLabIdIndexRoute =
-  DashboardInstructorMyLabLabIdIndexRouteImport.update({
-    id: '/my-lab/$labId/',
-    path: '/my-lab/$labId/',
-    getParentRoute: () => DashboardInstructorRoute,
-  } as any)
-const DashboardAdminUserStudentIndexRoute =
-  DashboardAdminUserStudentIndexRouteImport.update({
-    id: '/user/student/',
-    path: '/user/student/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
-const DashboardAdminUserInstructorIndexRoute =
-  DashboardAdminUserInstructorIndexRouteImport.update({
-    id: '/user/instructor/',
-    path: '/user/instructor/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
-const DashboardAdminUserAdminIndexRoute =
-  DashboardAdminUserAdminIndexRouteImport.update({
-    id: '/user/admin/',
-    path: '/user/admin/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
-const DashboardAdminMasterStudyProgramIndexRoute =
-  DashboardAdminMasterStudyProgramIndexRouteImport.update({
-    id: '/master/study-program/',
-    path: '/master/study-program/',
-    getParentRoute: () => DashboardAdminRoute,
-  } as any)
-const DashboardAdminMasterDepartmentIndexRoute =
-  DashboardAdminMasterDepartmentIndexRouteImport.update({
-    id: '/master/department/',
-    path: '/master/department/',
+const DashboardAdminLabDataDeviceCategoryIndexRoute =
+  DashboardAdminLabDataDeviceCategoryIndexRouteImport.update({
+    id: '/lab-data/device-category/',
+    path: '/lab-data/device-category/',
     getParentRoute: () => DashboardAdminRoute,
   } as any)
 const DashboardAdminLabDataDeviceTemplateIndexRoute =
@@ -159,11 +111,47 @@ const DashboardAdminLabDataDeviceTemplateIndexRoute =
     path: '/lab-data/device-template/',
     getParentRoute: () => DashboardAdminRoute,
   } as any)
-const DashboardAdminLabDataDeviceCategoryIndexRoute =
-  DashboardAdminLabDataDeviceCategoryIndexRouteImport.update({
-    id: '/lab-data/device-category/',
-    path: '/lab-data/device-category/',
+const DashboardAdminLabDataDeviceTemplateCreateRoute =
+  DashboardAdminLabDataDeviceTemplateCreateRouteImport.update({
+    id: '/lab-data/device-template/create',
+    path: '/lab-data/device-template/create',
     getParentRoute: () => DashboardAdminRoute,
+  } as any)
+const DashboardAdminMasterDepartmentIndexRoute =
+  DashboardAdminMasterDepartmentIndexRouteImport.update({
+    id: '/master/department/',
+    path: '/master/department/',
+    getParentRoute: () => DashboardAdminRoute,
+  } as any)
+const DashboardAdminMasterStudyProgramIndexRoute =
+  DashboardAdminMasterStudyProgramIndexRouteImport.update({
+    id: '/master/study-program/',
+    path: '/master/study-program/',
+    getParentRoute: () => DashboardAdminRoute,
+  } as any)
+const DashboardAdminUserAdminIndexRoute =
+  DashboardAdminUserAdminIndexRouteImport.update({
+    id: '/user/admin/',
+    path: '/user/admin/',
+    getParentRoute: () => DashboardAdminRoute,
+  } as any)
+const DashboardAdminUserInstructorIndexRoute =
+  DashboardAdminUserInstructorIndexRouteImport.update({
+    id: '/user/instructor/',
+    path: '/user/instructor/',
+    getParentRoute: () => DashboardAdminRoute,
+  } as any)
+const DashboardAdminUserStudentIndexRoute =
+  DashboardAdminUserStudentIndexRouteImport.update({
+    id: '/user/student/',
+    path: '/user/student/',
+    getParentRoute: () => DashboardAdminRoute,
+  } as any)
+const DashboardInstructorMyLabLabIdIndexRoute =
+  DashboardInstructorMyLabLabIdIndexRouteImport.update({
+    id: '/my-lab/$labId/',
+    path: '/my-lab/$labId/',
+    getParentRoute: () => DashboardInstructorRoute,
   } as any)
 const DashboardInstructorMyLabLabIdEditRoute =
   DashboardInstructorMyLabLabIdEditRouteImport.update({
@@ -171,16 +159,22 @@ const DashboardInstructorMyLabLabIdEditRoute =
     path: '/my-lab/$labId/edit',
     getParentRoute: () => DashboardInstructorRoute,
   } as any)
-const DashboardAdminLabDataDeviceTemplateCreateRoute =
-  DashboardAdminLabDataDeviceTemplateCreateRouteImport.update({
-    id: '/lab-data/device-template/create',
-    path: '/lab-data/device-template/create',
-    getParentRoute: () => DashboardAdminRoute,
+const DashboardInstructorTopologyTemplateTemplateIdIndexRoute =
+  DashboardInstructorTopologyTemplateTemplateIdIndexRouteImport.update({
+    id: '/topology-template/$templateId/',
+    path: '/topology-template/$templateId/',
+    getParentRoute: () => DashboardInstructorRoute,
   } as any)
-const LabLabIdSessionLabSessionIdNodeNodeIdRoute =
-  LabLabIdSessionLabSessionIdNodeNodeIdRouteImport.update({
-    id: '/lab/$labId/session/$labSessionId/node/$nodeId',
-    path: '/lab/$labId/session/$labSessionId/node/$nodeId',
+const DashboardStudentLabLabIdIndexRoute =
+  DashboardStudentLabLabIdIndexRouteImport.update({
+    id: '/lab/$labId/',
+    path: '/lab/$labId/',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
+const LabLabIdSessionLabSessionIdIndexRoute =
+  LabLabIdSessionLabSessionIdIndexRouteImport.update({
+    id: '/lab/$labId/session/$labSessionId/',
+    path: '/lab/$labId/session/$labSessionId/',
     getParentRoute: () => rootRouteImport,
   } as any)
 const DashboardAdminLabDataDeviceTemplateIdEditRoute =
@@ -188,6 +182,12 @@ const DashboardAdminLabDataDeviceTemplateIdEditRoute =
     id: '/lab-data/device-template/$id/edit',
     path: '/lab-data/device-template/$id/edit',
     getParentRoute: () => DashboardAdminRoute,
+  } as any)
+const LabLabIdSessionLabSessionIdNodeNodeIdRoute =
+  LabLabIdSessionLabSessionIdNodeNodeIdRouteImport.update({
+    id: '/lab/$labId/session/$labSessionId/node/$nodeId',
+    path: '/lab/$labId/session/$labSessionId/node/$nodeId',
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -361,18 +361,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_dashboard': {
       id: '/_dashboard'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_dashboard/': {
@@ -382,11 +382,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/_student': {
-      id: '/_dashboard/_student'
+    '/_dashboard/_admin': {
+      id: '/_dashboard/_admin'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof DashboardStudentRouteImport
+      preLoaderRoute: typeof DashboardAdminRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/_instructor': {
@@ -396,46 +396,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardInstructorRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/_admin': {
-      id: '/_dashboard/_admin'
+    '/_dashboard/_student': {
+      id: '/_dashboard/_student'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof DashboardAdminRouteImport
+      preLoaderRoute: typeof DashboardStudentRouteImport
       parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/_instructor/topology-template/': {
-      id: '/_dashboard/_instructor/topology-template/'
-      path: '/topology-template'
-      fullPath: '/topology-template/'
-      preLoaderRoute: typeof DashboardInstructorTopologyTemplateIndexRouteImport
-      parentRoute: typeof DashboardInstructorRoute
     }
     '/_dashboard/_instructor/my-lab/': {
       id: '/_dashboard/_instructor/my-lab/'
       path: '/my-lab'
       fullPath: '/my-lab/'
       preLoaderRoute: typeof DashboardInstructorMyLabIndexRouteImport
-      parentRoute: typeof DashboardInstructorRoute
-    }
-    '/_dashboard/_student/lab/enrolled': {
-      id: '/_dashboard/_student/lab/enrolled'
-      path: '/lab/enrolled'
-      fullPath: '/lab/enrolled'
-      preLoaderRoute: typeof DashboardStudentLabEnrolledRouteImport
-      parentRoute: typeof DashboardStudentRoute
-    }
-    '/_dashboard/_student/lab/browse': {
-      id: '/_dashboard/_student/lab/browse'
-      path: '/lab/browse'
-      fullPath: '/lab/browse'
-      preLoaderRoute: typeof DashboardStudentLabBrowseRouteImport
-      parentRoute: typeof DashboardStudentRoute
-    }
-    '/_dashboard/_instructor/topology-template/create': {
-      id: '/_dashboard/_instructor/topology-template/create'
-      path: '/topology-template/create'
-      fullPath: '/topology-template/create'
-      preLoaderRoute: typeof DashboardInstructorTopologyTemplateCreateRouteImport
       parentRoute: typeof DashboardInstructorRoute
     }
     '/_dashboard/_instructor/my-lab/create': {
@@ -445,67 +417,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardInstructorMyLabCreateRouteImport
       parentRoute: typeof DashboardInstructorRoute
     }
-    '/lab/$labId/session/$labSessionId/': {
-      id: '/lab/$labId/session/$labSessionId/'
-      path: '/lab/$labId/session/$labSessionId'
-      fullPath: '/lab/$labId/session/$labSessionId/'
-      preLoaderRoute: typeof LabLabIdSessionLabSessionIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_dashboard/_instructor/topology-template/': {
+      id: '/_dashboard/_instructor/topology-template/'
+      path: '/topology-template'
+      fullPath: '/topology-template/'
+      preLoaderRoute: typeof DashboardInstructorTopologyTemplateIndexRouteImport
+      parentRoute: typeof DashboardInstructorRoute
     }
-    '/_dashboard/_student/lab/$labId/': {
-      id: '/_dashboard/_student/lab/$labId/'
-      path: '/lab/$labId'
-      fullPath: '/lab/$labId/'
-      preLoaderRoute: typeof DashboardStudentLabLabIdIndexRouteImport
+    '/_dashboard/_instructor/topology-template/create': {
+      id: '/_dashboard/_instructor/topology-template/create'
+      path: '/topology-template/create'
+      fullPath: '/topology-template/create'
+      preLoaderRoute: typeof DashboardInstructorTopologyTemplateCreateRouteImport
+      parentRoute: typeof DashboardInstructorRoute
+    }
+    '/_dashboard/_student/lab/browse': {
+      id: '/_dashboard/_student/lab/browse'
+      path: '/lab/browse'
+      fullPath: '/lab/browse'
+      preLoaderRoute: typeof DashboardStudentLabBrowseRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
-    '/_dashboard/_instructor/topology-template/$templateId/': {
-      id: '/_dashboard/_instructor/topology-template/$templateId/'
-      path: '/topology-template/$templateId'
-      fullPath: '/topology-template/$templateId/'
-      preLoaderRoute: typeof DashboardInstructorTopologyTemplateTemplateIdIndexRouteImport
-      parentRoute: typeof DashboardInstructorRoute
+    '/_dashboard/_student/lab/enrolled': {
+      id: '/_dashboard/_student/lab/enrolled'
+      path: '/lab/enrolled'
+      fullPath: '/lab/enrolled'
+      preLoaderRoute: typeof DashboardStudentLabEnrolledRouteImport
+      parentRoute: typeof DashboardStudentRoute
     }
-    '/_dashboard/_instructor/my-lab/$labId/': {
-      id: '/_dashboard/_instructor/my-lab/$labId/'
-      path: '/my-lab/$labId'
-      fullPath: '/my-lab/$labId/'
-      preLoaderRoute: typeof DashboardInstructorMyLabLabIdIndexRouteImport
-      parentRoute: typeof DashboardInstructorRoute
-    }
-    '/_dashboard/_admin/user/student/': {
-      id: '/_dashboard/_admin/user/student/'
-      path: '/user/student'
-      fullPath: '/user/student/'
-      preLoaderRoute: typeof DashboardAdminUserStudentIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/user/instructor/': {
-      id: '/_dashboard/_admin/user/instructor/'
-      path: '/user/instructor'
-      fullPath: '/user/instructor/'
-      preLoaderRoute: typeof DashboardAdminUserInstructorIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/user/admin/': {
-      id: '/_dashboard/_admin/user/admin/'
-      path: '/user/admin'
-      fullPath: '/user/admin/'
-      preLoaderRoute: typeof DashboardAdminUserAdminIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/master/study-program/': {
-      id: '/_dashboard/_admin/master/study-program/'
-      path: '/master/study-program'
-      fullPath: '/master/study-program/'
-      preLoaderRoute: typeof DashboardAdminMasterStudyProgramIndexRouteImport
-      parentRoute: typeof DashboardAdminRoute
-    }
-    '/_dashboard/_admin/master/department/': {
-      id: '/_dashboard/_admin/master/department/'
-      path: '/master/department'
-      fullPath: '/master/department/'
-      preLoaderRoute: typeof DashboardAdminMasterDepartmentIndexRouteImport
+    '/_dashboard/_admin/lab-data/device-category/': {
+      id: '/_dashboard/_admin/lab-data/device-category/'
+      path: '/lab-data/device-category'
+      fullPath: '/lab-data/device-category/'
+      preLoaderRoute: typeof DashboardAdminLabDataDeviceCategoryIndexRouteImport
       parentRoute: typeof DashboardAdminRoute
     }
     '/_dashboard/_admin/lab-data/device-template/': {
@@ -515,12 +459,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateIndexRouteImport
       parentRoute: typeof DashboardAdminRoute
     }
-    '/_dashboard/_admin/lab-data/device-category/': {
-      id: '/_dashboard/_admin/lab-data/device-category/'
-      path: '/lab-data/device-category'
-      fullPath: '/lab-data/device-category/'
-      preLoaderRoute: typeof DashboardAdminLabDataDeviceCategoryIndexRouteImport
+    '/_dashboard/_admin/lab-data/device-template/create': {
+      id: '/_dashboard/_admin/lab-data/device-template/create'
+      path: '/lab-data/device-template/create'
+      fullPath: '/lab-data/device-template/create'
+      preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateCreateRouteImport
       parentRoute: typeof DashboardAdminRoute
+    }
+    '/_dashboard/_admin/master/department/': {
+      id: '/_dashboard/_admin/master/department/'
+      path: '/master/department'
+      fullPath: '/master/department/'
+      preLoaderRoute: typeof DashboardAdminMasterDepartmentIndexRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
+    '/_dashboard/_admin/master/study-program/': {
+      id: '/_dashboard/_admin/master/study-program/'
+      path: '/master/study-program'
+      fullPath: '/master/study-program/'
+      preLoaderRoute: typeof DashboardAdminMasterStudyProgramIndexRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
+    '/_dashboard/_admin/user/admin/': {
+      id: '/_dashboard/_admin/user/admin/'
+      path: '/user/admin'
+      fullPath: '/user/admin/'
+      preLoaderRoute: typeof DashboardAdminUserAdminIndexRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
+    '/_dashboard/_admin/user/instructor/': {
+      id: '/_dashboard/_admin/user/instructor/'
+      path: '/user/instructor'
+      fullPath: '/user/instructor/'
+      preLoaderRoute: typeof DashboardAdminUserInstructorIndexRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
+    '/_dashboard/_admin/user/student/': {
+      id: '/_dashboard/_admin/user/student/'
+      path: '/user/student'
+      fullPath: '/user/student/'
+      preLoaderRoute: typeof DashboardAdminUserStudentIndexRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
+    '/_dashboard/_instructor/my-lab/$labId/': {
+      id: '/_dashboard/_instructor/my-lab/$labId/'
+      path: '/my-lab/$labId'
+      fullPath: '/my-lab/$labId/'
+      preLoaderRoute: typeof DashboardInstructorMyLabLabIdIndexRouteImport
+      parentRoute: typeof DashboardInstructorRoute
     }
     '/_dashboard/_instructor/my-lab/$labId/edit': {
       id: '/_dashboard/_instructor/my-lab/$labId/edit'
@@ -529,18 +515,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardInstructorMyLabLabIdEditRouteImport
       parentRoute: typeof DashboardInstructorRoute
     }
-    '/_dashboard/_admin/lab-data/device-template/create': {
-      id: '/_dashboard/_admin/lab-data/device-template/create'
-      path: '/lab-data/device-template/create'
-      fullPath: '/lab-data/device-template/create'
-      preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateCreateRouteImport
-      parentRoute: typeof DashboardAdminRoute
+    '/_dashboard/_instructor/topology-template/$templateId/': {
+      id: '/_dashboard/_instructor/topology-template/$templateId/'
+      path: '/topology-template/$templateId'
+      fullPath: '/topology-template/$templateId/'
+      preLoaderRoute: typeof DashboardInstructorTopologyTemplateTemplateIdIndexRouteImport
+      parentRoute: typeof DashboardInstructorRoute
     }
-    '/lab/$labId/session/$labSessionId/node/$nodeId': {
-      id: '/lab/$labId/session/$labSessionId/node/$nodeId'
-      path: '/lab/$labId/session/$labSessionId/node/$nodeId'
-      fullPath: '/lab/$labId/session/$labSessionId/node/$nodeId'
-      preLoaderRoute: typeof LabLabIdSessionLabSessionIdNodeNodeIdRouteImport
+    '/_dashboard/_student/lab/$labId/': {
+      id: '/_dashboard/_student/lab/$labId/'
+      path: '/lab/$labId'
+      fullPath: '/lab/$labId/'
+      preLoaderRoute: typeof DashboardStudentLabLabIdIndexRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
+    '/lab/$labId/session/$labSessionId/': {
+      id: '/lab/$labId/session/$labSessionId/'
+      path: '/lab/$labId/session/$labSessionId'
+      fullPath: '/lab/$labId/session/$labSessionId/'
+      preLoaderRoute: typeof LabLabIdSessionLabSessionIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_dashboard/_admin/lab-data/device-template/$id/edit': {
@@ -549,6 +542,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/lab-data/device-template/$id/edit'
       preLoaderRoute: typeof DashboardAdminLabDataDeviceTemplateIdEditRouteImport
       parentRoute: typeof DashboardAdminRoute
+    }
+    '/lab/$labId/session/$labSessionId/node/$nodeId': {
+      id: '/lab/$labId/session/$labSessionId/node/$nodeId'
+      path: '/lab/$labId/session/$labSessionId/node/$nodeId'
+      fullPath: '/lab/$labId/session/$labSessionId/node/$nodeId'
+      preLoaderRoute: typeof LabLabIdSessionLabSessionIdNodeNodeIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
