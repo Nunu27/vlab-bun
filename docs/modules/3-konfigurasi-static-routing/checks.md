@@ -10,5 +10,6 @@
 | `linux.route-exist` | `PC1` | **dst**: default<br>**gateway**: 192.168.10.1 | 1 |
 | `node-interface.check-ip` | `PC2` | **ip**: 192.168.20.2/24<br>**interface**: eth1 | 1 |
 | `linux.route-exist` | `PC2` | **dst**: default<br>**gateway**: 192.168.20.1 | 1 |
-| `mikrotik.route-exist` | `R1` | **dst**: 192.168.20.0/24<br>**gateway**: 10.10.10.2<br>**flag**: As | 2 |
-| `mikrotik.route-exist` | `R2` | **dst**: 192.168.10.0/24<br>**gateway**: 10.10.10.1<br>**flag**: As | 2 |
+| `mikrotik.route-exist` | `R1` | **dst**: 192.168.20.0/24<br>**gateway**: 10.10.10.2<br>**flag**: As | 3 |
+| `mikrotik.route-exist` | `R2` | **dst**: 192.168.10.0/24<br>**gateway**: 10.10.10.1<br>**flag**: As | 3 |
+| `connectivity.ping` | `PC1` | **target**: 192.168.20.2 | 4 |

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 462" width="760" height="462" role="img" aria-label="Tahapan adjacency OSPF dari Down sampai Full">
+  <style>
+    /* Laid out vertically: five stages side by side left too little room for
+       the longer labels once the page scales the figure down. */
+    .hd    { font: 600 19px sans-serif; fill: #24292f; }
+    .sub   { font: 16px sans-serif; fill: #57606a; }
+    .stage { font: 600 18px sans-serif; fill: #24292f; }
+    .desc  { font: 16px sans-serif; fill: #57606a; }
+    .num   { font: 600 15px sans-serif; fill: #ffffff; }
+    .numf  { font: 600 15px sans-serif; fill: #1a7f37; }
+    .spine { stroke: #d0d7de; stroke-width: 3; }
+    .dot   { fill: #8c959f; }
+    .mono  { font: 16px ui-monospace, monospace; fill: #24292f; }
+  </style>
+
+  <text class="hd"  x="20" y="28">Tetangga OSPF tidak langsung bertukar rute</text>
+  <text class="sub" x="20" y="54">Mereka melewati beberapa tahap pengenalan lebih dulu.</text>
+
+  <!-- garis penghubung tahap -->
+  <path class="spine" d="M52,104 V344"/>
+
+  <!-- 1 -->
+  <circle class="dot" cx="52" cy="104" r="17"/>
+  <text class="num"   x="52" y="110" text-anchor="middle">1</text>
+  <text class="stage" x="92" y="98">Down / Init</text>
+  <text class="desc"  x="92" y="122">mengirim Hello Packet ke calon tetangga</text>
+
+  <!-- 2 -->
+  <circle class="dot" cx="52" cy="164" r="17"/>
+  <text class="num"   x="52" y="170" text-anchor="middle">2</text>
+  <text class="stage" x="92" y="158">2-Way</text>
+  <text class="desc"  x="92" y="182">election DR/BDR berlangsung</text>
+
+  <!-- 3 -->
+  <circle class="dot" cx="52" cy="224" r="17"/>
+  <text class="num"   x="52" y="230" text-anchor="middle">3</text>
+  <text class="stage" x="92" y="218">ExStart / Exchange</text>
+  <text class="desc"  x="92" y="242">bertukar ringkasan database topologi</text>
+
+  <!-- 4 -->
+  <circle class="dot" cx="52" cy="284" r="17"/>
+  <text class="num"   x="52" y="290" text-anchor="middle">4</text>
+  <text class="stage" x="92" y="278">Loading</text>
+  <text class="desc"  x="92" y="302">meminta rincian yang belum lengkap</text>
+
+  <!-- 5, tujuan akhir -->
+  <rect x="24" y="322" width="716" height="46" rx="8" fill="#dafbe1" stroke="#1a7f37" stroke-width="2"/>
+  <circle cx="52" cy="345" r="17" fill="#ffffff" stroke="#1a7f37" stroke-width="2"/>
+  <text class="numf"  x="52" y="351" text-anchor="middle">5</text>
+  <text class="stage" x="92" y="351" style="fill:#1a7f37">Full</text>
+  <text class="desc"  x="152" y="351" style="fill:#1a7f37">sinkronisasi selesai, tabel rute mulai dihitung</text>
+
+  <!-- catatan -->
+  <text class="desc" x="24" y="404">Full adalah status yang harus terlihat. Status lain berarti prosesnya masih</text>
+  <text class="desc" x="24" y="428">berjalan atau ada yang salah. Periksa dengan</text>
+  <text class="mono" x="24" y="452">/routing ospf neighbor print</text>
+</svg>

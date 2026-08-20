@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" width="760" height="320" role="img" aria-label="Split Horizon: rute tidak dikirim kembali lewat interface tempat rute itu diterima">
+  <style>
+    .box   { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .name  { font: 600 20px sans-serif; fill: #24292f; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .mono  { font: 15px ui-monospace, monospace; fill: #24292f; }
+    .ok    { stroke: #1a7f37; stroke-width: 3; fill: none; }
+    .bad   { stroke: #cf222e; stroke-width: 3; fill: none; stroke-dasharray: 7 5; }
+    .oklb  { font: 600 16px sans-serif; fill: #1a7f37; }
+    .badlb { font: 600 16px sans-serif; fill: #cf222e; }
+    .link  { stroke: #8c959f; stroke-width: 2; }
+  </style>
+  <defs>
+    <marker id="s-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/></marker>
+    <marker id="s-bd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#cf222e"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="28">Split Horizon</text>
+  <text class="mut" x="20" y="52">Sebuah rute tidak pernah dikirim balik lewat interface tempat ia diterima.</text>
+
+  <!-- router -->
+  <rect class="box" x="120" y="140" width="140" height="66" rx="7"/>
+  <text class="name" x="190" y="180" text-anchor="middle">R1</text>
+
+  <rect class="box" x="480" y="140" width="140" height="66" rx="7"/>
+  <text class="name" x="550" y="180" text-anchor="middle">R2</text>
+
+  <path class="link" d="M260,173 H480"/>
+
+  <!-- jaringan asal -->
+  <rect class="box" x="20" y="140" width="70" height="66" rx="7"/>
+  <text class="mono" x="55" y="168" text-anchor="middle" style="font-size:13px">LAN</text>
+  <text class="mono" x="55" y="188" text-anchor="middle" style="font-size:13px">R1</text>
+  <path class="link" d="M90,173 H120"/>
+
+  <!-- kiriman sah -->
+  <path class="ok" d="M270,132 H470" marker-end="url(#s-ok)"/>
+  <text class="oklb" x="370" y="120" text-anchor="middle">R1 mengiklankan LAN-nya ke R2</text>
+
+  <!-- kiriman terlarang -->
+  <path class="bad" d="M470,232 H270" marker-end="url(#s-bd)"/>
+  <text class="badlb" x="370" y="262" text-anchor="middle">R2 tidak boleh mengiklankan rute itu balik ke R1</text>
+
+  <g stroke="#cf222e" stroke-width="4" stroke-linecap="round">
+    <path d="M360,220 L380,244"/>
+    <path d="M380,220 L360,244"/>
+  </g>
+
+  <text class="mut" x="20" y="296">Tanpa aturan ini, R1 bisa mengira ada jalur cadangan lewat R2 menuju jaringannya</text>
+  <text class="mut" x="20" y="316">sendiri, dan paket akan berputar bolak-balik di antara keduanya.</text>
+</svg>

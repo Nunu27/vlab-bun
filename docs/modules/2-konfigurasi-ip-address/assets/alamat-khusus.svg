@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 262" width="760" height="262" role="img" aria-label="Rentang alamat pada blok 192.168.10.0/24: alamat network, 254 alamat host, dan alamat broadcast">
+  <style>
+    .res  { fill: #ffebe9; stroke: #cf222e; stroke-width: 2; }
+    .use  { fill: #dafbe1; stroke: #1a7f37; stroke-width: 2; }
+    .mono { font: 16px ui-monospace, monospace; fill: #24292f; }
+    .hd   { font: 600 18px sans-serif; fill: #24292f; }
+    .badlb{ font: 600 16px sans-serif; fill: #cf222e; }
+    .oklb { font: 600 16px sans-serif; fill: #1a7f37; }
+    .mut  { font: 15px sans-serif; fill: #57606a; }
+    .tick { stroke: #8c959f; stroke-width: 1.5; }
+  </style>
+
+  <text class="hd" x="20" y="28">Blok 192.168.10.0/24: dua alamat tidak boleh dipasang ke perangkat</text>
+
+  <!-- strip -->
+  <rect class="res" x="20"  y="64" width="120" height="52" rx="6"/>
+  <rect class="use" x="146" y="64" width="454" height="52" rx="6"/>
+  <rect class="res" x="606" y="64" width="134" height="52" rx="6"/>
+
+  <text class="mono" x="80"  y="88" text-anchor="middle" style="font-size:15px">192.168.10.0</text>
+  <text class="badlb" x="80" y="108" text-anchor="middle">Network</text>
+
+  <text class="mono" x="373" y="88" text-anchor="middle" style="font-size:15px">192.168.10.1 sampai 192.168.10.254</text>
+  <text class="oklb" x="373" y="108" text-anchor="middle">254 alamat host yang bisa dipakai</text>
+
+  <text class="mono" x="673" y="88" text-anchor="middle" style="font-size:15px">192.168.10.255</text>
+  <text class="badlb" x="673" y="108" text-anchor="middle">Broadcast</text>
+
+  <!-- keterangan -->
+  <line class="tick" x1="80" y1="122" x2="80" y2="146"/>
+  <text class="mut" x="20" y="168">Seluruh bit Host ID bernilai 0.</text>
+  <text class="mut" x="20" y="188">Alamat ini mewakili</text>
+  <text class="mut" x="20" y="208">jaringannya sendiri.</text>
+
+  <line class="tick" x1="673" y1="122" x2="673" y2="146"/>
+  <text class="mut" x="740" y="168" text-anchor="end">Seluruh bit Host ID bernilai 1.</text>
+  <text class="mut" x="740" y="188" text-anchor="end">Dipakai untuk mengirim paket ke</text>
+  <text class="mut" x="740" y="208" text-anchor="end">semua perangkat sekaligus.</text>
+
+  <line class="tick" x1="373" y1="122" x2="373" y2="146"/>
+  <text class="mut" x="373" y="168" text-anchor="middle">Karena itu rumus jumlah host</text>
+  <text class="mono" x="373" y="196" text-anchor="middle" style="font-weight:600">2^(32 − prefix) − 2</text>
+  <text class="mut" x="373" y="220" text-anchor="middle">dikurangi dua.</text>
+</svg>

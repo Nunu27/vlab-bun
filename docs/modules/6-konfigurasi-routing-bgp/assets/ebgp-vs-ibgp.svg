@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" width="760" height="320" role="img" aria-label="eBGP menghubungkan dua AS berbeda, iBGP menghubungkan router di dalam satu AS yang sama">
+  <style>
+    .as    { fill: #f6f8fa; stroke: #8c959f; stroke-width: 2; }
+    .box   { fill: #ffffff; stroke: #57606a; stroke-width: 2; }
+    .name  { font: 600 17px sans-serif; fill: #24292f; }
+    .aslb  { font: 600 16px sans-serif; fill: #57606a; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .ebgp  { stroke: #cf222e; stroke-width: 3.5; fill: none; }
+    .ibgp  { stroke: #0969da; stroke-width: 3; fill: none; stroke-dasharray: 8 5; }
+    .ebgplb{ font: 600 16px sans-serif; fill: #cf222e; }
+    .ibgplb{ font: 600 16px sans-serif; fill: #0969da; }
+  </style>
+
+  <text class="hd" x="20" y="28">Dua jenis sesi BGP</text>
+
+  <!-- AS kiri -->
+  <rect class="as" x="20" y="72" width="330" height="150" rx="10"/>
+  <text class="aslb" x="185" y="98" text-anchor="middle">AS 65001 (satu organisasi)</text>
+
+  <rect class="box" x="52"  y="126" width="116" height="46" rx="6"/>
+  <text class="name" x="110" y="155" text-anchor="middle">Router inti</text>
+
+  <rect class="box" x="212" y="126" width="116" height="46" rx="6"/>
+  <text class="name" x="270" y="155" text-anchor="middle">Border</text>
+
+  <path class="ibgp" d="M168,149 H212"/>
+  <text class="ibgplb" x="190" y="200" text-anchor="middle">iBGP</text>
+
+  <!-- AS kanan -->
+  <rect class="as" x="410" y="72" width="330" height="150" rx="10"/>
+  <text class="aslb" x="575" y="98" text-anchor="middle">AS 65002 (organisasi lain)</text>
+
+  <rect class="box" x="432" y="126" width="116" height="46" rx="6"/>
+  <text class="name" x="490" y="155" text-anchor="middle">Border</text>
+
+  <rect class="box" x="592" y="126" width="116" height="46" rx="6"/>
+  <text class="name" x="650" y="155" text-anchor="middle">Router inti</text>
+
+  <path class="ibgp" d="M548,149 H592"/>
+  <text class="ibgplb" x="570" y="200" text-anchor="middle">iBGP</text>
+
+  <!-- sesi eBGP antar AS -->
+  <path class="ebgp" d="M328,149 H432"/>
+  <text class="ebgplb" x="380" y="200" text-anchor="middle">eBGP</text>
+
+  <!-- keterangan -->
+  <text class="ebgplb" x="20" y="256">eBGP</text>
+  <text class="mut"    x="90" y="256">antar-AS dengan nomor berbeda. Inilah yang dipraktikkan pada lab ini.</text>
+
+  <text class="ibgplb" x="20" y="284">iBGP</text>
+  <text class="mut"    x="90" y="284">di dalam satu AS yang sama, saat ada lebih dari satu border router.</text>
+  <text class="mut"    x="90" y="308">Nomor AS tidak bertambah di sini, dan konfigurasinya di luar cakupan lab ini.</text>
+</svg>

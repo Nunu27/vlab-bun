@@ -1,11 +1,12 @@
 # Konfigurasi Routing BGP
 
-Modul ini menyajikan pemahaman *Border Gateway Protocol* (BGP), teknologi *Path Vector* yang menjadi tulang punggung internet global. Fokus pembahasan ditekankan pada konsep *External BGP* (eBGP) dalam skenario tiga AS, termasuk peran *transit AS* sebagai perantara yang meneruskan rute antar-organisasi: model yang mencerminkan cara kerja nyata internet global.
+Modul ini membahas *Border Gateway Protocol* (BGP), protokol yang menyatukan jaringan-jaringan di seluruh dunia menjadi satu internet. Skenarionya melibatkan tiga *Autonomous System*, dengan satu AS di tengah yang berperan sebagai *transit*, persis seperti cara kerja sebuah ISP. Atribut **AS-Path** diamati langsung: daftar ini terbentuk dan bertambah setiap kali rute berpindah antar-AS.
 
-**Prasyarat:** Peserta diharapkan telah memahami konsep *routing* dinamis berbasis IGP pada **Modul 5: Konfigurasi Routing OSPF**, karena modul ini akan membahas perbedaan mendasar antara IGP dan EGP (BGP).
+**Prasyarat:** Modul ini melanjutkan **Modul 5: Konfigurasi Routing OSPF**, karena di sini dibahas perbedaan mendasar antara IGP (di dalam satu organisasi) dan EGP (antar-organisasi).
 
 **Tujuan Pembelajaran:**
-- Mengidentifikasi perbedaan peran antara *Interior Gateway Protocol* (IGP) dengan BGP (EGP).
-- Memahami konsep ASN (*Autonomous System Number*), atribut **AS-Path**, dan mekanisme peering eBGP.
-- Mengonfigurasi instance dan sesi eBGP pada router MikroTik dalam skenario *transit AS*.
-- Menerapkan injeksi rute secara eksplisit melalui fitur BGP *Network Advertisement* menggunakan *Address List*.
+- Membedakan peran IGP (di dalam satu organisasi) dan EGP (antar-organisasi).
+- Menjelaskan konsep AS, ASN, dan cara atribut AS-Path terbentuk di setiap lompatan AS.
+- Mengonfigurasi BGP instance dan sesi eBGP pada RouterOS v7, termasuk peran sebuah *transit AS*.
+- Mengiklankan prefix secara eksplisit lewat *address-list*, dan menjelaskan bahaya mengiklankan seluruh jaringan tanpa disaring.
+- Memilih protokol yang tepat untuk sebuah situasi, dari static routing sampai BGP.

@@ -1,11 +1,11 @@
 # Konfigurasi IP Address
 
-Modul ini berfokus pada pengalamatan logis perangkat jaringan menggunakan protokol IPv4. Peserta akan mempraktikkan cara mengalokasikan identitas unik secara statis pada setiap perangkat agar dapat berkomunikasi dalam satu segmen jaringan.
+Modul ini membahas pengalamatan IPv4 pada perangkat jaringan. Alamat IP statis dipasang pada sebuah router dan sebuah klien agar keduanya berada dalam satu segmen jaringan dan bisa saling berkomunikasi.
 
-**Prasyarat:** Peserta diharapkan telah menguasai navigasi dasar dan penggunaan perintah pada CLI sebagaimana dibahas pada **Modul 1: Pengenalan CLI**.
+**Prasyarat:** Modul ini melanjutkan **Modul 1: Pengenalan CLI**. Navigasi dan perintah dasar CLI sebaiknya sudah dikuasai.
 
 **Tujuan Pembelajaran:**
-- Menguasai skema pengalamatan IPv4, *Subnet Mask*, dan *Prefix Length*.
-- Mengonfigurasi alamat IP statis pada *interface* sistem operasi Linux dan MikroTik RouterOS.
-- Mengelola status *interface* jaringan secara efisien melalui CLI.
-- Memvalidasi konektivitas antar perangkat menggunakan utilitas uji jaringan dasar.
+- Menghitung alamat network, alamat broadcast, jumlah host, dan rentang alamat yang valid dari sebuah prefix.
+- Menjelaskan mengapa alamat network dan broadcast tidak bisa dipasang pada perangkat.
+- Memasang IP address statis pada interface Linux maupun MikroTik RouterOS, serta mengaktifkan interface yang masih *down*.
+- Menguji konektivitas dengan `ping` dan membaca hasilnya untuk menentukan letak masalah.

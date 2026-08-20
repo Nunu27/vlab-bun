@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" width="760" height="340" role="img" aria-label="Atribut AS-Path bertambah setiap kali rute melewati satu Autonomous System">
+  <style>
+    .as    { fill: #f6f8fa; stroke: #8c959f; stroke-width: 2; }
+    .box   { fill: #ffffff; stroke: #57606a; stroke-width: 2; }
+    .name  { font: 600 18px sans-serif; fill: #24292f; }
+    .aslb  { font: 600 16px sans-serif; fill: #57606a; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .mono  { font: 15px ui-monospace, monospace; fill: #24292f; }
+    .flow  { stroke: #0969da; stroke-width: 3; fill: none; }
+    .flowlb{ font: 600 15px sans-serif; fill: #0969da; }
+    .link  { stroke: #8c959f; stroke-width: 2; }
+  </style>
+  <defs>
+    <marker id="p-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0969da"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="28">AS-Path bertambah setiap kali rute melewati satu AS</text>
+
+  <!-- wilayah AS -->
+  <rect class="as" x="20"  y="104" width="216" height="104" rx="10"/>
+  <text class="aslb" x="128" y="130" text-anchor="middle">AS 65001</text>
+  <rect class="box" x="70" y="142" width="116" height="46" rx="6"/>
+  <text class="name" x="128" y="172" text-anchor="middle">R1</text>
+
+  <rect class="as" x="272" y="104" width="216" height="104" rx="10"/>
+  <text class="aslb" x="380" y="130" text-anchor="middle">AS 65000 (transit)</text>
+  <rect class="box" x="322" y="142" width="116" height="46" rx="6"/>
+  <text class="name" x="380" y="172" text-anchor="middle">R2</text>
+
+  <rect class="as" x="524" y="104" width="216" height="104" rx="10"/>
+  <text class="aslb" x="632" y="130" text-anchor="middle">AS 65002</text>
+  <rect class="box" x="574" y="142" width="116" height="46" rx="6"/>
+  <text class="name" x="632" y="172" text-anchor="middle">R3</text>
+
+  <path class="link" d="M186,165 H322"/>
+  <path class="link" d="M438,165 H574"/>
+
+  <!-- asal prefix -->
+  <text class="mono" x="632" y="88" text-anchor="middle" style="font-weight:600">203.0.113.0/24</text>
+  <text class="mut"  x="632" y="66" text-anchor="middle" style="font-size:14px">blok milik AS 65002</text>
+
+  <!-- arah rute -->
+  <path class="flow" d="M566,232 H196" marker-end="url(#p-a)"/>
+  <text class="flowlb" x="380" y="256" text-anchor="middle">arah penyebaran rute</text>
+
+  <!-- nilai AS-Path di tiap titik -->
+  <rect x="272" y="278" width="216" height="46" rx="6" fill="#ddf4ff" stroke="#0969da" stroke-width="2"/>
+  <text class="mut"  x="380" y="298" text-anchor="middle" style="font-size:14px">dilihat dari R2</text>
+  <text class="mono" x="380" y="317" text-anchor="middle" style="font-weight:600">65002</text>
+
+  <rect x="20" y="278" width="216" height="46" rx="6" fill="#ddf4ff" stroke="#0969da" stroke-width="2"/>
+  <text class="mut"  x="128" y="298" text-anchor="middle" style="font-size:14px">dilihat dari R1</text>
+  <text class="mono" x="128" y="317" text-anchor="middle" style="font-weight:600">65000 65002</text>
+
+  <text class="mut" x="524" y="298" style="font-size:14px">Dibaca dari kiri ke kanan:</text>
+  <text class="mut" x="524" y="317" style="font-size:14px">tetangga terdekat lebih dulu.</text>
+</svg>

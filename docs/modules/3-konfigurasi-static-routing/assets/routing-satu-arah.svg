@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 372" width="760" height="372" role="img" aria-label="Diagram routing satu arah: permintaan sampai ke tujuan, balasan dibuang di R2">
+  <style>
+    /* Type is sized for the printed PDF: the page scales this down to roughly
+       0.6x, so 17px here lands near 11px on paper. */
+    .box  { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .name { font: 600 22px sans-serif; fill: #24292f; text-anchor: middle; }
+    .ip   { font: 16px ui-monospace, monospace; fill: #57606a; text-anchor: middle; }
+    .link { stroke: #8c959f; stroke-width: 2; }
+    .iface{ font: 15px ui-monospace, monospace; fill: #8c959f; text-anchor: middle; }
+    .ok   { stroke: #1a7f37; stroke-width: 3; fill: none; }
+    .oklb { font: 600 17px sans-serif; fill: #1a7f37; text-anchor: middle; }
+    .bad  { stroke: #cf222e; stroke-width: 3; fill: none; stroke-dasharray: 8 5; }
+    .badlb{ font: 600 17px sans-serif; fill: #cf222e; }
+    .note { font: 17px sans-serif; fill: #57606a; }
+  </style>
+
+  <defs>
+    <marker id="ah-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/>
+    </marker>
+    <marker id="ah-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#cf222e"/>
+    </marker>
+  </defs>
+
+  <!-- 1. permintaan: menembus sampai ujung -->
+  <text class="oklb" x="380" y="26">1. Permintaan sampai ke PC2</text>
+  <path class="ok" d="M95,48 H658" marker-end="url(#ah-ok)"/>
+
+  <!-- perangkat -->
+  <rect class="box" x="20"  y="104" width="150" height="92" rx="7"/>
+  <text class="name" x="95" y="136">PC1</text>
+  <text class="ip"   x="95" y="164">192.168.10.2</text>
+
+  <rect class="box" x="210" y="104" width="150" height="92" rx="7"/>
+  <text class="name" x="285" y="136">R1</text>
+  <text class="ip"   x="285" y="162">192.168.10.1</text>
+  <text class="ip"   x="285" y="184">10.10.10.1</text>
+
+  <rect class="box" x="400" y="104" width="150" height="92" rx="7"/>
+  <text class="name" x="475" y="136">R2</text>
+  <text class="ip"   x="475" y="162">10.10.10.2</text>
+  <text class="ip"   x="475" y="184">192.168.20.1</text>
+
+  <rect class="box" x="590" y="104" width="150" height="92" rx="7"/>
+  <text class="name" x="665" y="136">PC2</text>
+  <text class="ip"   x="665" y="164">192.168.20.2</text>
+
+  <!-- kabel antar perangkat -->
+  <path class="link" d="M170,150 H210"/>
+  <path class="link" d="M360,150 H400"/>
+  <path class="link" d="M550,150 H590"/>
+  <text class="iface" x="380" y="94">10.10.10.0/30</text>
+
+  <!-- 2. balasan: berhenti di R2 -->
+  <text class="badlb" x="600" y="242" text-anchor="middle">2. Balasan dari PC2</text>
+  <path class="bad" d="M665,266 H508" marker-end="url(#ah-bad)"/>
+
+  <g stroke="#cf222e" stroke-width="4" stroke-linecap="round">
+    <path d="M463,254 L487,278"/>
+    <path d="M487,254 L463,278"/>
+  </g>
+
+  <text class="badlb" x="438" y="272" text-anchor="end">Dibuang di R2</text>
+
+  <!-- keterangan -->
+  <text class="note" x="20" y="322">R2 belum memiliki rute menuju 192.168.10.0/24,</text>
+  <text class="note" x="20" y="346">sehingga R2 tidak tahu harus mengirimnya ke mana.</text>
+
+  <text class="note" x="740" y="322" text-anchor="end">Dari sisi PC1 yang terlihat hanya</text>
+  <!-- inline style, because a text-anchor attribute loses to the .ip class rule -->
+  <text class="ip"   x="740" y="348" style="text-anchor: end">100% packet loss</text>
+</svg>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 414" width="760" height="414" role="img" aria-label="Anatomi alamat IPv4: 32 bit terbagi menjadi Network ID dan Host ID, dibandingkan pada prefix 24, 28, dan 30">
+  <style>
+    .oct   { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .octn  { fill: #ddf4ff; stroke: #0969da; stroke-width: 2; }
+    .octh  { fill: #fff1e5; stroke: #bc4c00; stroke-width: 2; }
+    .num   { font: 600 22px ui-monospace, monospace; fill: #24292f; }
+    .bits  { font: 14px sans-serif; fill: #57606a; }
+    .netlb { font: 600 16px sans-serif; fill: #0969da; }
+    .hostlb{ font: 600 16px sans-serif; fill: #bc4c00; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mono  { font: 16px ui-monospace, monospace; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .brk   { stroke: #0969da; stroke-width: 2; fill: none; }
+    .brkh  { stroke: #bc4c00; stroke-width: 2; fill: none; }
+    .rule  { stroke: #d0d7de; stroke-width: 1.5; }
+  </style>
+
+  <text class="hd" x="20" y="28">Satu alamat IPv4 terdiri atas 32 bit dan selalu terbagi dua</text>
+
+  <!-- oktet -->
+  <rect class="octn" x="20"  y="94" width="165" height="62" rx="6"/>
+  <text class="num"  x="102" y="124" text-anchor="middle">192</text>
+  <text class="bits" x="102" y="146" text-anchor="middle">8 bit</text>
+
+  <rect class="octn" x="200" y="94" width="165" height="62" rx="6"/>
+  <text class="num"  x="282" y="124" text-anchor="middle">168</text>
+  <text class="bits" x="282" y="146" text-anchor="middle">8 bit</text>
+
+  <rect class="octn" x="380" y="94" width="165" height="62" rx="6"/>
+  <text class="num"  x="462" y="124" text-anchor="middle">10</text>
+  <text class="bits" x="462" y="146" text-anchor="middle">8 bit</text>
+
+  <rect class="octh" x="560" y="94" width="165" height="62" rx="6"/>
+  <text class="num"  x="642" y="124" text-anchor="middle">1</text>
+  <text class="bits" x="642" y="146" text-anchor="middle">8 bit</text>
+
+  <!-- kurung penanda -->
+  <path class="brk"  d="M20,82 V70 H545 V82"/>
+  <text class="netlb" x="282" y="62" text-anchor="middle">Network ID: 24 bit pertama</text>
+
+  <path class="brkh" d="M560,168 V180 H725 V168"/>
+  <text class="hostlb" x="642" y="200" text-anchor="middle">Host ID: sisanya</text>
+
+  <text class="mut" x="20" y="200">Batasnya ditentukan oleh</text>
+  <text class="mono" x="20" y="222" style="font-size:15px">prefix /24</text>
+
+  <line class="rule" x1="20" y1="242" x2="740" y2="242"/>
+  <text class="hd" x="20" y="270" style="font-size:16px">Menggeser prefix berarti menggeser batasnya</text>
+
+  <!-- perbandingan prefix -->
+  <g>
+    <text class="mono" x="20" y="310" style="font-weight:600">/24</text>
+    <rect class="octn" x="80" y="294" width="315" height="22" rx="3"/>
+    <rect class="octh" x="395" y="294" width="105" height="22" rx="3"/>
+    <text class="mut" x="516" y="310">8 bit host</text>
+    <text class="mono" x="620" y="310" style="font-size:15px">2⁸ − 2 = 254</text>
+  </g>
+  <g>
+    <text class="mono" x="20" y="350" style="font-weight:600">/28</text>
+    <rect class="octn" x="80" y="334" width="368" height="22" rx="3"/>
+    <rect class="octh" x="448" y="334" width="52" height="22" rx="3"/>
+    <text class="mut" x="516" y="350">4 bit host</text>
+    <text class="mono" x="620" y="350" style="font-size:15px">2⁴ − 2 = 14</text>
+  </g>
+  <g>
+    <text class="mono" x="20" y="390" style="font-weight:600">/30</text>
+    <rect class="octn" x="80" y="374" width="394" height="22" rx="3"/>
+    <rect class="octh" x="474" y="374" width="26" height="22" rx="3"/>
+    <text class="mut" x="516" y="390">2 bit host</text>
+    <text class="mono" x="620" y="390" style="font-size:15px">2² − 2 = 2</text>
+  </g>
+</svg>

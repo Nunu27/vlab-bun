@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" width="760" height="300" role="img" aria-label="Garis waktu konvergensi RIP: link putus, router menunggu timer invalid, lalu timer flush, dan selama itu paket tetap dikirim ke jalur mati">
+  <style>
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .mono  { font: 15px ui-monospace, monospace; fill: #24292f; }
+    .axis  { stroke: #57606a; stroke-width: 2.5; }
+    .tick  { stroke: #8c959f; stroke-width: 2; }
+    .lbl   { font: 600 15px sans-serif; fill: #24292f; }
+    .badlb { font: 600 16px sans-serif; fill: #cf222e; }
+    .oklb  { font: 600 15px sans-serif; fill: #1a7f37; }
+  </style>
+  <defs>
+    <marker id="k-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#57606a"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="28">Mengapa RIP lambat pulih</text>
+  <text class="mut" x="20" y="52">RIP tidak diberi kabar saat link putus. Ia hanya berhenti menerima update, lalu menunggu.</text>
+
+  <!-- pita blackhole -->
+  <rect x="120" y="96" width="480" height="52" rx="6" fill="#ffebe9" stroke="#cf222e" stroke-width="2"/>
+  <text class="badlb" x="360" y="118" text-anchor="middle">Paket tetap dikirim ke jalur yang sudah mati</text>
+  <text class="mut"   x="360" y="140" text-anchor="middle">Pengguna merasakan layanan mati total</text>
+
+  <!-- garis waktu -->
+  <line class="axis" x1="120" y1="186" x2="720" y2="186" marker-end="url(#k-a)"/>
+
+  <line class="tick" x1="120" y1="172" x2="120" y2="200"/>
+  <text class="lbl" x="120" y="222" text-anchor="middle">Link putus</text>
+  <text class="mut" x="120" y="242" text-anchor="middle">detik 0</text>
+
+  <line class="tick" x1="360" y1="172" x2="360" y2="200"/>
+  <text class="lbl" x="360" y="222" text-anchor="middle">Timer invalid habis</text>
+  <text class="mono" x="360" y="242" text-anchor="middle">± 180 detik</text>
+  <text class="mut" x="360" y="264" text-anchor="middle">rute ditandai tidak valid</text>
+
+  <line class="tick" x1="600" y1="172" x2="600" y2="200"/>
+  <text class="lbl" x="600" y="222" text-anchor="middle">Timer flush habis</text>
+  <text class="mut" x="600" y="242" text-anchor="middle">rute benar-benar dihapus</text>
+  <text class="oklb" x="600" y="264" text-anchor="middle">jalur baru mulai dipakai</text>
+
+  <text class="mut" x="20" y="292">Pada Modul 5, OSPF mengirim kabar begitu link berubah status.</text>
+</svg>

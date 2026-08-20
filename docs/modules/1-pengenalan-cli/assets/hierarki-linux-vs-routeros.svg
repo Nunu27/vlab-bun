@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 426" width="760" height="426" role="img" aria-label="Perbandingan File System Hierarchy pada Linux dengan Menu Hierarchy pada RouterOS">
+  <style>
+    /* Type is sized for the printed PDF: the page scales this down to roughly
+       0.6x. No text-anchor in any class, so per-element attributes still win. */
+    .panel { fill: #f6f8fa; stroke: #d0d7de; stroke-width: 2; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mono  { font: 16px ui-monospace, monospace; fill: #24292f; }
+    .dim   { font: 15px ui-monospace, monospace; fill: #8c959f; }
+    .note  { font: 15px sans-serif; fill: #57606a; }
+    .cmd   { font: 600 15px ui-monospace, monospace; fill: #0969da; }
+    .rule  { stroke: #d0d7de; stroke-width: 1.5; }
+  </style>
+
+  <!-- ================= Linux ================= -->
+  <rect class="panel" x="16" y="16" width="356" height="300" rx="8"/>
+  <text class="hd" x="36" y="46">Linux: File System Hierarchy</text>
+  <line class="rule" x1="36" y1="60" x2="352" y2="60"/>
+
+  <text class="mono" x="36"  y="92">/</text>
+  <text class="dim"  x="52"  y="120">├──</text>
+  <text class="mono" x="98"  y="120">etc/</text>
+  <text class="dim"  x="84"  y="146">└──</text>
+  <text class="mono" x="130" y="146">network/</text>
+  <text class="dim"  x="52"  y="172">├──</text>
+  <text class="mono" x="98"  y="172">home/</text>
+  <text class="dim"  x="84"  y="198">└──</text>
+  <text class="mono" x="130" y="198">ubuntu/</text>
+  <text class="dim"  x="52"  y="224">└──</text>
+  <text class="mono" x="98"  y="224">var/</text>
+
+  <line class="rule" x1="36" y1="246" x2="352" y2="246"/>
+  <text class="cmd"  x="36" y="274">cd /home/ubuntu</text>
+  <text class="note" x="36" y="296">berpindah direktori</text>
+
+  <!-- ================ RouterOS ================ -->
+  <rect class="panel" x="388" y="16" width="356" height="300" rx="8"/>
+  <text class="hd" x="408" y="46">RouterOS: Menu Hierarchy</text>
+  <line class="rule" x1="408" y1="60" x2="724" y2="60"/>
+
+  <text class="mono" x="408" y="92">/</text>
+  <text class="dim"  x="424" y="120">├──</text>
+  <text class="mono" x="470" y="120">ip</text>
+  <text class="dim"  x="456" y="146">├──</text>
+  <text class="mono" x="502" y="146">address</text>
+  <text class="dim"  x="456" y="172">└──</text>
+  <text class="mono" x="502" y="172">route</text>
+  <text class="dim"  x="424" y="198">├──</text>
+  <text class="mono" x="470" y="198">interface</text>
+  <text class="dim"  x="424" y="224">└──</text>
+  <text class="mono" x="470" y="224">system</text>
+
+  <line class="rule" x1="408" y1="246" x2="724" y2="246"/>
+  <text class="cmd"  x="408" y="274">/ip address</text>
+  <text class="note" x="408" y="296">berpindah menu</text>
+
+  <!-- ================ kesimpulan ================ -->
+  <rect x="16" y="332" width="728" height="80" rx="8" fill="#fff8c5" stroke="#d4a72c" stroke-width="1.5"/>
+  <text class="note" x="36" y="358" style="font-size:16px">
+    <tspan style="font-family: ui-monospace, monospace; font-weight: 600">ls</tspan> selalu berarti hal yang sama di mana pun dijalankan.
+  </text>
+  <text class="note" x="36" y="380" style="font-size:16px">
+    <tspan style="font-family: ui-monospace, monospace; font-weight: 600">print</tspan> berarti "tampilkan isi menu tempat saya berada",
+  </text>
+  <text class="note" x="36" y="402" style="font-size:16px">jadi hasilnya ikut berubah mengikuti posisi menu.</text>
+</svg>

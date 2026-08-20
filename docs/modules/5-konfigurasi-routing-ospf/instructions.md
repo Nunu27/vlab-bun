@@ -2,44 +2,54 @@
 {
   "devices": {
     "R1": { "template": "Mikrotik RouterOS", "x": 200, "y": 160 },
-    "R2": { "template": "Mikrotik RouterOS", "x": 420, "y": 160 },
-    "R3": { "template": "Mikrotik RouterOS", "x": 640, "y": 160 },
+    "R2": { "template": "Mikrotik RouterOS", "x": 440, "y": 60 },
+    "R3": { "template": "Mikrotik RouterOS", "x": 680, "y": 160 },
     "PC1": { "template": "Ubuntu 24.04 SSH", "x": 60, "y": 320 },
-    "PC2": { "template": "Ubuntu 24.04 SSH", "x": 800, "y": 320 }
+    "PC2": { "template": "Ubuntu 24.04 SSH", "x": 820, "y": 320 }
   },
   "links": [
     { "from": "R1", "interface": "ether2", "to": "PC1", "remoteInterface": "eth1" },
     { "from": "R1", "interface": "ether3", "to": "R2", "remoteInterface": "ether3" },
     { "from": "R2", "interface": "ether4", "to": "R3", "remoteInterface": "ether3" },
+    { "from": "R1", "interface": "ether4", "to": "R3", "remoteInterface": "ether4" },
     { "from": "R3", "interface": "ether2", "to": "PC2", "remoteInterface": "eth1" }
   ],
   "groups": {
-    "Network A": { "color": "#f87171", "x": 40, "y": 110, "width": 280, "height": 340, "members": ["R1", "PC1"] },
-    "Network B": { "color": "#818cf8", "x": 180, "y": 110, "width": 340, "height": 180, "members": ["R1", "R2"] },
-    "Network C": { "color": "#f472b6", "x": 400, "y": 110, "width": 340, "height": 180, "members": ["R2", "R3"] },
-    "Network D": { "color": "#4ade80", "x": 620, "y": 110, "width": 280, "height": 340, "members": ["R3", "PC2"] }
+    "Network A": { "color": "#f87171", "x": 40, "y": 110, "width": 260, "height": 340, "members": ["R1", "PC1"] },
+    "Network D": { "color": "#4ade80", "x": 640, "y": 110, "width": 260, "height": 340, "members": ["R3", "PC2"] }
   },
-  "notes": []
+  "notes": [
+    { "content": "Jalur atas via R2\ncost 1 + 1 = 2", "x": 430, "y": 20 },
+    { "content": "Jalur langsung R1-R3\ncost 50", "x": 400, "y": 230 }
+  ]
 }
 -->
 
 ### A. Skenario & Topologi
 
-> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini dikonfigurasi menggunakan username `ubuntu` dan password `ubuntu`.
+> **Informasi Kredensial:** Perangkat klien (PC) pada lab ini menggunakan username `ubuntu` dan password `ubuntu`.
 
-Tiga router (**R1**, **R2**, **R3**) digunakan untuk menginterkoneksikan dua segmen LAN lokal dengan **R2** sebagai router *transit*. Anda diminta untuk membangun sistem *Dynamic Routing* level *Enterprise* menggunakan protokol *Link-State* **OSPF** dalam konfigurasi *Single Area* (Area 0 Backbone).
+Tiga router (**R1**, **R2**, **R3**) menghubungkan dua segmen LAN. Berbeda dengan Modul 4, kali ini ketiganya membentuk **segitiga**: R1 dan R3 tidak hanya terhubung lewat R2, tetapi juga memiliki link langsung satu sama lain.
 
-Dengan tiga router, keunggulan LSDB (*Link-State Database*) menjadi nyata: R1 dan R3 tidak terhubung langsung, namun keduanya memiliki peta topologi yang identik karena R2 mendistribusikan paket LSA ke seluruh area.
+Artinya ada **dua jalur** dari PC1 menuju PC2:
+*   **Jalur langsung:** R1 → R3. Hanya satu lompatan.
+*   **Jalur memutar:** R1 → R2 → R3. Dua lompatan.
+
+Jika protokolnya adalah RIP, jalur langsung pasti menang, karena RIP hanya menghitung jumlah lompatan. Pada lab ini OSPF dibuat memilih **jalur yang memutar**, dengan cara menyatakan bahwa link langsung R1-R3 itu mahal. Inilah perbedaan mendasar OSPF dengan RIP: yang dihitung bukan banyaknya router, melainkan *cost*.
+
+Anggap saja link langsung R1-R3 adalah koneksi satelit yang lambat, sementara jalur lewat R2 adalah fiber optik.
 
 **Addressing Table:**
 
 | Perangkat | Interface | IP Address | Prefix | Keterangan |
 |---|---|---|---|---|
 | **R1** | ether2 | 192.168.10.1 | /24 | Segmen LAN PC1 (Network A) |
-| **R1** | ether3 | 10.10.10.1 | /30 | Segmen WAN R1–R2 (Network B) |
-| **R2** | ether3 | 10.10.10.2 | /30 | Segmen WAN R1–R2 (Network B) |
-| **R2** | ether4 | 10.10.20.1 | /30 | Segmen WAN R2–R3 (Network C) |
-| **R3** | ether3 | 10.10.20.2 | /30 | Segmen WAN R2–R3 (Network C) |
+| **R1** | ether3 | 10.10.10.1 | /30 | Link R1–R2 |
+| **R1** | ether4 | 10.10.30.1 | /30 | Link langsung R1–R3 |
+| **R2** | ether3 | 10.10.10.2 | /30 | Link R1–R2 |
+| **R2** | ether4 | 10.10.20.1 | /30 | Link R2–R3 |
+| **R3** | ether3 | 10.10.20.2 | /30 | Link R2–R3 |
+| **R3** | ether4 | 10.10.30.2 | /30 | Link langsung R1–R3 |
 | **R3** | ether2 | 192.168.20.1 | /24 | Segmen LAN PC2 (Network D) |
 | **PC1** | eth1 | 192.168.10.2 | /24 | Gateway: 192.168.10.1 |
 | **PC2** | eth1 | 192.168.20.2 | /24 | Gateway: 192.168.20.1 |
@@ -52,45 +62,86 @@ Dengan tiga router, keunggulan LSDB (*Link-State Database*) menjadi nyata: R1 da
 | **Router ID** | `1.1.1.1` | `2.2.2.2` | `3.3.3.3` |
 | **Area Name** | backbone-lab | backbone-lab | backbone-lab |
 | **Area ID** | `0.0.0.0` | `0.0.0.0` | `0.0.0.0` |
+| **Cost link langsung R1–R3** | `50` (ether4) | - | `50` (ether4) |
 
-### B. Langkah-Langkah Konfigurasi
+<!-- command-reference:start -->
+
+### B. Referensi Perintah
+#### MikroTik RouterOS v7
+
+Pada v7, konfigurasi Area tidak lagi terikat di menu *Instance*, melainkan dipisahkan menjadi hierarki yang lebih modular.
+
+| Aksi / Fungsi | Perintah | Keterangan |
+|---|---|---|
+| Membuat OSPF Instance | `/routing ospf instance add name=<nama-instance> router-id=<ip-id>` | Router wajib memiliki Router ID unik. |
+| Mendefinisikan OSPF Area | `/routing ospf area add name=<nama-area> instance=<nama-instance> area-id=<area-id>` | - |
+| Menambahkan Interface WAN ke OSPF | `/routing ospf interface-template add area=<nama-area> interfaces=<interface-wan> type=ptp` | Interface WAN: aktif mengirimkan *Hello Packet*. Parameter `type=ptp` wajib untuk mem-bypass *Election* DR/BDR pada link /30. |
+| Menandai Interface LAN sebagai Passive | `/routing ospf interface-template add area=<nama-area> interfaces=<interface-lan> passive=yes` | Interface tidak mengirim *Hello Packet*, namun jaringannya **tetap diiklankan** ke seluruh jaringan OSPF melalui LSA. Gunakan pada interface yang terhubung ke perangkat klien (PC) yang tidak menjalankan OSPF. |
+| Memverifikasi Status Adjacency (Wajib) | `/routing ospf neighbor print` | Pastikan state **Full**. |
+| Memverifikasi Tabel Rute Dinamis | `/ip route print` | Rute OSPF berstatus **DAo** (Dynamic, Active, OSPF). |
+
+<!-- command-reference:end -->
+
+### C. Langkah-Langkah Konfigurasi
 
 #### Tahap I: Konfigurasi IP
 
-1. Konfigurasikan semua IP Address pada antarmuka di ketiga Router dan kedua Klien sesuai *Tabel Pengalamatan*. <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R2" id="node-interface.check-ip" /> <LabCheck node="R2" id="node-interface.check-ip" /> <LabCheck node="R3" id="node-interface.check-ip" /> <LabCheck node="R3" id="node-interface.check-ip" /> <LabCheck node="PC1" id="node-interface.check-ip" /> <LabCheck node="PC2" id="node-interface.check-ip" /> <LabCheck node="PC1" id="linux.route-exist" /> <LabCheck node="PC2" id="linux.route-exist" />
-2. Pastikan R1 bisa ping ke `10.10.10.2` dan R2 bisa ping ke `10.10.20.2` sebelum melanjutkan.
+1. Pasang seluruh IP address pada ketiga router dan kedua klien sesuai *Addressing Table*. Perhatikan bahwa R1 dan R3 kini masing-masing memiliki **tiga** interface yang harus dikonfigurasi. <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R2" id="node-interface.check-ip" /> <LabCheck node="R2" id="node-interface.check-ip" /> <LabCheck node="R3" id="node-interface.check-ip" /> <LabCheck node="R3" id="node-interface.check-ip" /> <LabCheck node="R3" id="node-interface.check-ip" /> <LabCheck node="PC1" id="node-interface.check-ip" /> <LabCheck node="PC2" id="node-interface.check-ip" /> <LabCheck node="PC1" id="linux.route-exist" /> <LabCheck node="PC2" id="linux.route-exist" />
+2. Pastikan ketiga link antar-router hidup: ping dari R1 ke `10.10.10.2`, dari R2 ke `10.10.20.2`, dan dari R1 ke `10.10.30.2`.
 
 #### Tahap II: Konfigurasi OSPF pada R1
 
-1. **Membuat Instance:** Konfigurasikan instance `ospf-lab` dengan menetapkan Router ID `1.1.1.1`. <LabCheck node="R1" id="mikrotik.ospf-instance-exist" />
-2. **Mendefinisikan Area:** Buat area baru bernama `backbone-lab`, tetapkan Area ID ke `0.0.0.0` dan pasangkan pada instance `ospf-lab`. <LabCheck node="R1" id="mikrotik.ospf-area-exist" />
-3. **Interface WAN:** Masukkan **ether3** ke dalam area `backbone-lab` dengan parameter `type=ptp`. Interface ini akan aktif mengirimkan *Hello Packet* ke R2 tanpa melakukan *Election* DR/BDR. <LabCheck node="R1" id="mikrotik.ospf-interface-template-exist" />
-4. **Interface LAN (Passive):** Masukkan **ether2** ke dalam area `backbone-lab` dengan parameter `passive=yes`. <LabCheck node="R1" id="mikrotik.ospf-interface-template-exist" />
+1. **Membuat instance:** Buat instance `ospf-lab` dengan Router ID `1.1.1.1`. <LabCheck node="R1" id="mikrotik.ospf-instance-exist" />
+2. **Mendefinisikan area:** Buat area `backbone-lab` dengan Area ID `0.0.0.0` pada instance tersebut. <LabCheck node="R1" id="mikrotik.ospf-area-exist" />
+3. **Link ke R2:** Masukkan **ether3** ke area `backbone-lab` dengan `type=ptp`. Biarkan cost-nya default. <LabCheck node="R1" id="mikrotik.ospf-interface-template-exist" />
+4. **Link langsung ke R3:** Masukkan **ether4** ke area `backbone-lab` dengan `type=ptp` **dan `cost=50`**. Inilah cara memberi tahu OSPF bahwa link ini mahal. <LabCheck node="R1" id="mikrotik.ospf-interface-template-exist" />
+5. **Interface LAN:** Masukkan **ether2** ke area `backbone-lab` dengan `passive=yes`. <LabCheck node="R1" id="mikrotik.ospf-interface-template-exist" />
 
 #### Tahap III: Konfigurasi OSPF pada R2
 
-1. **Membuat Instance:** Konfigurasikan instance `ospf-lab` dengan Router ID `2.2.2.2`. <LabCheck node="R2" id="mikrotik.ospf-instance-exist" />
-2. **Mendefinisikan Area:** Buat area `backbone-lab` dengan Area ID `0.0.0.0` dan pasangkan pada instance. <LabCheck node="R2" id="mikrotik.ospf-area-exist" />
-3. **Interface WAN ke R1:** Masukkan **ether3** ke dalam area `backbone-lab` dengan parameter `type=ptp`. <LabCheck node="R2" id="mikrotik.ospf-interface-template-exist" />
-4. **Interface WAN ke R3:** Masukkan **ether4** ke dalam area `backbone-lab` dengan parameter `type=ptp`. <LabCheck node="R2" id="mikrotik.ospf-interface-template-exist" />
+1. **Membuat instance:** Buat instance `ospf-lab` dengan Router ID `2.2.2.2`. <LabCheck node="R2" id="mikrotik.ospf-instance-exist" />
+2. **Mendefinisikan area:** Buat area `backbone-lab` dengan Area ID `0.0.0.0`. <LabCheck node="R2" id="mikrotik.ospf-area-exist" />
+3. **Link ke R1:** Masukkan **ether3** ke area `backbone-lab` dengan `type=ptp`. <LabCheck node="R2" id="mikrotik.ospf-interface-template-exist" />
+4. **Link ke R3:** Masukkan **ether4** ke area `backbone-lab` dengan `type=ptp`. <LabCheck node="R2" id="mikrotik.ospf-interface-template-exist" />
 
 #### Tahap IV: Konfigurasi OSPF pada R3
 
-1. **Membuat Instance:** Konfigurasikan instance `ospf-lab` dengan Router ID `3.3.3.3`. <LabCheck node="R3" id="mikrotik.ospf-instance-exist" />
-2. **Mendefinisikan Area:** Buat area `backbone-lab` dengan Area ID `0.0.0.0` dan pasangkan pada instance. <LabCheck node="R3" id="mikrotik.ospf-area-exist" />
-3. **Interface WAN:** Masukkan **ether3** ke dalam area `backbone-lab` dengan parameter `type=ptp`. <LabCheck node="R3" id="mikrotik.ospf-interface-template-exist" />
-4. **Interface LAN (Passive):** Masukkan **ether2** ke dalam area `backbone-lab` dengan parameter `passive=yes`. <LabCheck node="R3" id="mikrotik.ospf-interface-template-exist" />
+1. **Membuat instance:** Buat instance `ospf-lab` dengan Router ID `3.3.3.3`. <LabCheck node="R3" id="mikrotik.ospf-instance-exist" />
+2. **Mendefinisikan area:** Buat area `backbone-lab` dengan Area ID `0.0.0.0`. <LabCheck node="R3" id="mikrotik.ospf-area-exist" />
+3. **Link ke R2:** Masukkan **ether3** ke area `backbone-lab` dengan `type=ptp`. <LabCheck node="R3" id="mikrotik.ospf-interface-template-exist" />
+4. **Link langsung ke R1:** Masukkan **ether4** ke area `backbone-lab` dengan `type=ptp` **dan `cost=50`**. <LabCheck node="R3" id="mikrotik.ospf-interface-template-exist" />
+5. **Interface LAN:** Masukkan **ether2** ke area `backbone-lab` dengan `passive=yes`. <LabCheck node="R3" id="mikrotik.ospf-interface-template-exist" />
 
-#### Tahap V: Verifikasi Status OSPF
+#### Tahap V: Verifikasi Adjacency
 
-1. **Cek Adjacency R1:** Pada konsol R1, jalankan `/routing ospf neighbor print`. Pastikan Router ID `2.2.2.2` berada pada state **Full**. <LabCheck node="R1" id="mikrotik.ospf-neighbor-exist" />
-2. **Cek Adjacency R3:** Pada konsol R3, jalankan `/routing ospf neighbor print`. Pastikan Router ID `2.2.2.2` berada pada state **Full**. <LabCheck node="R3" id="mikrotik.ospf-neighbor-exist" />
-3. **Cek Tabel Rute:** Buka tabel *routing* R1, pastikan jaringan remote (`192.168.20.0/24`) muncul dengan flag **DAo**. Lakukan hal yang sama di R3 untuk `192.168.10.0/24`. <LabCheck node="R1" id="mikrotik.route-exist" /> <LabCheck node="R3" id="mikrotik.route-exist" />
-4. **Uji Ping:** Lakukan tes ping lintas router dari PC1 ke PC2 untuk memastikan transmisi data berhasil.
+1. **Periksa tetangga R1.** Jalankan `/routing ospf neighbor print`. **Amati:** R1 sekarang memiliki **dua** tetangga, yaitu `2.2.2.2` dan `3.3.3.3`, karena terhubung ke keduanya. Pastikan keduanya berstatus **Full**. <LabCheck node="R1" id="mikrotik.ospf-neighbor-exist" />
+2. **Periksa tetangga R3.** Jalankan perintah yang sama pada R3. Pastikan status ke `2.2.2.2` juga **Full**. <LabCheck node="R3" id="mikrotik.ospf-neighbor-exist" />
 
-#### Tahap VI: Uji Konvergensi OSPF (Opsional)
+#### Tahap VI: Membuktikan OSPF Memilih Berdasarkan Cost
 
-1. **Simulasi Kegagalan Link:** Dari konsol **R1**, nonaktifkan interface **ether3**: `/interface set ether3 disabled=yes`.
-2. **Amati Tabel Rute:** Periksa kembali tabel *routing* di R1. Rute `192.168.20.0/24` dengan flag **DAo** seharusnya menghilang karena *Adjacency* dengan R2 terputus.
-3. **Pulihkan Link:** Aktifkan kembali interface **ether3**: `/interface set ether3 disabled=no`.
-4. **Amati Re-Adjacency:** Monitor `/routing ospf neighbor print` secara berulang. Amati router melalui fase *Init → 2-Way → Full*. Rute akan muncul kembali otomatis setelah adjacency kembali ke **Full**.
+1. **Periksa jalur yang dipilih.** Pada R1, jalankan `/ip route print detail` lalu cari rute menuju `192.168.20.0/24`.
+   **Amati:** kolom `gateway`. Alamatnya adalah **`10.10.10.2`**, yaitu R2. OSPF memilih jalur yang **memutar lewat R2** (dua lompatan, total cost 2), dan mengabaikan link langsung ke R3 (satu lompatan, cost 50). <LabCheck node="R1" id="mikrotik.route-exist" />
+
+2. **Bandingkan dengan RIP.** Seandainya jaringan ini memakai RIP, jalur yang dipilih pasti link langsung, karena RIP hanya menghitung lompatan dan tidak mengetahui kualitas link sama sekali. OSPF mengetahuinya, karena setiap link memiliki *cost*.
+
+3. **Verifikasi silang di R3.** Rute menuju `192.168.10.0/24` juga harus melewati R2, dengan gateway `10.10.20.1`. <LabCheck node="R3" id="mikrotik.route-exist" />
+
+4. **Uji koneksi end-to-end.** Dari PC1, jalankan `ping -c 4 192.168.20.2`. <LabCheck node="PC1" id="connectivity.ping" />
+
+5. **Lacak jalurnya.** Pada PC1, jalankan `tracepath 192.168.20.2`. **Amati:** hop kedua adalah `10.10.10.2`, yaitu R2. Paket benar-benar memutar lewat R2, bukan menyeberang langsung ke R3.
+
+#### Tahap VII: Mengukur Kecepatan Konvergensi OSPF
+
+Hasilnya dibandingkan langsung dengan angka dari Modul 4 Tahap VI.
+
+1. **Siapkan ping yang berjalan terus.** Pada **PC1**, jalankan `ping 192.168.20.2` tanpa opsi `-c`, sehingga ping berjalan tanpa henti.
+
+2. **Putuskan jalur utama.** Pada konsol **R2**, matikan interface menuju R3: `/interface set ether4 disabled=yes`.
+
+3. **Hitung waktunya.** **Amati:** jendela ping. Berapa banyak paket yang hilang sebelum balasan kembali normal?
+
+4. **Periksa jalur barunya.** Pada R1, jalankan `/ip route print` lagi. **Amati:** gateway rute `192.168.20.0/24` kini berubah menjadi `10.10.30.2`, yaitu link langsung ke R3. Jalur mahal tetap dipakai ketika jalur murah tidak tersedia, dan perpindahannya terjadi otomatis.
+
+5. **Pulihkan jalur.** Jalankan `/interface set ether4 disabled=no` pada R2. **Amati:** setelah beberapa saat, rute kembali melewati R2.
+
+6. Hentikan ping dengan `CTRL + C`.

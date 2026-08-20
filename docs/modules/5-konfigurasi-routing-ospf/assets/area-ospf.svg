@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 306" width="760" height="306" role="img" aria-label="Hierarki area OSPF: setiap area lain wajib terhubung ke Area 0 sebagai backbone melalui router perbatasan ABR">
+  <style>
+    .area0 { fill: #ddf4ff; stroke: #0969da; stroke-width: 2.5; }
+    .area  { fill: #f6f8fa; stroke: #8c959f; stroke-width: 2; }
+    .box   { fill: #ffffff; stroke: #57606a; stroke-width: 2; }
+    .abr   { fill: #fff8c5; stroke: #d4a72c; stroke-width: 2.5; }
+    .name  { font: 600 16px sans-serif; fill: #24292f; }
+    .arealb{ font: 600 17px sans-serif; fill: #0969da; }
+    .arealg{ font: 600 16px sans-serif; fill: #57606a; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .link  { stroke: #8c959f; stroke-width: 2; }
+  </style>
+
+  <text class="hd" x="20" y="28">Setiap area wajib terhubung ke Area 0</text>
+
+  <!-- Area 1 -->
+  <rect class="area" x="20" y="60" width="180" height="150" rx="10"/>
+  <text class="arealg" x="110" y="86" text-anchor="middle">Area 1</text>
+  <rect class="box" x="52" y="112" width="116" height="44" rx="6"/>
+  <text class="name" x="110" y="140" text-anchor="middle">Router</text>
+  <text class="mut" x="110" y="184" text-anchor="middle" style="font-size:14px">detail topologi lokal</text>
+
+  <!-- Area 0 -->
+  <rect class="area0" x="256" y="60" width="248" height="150" rx="10"/>
+  <text class="arealb" x="380" y="86" text-anchor="middle">Area 0 (Backbone)</text>
+  <rect class="box" x="292" y="112" width="176" height="44" rx="6"/>
+  <text class="name" x="380" y="140" text-anchor="middle">Backbone router</text>
+  <text class="mut" x="380" y="184" text-anchor="middle" style="font-size:14px">semua rute antar-area lewat sini</text>
+
+  <!-- Area 2 -->
+  <rect class="area" x="560" y="60" width="180" height="150" rx="10"/>
+  <text class="arealg" x="650" y="86" text-anchor="middle">Area 2</text>
+  <rect class="box" x="592" y="112" width="116" height="44" rx="6"/>
+  <text class="name" x="650" y="140" text-anchor="middle">Router</text>
+  <text class="mut" x="650" y="184" text-anchor="middle" style="font-size:14px">detail topologi lokal</text>
+
+  <!-- ABR -->
+  <rect class="abr" x="200" y="112" width="56" height="44" rx="6"/>
+  <text class="name" x="228" y="140" text-anchor="middle" style="font-size:14px">ABR</text>
+  <rect class="abr" x="504" y="112" width="56" height="44" rx="6"/>
+  <text class="name" x="532" y="140" text-anchor="middle" style="font-size:14px">ABR</text>
+
+  <path class="link" d="M168,134 H200"/>
+  <path class="link" d="M256,134 H292"/>
+  <path class="link" d="M468,134 H504"/>
+  <path class="link" d="M560,134 H592"/>
+
+  <text class="mut" x="20" y="248">ABR (<tspan style="font-style:italic">Area Border Router</tspan>) berada di dua area sekaligus dan merangkum rute di antara keduanya.</text>
+  <text class="mut" x="20" y="272">Area 1 dan Area 2 tidak boleh berhubungan langsung tanpa melewati Area 0.</text>
+  <text class="mut" x="20" y="296">Pada lab ini hanya ada satu area, yaitu Area 0, karena routernya hanya tiga.</text>
+</svg>

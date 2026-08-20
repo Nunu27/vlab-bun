@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" width="760" height="340" role="img" aria-label="Cara router mencocokkan alamat tujuan dengan tabel routing, lalu meneruskan atau membuang paket">
+  <style>
+    .box   { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .row   { fill: #ffffff; stroke: #d0d7de; stroke-width: 1.5; }
+    .hit   { fill: #dafbe1; stroke: #1a7f37; stroke-width: 2; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .th    { font: 600 15px sans-serif; fill: #57606a; }
+    .mono  { font: 15px ui-monospace, monospace; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .arr   { stroke: #57606a; stroke-width: 2.5; fill: none; }
+    .okarr { stroke: #1a7f37; stroke-width: 3; fill: none; }
+    .badarr{ stroke: #cf222e; stroke-width: 3; fill: none; stroke-dasharray: 7 5; }
+    .oklb  { font: 600 16px sans-serif; fill: #1a7f37; }
+    .badlb { font: 600 16px sans-serif; fill: #cf222e; }
+  </style>
+  <defs>
+    <marker id="t-a"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#57606a"/></marker>
+    <marker id="t-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/></marker>
+    <marker id="t-bd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#cf222e"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="28">Setiap paket dicocokkan baris demi baris</text>
+
+  <!-- paket masuk -->
+  <rect class="box" x="20" y="70" width="170" height="70" rx="7"/>
+  <text class="mut"  x="105" y="96"  text-anchor="middle">Paket masuk menuju</text>
+  <text class="mono" x="105" y="122" text-anchor="middle" style="font-weight:600">192.168.20.2</text>
+
+  <path class="arr" d="M190,105 H240" marker-end="url(#t-a)"/>
+
+  <!-- tabel -->
+  <rect class="box" x="248" y="52" width="330" height="152" rx="7"/>
+  <text class="th" x="266" y="76">Destination Network</text>
+  <text class="th" x="452" y="76">Next-Hop</text>
+
+  <rect class="row" x="262" y="86"  width="302" height="32" rx="4"/>
+  <text class="mono" x="272" y="107">192.168.10.0/24</text>
+  <text class="mono" x="452" y="107">terhubung</text>
+
+  <rect class="hit" x="262" y="124" width="302" height="32" rx="4"/>
+  <text class="mono" x="272" y="145" style="font-weight:600">192.168.20.0/24</text>
+  <text class="mono" x="452" y="145" style="font-weight:600">10.10.10.2</text>
+
+  <rect class="row" x="262" y="162" width="302" height="32" rx="4"/>
+  <text class="mono" x="272" y="183">10.10.10.0/30</text>
+  <text class="mono" x="452" y="183">terhubung</text>
+
+  <!-- cocok -->
+  <path class="okarr" d="M578,140 H648" marker-end="url(#t-ok)"/>
+  <text class="oklb" x="656" y="132">Diteruskan ke</text>
+  <text class="mono" x="656" y="154" style="fill:#1a7f37; font-weight:600">10.10.10.2</text>
+
+  <!-- tidak cocok -->
+  <path class="badarr" d="M413,204 V254" marker-end="url(#t-bd)"/>
+  <text class="badlb" x="428" y="238">Tidak ada baris yang cocok</text>
+  <text class="mut"   x="428" y="282">dan tidak ada <tspan style="font-family: ui-monospace, monospace">default route</tspan>,</text>
+  <text class="badlb" x="428" y="306">paket langsung dibuang.</text>
+
+  <text class="mut" x="20" y="238">Baris paling spesifik</text>
+  <text class="mut" x="20" y="258">yang menang, bukan</text>
+  <text class="mut" x="20" y="278">baris paling atas.</text>
+</svg>

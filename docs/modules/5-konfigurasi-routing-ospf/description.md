@@ -1,11 +1,12 @@
 # Konfigurasi Routing OSPF
 
-Modul ini mengupas protokol *Open Shortest Path First* (OSPF), standar industri untuk perutean internal (IGP) berskala enterprise. Dibandingkan RIP, OSPF lebih cerdas karena menggunakan algoritma *Link-State* (Dijkstra) yang mempertimbangkan bandwidth sebagai metrik, dan mendukung struktur hierarkis (*Areas*).
+Modul ini membahas *Open Shortest Path First* (OSPF), protokol IGP yang menjadi standar di jaringan perusahaan. Topologinya berbentuk segitiga, sehingga tersedia dua jalur menuju tujuan yang sama: satu jalur pendek tetapi mahal, dan satu jalur lebih panjang tetapi murah. Lab ini membuktikan bahwa OSPF memilih jalur yang lebih panjang, karena yang dihitung adalah *cost*, bukan jumlah lompatan. Inilah perbedaan mendasarnya dengan RIP.
 
-**Prasyarat:** Peserta diharapkan telah menyelesaikan **Modul 4: Konfigurasi Routing RIP** untuk memahami dasar *routing* dinamis, karena modul ini akan membandingkan pendekatan *Distance Vector* pada RIP dengan pendekatan *Link-State* pada OSPF.
+**Prasyarat:** Modul ini melanjutkan **Modul 4: Konfigurasi Routing RIP**, karena pendekatan *distance-vector* dan *link-state* dibandingkan secara langsung, termasuk angka konvergensi yang diukur di sana.
 
 **Tujuan Pembelajaran:**
-- Memahami arsitektur *Link-State*, Konsep Area, dan *Router ID*.
-- Mengonfigurasi parameter *OSPF Instance* dan *Area Backbone* secara benar pada RouterOS.
-- Memvalidasi pembentukan status *Neighbor/Adjacency* antar router OSPF.
-- Memastikan konvergensi rute secara mulus dalam skenario kegagalan konektivitas parsial.
+- Menjelaskan cara kerja *link-state*, peran LSDB, dan algoritma Dijkstra.
+- Mengonfigurasi OSPF instance, area backbone, dan *interface template* pada RouterOS v7.
+- Mengatur *cost* sebuah interface, lalu membuktikan pengaruhnya terhadap jalur yang dipilih.
+- Membedakan fungsi `type=ptp` dan `passive=yes`, serta menjelaskan kapan masing-masing dipakai.
+- Memastikan adjacency mencapai status **Full**, dan mengukur kecepatan konvergensi OSPF untuk dibandingkan dengan RIP.

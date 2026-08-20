@@ -1,12 +1,12 @@
 # Konfigurasi Static Routing
 
-Modul ini memperkenalkan konsep dasar *Routing* dan mekanisme pengalihan paket antar jaringan. Peserta akan mengonfigurasi *Static Routing* pada router MikroTik, di mana tabel perutean dikelola secara manual. Melalui modul ini, peserta akan memahami secara mendalam proses *forwarding* paket dari sumber ke tujuan akhir lintas *router*.
+Modul ini memperkenalkan routing, yaitu proses meneruskan paket antar-segmen jaringan yang berbeda. Tabel rute dikelola secara manual pada dua router MikroTik. Bagian intinya adalah pembuktian bahwa **routing hanya berlaku satu arah**. Rute dipasang di satu sisi lebih dulu, koneksinya gagal tanpa pesan error apa pun, baru kemudian rute di sisi lain ditambahkan.
 
-**Prasyarat:** Peserta diharapkan telah memahami penggunaan CLI (**Modul 1: Pengenalan CLI**) serta mampu mengonfigurasi alamat IP pada *interface* (**Modul 2: Konfigurasi IP Address**), karena *routing* hanya dapat berjalan setelah pengalamatan jaringan selesai dikonfigurasi.
+**Prasyarat:** Modul ini melanjutkan **Modul 1: Pengenalan CLI** dan **Modul 2: Konfigurasi IP Address**, karena routing baru bisa berjalan setelah setiap interface memiliki alamat.
 
 **Tujuan Pembelajaran:**
-- Memahami konsep dasar perutean paket lintas segmen jaringan.
-- Menerapkan IP Address pada lingkungan *multi-router*.
-- Mengonfigurasi *Default Gateway* pada PC klien Linux.
-- Mengonfigurasi tabel perutean secara manual (*Static Route*) pada MikroTik.
-- Melakukan *troubleshooting* konektivitas *end-to-end* menggunakan `ping` dan `tracepath`.
+- Menjelaskan cara router membaca tabel rute dan memilih *next-hop*.
+- Mengatur *default gateway* pada klien Linux dan rute statis pada MikroTik.
+- Menjelaskan mengapa rute harus dibuat di kedua sisi, berdasarkan percobaan yang dilakukan sendiri di lab.
+- Membedakan penyebab kegagalan koneksi dari gejalanya, termasuk kegagalan yang tidak memunculkan pesan error.
+- Menilai kapan static routing masih layak dipakai dan kapan beban pengelolaannya menjadi terlalu besar.

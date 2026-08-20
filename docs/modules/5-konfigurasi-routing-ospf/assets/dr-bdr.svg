@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 566" width="760" height="566" role="img" aria-label="Pada jaringan multi-akses OSPF memilih DR dan BDR, sedangkan pada link point-to-point election dilewati dengan type ptp">
+  <style>
+    /* Stacked rather than side by side: two panels sharing 760px left each
+       router box too narrow once the page scales the figure down. */
+    .box   { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .dr    { fill: #ddf4ff; stroke: #0969da; stroke-width: 2.5; }
+    .bdr   { fill: #fff8c5; stroke: #d4a72c; stroke-width: 2.5; }
+    .name  { font: 600 19px sans-serif; fill: #24292f; }
+    .hd    { font: 600 19px sans-serif; fill: #24292f; }
+    .sub   { font: 16px sans-serif; fill: #57606a; }
+    .mut   { font: 16px sans-serif; fill: #57606a; }
+    .sess  { stroke: #0969da; stroke-width: 2.5; fill: none; }
+    .link  { stroke: #8c959f; stroke-width: 2.5; }
+    .mono  { font: 16px ui-monospace, monospace; fill: #24292f; }
+    .rule  { stroke: #d0d7de; stroke-width: 2; }
+  </style>
+
+  <!-- ============== jaringan multi-akses ============== -->
+  <text class="hd"  x="20" y="28">Jaringan multi-akses</text>
+  <text class="sub" x="20" y="54">Banyak router dalam satu segmen, jadi OSPF perlu memilih DR.</text>
+
+  <rect class="dr" x="305" y="86" width="150" height="54" rx="8"/>
+  <text class="name" x="380" y="120" text-anchor="middle">DR</text>
+
+  <!-- sesi hanya menuju DR -->
+  <path class="sess" d="M145,208 V172 H380 V140"/>
+  <path class="sess" d="M380,208 V140"/>
+  <path class="sess" d="M615,208 V172 H380"/>
+
+  <rect class="bdr" x="70"  y="208" width="150" height="54" rx="8"/>
+  <text class="name" x="145" y="242" text-anchor="middle">BDR</text>
+
+  <rect class="box" x="305" y="208" width="150" height="54" rx="8"/>
+  <text class="name" x="380" y="242" text-anchor="middle">DROther</text>
+
+  <rect class="box" x="540" y="208" width="150" height="54" rx="8"/>
+  <text class="name" x="615" y="242" text-anchor="middle">DROther</text>
+
+  <text class="mut" x="20" y="298">Semua router melapor ke DR saja, bukan ke sesama router, sehingga jumlah sesinya</text>
+  <text class="mut" x="20" y="322">tidak membengkak. BDR mengambil alih jika DR mati.</text>
+
+  <line class="rule" x1="20" y1="356" x2="740" y2="356"/>
+
+  <!-- ============== link point-to-point ============== -->
+  <text class="hd"  x="20" y="392">Link point-to-point</text>
+  <text class="sub" x="20" y="418">Hanya menghubungkan dua router, seperti segmen /30 pada lab ini.</text>
+
+  <rect class="box" x="190" y="446" width="150" height="54" rx="8"/>
+  <text class="name" x="265" y="480" text-anchor="middle">R1</text>
+
+  <rect class="box" x="420" y="446" width="150" height="54" rx="8"/>
+  <text class="name" x="495" y="480" text-anchor="middle">R2</text>
+
+  <path class="link" d="M340,473 H420"/>
+  <text class="mono" x="380" y="438" text-anchor="middle" style="font-size:15px">/30</text>
+
+  <rect x="600" y="446" width="140" height="54" rx="8" fill="#dafbe1" stroke="#1a7f37" stroke-width="2"/>
+  <text class="mono" x="670" y="478" text-anchor="middle" style="fill:#1a7f37; font-weight:600">type=ptp</text>
+
+  <text class="mut" x="20" y="536">Tidak ada yang perlu dipilih menjadi DR, jadi election dilewati dan adjacency</text>
+  <text class="mut" x="20" y="560">langsung naik ke status Full.</text>
+</svg>

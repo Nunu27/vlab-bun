@@ -1,11 +1,12 @@
 # Konfigurasi Routing RIP
 
-Modul ini memperkenalkan dasar perutean dinamis menggunakan *Routing Information Protocol* (RIP). Sebagai protokol *Distance Vector*, RIP berbagi informasi tabel rute berdasarkan kalkulasi *hop count*. Modul ini sangat penting untuk memberikan transisi dari manajemen rute manual (*Static*) menuju manajemen rute otomatis yang mendasari infrastruktur modern.
+Modul ini adalah langkah pertama menuju routing dinamis, dengan *Routing Information Protocol* (RIP). Tidak ada satu rute pun yang ditulis manual, tetapi ketiga router tetap saling mengenal jaringan masing-masing. Di akhir modul ada pengukuran langsung: berapa lama waktu yang dibutuhkan RIP untuk pulih ketika sebuah jalur diputus. Angka itu dibandingkan dengan OSPF pada modul berikutnya.
 
-**Prasyarat:** Modul ini merupakan kelanjutan dari **Modul 3: Konfigurasi Static Routing**. Peserta diharapkan telah memahami konsep tabel *routing* dan cara kerja perutean manual sebelum mempelajari perutean dinamis pada modul ini.
+**Prasyarat:** Modul ini melanjutkan **Modul 3: Konfigurasi Static Routing**. Pahami dahulu konsep tabel rute dan static routing.
 
 **Tujuan Pembelajaran:**
-- Memahami prinsip kerja protokol *Distance Vector* dan limitasi *Hop Count*.
-- Mengonfigurasi instance RIP dan *Interface Template* pada MikroTik RouterOS.
-- Memantau pertukaran tabel rute secara dinamis antar router.
-- Melakukan validasi konektivitas lintas jaringan yang dibentuk secara dinamis.
+- Menjelaskan cara kerja *distance-vector* dan arti *hop count* sebagai metrik.
+- Mengonfigurasi RIP instance dan *interface template* pada RouterOS v7.
+- Menelusuri propagasi rute secara transitif, termasuk membaca *hop count* pada rute yang dipelajari lewat perantara.
+- Mengukur waktu konvergensi RIP saat terjadi kegagalan link, serta menjelaskan penyebab lambatnya.
+- Mengenali keterbatasan RIP: batas 15 hop, update berkala, dan metrik yang mengabaikan *bandwidth*.

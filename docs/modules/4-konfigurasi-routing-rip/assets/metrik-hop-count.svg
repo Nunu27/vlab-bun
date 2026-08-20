@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 336" width="760" height="336" role="img" aria-label="RIP menghitung jumlah lompatan, sehingga jalur satu hop lewat modem lambat dipilih daripada dua hop lewat fiber optik">
+  <style>
+    .box   { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .name  { font: 600 17px sans-serif; fill: #24292f; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .win   { stroke: #1a7f37; stroke-width: 3; fill: none; }
+    .lose  { stroke: #8c959f; stroke-width: 2.5; fill: none; }
+    .winlb { font: 600 16px sans-serif; fill: #1a7f37; }
+    .loselb{ font: 600 16px sans-serif; fill: #57606a; }
+    .slow  { font: 600 15px sans-serif; fill: #bc4c00; }
+    .fast  { font: 600 15px sans-serif; fill: #0969da; }
+  </style>
+  <defs>
+    <marker id="h-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/></marker>
+    <marker id="h-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8c959f"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="28">RIP hanya menghitung berapa router yang dilewati</text>
+
+  <!-- titik awal dan akhir -->
+  <rect class="box" x="20" y="140" width="120" height="58" rx="7"/>
+  <text class="name" x="80" y="175" text-anchor="middle">Asal</text>
+
+  <rect class="box" x="620" y="140" width="120" height="58" rx="7"/>
+  <text class="name" x="680" y="175" text-anchor="middle">Tujuan</text>
+
+  <!-- jalur atas: 1 hop, lambat -->
+  <rect class="box" x="330" y="56" width="120" height="52" rx="7"/>
+  <text class="name" x="390" y="88" text-anchor="middle">R-A</text>
+  <path class="win" d="M110,140 V96 H330" marker-end="url(#h-w)"/>
+  <path class="win" d="M450,82 H650 V140" marker-end="url(#h-w)"/>
+  <text class="slow"  x="180" y="76">modem lambat</text>
+  <text class="winlb" x="470" y="66">1 lompatan, dipilih RIP</text>
+
+  <!-- jalur bawah: 2 hop, cepat -->
+  <rect class="box" x="250" y="234" width="110" height="52" rx="7"/>
+  <text class="name" x="305" y="266" text-anchor="middle">R-B</text>
+  <rect class="box" x="410" y="234" width="110" height="52" rx="7"/>
+  <text class="name" x="465" y="266" text-anchor="middle">R-C</text>
+
+  <path class="lose" d="M110,198 V260 H250" marker-end="url(#h-l)"/>
+  <path class="lose" d="M360,260 H410" marker-end="url(#h-l)"/>
+  <path class="lose" d="M520,260 H650 V198" marker-end="url(#h-l)"/>
+  <text class="fast"   x="140" y="228">fiber optik</text>
+  <text class="loselb" x="740" y="300" text-anchor="end">2 lompatan, diabaikan</text>
+
+  <!-- catatan -->
+  <text class="mut" x="20" y="308">Kecepatan link sama sekali</text>
+  <text class="mut" x="20" y="328">tidak dihitung.</text>
+</svg>

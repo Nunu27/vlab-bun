@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 356" width="760" height="356" role="img" aria-label="OSPF memilih jalur dua lompatan lewat R2 dengan total cost 2, mengalahkan jalur langsung satu lompatan yang cost-nya 50">
+  <style>
+    .box   { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .name  { font: 600 22px sans-serif; fill: #24292f; }
+    .hd    { font: 600 18px sans-serif; fill: #24292f; }
+    .mut   { font: 15px sans-serif; fill: #57606a; }
+    .win   { stroke: #1a7f37; stroke-width: 4; fill: none; }
+    .lose  { stroke: #8c959f; stroke-width: 2.5; fill: none; stroke-dasharray: 8 5; }
+    .winlb { font: 600 16px sans-serif; fill: #1a7f37; }
+    .loselb{ font: 600 16px sans-serif; fill: #57606a; }
+    .mono  { font: 16px ui-monospace, monospace; fill: #24292f; }
+  </style>
+
+  <text class="hd" x="20" y="28">OSPF menjumlahkan cost, bukan menghitung lompatan</text>
+
+  <!-- jalur menang: R1 - R2 - R3 -->
+  <path class="win" d="M178,206 L332,114"/>
+  <path class="win" d="M448,114 L602,206"/>
+
+  <!-- jalur kalah: langsung -->
+  <path class="lose" d="M180,232 H600"/>
+
+  <!-- router -->
+  <rect class="box" x="60"  y="204" width="120" height="56" rx="7"/>
+  <text class="name" x="120" y="240" text-anchor="middle">R1</text>
+
+  <rect class="box" x="330" y="62"  width="120" height="56" rx="7"/>
+  <text class="name" x="390" y="98"  text-anchor="middle">R2</text>
+
+  <rect class="box" x="600" y="204" width="120" height="56" rx="7"/>
+  <text class="name" x="660" y="240" text-anchor="middle">R3</text>
+
+  <!-- label cost -->
+  <rect x="196" y="136" width="86" height="28" rx="5" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+  <text class="mono" x="239" y="156" text-anchor="middle" style="font-size:15px; fill:#1a7f37">cost 1</text>
+
+  <rect x="496" y="136" width="86" height="28" rx="5" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+  <text class="mono" x="539" y="156" text-anchor="middle" style="font-size:15px; fill:#1a7f37">cost 1</text>
+
+  <rect x="342" y="218" width="96" height="28" rx="5" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5"/>
+  <text class="mono" x="390" y="238" text-anchor="middle" style="font-size:15px">cost 50</text>
+
+  <!-- keterangan -->
+  <text class="winlb"  x="390" y="46"  text-anchor="middle">Jalur yang dipilih</text>
+  <text class="loselb" x="390" y="280" text-anchor="middle">Jalur langsung, hanya 1 lompatan, tetapi diabaikan</text>
+
+  <rect x="20" y="298" width="720" height="48" rx="8" fill="#fff8c5" stroke="#d4a72c" stroke-width="1.5"/>
+  <text class="mono" x="40" y="320" style="font-weight:600; fill:#1a7f37">1 + 1 = 2</text>
+  <text class="mut"  x="150" y="320">lewat R2, dua lompatan</text>
+  <text class="mono" x="400" y="320" style="font-weight:600">50</text>
+  <text class="mut"  x="440" y="320">jalur langsung, satu lompatan</text>
+  <text class="mut"  x="40" y="340">Cost terkecil yang menang, jadi jalur yang lebih panjang justru dianggap lebih baik.</text>
+</svg>
