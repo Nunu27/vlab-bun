@@ -1,14 +1,52 @@
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { intro, log, outro, spinner } from "@clack/prompts";
 import { $ } from "bun";
 
 const docsDir = "docs/modules";
 const outDir = "out/materials";
+const configFile = "scripts/pdf-config.cjs";
+
+/**
+ * md-to-pdf require()s the config file, and when that throws it logs to stderr,
+ * exits 0, and emits a completely unstyled PDF. Loading it here first turns
+ * that into a hard failure with the real error attached.
+ */
+async function assertConfigLoads() {
+	try {
+		await import(resolve(configFile));
+	} catch (err) {
+		log.error(
+			`${configFile} could not be loaded — md-to-pdf would silently fall back to its default styling.`,
+		);
+		throw err;
+	}
+}
+
+// md-to-pdf resolves relative image paths against --basedir, not against the
+// markdown file's own directory. Without the flag an `![](diagram.png)` next to
+// material.md is looked up from the repo root, and Chrome silently renders a
+// broken-image icon: the PDF is still produced and the exit code is still 0.
+// This scans for local images up front so that failure is loud instead.
+const IMAGE_RE = /!\[[^\]]*\]\(([^)\s]+)/g;
+
+function findMissingImages(markdown: string, moduleDir: string): string[] {
+	const missing: string[] = [];
+
+	for (const [, src] of markdown.matchAll(IMAGE_RE)) {
+		// Remote and inline images are resolved by Chrome, not from disk.
+		if (!src || /^(https?:|data:)/.test(src)) continue;
+		if (!existsSync(join(moduleDir, src))) missing.push(src);
+	}
+
+	return missing;
+}
 
 async function main() {
 	intro("vLab Materials PDF Generator");
+
+	await assertConfigLoads();
 
 	// Ensure output directory exists
 	await mkdir(outDir, { recursive: true });
@@ -38,7 +76,19 @@ async function main() {
 				const titleMatch = content.match(/^#\s+(.+)$/m);
 				const title = titleMatch ? titleMatch[1].trim() : mod;
 
-				await $`bunx md-to-pdf --stylesheet scripts/pdf-style.css --document-title ${title} ${materialPath}`.quiet();
+				const moduleDir = join(docsDir, mod);
+				const missing = findMissingImages(content, moduleDir);
+				if (missing.length > 0) {
+					s.stop(`Missing images in ${mod}`);
+					log.error(
+						`${mod}: image not found, would render as a broken icon:\n  ${missing.join("\n  ")}`,
+					);
+					continue;
+				}
+
+				// pdf-config.cjs carries the stylesheet, page size, margins and the
+				// running header/footer. --document-title feeds the header's title.
+				await $`bunx md-to-pdf --config-file ${configFile} --basedir ${moduleDir} --document-title ${title} ${materialPath}`.quiet();
 				const generatedPdfPath = join(docsDir, mod, "material.pdf");
 				const targetPdfPath = join(outDir, `${mod}.pdf`);
 				await $`mv ${generatedPdfPath} ${targetPdfPath}`;

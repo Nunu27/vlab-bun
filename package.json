@@ -21,6 +21,7 @@
 		"dev": "concurrently -n web,manager,worker -c cyan,magenta,yellow \"bun web dev\" \"bun manager dev\" \"bun worker dev\"",
 		"scripts:tmux": "bun run scripts/dev.ts",
 		"scripts:db-transfer": "bun run scripts/db-transfer.ts",
+		"scripts:sync-command-reference": "bun run scripts/sync-command-reference.ts",
 		"web": "bun --filter @vlab/web",
 		"manager": "bun --filter @vlab/manager",
 		"worker": "bun --filter @vlab/worker",
@@ -30,6 +31,7 @@
 		"format": "biome format --write .",
 		"typecheck": "bun --filter='*' run typecheck",
 		"test:unit": "bun --filter @vlab/evaluator test",
+		"test:module-docs": "bun test tests/modules-e2e/src/module-docs.test.ts",
 		"validate-readmes": "bun test tests/readme-validator/validate.test.ts",
 		"prepare": "husky"
 	},
