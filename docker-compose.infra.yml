@@ -1,0 +1,65 @@
+name: vlab-infra
+
+volumes:
+  postgres-data:
+  redis-data:
+  rustfs-data:
+
+services:
+  # ==========================================
+  # Backing Services
+  # ==========================================
+  db:
+    image: docker.io/library/postgres:18-alpine
+    env_file:
+      - .env.infra
+    environment:
+      - POSTGRES_USER=${DB_USER:-vlab}
+      - POSTGRES_DB=${DB_NAME:-vlab}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${TAILSCALE_IP}:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vlab} -d ${DB_NAME:-vlab}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: docker.io/library/redis:alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${TAILSCALE_IP}:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  rustfs:
+    image: docker.io/rustfs/rustfs:latest
+    user: "0:0"
+    env_file:
+      - .env.infra
+    environment:
+      - RUSTFS_VOLUMES=/data/rustfs
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+    volumes:
+      - rustfs-data:/data/rustfs
+    ports:
+      - "${TAILSCALE_IP}:9000:9000"
+      - "${TAILSCALE_IP}:9001:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9000/minio/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped

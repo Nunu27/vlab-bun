@@ -1,0 +1,90 @@
+name: vlab-app
+
+volumes:
+  vlab-topologies:
+
+networks:
+  default: {}
+  clab-mgmt:
+    name: clab-mgmt # fixed name (no project prefix): this is what CLAB_MGMT_NETWORK expects,
+    # and pre-creating it here means containerlab always finds it already up instead of
+    # racing its own first-time creation against a netlink read of the fresh bridge.
+
+services:
+  # ==========================================
+  # Manager role
+  # ==========================================
+  manager:
+    image: ghcr.io/nunu27/vlab-bun-manager:latest
+    profiles: ["manager"]
+    env_file:
+      - .env.manager
+    environment:
+      - NODE_ENV=production
+      - MANAGER_ID=${MANAGER_ID}
+    ports:
+      - "${TAILSCALE_IP}:50051:50051"
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "/app/app", "healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  cloudflared:
+    image: docker.io/cloudflare/cloudflared:latest
+    profiles: ["manager"]
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      manager:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==========================================
+  # Worker role
+  # ==========================================
+  vlab-worker:
+    image: ghcr.io/nunu27/vlab-bun-worker:latest
+    profiles: ["worker"]
+    privileged: true
+    pid: host
+    env_file:
+      - .env.worker
+    environment:
+      - WORKER_ID=${WORKER_ID}
+      - MANAGER_GRPC_URL=manager:50051
+      - GUACD_HOST=${GUACD_TAILSCALE_IP} # Tailscale IP, not a MagicDNS name — this container has no Tailscale DNS resolver
+      - GUACD_PORT=4822
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker/netns:/var/run/docker/netns:ro
+      - vlab-topologies:/var/lib/vlab/topologies
+    networks:
+      - default
+      - clab-mgmt # the evaluator (runs inside this container) needs direct access to lab node containers
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f /app/app || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  guacd:
+    image: docker.io/guacamole/guacd:1.6.0
+    profiles: ["worker"]
+    networks:
+      - clab-mgmt # must reach lab device containers, which containerlab attaches here
+    ports:
+      - "${TAILSCALE_IP}:4822:4822"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 4822 || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped

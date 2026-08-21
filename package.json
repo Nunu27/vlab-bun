@@ -17,6 +17,9 @@
 		]
 	},
 	"private": true,
+	"trustedDependencies": [
+		"msgpackr-extract"
+	],
 	"scripts": {
 		"dev": "concurrently -n web,manager,worker -c cyan,magenta,yellow \"bun web dev\" \"bun manager dev\" \"bun worker dev\"",
 		"scripts:tmux": "bun run scripts/dev.ts",
