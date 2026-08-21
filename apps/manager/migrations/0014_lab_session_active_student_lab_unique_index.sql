@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "lab_session_active_student_lab_idx" ON "lab_session" USING btree ("lab_id","student_id") WHERE "lab_session"."submitted_at" is null;

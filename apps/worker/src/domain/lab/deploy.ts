@@ -2,6 +2,7 @@ import type { Static } from "@sinclair/typebox";
 import { formatHealth } from "@vlab/clab-monitor";
 import type { LabConfigSchema } from "@vlab/grpc";
 import clab from "@worker/lib/clab";
+import { pullImage } from "@worker/lib/docker";
 import baseLogger from "@worker/lib/logger";
 import { buildTopology } from "./topology";
 
@@ -12,6 +13,9 @@ export async function deployLab(
 	config: Static<typeof LabConfigSchema>,
 ) {
 	const { topology, idByKebabName } = buildTopology(sessionId, config);
+
+	const images = [...new Set(config.nodes.map((node) => node.image))];
+	await Promise.all(images.map(pullImage));
 
 	const inspected = await clab.deploy(sessionId, topology);
 

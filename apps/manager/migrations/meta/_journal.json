@@ -99,6 +99,13 @@
 			"when": 1783545620813,
 			"tag": "0013_alter_device_template_cpu_cost_cores_to_numeric",
 			"breakpoints": true
+		},
+		{
+			"idx": 14,
+			"version": "7",
+			"when": 1787325628981,
+			"tag": "0014_lab_session_active_student_lab_unique_index",
+			"breakpoints": true
 		}
 	]
 }

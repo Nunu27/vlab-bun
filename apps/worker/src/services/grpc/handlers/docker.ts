@@ -1,14 +1,9 @@
-import docker from "@worker/lib/docker";
+import docker, { pullImage } from "@worker/lib/docker";
 import type { RpcServer } from "../transport";
 
 export function registerDockerHandlers(server: RpcServer) {
 	server.on("docker:pullImage", async ({ payload: { image } }) => {
-		const pullStream = await docker.pull(image);
-		await new Promise((resolve, reject) => {
-			docker.modem.followProgress(pullStream, (err, res) =>
-				err ? reject(err) : resolve(res),
-			);
-		});
+		await pullImage(image);
 	});
 
 	server.on("docker:measureContainerStats", async ({ payload: { id } }) => {

@@ -53,7 +53,7 @@ export async function initSession(
 			ReturnType<typeof sendCommandToWorker<"clab:deployLab">>
 		>;
 		try {
-			await db
+			const [inserted] = await db
 				.insert(labSessions)
 				.values({
 					id: sessionId,
@@ -64,7 +64,38 @@ export async function initSession(
 					createdAt: now,
 					updatedAt: now,
 				})
-				.onConflictDoNothing();
+				.onConflictDoNothing()
+				.returning({ id: labSessions.id });
+
+			if (!inserted) {
+				// Lost the race against a concurrent init for the same student+lab
+				// (lab_session_active_student_lab_idx). This worker slot was reserved
+				// speculatively by waitForAvailableWorkerId, so release it and hand
+				// the caller the session that actually won instead of deploying a
+				// duplicate lab.
+				await db
+					.update(workers)
+					.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
+					.where(eq(workers.id, workerId));
+
+				const existing = await db.query.labSessions.findFirst({
+					columns: { id: true },
+					where: (session, { and, eq, isNull }) =>
+						and(
+							eq(session.labId, labId),
+							eq(session.studentId, userId),
+							isNull(session.submittedAt),
+						),
+				});
+
+				const reply = ws.server.reply("lab:[id]:init", requestId);
+				if (existing) {
+					reply("response", existing.id);
+				} else {
+					reply("error", "Session conflict, please try again.");
+				}
+				return;
+			}
 
 			await cache.delete(`lab:${labId}:lab-session:list:${userId}`);
 			ws.server.emit("lab:[labId]:enrollment:update", {

@@ -1,4 +1,5 @@
 import { nodeHealthValues } from "@vlab/shared/enums";
+import { sql } from "drizzle-orm";
 import {
 	boolean,
 	jsonb,
@@ -8,6 +9,7 @@ import {
 	primaryKey,
 	text,
 	timestamp,
+	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
@@ -19,22 +21,32 @@ import { workers } from "./worker";
 
 export const nodeHealthEnum = pgEnum("node_health", nodeHealthValues);
 
-export const labSessions = pgTable("lab_session", {
-	...base,
-	labId: uuid()
-		.notNull()
-		.references(() => labs.id, { onDelete: "cascade" }),
-	studentId: uuid()
-		.notNull()
-		.references(() => students.id, { onDelete: "cascade" }),
-	workerId: text()
-		.notNull()
-		.references(() => workers.id, { onDelete: "cascade" }),
-	clientId: text(),
-	score: numeric().notNull().default("0"),
-	submittedAt: timestamp({ withTimezone: true }),
-	dueDate: timestamp({ withTimezone: true }).notNull(),
-});
+export const labSessions = pgTable(
+	"lab_session",
+	{
+		...base,
+		labId: uuid()
+			.notNull()
+			.references(() => labs.id, { onDelete: "cascade" }),
+		studentId: uuid()
+			.notNull()
+			.references(() => students.id, { onDelete: "cascade" }),
+		workerId: text()
+			.notNull()
+			.references(() => workers.id, { onDelete: "cascade" }),
+		clientId: text(),
+		score: numeric().notNull().default("0"),
+		submittedAt: timestamp({ withTimezone: true }),
+		dueDate: timestamp({ withTimezone: true }).notNull(),
+	},
+	(t) => [
+		// At most one in-progress session per student per lab, so concurrent
+		// `lab:[id]:init` requests can't double-provision.
+		uniqueIndex("lab_session_active_student_lab_idx")
+			.on(t.labId, t.studentId)
+			.where(sql`${t.submittedAt} is null`),
+	],
+);
 
 export const labSessionsRelations = relations(labSessions, ({ one, many }) => ({
 	lab: one(labs, {
