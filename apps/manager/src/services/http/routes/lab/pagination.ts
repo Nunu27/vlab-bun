@@ -5,7 +5,7 @@ import { labEnrollments } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
 
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray } from "drizzle-orm";
 import { t } from "elysia";
 
 const { paginate, schema } = createPaginator(db, "labs", {
@@ -64,7 +64,9 @@ export default createRouter()
 									);
 								}
 
-								return isPublished;
+								// Browsing (not "my enrolled labs") should only surface
+								// labs that are still running or upcoming.
+								return and(isPublished, gte(labs.endAt, new Date()));
 							} else {
 								return eq(labs.instructorId, session.data.id);
 							}
