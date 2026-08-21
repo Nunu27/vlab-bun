@@ -8,9 +8,23 @@ import { eq, sql } from "drizzle-orm";
 
 const logger = baseLogger.child({ service: "lab-session" });
 
-async function completeSession(sessionId: string, workerId: string) {
+async function completeSession(
+	sessionId: string,
+	workerId: string,
+): Promise<boolean> {
 	const now = new Date();
 	const session = await db.transaction(async (tx) => {
+		// Lock the row first: concurrent callers (manual submit, the due-date
+		// queue job, account/lab deletion) can target the same sessionId, and
+		// without a lock two of them can both pass the submittedAt-is-null
+		// check before either commits, double-processing the session.
+		const [locked] = await tx
+			.select({ id: labSessions.id })
+			.from(labSessions)
+			.where(eq(labSessions.id, sessionId))
+			.for("update");
+		if (!locked) return null;
+
 		const session = await tx.query.labSessions.findFirst({
 			columns: { id: true, labId: true, studentId: true },
 			where: (labSessions, { eq, and, isNull }) =>
@@ -61,7 +75,7 @@ async function completeSession(sessionId: string, workerId: string) {
 			.where(eq(workers.id, workerId));
 		return { ...session, score: scoreStr };
 	});
-	if (!session) return;
+	if (!session) return false;
 
 	await cache.delete(
 		`lab:${session.labId}:lab-session:${session.id}`,
@@ -82,10 +96,12 @@ async function completeSession(sessionId: string, workerId: string) {
 			lastUpdated: now,
 		},
 	});
+	return true;
 }
 
 export async function submitSession(sessionId: string, workerId: string) {
-	await completeSession(sessionId, workerId);
+	const completed = await completeSession(sessionId, workerId);
+	if (!completed) return;
 
 	const delivered = await dispatchWorkerAction("lab:destroy", workerId, {
 		sessionId,

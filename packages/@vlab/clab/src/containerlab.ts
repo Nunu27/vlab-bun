@@ -163,14 +163,25 @@ export class Containerlab {
 		const topologyPath = this.#getTopologyPath(id);
 
 		await this.ready();
-		await this.#run([
-			"destroy",
-			"--topo",
-			topologyPath,
-			"--keep-mgmt-net",
-			"--cleanup",
-			...buildDestroyArgs(options),
-		]);
+
+		// Destroy is idempotent: if the topology file is already gone, the lab
+		// was already torn down (or never deployed), so there's nothing to do.
+		const stillDeployed = await access(topologyPath, constants.F_OK).then(
+			() => true,
+			() => false,
+		);
+
+		if (stillDeployed) {
+			await this.#run([
+				"destroy",
+				"--topo",
+				topologyPath,
+				"--keep-mgmt-net",
+				"--cleanup",
+				...buildDestroyArgs(options),
+			]);
+		}
+
 		await rm(labDirectory, { recursive: true, force: true });
 	}
 
