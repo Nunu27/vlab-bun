@@ -8,10 +8,6 @@ import LoadingPage from "@web/components/pages/loading-page";
 import NotFoundPage from "@web/components/pages/not-found-page";
 import { routeTree } from "@web/routeTree.gen";
 
-type RouterContext = {
-	breadcrumbData: Map<string, string>;
-};
-
 const router = createRouter({
 	routeTree,
 	defaultPreload: "intent",
@@ -21,9 +17,6 @@ const router = createRouter({
 	defaultPendingMs: 0,
 	parseSearch: parseSearchWith((v) => v),
 	stringifySearch: stringifySearchWith(JSON.stringify),
-	context: {
-		breadcrumbData: new Map(),
-	} satisfies RouterContext,
 });
 
 declare module "@tanstack/react-router" {
@@ -33,11 +26,14 @@ declare module "@tanstack/react-router" {
 
 	interface StaticDataRouteOption {
 		breadcrumbs?: Array<{
-			title: string | ((data: Map<string, string>) => string | undefined);
+			title:
+				| string
+				| ((
+						loaderData: Record<string, string | undefined>,
+				  ) => string | undefined);
 			url?: string;
 		}>;
 	}
 }
 
-export type { RouterContext };
 export { router };

@@ -36,16 +36,15 @@ export const Route = createFileRoute(
 		breadcrumbs: [
 			{ title: "Lab Data" },
 			{ title: "Device Template", url: "/lab-data/device-template" },
-			{ title: (data) => data.get("name") },
+			{ title: (data) => data.name },
 			{ title: "Edit" },
 		],
 	},
-	loader: async ({ params: { id }, context, abortController }) => {
+	loader: async ({ params: { id } }) => {
 		const { name } = await api["device-template"]({ id }).get.ensureQueryData(
 			queryClient,
 		);
-		if (abortController.signal.aborted) return;
-		context.breadcrumbData.set("name", name);
+		return { name };
 	},
 	component: RouteComponent,
 });

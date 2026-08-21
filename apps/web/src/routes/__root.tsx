@@ -1,5 +1,5 @@
 import {
-	createRootRouteWithContext,
+	createRootRoute,
 	HeadContent,
 	Navigate,
 	Outlet,
@@ -11,17 +11,14 @@ import { TooltipProvider } from "@web/components/ui/tooltip";
 import { useRouterPendingAttribute } from "@web/hooks/state/use-router-pending-attribute";
 import api from "@web/lib/api";
 import { queryClient } from "@web/lib/query";
-import type { RouterContext } from "@web/lib/router";
 import { useAuthStore } from "@web/stores/auth-store";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import { toast } from "sonner";
 
 import "@web/lib/ws";
 
-export const Route = createRootRouteWithContext<RouterContext>()({
-	beforeLoad: async ({ context }) => {
-		context.breadcrumbData.clear();
-
+export const Route = createRootRoute({
+	beforeLoad: async () => {
 		const { user, actions } = useAuthStore.getState();
 
 		if (user === undefined) {

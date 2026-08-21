@@ -5,8 +5,7 @@ export const useBreadcrumbs = () =>
 		select: (state) => {
 			const routerState = state.matches.at(-1);
 			const rawBreadcrumbs = routerState?.staticData?.breadcrumbs ?? [];
-			const data =
-				routerState?.context.breadcrumbData ?? new Map<string, string>();
+			const data = routerState?.loaderData;
 
 			if (!rawBreadcrumbs.length) return [];
 
@@ -14,7 +13,7 @@ export const useBreadcrumbs = () =>
 				...breadcrumb,
 				title:
 					typeof breadcrumb.title === "function"
-						? breadcrumb.title(data) || "Loading..."
+						? breadcrumb.title(data ?? {}) || "Loading..."
 						: breadcrumb.title,
 			}));
 

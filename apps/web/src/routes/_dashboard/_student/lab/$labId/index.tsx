@@ -13,16 +13,17 @@ export const Route = createFileRoute("/_dashboard/_student/lab/$labId/")({
 	staticData: {
 		breadcrumbs: [
 			{ title: "Lab" },
-			{ title: (data) => data.get("name") ?? "..." },
+			{
+				title: (data) => data.name,
+			},
 		],
 	},
-	loader: async ({ params: { labId }, context, abortController }) => {
+	loader: async ({ params: { labId } }) => {
 		const [{ name }] = await Promise.all([
 			api.lab({ labId }).get.ensureQueryData(queryClient),
 			api.lab({ labId }).session.get.ensureQueryData(queryClient),
 		]);
-		if (abortController.signal.aborted) return;
-		context.breadcrumbData.set("name", name);
+		return { name };
 	},
 	component: RouteComponent,
 });
