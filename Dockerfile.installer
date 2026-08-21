@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7-labs
 
 FROM alpine:3.20
-RUN apk add --no-cache docker-cli bash
+RUN apk add --no-cache docker-cli=26.1.5-r0 bash=5.2.26-r0
 
 COPY scripts/deploy/worker-installer.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

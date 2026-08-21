@@ -4,7 +4,7 @@
 FROM oven/bun:1 AS base
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+RUN apt-get update && apt-get install -y --no-install-recommends python3=3.13.5-1 make=4.4.1-2 g++=4:14.2.0-1 \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Dependencies ---
@@ -16,22 +16,28 @@ RUN HUSKY=0 bun install --frozen-lockfile
 FROM deps AS manager-builder
 COPY packages/ ./packages/
 COPY apps/manager/ ./apps/manager/
-RUN cd apps/manager && bun run build
+WORKDIR /app/apps/manager
+RUN bun run build
 
 # --- Web Builder ---
 FROM deps AS web-builder
 COPY packages/ ./packages/
 COPY apps/web/ ./apps/web/
-RUN cd apps/web && bun run build
+WORKDIR /app/apps/web
+RUN bun run build
 
 # --- Runner ---
-FROM gcr.io/distroless/cc-debian12
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:adcd20c7b4c988b73cbfbddb26d2eee574571e6d7c9ffea29b3821e0690efb77
 WORKDIR /app
 ENV NODE_ENV=production
 EXPOSE 3000 8080 50051
+USER nonroot:nonroot
 
 COPY --from=manager-builder /app/out/manager/app /app/app
 COPY --from=manager-builder /app/out/manager/migrations /app/migrations
 COPY --from=web-builder /app/out/manager/public /app/public
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD ["/app/app", "healthcheck"]
 
 ENTRYPOINT ["/app/app"]

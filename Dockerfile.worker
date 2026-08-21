@@ -15,14 +15,15 @@ RUN HUSKY=0 bun install --frozen-lockfile --omit=optional
 FROM deps AS worker-builder
 COPY packages/ ./packages/
 COPY apps/worker/ ./apps/worker/
-RUN cd apps/worker && bun run build
+WORKDIR /app/apps/worker
+RUN bun run build
 
 # --- Runner ---
 FROM ghcr.io/srl-labs/clab:${CLAB_VERSION}
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN apk add --no-cache libstdc++
+RUN apk add --no-cache libstdc++=15.2.0-r5
 
 COPY --from=worker-builder /app/out/worker/app /app/app
 

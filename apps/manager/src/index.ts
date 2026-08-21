@@ -42,6 +42,10 @@ const commands: Record<string, () => Promise<void>> = {
 		const { runSyncModules } = await import("./commands/sync-modules");
 		await runSyncModules();
 	},
+	healthcheck: async () => {
+		const { runHealthcheck } = await import("./commands/healthcheck");
+		await runHealthcheck();
+	},
 };
 
 const command = process.argv[2] ?? "serve";
@@ -67,6 +71,9 @@ if (!handler) {
 	);
 	console.error(
 		"  bun run src/index.ts sync-modules    Sync lab modules from docs/modules to the database",
+	);
+	console.error(
+		"  bun run src/index.ts healthcheck     Check that the running server is responding",
 	);
 	process.exit(1);
 }
