@@ -16,7 +16,29 @@ export const TestDeviceTemplateRequest = t.Object({
 	env: DeviceTemplateEnvSchema,
 	resources: DeviceTemplateResourcesSchema,
 	connection: DeviceTemplateConnectionSchema,
+	// Carried so the test reserves what this device actually needs. Without
+	// them the reservation falls back to the generic defaults, which silently
+	// under-reserves for anything bigger than a small container.
+	cpuCostCores: t.Optional(t.Union([t.Number(), t.Null()])),
+	memoryCostMB: t.Optional(t.Union([t.Integer(), t.Null()])),
 });
+
+export const DeviceTemplateStats = t.Object({
+	// What the device actually used: peak memory, median CPU. No headroom is
+	// added - this is a reservation, not a cap.
+	cpuCores: t.Number(),
+	memoryMB: t.Number(),
+	// High-water mark including boot, which the cap must survive even though
+	// the cost is set from settled usage.
+	peakMemoryMB: t.Number(),
+	samples: t.Number(),
+	// The cap the device was measured under, null when it is uncapped.
+	memoryLimitMB: t.Union([t.Number(), t.Null()]),
+	// Measurement taken so close to the cap that it understates real need.
+	limitLooksTight: t.Boolean(),
+});
+
+export type DeviceTemplateStats = typeof DeviceTemplateStats.static;
 
 export const deviceTemplateRouter = new Waycast<WSMeta>().rpc(
 	"device-template:test",
@@ -25,9 +47,7 @@ export const deviceTemplateRouter = new Waycast<WSMeta>().rpc(
 		replies: {
 			info: toStandardSchema(t.String()),
 			warn: toStandardSchema(t.String()),
-			stats: toStandardSchema(
-				t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
-			),
+			stats: toStandardSchema(DeviceTemplateStats),
 		},
 		response: toStandardSchema(t.String()),
 		meta: { private: ["admin"] },

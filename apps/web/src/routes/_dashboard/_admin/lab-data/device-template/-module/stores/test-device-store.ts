@@ -1,5 +1,6 @@
 import { createScopedStore } from "@jawit/zustand-helper/react";
 import type { Store } from "@jawit/zustand-helper/types";
+import type { DeviceTemplateStats } from "@vlab/ws/device-template";
 import type { LogEntry, LogLevel } from "@web/components/log-viewer";
 import { create } from "zustand";
 
@@ -9,7 +10,7 @@ interface TestDeviceState {
 	dispose: VoidFunction | undefined;
 	logs: LogEntry[];
 	activeTab: string;
-	suggestedStats: { cpuCores: number; memoryMB: number } | undefined;
+	suggestedStats: DeviceTemplateStats | undefined;
 }
 
 interface TestDeviceActions {
@@ -18,9 +19,7 @@ interface TestDeviceActions {
 	setToken: (token: string) => void;
 	setDispose: (dispose: VoidFunction) => void;
 	setTab: (tab: string) => void;
-	setSuggestedStats: (
-		stats: { cpuCores: number; memoryMB: number } | undefined,
-	) => void;
+	setSuggestedStats: (stats: DeviceTemplateStats | undefined) => void;
 	reset: () => void;
 }
 

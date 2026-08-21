@@ -6,7 +6,10 @@ import {
 	workers,
 } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
-import { sendCommandToWorker } from "@manager/services/grpc";
+import {
+	publishCapacityFreed,
+	sendCommandToWorker,
+} from "@manager/services/grpc";
 import guacamole from "@manager/services/guacamole-lite";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { labSessionQueue } from "@manager/services/queue/lab-session";
@@ -27,6 +30,7 @@ async function rollbackSession(sessionId: string, workerId: string) {
 			.update(workers)
 			.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
 			.where(eq(workers.id, workerId));
+		publishCapacityFreed(workerId);
 	}
 }
 
@@ -77,6 +81,7 @@ export async function initSession(
 					.update(workers)
 					.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
 					.where(eq(workers.id, workerId));
+				publishCapacityFreed(workerId);
 
 				const existing = await db.query.labSessions.findFirst({
 					columns: { id: true },
@@ -118,10 +123,12 @@ export async function initSession(
 				},
 			});
 		} finally {
+			// Frees a boot slot, and wakes any queued requests waiting for concurrent deploy slot.
 			await db
 				.update(workers)
 				.set({ deployingLab: sql`GREATEST(${workers.deployingLab} - 1, 0)` })
 				.where(eq(workers.id, workerId));
+			publishCapacityFreed(workerId);
 		}
 
 		const deployedNodeIds = new Set(deployedNodes.map((n) => n.nodeId));

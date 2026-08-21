@@ -1,6 +1,7 @@
-import { responses } from "@jawit/common";
+import { failure, responses } from "@jawit/common";
 import db from "@manager/db";
 import { deviceTemplates } from "@manager/db/schema/device-template";
+import { validateTemplateCost } from "@manager/domain/device-template/validate";
 import auth from "@manager/services/http/middlewares/auth";
 import { cache } from "@manager/services/http/middlewares/caching";
 import { createRouter } from "@manager/services/http/plugins/system";
@@ -19,6 +20,9 @@ export default createRouter()
 			status,
 			ENTITY: { LABEL: label, KEY: key },
 		}) => {
+			const costError = validateTemplateCost(body);
+			if (costError) return status(400, failure({ message: costError }));
+
 			const rowCount = await getAffectedCount(
 				db
 					.update(deviceTemplates)

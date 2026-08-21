@@ -81,12 +81,15 @@ const TestConnectionButton = withForm({
 		};
 
 		const handleApplyStats = () => {
-			if (!suggestedStats) return;
+			// A measurement that collected nothing reports zeros, and reserving
+			// zero would let unlimited labs onto a worker.
+			if (!suggestedStats || suggestedStats.samples === 0) return;
+
 			form.setFieldValue("cpuCostCores", suggestedStats.cpuCores);
 			form.setFieldValue("memoryCostMB", suggestedStats.memoryMB);
 			setSuggestedStats(undefined);
-			toast.success("Cost fields updated", {
-				description: `CPU: ${suggestedStats.cpuCores} cores · Memory: ${suggestedStats.memoryMB} MB`,
+			toast.success("Now reserving measured usage", {
+				description: `${suggestedStats.cpuCores} cores · ${suggestedStats.memoryMB} MB. Fits more labs per worker, but this device is no longer guaranteed room for its full limit.`,
 			});
 		};
 
@@ -150,22 +153,59 @@ const TestConnectionButton = withForm({
 									</TabsContent>
 								</div>
 								{suggestedStats && (
-									<div className="flex items-center justify-between border-t bg-muted/50 px-4 py-2.5 text-sm">
-										<span className="text-muted-foreground">
-											Measured cost:{" "}
-											<span className="font-medium text-foreground">
-												{suggestedStats.cpuCores} cores ·{" "}
-												{suggestedStats.memoryMB} MB
-											</span>
-										</span>
-										<Button
-											size="sm"
-											variant="outline"
-											type="button"
-											onClick={handleApplyStats}
-										>
-											Apply to cost fields
-										</Button>
+									<div className="space-y-2 border-t bg-muted/50 px-4 py-2.5 text-sm">
+										{suggestedStats.samples === 0 ? (
+											<p className="text-muted-foreground text-xs">
+												Could not measure resource usage: no samples were
+												collected. Nothing to apply.
+											</p>
+										) : (
+											<>
+												{suggestedStats.limitLooksTight &&
+													suggestedStats.memoryLimitMB && (
+														<p className="text-destructive text-xs">
+															Peaked at {suggestedStats.peakMemoryMB} MB against
+															a {suggestedStats.memoryLimitMB} MB limit. The
+															limit is likely too tight, so this reading
+															reflects what the device was allowed rather than
+															what it needs. Raise the limit and test again
+															before reserving less.
+														</p>
+													)}
+
+												<div className="flex items-center justify-between gap-4">
+													<span className="text-muted-foreground">
+														Settled at{" "}
+														<span className="font-medium text-foreground">
+															{suggestedStats.cpuCores} cores ·{" "}
+															{suggestedStats.memoryMB} MB
+														</span>{" "}
+														over {suggestedStats.samples} samples, peaking at{" "}
+														<span className="font-medium text-foreground">
+															{suggestedStats.peakMemoryMB} MB
+														</span>{" "}
+														during boot
+														{suggestedStats.memoryLimitMB
+															? `, against a ${suggestedStats.memoryLimitMB} MB limit`
+															: ", uncapped"}
+														.
+														<span className="ml-1 text-xs">
+															The limit has to cover the boot peak; the cost
+															only has to cover the settled figure.
+														</span>
+													</span>
+													<Button
+														size="sm"
+														variant="outline"
+														type="button"
+														className="shrink-0"
+														onClick={handleApplyStats}
+													>
+														Reserve {suggestedStats.memoryMB} MB instead
+													</Button>
+												</div>
+											</>
+										)}
 									</div>
 								)}
 

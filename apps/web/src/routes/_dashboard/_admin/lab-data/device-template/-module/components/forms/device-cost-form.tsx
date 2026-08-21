@@ -12,8 +12,8 @@ export const DeviceCostForm = withFieldGroup({
 					{(field) => (
 						<field.NumberField
 							label="CPU Cost (cores)"
-							placeholder="e.g., 1.5"
-							description="Estimated CPU cores this device uses at runtime. Run Test Connection to auto-measure."
+							placeholder="defaults to the CPU limit"
+							description="CPU reserved on a worker for this device. Leave empty to reserve its CPU limit. Cannot exceed the limit."
 						/>
 					)}
 				</group.AppField>
@@ -22,8 +22,8 @@ export const DeviceCostForm = withFieldGroup({
 					{(field) => (
 						<field.NumberField
 							label="Memory Cost (MB)"
-							placeholder="e.g., 512"
-							description="Estimated RAM in MB this device uses at runtime. Run Test Connection to auto-measure."
+							placeholder="defaults to the memory limit"
+							description="RAM reserved on a worker for this device. Leave empty to reserve its memory limit. Cannot exceed the limit."
 						/>
 					)}
 				</group.AppField>

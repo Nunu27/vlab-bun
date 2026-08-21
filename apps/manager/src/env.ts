@@ -51,6 +51,12 @@ const EnvSchema = t.Object(
 
 		// Labs
 		GUACD_SECRET: t.String({ minLength: 32, maxLength: 64 }),
+
+		// Scheduling
+		/** Cap on labs booting at once per worker, to spread the I/O storm. */
+		CAPACITY_MAX_CONCURRENT_DEPLOYS: t.Number({ default: 4, minimum: 1 }),
+		/** How long a lab request waits for a slot before giving up. */
+		CAPACITY_WAIT_TIMEOUT_MS: t.Number({ default: 60_000, minimum: 1_000 }),
 	},
 	{ additionalProperties: false },
 );

@@ -4,6 +4,7 @@ import {
 	waitForAvailableWorkerId,
 } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
+import { resolveNodeCost } from "@vlab/shared/resource-cost";
 import { DEFER } from "waycast";
 
 const PREFIX = "test-lab-worker:";
@@ -11,7 +12,8 @@ const PREFIX = "test-lab-worker:";
 ws.server.on(
 	"device-template:test",
 	async ({ connectionId, requestId, payload, context }) => {
-		const workerId = await waitForAvailableWorkerId();
+		const { cpuCostCores, memoryCostMB } = resolveNodeCost(payload);
+		const workerId = await waitForAvailableWorkerId(cpuCostCores, memoryCostMB);
 		await redis.client.set(`${PREFIX}${requestId}`, workerId);
 
 		await dispatchWorkerAction("device:testInit", workerId, {

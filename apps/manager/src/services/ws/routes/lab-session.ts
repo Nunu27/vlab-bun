@@ -1,13 +1,12 @@
 import db from "@manager/db";
 import { labSessions } from "@manager/db/schema";
 import {
-	DEFAULT_CPU_COST_CORES,
-	DEFAULT_MEMORY_COST_MB,
 	dispatchWorkerAction,
 	waitForAvailableWorkerId,
 } from "@manager/services/grpc";
 import ws from "@manager/services/ws";
 import type { LabLink, LabNode } from "@manager/types/clab";
+import { resolveNodeCost } from "@vlab/shared/resource-cost";
 import { eq } from "drizzle-orm";
 import { DEFER } from "waycast";
 
@@ -106,12 +105,21 @@ ws.server.on(
 			});
 		});
 
+		// Reserve against what each node can actually consume: its container
+		// limit, taking the lab's per-node override into account. A cost above
+		// that limit is unreachable, so resolveNodeCost clamps it.
 		let totalCpuCost = 0;
 		let totalMemoryCost = 0;
 		for (const device of Object.values(lab.topology.devices)) {
 			const tmpl = templatesMap.get(device.deviceId);
-			totalCpuCost += tmpl?.cpuCostCores ?? DEFAULT_CPU_COST_CORES;
-			totalMemoryCost += tmpl?.memoryCostMB ?? DEFAULT_MEMORY_COST_MB;
+			if (!tmpl) continue;
+
+			const { cpuCostCores, memoryCostMB } = resolveNodeCost(
+				tmpl,
+				device.resources,
+			);
+			totalCpuCost += cpuCostCores;
+			totalMemoryCost += memoryCostMB;
 		}
 
 		const sessionDurationMs = lab.sessionDuration * 60 * 1000;
@@ -126,12 +134,12 @@ ws.server.on(
 			totalMemoryCost,
 			{
 				signal,
-				onWait: (attempt, delayMs) => {
+				onWait: (attempt) => {
 					reply(
 						"warn",
 						attempt === 1
-							? "High demand: waiting for an available worker node..."
-							: `High demand: still waiting for an available worker node (attempt ${attempt}, retrying in ${Math.round(delayMs / 1000)}s)...`,
+							? "All worker nodes are busy. Your lab will start automatically as soon as one frees up..."
+							: "Still waiting for a worker node to free up...",
 					);
 				},
 			},

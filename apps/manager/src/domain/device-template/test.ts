@@ -1,6 +1,10 @@
 import db from "@manager/db";
 import { workers } from "@manager/db/schema";
-import { sendCommandToWorker, tempNodeEvents } from "@manager/services/grpc";
+import {
+	publishCapacityFreed,
+	sendCommandToWorker,
+	tempNodeEvents,
+} from "@manager/services/grpc";
 import guacamole from "@manager/services/guacamole-lite";
 import ws from "@manager/services/ws";
 import { waitForEvent } from "@manager/utils/events";
@@ -59,10 +63,12 @@ export async function testDeviceOnWorker(
 				},
 			},
 		).finally(async () => {
+			// Boot slot only; the test device keeps its active lab slot until cleanup.
 			await db
 				.update(workers)
 				.set({ deployingLab: sql`GREATEST(${workers.deployingLab} - 1, 0)` })
 				.where(eq(workers.id, workerId));
+			publishCapacityFreed(workerId);
 		});
 
 		reply("info", "Device provisioned.");
@@ -112,13 +118,28 @@ export async function testDeviceOnWorker(
 		reply("info", "Access token generated.");
 		reply("response", token);
 
-		// Measure container resource usage and emit as suggested cost values
-		await sleep(3000); // let CPU settle after boot
+		// Measure container resource usage and emit as suggested cost values.
+		// A node that has only just reported healthy is still finishing boot, so
+		// sampling immediately reads CPU high and memory low. Wait for it to
+		// settle, then sample across a window rather than taking one reading.
+		reply("info", "Measuring resource usage...");
+		await sleep(15000);
 		const stats = await sendCommandToWorker(
 			workerId,
 			"docker:measureContainerStats",
 			{ id },
 		);
+
+		// A container held near its cap is usually being kept there by reclaim
+		// rather than having settled, so the reading understates what the node
+		// really needs and the cap is the thing to revisit, not the cost.
+		if (stats.limitLooksTight && stats.memoryLimitMB) {
+			reply(
+				"warn",
+				`Memory peaked at ${stats.peakMemoryMB} MB against a ${stats.memoryLimitMB} MB limit. The limit is likely too tight: raise it and measure again, because this reading is what the node was allowed, not what it needs.`,
+			);
+		}
+
 		reply("stats", stats);
 	} catch (error) {
 		reply("error", error instanceof Error ? error.message : String(error));
@@ -140,4 +161,5 @@ export async function cleanupDeviceTest(
 		.update(workers)
 		.set({ activeLabs: sql`GREATEST(${workers.activeLabs} - 1, 0)` })
 		.where(eq(workers.id, workerId));
+	publishCapacityFreed(workerId);
 }

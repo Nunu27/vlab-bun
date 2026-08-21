@@ -17,6 +17,7 @@
 		"./schemas": "./src/schemas/index.ts",
 		"./schemas/*": "./src/schemas/*.ts",
 		"./utils": "./src/utils.ts",
+		"./resource-cost": "./src/resource-cost.ts",
 		"./standard-schema": "./src/standard-schema.ts"
 	},
 	"type": "module"

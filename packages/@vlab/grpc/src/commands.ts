@@ -142,7 +142,20 @@ export const appRouter = new Waycast()
 			}),
 		),
 		response: toStandardSchema(
-			t.Object({ cpuCores: t.Number(), memoryMB: t.Number() }),
+			t.Object({
+				// What the device actually used: peak memory, median CPU. No
+				// headroom is added - this is a reservation, not a cap.
+				cpuCores: t.Number(),
+				memoryMB: t.Number(),
+				// High-water mark including boot, which the cap must survive even
+				// though the cost is set from settled usage.
+				peakMemoryMB: t.Number(),
+				samples: t.Number(),
+				// The cap the device was measured under, null when it is uncapped.
+				memoryLimitMB: t.Union([t.Number(), t.Null()]),
+				// Measurement taken so close to the cap that it understates real need.
+				limitLooksTight: t.Boolean(),
+			}),
 		),
 	})
 	.rpc("evaluator:start", {

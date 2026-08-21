@@ -69,3 +69,22 @@ export const RECONNECT_FACTOR = 2;
 export const RECONNECT_CAP_MS = 30_000;
 
 export const METRICS_INTERVAL_MS = 10_000;
+
+// Device template cost measurement. Docker pushes a stats frame about once a
+// second, so the sample count roughly equals the window in seconds.
+export const STATS_SAMPLE_COUNT = 6;
+export const STATS_SAMPLE_TIMEOUT_MS = 20_000;
+// No headroom is applied to the measurement. It becomes a *reservation*, and a
+// reservation gains nothing from padding: what stops a node ballooning is its
+// cgroup cap, not the number the scheduler set aside for it. Memory is already
+// reported as the peak across samples, so padding that would be a second
+// arbitrary margin on top of an already worst-case figure. Headroom belongs on
+// a limit, and limits are set by hand, never derived from a measurement.
+/**
+ * Peak-to-limit ratio above which a measurement is treated as suspect. A
+ * container held this near its cap is usually being kept there by reclaim
+ * rather than having settled, so its "usage" reads lower than what it needs.
+ * Measured on RouterOS: 97% of a 128MB cap and 95% of 176MB, both squeezed,
+ * against 70% once the cap was 256MB and the footprint could settle.
+ */
+export const STATS_TIGHT_LIMIT_RATIO = 0.85;

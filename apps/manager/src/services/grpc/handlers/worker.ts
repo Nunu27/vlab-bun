@@ -9,7 +9,9 @@ import { eq, sql } from "drizzle-orm";
 import type { WaycastClientTransport } from "waycast";
 import { attachEvaluatorHandlers } from "./evaluator";
 import { attachMonitorHandlers } from "./monitor";
+import { publishCapacityFreed } from "./worker-capacity-events";
 import {
+	reconcileWorkerCounters,
 	reconcileWorkerSessions,
 	regenerateWorkerTokens,
 } from "./worker-reconcile";
@@ -107,6 +109,21 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				),
 			);
 		}
+
+		// The previous stream teardown zeroed this worker's counters, but any labs
+		// it was hosting are still recorded as active and reconcileWorkerSessions
+		// below will let it keep them. Restore the counters from those sessions so
+		// the scheduler does not treat a worker that merely flapped as empty.
+		const reconciledLabs = await reconcileWorkerCounters(workerId);
+		if (reconciledLabs) {
+			logger.info(
+				{ workerId, activeLabs: reconciledLabs },
+				"Restored capacity counters for a reconnected worker",
+			);
+		}
+
+		// A worker joining the fleet is new capacity: wake anything queued.
+		publishCapacityFreed(workerId);
 
 		if (updatedAt?.getTime() === createdAt.getTime()) {
 			ws.server.emit("admin:worker:new", { data: worker });

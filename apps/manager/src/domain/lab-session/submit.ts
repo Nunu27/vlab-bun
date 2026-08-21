@@ -1,7 +1,10 @@
 import db from "@manager/db";
 import { labSessionNodes, labSessions, workers } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
-import { dispatchWorkerAction } from "@manager/services/grpc";
+import {
+	dispatchWorkerAction,
+	publishCapacityFreed,
+} from "@manager/services/grpc";
 import { cache } from "@manager/services/http/middlewares/caching";
 import ws from "@manager/services/ws";
 import { eq, sql } from "drizzle-orm";
@@ -76,6 +79,10 @@ async function completeSession(
 		return { ...session, score: scoreStr };
 	});
 	if (!session) return false;
+
+	// The worker has room again; wake anything queued behind it. Published only
+	// after the transaction commits, so a woken waiter sees the freed capacity.
+	publishCapacityFreed(workerId);
 
 	await cache.delete(
 		`lab:${session.labId}:lab-session:${session.id}`,
