@@ -40,17 +40,14 @@ export function StartLabSessionButton({
 
 	const [open, setOpen] = useState(false);
 	const [logs, setLogs] = useState<LogEntry[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
 	const [hasFailed, setHasFailed] = useState(false);
 	const [waitAttempt, setWaitAttempt] = useState<number | null>(null);
 	const [disposeFn, setDisposeFn] = useState<(() => void) | null>(null);
 	const [now, setNow] = useState(() => Date.now());
 
-	const isHighDemand =
-		isLoading &&
-		logs.some(
-			(log) => log.type === "warn" && log.message.includes("High demand"),
-		);
+	const isHighDemand = logs.some(
+		(log) => log.type === "warn" && log.message.includes("High demand"),
+	);
 
 	const isLimitReached = maxAttempt !== null && attemptCount >= maxAttempt;
 	const startTime =
@@ -87,7 +84,6 @@ export function StartLabSessionButton({
 
 		setOpen(true);
 		setLogs([]);
-		setIsLoading(true);
 		setHasFailed(false);
 		setWaitAttempt(null);
 		setDisposeFn(() => dispose);
@@ -96,11 +92,10 @@ export function StartLabSessionButton({
 			params: { id: labId },
 			onError: (error) => {
 				setLogs((prev) => [...prev, { type: "error", message: error }]);
-				setIsLoading(false);
 				setHasFailed(true);
+				setWaitAttempt(null);
 			},
 			onResponse: (sessionId) => {
-				setIsLoading(false);
 				setLogs((prev) => [
 					...prev,
 					{ type: "info", message: "Redirecting to session..." },
@@ -117,7 +112,15 @@ export function StartLabSessionButton({
 				warn: (msg) => {
 					const attemptMatch = msg.match(/attempt (\d+)/);
 					if (attemptMatch) setWaitAttempt(Number(attemptMatch[1]));
-					return setLogs((prev) => [...prev, { type: "warn", message: msg }]);
+					return setLogs((prev) => {
+						const last = prev[prev.length - 1];
+						const isWaitingHeartbeat =
+							last?.type === "warn" && last.message.includes("High demand");
+						const entry: LogEntry = { type: "warn", message: msg };
+						return isWaitingHeartbeat
+							? [...prev.slice(0, -1), entry]
+							: [...prev, entry];
+					});
 				},
 			},
 		});
@@ -171,9 +174,7 @@ export function StartLabSessionButton({
 
 					<DialogFooter className="p-4 pt-0">
 						<DialogClose asChild>
-							<Button variant="secondary" disabled={isLoading}>
-								Cancel
-							</Button>
+							<Button variant="secondary">Cancel</Button>
 						</DialogClose>
 						{hasFailed && <Button onClick={handleStartPhase}>Retry</Button>}
 					</DialogFooter>

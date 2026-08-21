@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 /** Flip to false to kill the waiting-room joke video entirely. */
-export const ENABLE_WAITING_DISTRACTION = true;
+export const ENABLE_WAITING_DISTRACTION = false;
 
 const VIDEO_URLS = [
 	"https://upload.stashr.wtf/file/documents/file_13707.mp4",

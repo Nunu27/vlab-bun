@@ -50,6 +50,11 @@ export type WaitForWorkerOptions = {
 	signal?: AbortSignal;
 };
 
+/** Randomizes a delay by up to +/-`factor` to avoid concurrent retries staying in lockstep. */
+function jitter(ms: number, factor = 0.2): number {
+	return ms + (Math.random() * 2 - 1) * factor * ms;
+}
+
 function abortableDelay(ms: number, signal?: AbortSignal): Promise<void> {
 	if (signal?.aborted) return Promise.reject(signal.reason);
 
@@ -71,9 +76,9 @@ export async function waitForAvailableWorkerId(
 	memoryCostMB = DEFAULT_MEMORY_COST_MB,
 	options?: WaitForWorkerOptions,
 ): Promise<string> {
-	const timeoutMs = options?.timeoutMs ?? 30_000;
-	const initialDelayMs = options?.initialDelayMs ?? 500;
-	const maxDelayMs = options?.maxDelayMs ?? 5_000;
+	const timeoutMs = options?.timeoutMs ?? 60_000;
+	const initialDelayMs = options?.initialDelayMs ?? 1_000;
+	const maxDelayMs = options?.maxDelayMs ?? 8_000;
 	const backoffFactor = options?.backoffFactor ?? 1.5;
 	const signal = options?.signal;
 
@@ -89,7 +94,7 @@ export async function waitForAvailableWorkerId(
 
 		options?.onWait?.(attempt, currentDelayMs);
 
-		await abortableDelay(currentDelayMs, signal);
+		await abortableDelay(jitter(currentDelayMs), signal);
 
 		currentDelayMs = Math.min(currentDelayMs * backoffFactor, maxDelayMs);
 		attempt++;
