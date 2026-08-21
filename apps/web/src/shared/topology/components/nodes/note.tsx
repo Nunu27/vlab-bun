@@ -42,7 +42,7 @@ function Note({ id }: { id: string }) {
 				ref={textareaRef}
 				value={state.content}
 				className={
-					"field-sizing-content block w-full resize-none overflow-hidden bg-transparent p-2 font-sans font-sm text-foreground leading-snug outline-none"
+					"field-sizing-content block resize-none overflow-hidden whitespace-pre bg-transparent p-2 font-sans font-sm text-foreground leading-snug outline-none"
 				}
 				rows={1}
 			/>

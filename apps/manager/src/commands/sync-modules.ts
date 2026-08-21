@@ -4,6 +4,7 @@ import path from "node:path";
 import db from "@manager/db";
 import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
+import redis from "@manager/lib/redis";
 import { uploadFile } from "@manager/lib/storage";
 import { cache } from "@manager/services/http/middlewares/caching";
 import type { LabChecksMap, LabTopology } from "@vlab/shared/schemas/lab";
@@ -522,5 +523,6 @@ export async function runSyncModules() {
 		throw error;
 	} finally {
 		await db.$client.end();
+		await redis.client.quit();
 	}
 }

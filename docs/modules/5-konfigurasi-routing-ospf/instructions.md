@@ -16,12 +16,9 @@
   ],
   "groups": {
     "Network A": { "color": "#f87171", "x": 40, "y": 110, "width": 260, "height": 340, "members": ["R1", "PC1"] },
-    "Network D": { "color": "#4ade80", "x": 640, "y": 110, "width": 260, "height": 340, "members": ["R3", "PC2"] }
+    "Network D": { "color": "#4ade80", "x": 660, "y": 110, "width": 260, "height": 340, "members": ["R3", "PC2"] }
   },
-  "notes": [
-    { "content": "Jalur atas via R2\ncost 1 + 1 = 2", "x": 430, "y": 20 },
-    { "content": "Jalur langsung R1-R3\ncost 50", "x": 400, "y": 230 }
-  ]
+  "notes": []
 }
 -->
 
