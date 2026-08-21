@@ -5,6 +5,7 @@ import type { WSMeta } from "./types";
 
 const WorkerSchema = t.Object({
 	id: t.String(),
+	managerId: t.String(),
 	status: t.Union([t.Literal("online"), t.Literal("offline")]),
 	lastSeen: t.Date(),
 	cpuCores: t.Number(),

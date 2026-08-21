@@ -51,9 +51,14 @@ export const workerColumns = [
 							)}
 						/>
 					</div>
-					<span className={cn(isOffline && "text-muted-foreground")}>
-						{worker.id}
-					</span>
+					<div className="flex flex-col">
+						<span className={cn(isOffline && "text-muted-foreground")}>
+							{worker.id}
+						</span>
+						<span className="font-normal text-muted-foreground text-xs">
+							{worker.managerId}
+						</span>
+					</div>
 				</div>
 			);
 		},

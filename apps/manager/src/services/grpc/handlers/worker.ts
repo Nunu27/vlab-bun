@@ -66,6 +66,7 @@ export const WorkerServiceImpl: WorkerProto.WorkerServiceImplementation = {
 				})
 				.returning({
 					id: workers.id,
+					managerId: workers.managerId,
 					status: workers.status,
 					lastSeen: workers.lastSeen,
 					cpuCores: workers.cpuCores,

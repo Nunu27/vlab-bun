@@ -31,6 +31,7 @@ import {
 	HardDriveIcon,
 	ServerIcon,
 } from "lucide-react";
+import { useMemo } from "react";
 import { RadialStatCard } from "../../../-module/components/cards/radial-stat-card";
 import { StatCard } from "../../../-module/components/cards/stat-card";
 import { workerColumns } from "../columns";
@@ -99,9 +100,12 @@ function AdminDashboardPage() {
 		handler: (worker) => {
 			api.dashboard.admin.get.setQueryData(queryClient, (oldData) => {
 				if (!oldData) return oldData;
+				const exists = oldData.workers.some((w) => w.id === worker.id);
 				return {
 					...oldData,
-					workers: [worker, ...oldData.workers],
+					workers: exists
+						? oldData.workers.map((w) => (w.id === worker.id ? worker : w))
+						: [...oldData.workers, worker],
 				};
 			});
 		},
@@ -175,8 +179,13 @@ function AdminDashboardPage() {
 		},
 	});
 
+	const sortedWorkers = useMemo(
+		() => [...data.workers].sort((a, b) => a.id.localeCompare(b.id)),
+		[data.workers],
+	);
+
 	const table = useReactTable({
-		data: data.workers,
+		data: sortedWorkers,
 		columns: workerColumns,
 		getCoreRowModel: getCoreRowModel(),
 	});

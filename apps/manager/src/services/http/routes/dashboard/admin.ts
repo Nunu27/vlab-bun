@@ -3,7 +3,7 @@ import db from "@manager/db";
 import { workers } from "@manager/db/schema";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-import { desc } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 
 export default createRouter()
 	.use(auth)
@@ -13,6 +13,7 @@ export default createRouter()
 			const workerList = await db
 				.select({
 					id: workers.id,
+					managerId: workers.managerId,
 					status: workers.status,
 					lastSeen: workers.lastSeen,
 					cpuCores: workers.cpuCores,
@@ -25,7 +26,7 @@ export default createRouter()
 					activeNodes: workers.activeNodes,
 				})
 				.from(workers)
-				.orderBy(desc(workers.lastSeen));
+				.orderBy(asc(workers.id));
 
 			return success({
 				data: {
