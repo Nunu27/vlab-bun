@@ -5,6 +5,7 @@ import db from "@manager/db";
 import { labAttachments, labEmbeddedFiles, labs } from "@manager/db/schema";
 import baseLogger from "@manager/lib/logger";
 import { uploadFile } from "@manager/lib/storage";
+import { cache } from "@manager/services/http/middlewares/caching";
 import type { LabChecksMap, LabTopology } from "@vlab/shared/schemas/lab";
 import { $ } from "bun";
 import { eq } from "drizzle-orm";
@@ -393,7 +394,14 @@ export async function runSyncModules() {
 				}
 			}
 
-			let finalInst = instWithoutTopology;
+			let finalInst = instWithoutTopology
+				// sync-command-reference.ts injects these as HTML comments to mark
+				// the block for drift-checking against material.md; MDX has no
+				// support for HTML comments (`{/* */}` only), so they must not
+				// reach the rendered instructions or MDXEditor fails to parse the
+				// whole document and the Instructions tab renders blank.
+				.replaceAll("<!-- command-reference:start -->", "")
+				.replaceAll("<!-- command-reference:end -->", "");
 			finalInst = finalInst.replace(
 				/<LabCheck\s+node="([^"]+)"\s+id="([^"]+)"\s*\/>/g,
 				(match, node, id) => {
@@ -443,6 +451,8 @@ export async function runSyncModules() {
 						...(newTopology ? { topology: newTopology } : {}),
 					})
 					.where(eq(labs.id, lab.id));
+
+				await cache.delete(`lab:${lab.id}`, `lab:${lab.id}:*`);
 
 				logger.info(`Updated lab: ${title}`);
 
