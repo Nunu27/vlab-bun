@@ -11,6 +11,8 @@ import { CASResponseSchema } from "@vlab/shared/schemas/cas";
 import { compile } from "elysia/type-system/utils";
 import { XMLParser } from "fast-xml-parser";
 
+class CASError extends Error {}
+
 const { BASE_URL, CAS_BASE_URL } = env;
 const SERVICE = `${BASE_URL}/api/auth/cas`;
 const CAS_LOGIN = `${CAS_BASE_URL}/cas/login?service=${encodeURIComponent(SERVICE)}`;
@@ -30,7 +32,7 @@ export default createRouter()
 		"/cas",
 		async ({ session, redirect, query: { ticket }, setToast }) => {
 			try {
-				if (session.data) throw new Error("You are already logged in");
+				if (session.data) throw new CASError("You are already logged in");
 				else if (!ticket) return redirect(CAS_LOGIN);
 
 				const res = await fetch(CAS_VALIDATE + encodeURIComponent(ticket), {
@@ -44,7 +46,7 @@ export default createRouter()
 					!CASResponseValidator.Check(data) ||
 					!data.serviceResponse.authenticationSuccess
 				) {
-					throw new Error("CAS authentication failed");
+					throw new CASError("CAS authentication failed");
 				}
 
 				const userInfo = data.serviceResponse.authenticationSuccess.attributes;
@@ -67,7 +69,7 @@ export default createRouter()
 						const parsedNRP = parseNRP(nrpStr);
 
 						if (!parsedNRP) {
-							throw new Error("Invalid NRP");
+							throw new CASError("Invalid NRP");
 						}
 
 						if (userInfo.Jurusan !== parsedNRP.programName) {
@@ -80,7 +82,7 @@ export default createRouter()
 						});
 
 						if (!studyProgram) {
-							throw new Error("Study program not found");
+							throw new CASError("Study program not found");
 						}
 
 						await tx.insert(students).values({
@@ -107,10 +109,12 @@ export default createRouter()
 
 				return redirect(BASE_URL);
 			} catch (error) {
-				setToast(
-					"error",
-					error instanceof Error ? error.message : "Internal Server Error",
-				);
+				if (error instanceof CASError) {
+					setToast("error", error.message);
+				} else {
+					logger.error({ err: error }, "CAS login failed");
+					setToast("error", "Failed to log in. Please try again.");
+				}
 
 				return redirect(BASE_URL);
 			}

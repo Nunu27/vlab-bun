@@ -247,7 +247,7 @@ export async function initSession(
 
 		ws.server.reply("lab:[id]:init", requestId)(
 			"error",
-			error instanceof Error ? error.message : String(error),
+			`Failed to set up the lab. Please contact an admin and include this session ID: ${sessionId}`,
 		);
 	}
 }
