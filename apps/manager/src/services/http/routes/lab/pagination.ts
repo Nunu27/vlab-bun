@@ -4,7 +4,6 @@ import db from "@manager/db";
 import { labEnrollments } from "@manager/db/schema/lab";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-
 import { and, eq, gte, inArray } from "drizzle-orm";
 import { t } from "elysia";
 
@@ -34,7 +33,7 @@ export default createRouter()
 							cover: true,
 							startAt: true,
 							endAt: true,
-							createdAt: true,
+							updatedAt: true,
 							isPublished: true,
 						},
 						with: {

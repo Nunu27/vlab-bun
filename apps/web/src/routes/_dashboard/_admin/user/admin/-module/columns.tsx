@@ -36,13 +36,13 @@ export const adminColumns: ColumnDef<AdminItem>[] = [
 		},
 	},
 	{
-		accessorKey: "createdAt",
+		accessorKey: "updatedAt",
 		cell: ({ row }) => {
-			if (!row.original.createdAt) return "-";
-			return format(new Date(row.original.createdAt), "dd MMM yyyy HH:mm");
+			if (!row.original.updatedAt) return "-";
+			return format(new Date(row.original.updatedAt), "dd MMM yyyy HH:mm");
 		},
 		meta: {
-			label: "Created At",
+			label: "Updated At",
 		},
 	},
 	{

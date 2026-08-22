@@ -10,7 +10,7 @@ import type { LabItem } from "@web/routes/_dashboard/_instructor/my-lab/-module/
 import { CalendarIcon, FlaskConicalIcon, UserIcon } from "lucide-react";
 
 type LabCardProps = {
-	lab: Omit<LabItem, "createdAt" | "isPublished" | "index">;
+	lab: Omit<LabItem, "createdAt" | "updatedAt" | "isPublished" | "index">;
 };
 
 export function LabCard({ lab }: LabCardProps) {

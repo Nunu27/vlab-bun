@@ -74,18 +74,18 @@ graph TD
     Evaluator["<b>Evaluator</b><br/>(Central Registry)"]
     Session["<b>EvaluationSession</b><br/>(Runtime Engine)"]
     Handler["<b>EvaluationHandler</b><br/>(e.g., Linux, MikroTik)"]
-    
+
     Source["<b>Source</b><br/>(State Extractor / Listener)"]
     Check["<b>Check</b><br/>(Evaluation Rule)"]
     Node["<b>Lab Node</b><br/>(Container / Router)"]
- 
+
     Evaluator -- "Registers" --> Handler
     Evaluator -- "Creates" --> Session
-    
+
     Handler -- "Defines" --> Source
     Handler -- "Defines" --> Check
     Check -. "Depends on" .-> Source
- 
+
     Session -- "Initializes required" --> Check
     Session -- "Connects to" --> Node
     Node -- "Streams events/data" --> Source

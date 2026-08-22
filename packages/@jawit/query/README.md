@@ -80,7 +80,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 function MyComponent() {
   const queryClient = useQueryClient();
-  
+
   const invalidateUsers = () => {
     // Easily invalidate routes
     api.users.get.invalidateQuery(queryClient);

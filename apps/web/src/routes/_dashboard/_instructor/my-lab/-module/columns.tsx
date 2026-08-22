@@ -66,16 +66,19 @@ export const labColumns: ColumnDef<LabItem>[] = [
 		),
 	},
 	{
-		accessorKey: "createdAt",
+		accessorKey: "updatedAt",
 		enableSorting: true,
 		meta: {
-			label: "Created At",
+			label: "Updated At",
 		},
-		cell: ({ row }) => (
-			<span className="whitespace-nowrap">
-				{new Date(row.original.createdAt).toLocaleDateString()}
-			</span>
-		),
+		cell: ({ row }) => {
+			if (!row.original.updatedAt) return "-";
+			return (
+				<span className="whitespace-nowrap">
+					{new Date(row.original.updatedAt).toLocaleDateString()}
+				</span>
+			);
+		},
 	},
 	{
 		id: "actions",

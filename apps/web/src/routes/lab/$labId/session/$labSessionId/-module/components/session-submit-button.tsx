@@ -2,7 +2,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@web/components/ui/button";
 import api from "@web/lib/api";
 import { Send } from "lucide-react";
-
 import { toast } from "sonner";
 
 export function SessionSubmitButton({ sessionId }: { sessionId: string }) {

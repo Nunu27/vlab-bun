@@ -38,7 +38,7 @@ export const useBearStore = createSelectors(useBearStoreBase);
 function BearCounter() {
   const bears = useBearStore.use.bears();
   const increase = useBearStore.use.increase();
-  
+
   return <button onClick={increase}>{bears} bears</button>;
 }
 ```
@@ -61,7 +61,7 @@ export const useModals = createModalStore<ModalData>()([
 function App() {
   const isCreateOpen = useModals((s) => s.create);
   const editData = useModals((s) => s.edit);
-  
+
   const actions = useModals((s) => s.actions);
 
   return (

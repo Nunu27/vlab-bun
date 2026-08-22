@@ -60,7 +60,7 @@ app.get("/posts", async ({ cache, query }) => {
   cache.set("all");
   cache.addPrefix("posts");
   cache.addSuffix(`page:${query.page}`);
-  
+
   // The final key will be something like: "posts:all:page:1"
   return await db.getPosts(query.page);
 }, {
