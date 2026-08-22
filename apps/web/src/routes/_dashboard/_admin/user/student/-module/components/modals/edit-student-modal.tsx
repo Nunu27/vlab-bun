@@ -109,11 +109,7 @@ export function EditStudentModal() {
 							</form.AppField>
 							<form.AppField name="year">
 								{(field) => (
-									<field.TextField
-										label="Enrollment Year"
-										type="number"
-										required
-									/>
+									<field.NumberField label="Enrollment Year" required />
 								)}
 							</form.AppField>
 						</div>
