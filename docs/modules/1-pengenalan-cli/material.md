@@ -22,7 +22,6 @@ Keduanya sama-sama CLI, tetapi cara berpikirnya berbeda:
 
 ## Tips Eksplorasi
 Menghafal seluruh perintah tidak diperlukan. RouterOS menyediakan beberapa fitur bantuan bawaan:
-*   **Tombol `?`:** Tekan tanda tanya kapan saja di MikroTik untuk melihat daftar perintah atau parameter yang tersedia pada posisi menu saat ini.
 *   **Tombol `Tab` (Auto-Complete):** Tidak perlu mengetik `interface` sampai selesai. Ketik `int` lalu tekan `Tab`, sistem akan melengkapinya. Cara ini mencegah salah ketik sekaligus mempercepat pekerjaan.
 *   **Safe Mode (`CTRL + X`):** Tekan `CTRL + X` sebelum melakukan perubahan yang berisiko. Jika koneksi terputus (misalnya karena salah mengatur IP), router otomatis membatalkan perubahan tersebut dan kembali ke kondisi terakhir yang aman. Tekan `CTRL + X` sekali lagi untuk menyimpan perubahan secara permanen.
 
@@ -57,7 +56,6 @@ Router dengan pengaturan bawaan pabrik belum siap dipakai di jaringan produksi. 
 
 | Perintah | Keterangan |
 |---|---|
-| `?` | Menampilkan perintah yang tersedia pada posisi menu saat ini. |
 | `..` | Naik satu tingkat menu. |
 | `/` | Kembali ke root menu. |
 | `system resource print` | Menampilkan statistik sistem (CPU, RAM, arsitektur board). |

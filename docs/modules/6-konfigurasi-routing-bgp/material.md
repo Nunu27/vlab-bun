@@ -18,7 +18,7 @@ Setiap kali sebuah rute berpindah melewati satu AS, nomor AS tersebut ditambahka
 Contoh: rute `203.0.113.0/24` milik **AS 65002** melewati **AS 65000** (transit) sebelum sampai ke **AS 65001**. Router di AS 65001 menerima rute tersebut dengan:
 
 ```
-AS-PATH: 65000 65002
+bgp-as-path=65000,65002
 ```
 
 Artinya paket dari AS 65001 menuju `203.0.113.0/24` melewati AS 65000 terlebih dahulu. Atribut ini bisa diamati langsung pada output `/ip route print detail` setelah sesi BGP terbentuk.

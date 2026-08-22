@@ -152,7 +152,7 @@ Jalankan perintah berikut pada terminal **PC2**:
 
 > Bagian ini untuk pengajar. Pertanyaannya ada di `questions.md`.
 
-1. **Arti AS-Path `65000 65002`.** Dibaca dari kiri ke kanan, daftar ini menunjukkan urutan AS yang dilewati rute tersebut untuk sampai ke R1, dimulai dari yang terdekat. Angka `65000` adalah AS milik R2, tetangga langsung R1 yang mengirimkan rute itu. Angka `65002` adalah AS asal, yaitu pemilik blok `203.0.113.0/24`. Dilihat dari R2, rute yang sama hanya membawa AS-Path `65002`, karena R2 menerimanya langsung dari AS asal dan belum menambahkan nomornya sendiri. Setiap AS baru menambahkan nomornya ketika meneruskan rute keluar.
+1. **Arti AS-Path `65000,65002`.** Dibaca dari kiri ke kanan, daftar ini menunjukkan urutan AS yang dilewati rute tersebut untuk sampai ke R1, dimulai dari yang terdekat. Angka `65000` adalah AS milik R2, tetangga langsung R1 yang mengirimkan rute itu. Angka `65002` adalah AS asal, yaitu pemilik blok `203.0.113.0/24`. Dilihat dari R2, rute yang sama hanya membawa AS-Path `65002`, karena R2 menerimanya langsung dari AS asal dan belum menambahkan nomornya sendiri. Setiap AS baru menambahkan nomornya ketika meneruskan rute keluar.
 
 2. **Peran R2 tanpa `output.network`.** Parameter `output.network` hanya mengatur prefix milik sendiri yang ingin diiklankan. R2 tidak memiliki blok IP untuk diiklankan, jadi parameter itu memang tidak diperlukan. Yang dilakukan R2 adalah meneruskan rute yang ia pelajari dari satu peer ke peer lainnya, yang merupakan perilaku bawaan eBGP. Inilah definisi sebuah *transit AS*, dan persis seperti cara kerja ISP di dunia nyata: mereka menjual jalur, bukan mengiklankan jaringan sendiri.
 

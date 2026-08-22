@@ -14,6 +14,8 @@
 
 > **Informasi Kredensial:** Perangkat klien (PC) pada lab ini menggunakan username `ubuntu` dan password `ubuntu`.
 
+Setiap terminal pada lab ini, baik ke PC maupun ke router, adalah sesi SSH sungguhan ke perangkat tersebut, dijembatani oleh platform lab, bukan sekadar tampilan.
+
 Lab pengenalan ini menyediakan dua jenis perangkat: sebuah klien berbasis Linux (**PC1**) dan sebuah router MikroTik (**R1**). Jelajahi *Command Line Interface* (CLI) pada masing-masing perangkat agar terbiasa dengan lingkungan kerjanya, lalu lakukan sedikit konfigurasi dasar.
 
 Perhatikan bahwa kedua perangkat ini **belum terhubung satu sama lain**. Pada modul ini cukup mengenali CLI masing-masing perangkat terlebih dahulu. Keduanya baru dihubungkan pada Modul 2.
@@ -36,7 +38,6 @@ Perhatikan bahwa kedua perangkat ini **belum terhubung satu sama lain**. Pada mo
 
 | Perintah | Keterangan |
 |---|---|
-| `?` | Menampilkan perintah yang tersedia pada posisi menu saat ini. |
 | `..` | Naik satu tingkat menu. |
 | `/` | Kembali ke root menu. |
 | `system resource print` | Menampilkan statistik sistem (CPU, RAM, arsitektur board). |
@@ -65,14 +66,13 @@ Setiap langkah di bawah disertai satu hal yang perlu diamati.
 
 #### Tahap II: Eksplorasi CLI MikroTik (R1)
 1. Buka konsol terminal pada **R1**.
-2. Pada posisi root (`/`), tekan tombol `?`. **Amati:** daftar menu tingkat atas yang tersedia.
-3. Masuk ke sub-menu IP Address dengan mengetik `ip address` lalu tekan Enter. **Amati:** perubahan pada *prompt* CLI.
-4. Jalankan `print`. **Amati:** apakah ada IP address yang sudah terpasang? Perhatikan bahwa cukup mengetik `print`, bukan `ip address print`, karena posisi CLI sudah berada di dalam menu tersebut.
-5. Kembali ke root menu dengan menjalankan `/`.
-6. Jalankan `interface print`. **Amati:** berapa banyak interface yang dimiliki router ini, dan apa saja namanya?
-7. Jalankan `system resource print`. **Amati:** penggunaan CPU, memori (RAM), dan arsitektur board router.
-8. Jalankan `/export`. **Amati:** seluruh konfigurasi router ditampilkan sebagai skrip teks. Inilah cara tercepat untuk mencadangkan atau memeriksa konfigurasi sebuah router.
-9. Uji coba **Safe Mode**. Tekan `CTRL + X`. **Amati:** munculnya penanda `<SAFE>` pada *prompt*. Tekan `CTRL + X` sekali lagi untuk keluar.
+2. Pada posisi root (`/`), ketik `ip addr` lalu tekan `Tab`. **Amati:** RouterOS melengkapi otomatis menjadi `ip address`. Tekan Enter untuk masuk ke sub-menu ini, lalu amati perubahan pada *prompt* CLI.
+3. Jalankan `print`. **Amati:** apakah ada IP address yang sudah terpasang? Perhatikan bahwa cukup mengetik `print`, bukan `ip address print`, karena posisi CLI sudah berada di dalam menu tersebut.
+4. Kembali ke root menu dengan menjalankan `/`.
+5. Jalankan `interface print`. **Amati:** berapa banyak interface yang dimiliki router ini, dan apa saja namanya?
+6. Jalankan `system resource print`. **Amati:** penggunaan CPU, memori (RAM), dan arsitektur board router.
+7. Jalankan `/export`. **Amati:** seluruh konfigurasi router ditampilkan sebagai skrip teks. Inilah cara tercepat untuk mencadangkan atau memeriksa konfigurasi sebuah router.
+8. Uji coba **Safe Mode**. Tekan `CTRL + X`. **Amati:** munculnya penanda `<SAFE>` pada *prompt*. Tekan `CTRL + X` sekali lagi untuk keluar.
 
 #### Tahap III: Konfigurasi Dasar Router
 

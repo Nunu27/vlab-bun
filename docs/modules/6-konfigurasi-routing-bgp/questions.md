@@ -4,7 +4,7 @@
 
 Jawab berdasarkan hasil pengamatan pada lab dan materi modul ini.
 
-1. Pada Tahap V, atribut AS-Path pada rute `203.0.113.0/24` di R1 bernilai `65000 65002`. Jelaskan arti setiap angka tersebut dan urutannya. Nilai apa yang muncul untuk rute yang sama jika dilihat dari R2?
+1. Pada Tahap V, atribut AS-Path pada rute `203.0.113.0/24` di R1 bernilai `65000,65002`. Jelaskan arti setiap angka tersebut dan urutannya. Nilai apa yang muncul untuk rute yang sama jika dilihat dari R2?
 2. R2 tidak memakai `output.network` sama sekali, tetapi R1 dan R3 tetap saling mengenal jaringan masing-masing. Jelaskan bagaimana hal itu bisa terjadi, dan apa peran R2 dalam proses tersebut.
 3. Apa perbedaan mendasar antara BGP dan OSPF dalam hal cara memilih jalur terbaik? Sebutkan istilah metrik yang dipakai masing-masing.
 4. Materi menyebut bahwa BGP memilih jalur berdasarkan *routing policy*, bukan performa teknis. Berikan satu contoh situasi bisnis yang membuat sebuah ISP sengaja memilih jalur yang secara teknis lebih lambat.

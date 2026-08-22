@@ -4,7 +4,7 @@ Modul ini mengenalkan *Command Line Interface* (CLI) sebagai cara utama mengelol
 
 **Tujuan Pembelajaran:**
 - Menjelaskan perbedaan cara kerja antara shell Linux (*File System Hierarchy*) dan RouterOS (*Menu Hierarchy*).
-- Menavigasi direktori dan menu melalui CLI, serta memanfaatkan `?` dan `Tab` untuk mempercepat pekerjaan.
+- Menavigasi direktori dan menu melalui CLI, serta memanfaatkan `Tab` untuk mempercepat pekerjaan.
 - Membaca informasi dasar sistem: user aktif, proses yang berjalan, dan spesifikasi perangkat.
 - Mengubah hostname router dan memasang banner MOTD sebagai pesan sambutan saat login.
 - Menambahkan user baru beserta password dan hak aksesnya, sesuai prinsip *least privilege*.
