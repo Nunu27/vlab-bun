@@ -13,6 +13,11 @@ export function useLabCheckValue(node: MdastJsx) {
 	}, [attribute]);
 }
 
+export function parseLabCheckIds(value?: string): string[] {
+	if (typeof value !== "string" || value.trim() === "") return [];
+	return value.split(",");
+}
+
 export function formatLabCheck(text: string, params: Record<string, unknown>) {
 	return text.replace(/\{([^}]+)\}/g, (_, key) => {
 		const value = params[key];

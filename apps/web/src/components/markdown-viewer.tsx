@@ -1,67 +1,111 @@
-import {
-	type CodeBlockEditorDescriptor,
-	codeBlockPlugin,
-	headingsPlugin,
-	imagePlugin,
-	type JsxComponentDescriptor,
-	jsxPlugin,
-	linkPlugin,
-	listsPlugin,
-	MDXEditor,
-	markdownShortcutPlugin,
-	quotePlugin,
-	tablePlugin,
-	thematicBreakPlugin,
-} from "@mdxeditor/editor";
-import "@mdxeditor/editor/style.css";
 import { cn } from "@web/lib/utils";
-import { useTheme } from "./theme-provider";
+import { Component, type ComponentType, type ReactNode } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMdx from "remark-mdx";
 
-const plainCodeBlockDescriptor: CodeBlockEditorDescriptor = {
-	match: () => true,
-	priority: 0,
-	Editor: ({ code }) => (
-		<pre className="wrap-break-word whitespace-pre-wrap">
-			<code>{code}</code>
-		</pre>
-	),
+// react-markdown's `Components` type only covers standard HTML tags. The one
+// custom MDX tag we render, <LabChecks value="..." /> (from lab instructions
+// authored in the editor), parses down to a lowercase `labchecks` element —
+// extend the type so a renderer can be given for it.
+type ExtendedComponents = Components & {
+	labchecks?: ComponentType<{ value?: string; node?: unknown }>;
 };
+
+type MdxJsxAttribute = {
+	type: string;
+	name?: string;
+	value?: unknown;
+};
+
+type MdxJsxNode = {
+	name?: string | null;
+	attributes: MdxJsxAttribute[];
+};
+
+// Custom JSX tags (e.g. <LabChecks value="..." />) parse into mdast
+// mdxJsx*Element nodes. This maps them to a plain hast element carrying
+// only string attributes, so `components` below can render a real React
+// component for them — no JS expressions are ever evaluated.
+function mdxJsxToHast(_state: unknown, node: MdxJsxNode) {
+	if (!node.name) return undefined;
+
+	const properties: Record<string, string> = {};
+	for (const attr of node.attributes) {
+		if (
+			attr.type === "mdxJsxAttribute" &&
+			typeof attr.name === "string" &&
+			typeof attr.value === "string"
+		) {
+			properties[attr.name] = attr.value;
+		}
+	}
+
+	return {
+		type: "element" as const,
+		tagName: node.name.toLowerCase(),
+		properties,
+		children: [],
+	};
+}
+
+class MarkdownErrorBoundary extends Component<
+	{ children: ReactNode },
+	{ hasError: boolean }
+> {
+	state = { hasError: false };
+
+	static getDerivedStateFromError() {
+		return { hasError: true };
+	}
+
+	render() {
+		if (this.state.hasError) {
+			return (
+				<p className="text-muted-foreground text-sm">
+					Failed to render this content.
+				</p>
+			);
+		}
+		return this.props.children;
+	}
+}
 
 type MarkdownViewerProps = {
 	value?: string;
 	className?: string;
-	jsxComponentDescriptors?: JsxComponentDescriptor[];
+	components?: ExtendedComponents;
 };
 
 export function MarkdownViewer({
 	value,
 	className,
-	jsxComponentDescriptors = [],
+	components,
 }: MarkdownViewerProps) {
-	const { theme } = useTheme();
-
 	return (
-		<div className={cn("max-w-none overflow-hidden", className)}>
-			<MDXEditor
-				readOnly={true}
-				className={theme === "dark" ? "dark-theme" : undefined}
-				markdown={value || ""}
-				contentEditableClassName="prose dark:prose-invert max-w-none min-h-0"
-				plugins={[
-					jsxPlugin({ jsxComponentDescriptors }),
-					listsPlugin(),
-					quotePlugin(),
-					headingsPlugin({ allowedHeadingLevels: [1, 2, 3] }),
-					linkPlugin(),
-					imagePlugin(),
-					tablePlugin(),
-					thematicBreakPlugin(),
-					codeBlockPlugin({
-						codeBlockEditorDescriptors: [plainCodeBlockDescriptor],
-					}),
-					markdownShortcutPlugin(),
-				]}
-			/>
+		<div
+			className={cn(
+				"prose dark:prose-invert max-w-none overflow-hidden",
+				className,
+			)}
+		>
+			<MarkdownErrorBoundary key={value}>
+				<ReactMarkdown
+					remarkPlugins={[remarkMdx, remarkGfm]}
+					remarkRehypeOptions={{
+						handlers: {
+							mdxJsxTextElement: mdxJsxToHast,
+							mdxJsxFlowElement: mdxJsxToHast,
+						},
+						// drop anything else we don't explicitly handle (e.g. MDX
+						// `{expression}` syntax) instead of throwing or executing it
+						unknownHandler: () => undefined,
+					}}
+					components={components}
+				>
+					{value || ""}
+				</ReactMarkdown>
+			</MarkdownErrorBoundary>
 		</div>
 	);
 }

@@ -1,5 +1,5 @@
 import { MarkdownViewer } from "@web/components/markdown-viewer";
-import { labCheckViewerDescriptor } from "@web/components/mdx-plugins/lab-checks";
+import { LabChecksViewerBadge } from "@web/components/mdx-plugins/lab-checks";
 import { ScrollArea } from "@web/components/ui/scroll-area";
 import { LabAttachmentsCard } from "@web/routes/_dashboard/-module/components/cards/lab-attachments-card";
 
@@ -23,7 +23,7 @@ export function SessionSidebar({
 					<MarkdownViewer
 						className="p-4"
 						value={instructions}
-						jsxComponentDescriptors={[labCheckViewerDescriptor]}
+						components={{ labchecks: LabChecksViewerBadge }}
 					/>
 				</ScrollArea>
 			</div>
