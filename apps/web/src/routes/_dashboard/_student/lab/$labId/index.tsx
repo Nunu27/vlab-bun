@@ -53,7 +53,7 @@ function RouteComponent() {
 								/>
 							</div>
 						)}
-						<CardContent>
+						<CardContent className="pt-4">
 							<MarkdownViewer
 								value={lab.content || "No description provided."}
 							/>

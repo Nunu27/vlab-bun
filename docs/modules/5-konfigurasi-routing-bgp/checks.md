@@ -19,10 +19,10 @@
 | `mikrotik.bgp-connection-exist` | `R2` | **name**: peer-R3<br>**local.role**: ebgp<br>**remote.as**: 65002<br>**as**: 65000 | 2 |
 | `mikrotik.bgp-instance-exist` | `R3` | **name**: bgp-default<br>**as**: 65002<br>**routerId**: 3.3.3.3 | 2 |
 | `mikrotik.bgp-connection-exist` | `R3` | **name**: peer-R2<br>**local.role**: ebgp<br>**remote.as**: 65000<br>**as**: 65002 | 2 |
-| `mikrotik.bgp-session-established` | `R1` | **remote.address**: 198.51.100.2 | 2 |
-| `mikrotik.bgp-session-established` | `R2` | **remote.address**: 198.51.100.1 | 2 |
-| `mikrotik.bgp-session-established` | `R2` | **remote.address**: 198.51.100.6 | 2 |
-| `mikrotik.bgp-session-established` | `R3` | **remote.address**: 198.51.100.5 | 2 |
+| `mikrotik.bgp-session-established` | `R1` | **remote.address**: 198.51.100.2 | 3 |
+| `mikrotik.bgp-session-established` | `R2` | **remote.address**: 198.51.100.1 | 3 |
+| `mikrotik.bgp-session-established` | `R2` | **remote.address**: 198.51.100.6 | 3 |
+| `mikrotik.bgp-session-established` | `R3` | **remote.address**: 198.51.100.5 | 3 |
 | `mikrotik.route-exist` | `R1` | **dst**: 203.0.113.0/24<br>**flag**: DAb | 3 |
 | `mikrotik.route-exist` | `R3` | **dst**: 192.0.2.0/24<br>**flag**: DAb | 3 |
 | `connectivity.ping` | `PC1` | **target**: 203.0.113.2 | 4 |

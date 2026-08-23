@@ -2,8 +2,8 @@
 
 | Check ID | Target Node | Parameters | Weight |
 |---|---|---|---|
-| `mikrotik.system-identity` | `R1` | **name**: Lab-R1 | 2 |
-| `mikrotik.system-note` | `R1` | **note**: Lab Jaringan Komputer<br>**showAtLogin**: yes | 2 |
+| `mikrotik.system-identity` | `R1` | **name**: Lab-R1 | 1 |
+| `mikrotik.system-note` | `R1` | **note**: Lab Jaringan Komputer<br>**showAtLogin**: yes | 1 |
 | `mikrotik.user-exist` | `R1` | **username**: siswa<br>**group**: read | 2 |
 | `mikrotik.ip-service` | `R1` | **name**: telnet<br>**disabled**: yes | 2 |
 | `mikrotik.ip-service` | `R1` | **name**: ftp<br>**disabled**: yes | 2 |
@@ -19,6 +19,6 @@
 | `mikrotik.dhcp-pool-exist` | `R1` | **name**: dhcp-pool<br>**ranges**: 192.168.20.10-192.168.20.20 | 1 |
 | `mikrotik.dhcp-server-exist` | `R1` | **name**: dhcp1<br>**interface**: ether3<br>**addressPool**: dhcp-pool | 1 |
 | `mikrotik.dhcp-network-exist` | `R1` | **address**: 192.168.20.0/24<br>**gateway**: 192.168.20.1<br>**dnsServer**: 192.168.20.1 | 1 |
-| `mikrotik.dhcp-lease-bound` | `R1` | **server**: dhcp1 | 1 |
+| `mikrotik.dhcp-lease-bound` | `R1` | **server**: dhcp1 | 2 |
 | `linux.route-exist` | `PC2` | **dst**: default<br>**gateway**: 192.168.20.1 | 1 |
 | `connectivity.ping` | `PC2` | **target**: r1.lab | 2 |

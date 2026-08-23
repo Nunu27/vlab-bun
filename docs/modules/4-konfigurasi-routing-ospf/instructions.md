@@ -16,7 +16,7 @@
   ],
   "groups": {
     "Network A": { "color": "#f87171", "x": 40, "y": 110, "width": 260, "height": 340, "members": ["R1", "PC1"] },
-    "Network D": { "color": "#4ade80", "x": 660, "y": 110, "width": 260, "height": 340, "members": ["R3", "PC2"] }
+    "Network B": { "color": "#4ade80", "x": 660, "y": 110, "width": 260, "height": 340, "members": ["R3", "PC2"] }
   },
   "notes": []
 }
@@ -48,7 +48,7 @@ Anggap saja link langsung R1-R3 adalah koneksi satelit yang lambat, sementara ja
 | **R2**    | ether4    | 10.10.20.1   | /30    | Link R2–R3                 |
 | **R3**    | ether3    | 10.10.20.2   | /30    | Link R2–R3                 |
 | **R3**    | ether4    | 10.10.30.2   | /30    | Link langsung R1–R3        |
-| **R3**    | ether2    | 192.168.20.1 | /24    | Segmen LAN PC2 (Network D) |
+| **R3**    | ether2    | 192.168.20.1 | /24    | Segmen LAN PC2 (Network B) |
 | **PC1**   | eth1      | 192.168.10.2 | /24    | Gateway: 192.168.10.1      |
 | **PC2**   | eth1      | 192.168.20.2 | /24    | Gateway: 192.168.20.1      |
 
