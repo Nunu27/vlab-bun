@@ -137,4 +137,45 @@ export function testMikrotik(getCtx: () => TestContext) {
 		// BGP session establishment can take up to 60s in container environment
 		await waitForCheck("router1-bgp-session", 60000);
 	}, 60000);
+
+	it("mikrotik: dns static entry and allow-remote-requests", async () => {
+		const { router1Client, waitForCheck } = getCtx();
+		await router1Client.runQuery("/ip/address/add", {
+			address: "192.168.30.1/24",
+			interface: "ether4",
+		});
+		await router1Client.runQuery("/ip/dns/set", {
+			"allow-remote-requests": "yes",
+		});
+		await waitForCheck("router1-dns-allow-remote", 35000);
+
+		await router1Client.runQuery("/ip/dns/static/add", {
+			name: "r1.lab",
+			address: "192.168.30.1",
+		});
+		await waitForCheck("router1-dns-static", 35000);
+	}, 35000);
+
+	it("mikrotik: dhcp pool, server, and network", async () => {
+		const { router1Client, waitForCheck } = getCtx();
+		await router1Client.runQuery("/ip/pool/add", {
+			name: "dhcp-pool",
+			ranges: "192.168.30.10-192.168.30.20",
+		});
+		await waitForCheck("router1-dhcp-pool", 35000);
+
+		await router1Client.runQuery("/ip/dhcp-server/add", {
+			name: "dhcp1",
+			interface: "ether4",
+			"address-pool": "dhcp-pool",
+		});
+		await waitForCheck("router1-dhcp-server", 35000);
+
+		await router1Client.runQuery("/ip/dhcp-server/network/add", {
+			address: "192.168.30.0/24",
+			gateway: "192.168.30.1",
+			"dns-server": "192.168.30.1",
+		});
+		await waitForCheck("router1-dhcp-network", 35000);
+	}, 35000);
 }

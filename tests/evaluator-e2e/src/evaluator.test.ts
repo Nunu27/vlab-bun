@@ -9,6 +9,7 @@ import type { NodeInfo, SessionCheckPayload } from "@vlab/evaluator/types";
 import Docker from "dockerode";
 import { RouterOSClient } from "mikro-routeros";
 import type { DeployedNode, TestContext } from "./context";
+import { testDhcp } from "./suites/dhcp";
 import { testLinux } from "./suites/linux";
 import { testMikrotik } from "./suites/mikrotik";
 import { testNodeInterface } from "./suites/node-interface";
@@ -39,10 +40,20 @@ const topo: ContainerlabTopologyDefinition = {
 					},
 				},
 			},
+			linux2: {
+				kind: "linux",
+				image: "ghcr.io/nunu27/docker-remote-desktop:ssh-ubuntu-24.04",
+				stages: {
+					create: {
+						"wait-for": [{ node: "router1", stage: "healthy" }],
+					},
+				},
+			},
 		},
 		links: [
 			{ endpoints: ["router1:ether2", "router2:ether2"] },
 			{ endpoints: ["router1:ether3", "linux1:eth1"] },
+			{ endpoints: ["router1:ether4", "linux2:eth1"] },
 		],
 	},
 };
@@ -178,6 +189,53 @@ const checks: SessionCheckPayload<typeof evaluator.handlers>[] = [
 		checkId: "mikrotik.bgp-session-established",
 		params: { "remote.address": "10.0.0.2" },
 	},
+	// DNS/DHCP checks (router1:ether4 <-> linux2:eth1)
+	{
+		id: "router1-dns-static",
+		nodeId: "router1",
+		checkId: "mikrotik.dns-static-exist",
+		params: { name: "r1.lab", address: "192.168.30.1" },
+	},
+	{
+		id: "router1-dns-allow-remote",
+		nodeId: "router1",
+		checkId: "mikrotik.dns-allow-remote-requests",
+		params: {},
+	},
+	{
+		id: "router1-dhcp-pool",
+		nodeId: "router1",
+		checkId: "mikrotik.dhcp-pool-exist",
+		params: { name: "dhcp-pool", ranges: "192.168.30.10-192.168.30.20" },
+	},
+	{
+		id: "router1-dhcp-server",
+		nodeId: "router1",
+		checkId: "mikrotik.dhcp-server-exist",
+		params: { name: "dhcp1", interface: "ether4", addressPool: "dhcp-pool" },
+	},
+	{
+		id: "router1-dhcp-network",
+		nodeId: "router1",
+		checkId: "mikrotik.dhcp-network-exist",
+		params: {
+			address: "192.168.30.0/24",
+			gateway: "192.168.30.1",
+			dnsServer: "192.168.30.1",
+		},
+	},
+	{
+		id: "router1-dhcp-lease",
+		nodeId: "router1",
+		checkId: "mikrotik.dhcp-lease-bound",
+		params: { server: "dhcp1" },
+	},
+	{
+		id: "linux2-dns-ping",
+		nodeId: "linux2",
+		checkId: "connectivity.ping",
+		params: { target: "r1.lab" },
+	},
 ];
 
 const checkPromises: Record<string, () => void> = {};
@@ -229,7 +287,7 @@ describe("Evaluator E2E", () => {
 			};
 		}
 
-		const expectedNodes = ["router1", "router2", "linux1"];
+		const expectedNodes = ["router1", "router2", "linux1", "linux2"];
 		for (const expected of expectedNodes) {
 			if (!nodeMap[expected]?.ip) {
 				throw new Error(
@@ -241,6 +299,7 @@ describe("Evaluator E2E", () => {
 		await clabMonitor.health.wait(nodeMap.router1?.containerId ?? "router1");
 		await clabMonitor.health.wait(nodeMap.router2?.containerId ?? "router2");
 		await clabMonitor.health.wait(nodeMap.linux1?.containerId ?? "linux1");
+		await clabMonitor.health.wait(nodeMap.linux2?.containerId ?? "linux2");
 
 		router1Client = new RouterOSClient(nodeMap.router1?.ip || "");
 		await connectWithRetry(router1Client);
@@ -298,4 +357,5 @@ describe("Evaluator E2E", () => {
 	testNodeInterface(getCtx);
 	testMikrotik(getCtx);
 	testLinux(getCtx);
+	testDhcp(getCtx);
 });

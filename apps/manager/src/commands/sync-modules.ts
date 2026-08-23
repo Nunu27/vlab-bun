@@ -248,24 +248,61 @@ export async function runSyncModules() {
 
 			const lab = existingLabs.find((l) => l.name === title || l.name === mod);
 
-			const pdfPath = path.resolve(
-				process.cwd(),
-				"../../out/materials",
-				`${mod}.pdf`,
-			);
-			let attachmentFileName: string | null = null;
+			// A module ships either a single material.md (-> "${mod}.pdf") or
+			// several material-<n>-<slug>.md files (-> "${mod}--<slug>.pdf",
+			// one per section, per scripts/generate-materials-pdf.ts). Upload
+			// whichever PDFs exist, one lab_attachments row each, named after
+			// that material's own H1 so multiple attachments aren't
+			// indistinguishable in the student UI.
+			const materialsDir = path.resolve(process.cwd(), "../../out/materials");
+			let materialPdfNames: string[] = [];
 			try {
-				const pdfBuffer = await fs.readFile(pdfPath);
-				const fileObj = new File([new Uint8Array(pdfBuffer)], `${mod}.pdf`, {
-					type: "application/pdf",
-				});
-				const res = await uploadFile(fileObj);
-				attachmentFileName = res.name;
-				logger.info(`Uploaded material PDF for ${mod}`);
+				materialPdfNames = (await fs.readdir(materialsDir))
+					.filter((f) => f === `${mod}.pdf` || f.startsWith(`${mod}--`))
+					.sort();
 			} catch (_e) {
-				logger.warn(
-					`No material PDF found for ${mod} at ${pdfPath} or failed to upload`,
-				);
+				logger.warn(`No materials directory found at ${materialsDir}`);
+			}
+
+			const materialFiles = (await fs.readdir(modPath)).filter((f) =>
+				/^material(-\d+-.+)?\.md$/.test(f),
+			);
+
+			const titleForMaterialPdf = async (pdfName: string): Promise<string> => {
+				const slug =
+					materialFiles.length > 1
+						? pdfName.slice(`${mod}--`.length, -".pdf".length)
+						: undefined;
+
+				const file = slug
+					? materialFiles.find(
+							(f) =>
+								f.replace(/^material-\d+-/, "").replace(/\.md$/, "") === slug,
+						)
+					: materialFiles[0];
+				if (!file) return slug ?? title;
+
+				const content = await fs.readFile(path.join(modPath, file), "utf-8");
+				const m = content.match(/^#\s+(.+)$/m);
+				return m ? m[1].trim() : (slug ?? title);
+			};
+
+			const attachments: Array<{ name: string; file: string }> = [];
+			for (const pdfName of materialPdfNames) {
+				try {
+					const pdfBuffer = await fs.readFile(path.join(materialsDir, pdfName));
+					const fileObj = new File([new Uint8Array(pdfBuffer)], pdfName, {
+						type: "application/pdf",
+					});
+					const res = await uploadFile(fileObj);
+					attachments.push({
+						name: await titleForMaterialPdf(pdfName),
+						file: res.name,
+					});
+					logger.info(`Uploaded material PDF ${pdfName} for ${mod}`);
+				} catch (_e) {
+					logger.warn(`Failed to upload material PDF ${pdfName} for ${mod}`);
+				}
 			}
 
 			const existingTopology = (lab?.topology as LabTopology) ?? EMPTY_TOPOLOGY;
@@ -461,15 +498,17 @@ export async function runSyncModules() {
 					.delete(labEmbeddedFiles)
 					.where(eq(labEmbeddedFiles.labId, lab.id));
 
-				if (attachmentFileName) {
+				if (attachments.length > 0) {
 					await db
 						.delete(labAttachments)
 						.where(eq(labAttachments.labId, lab.id));
-					await db.insert(labAttachments).values({
-						name: title,
-						file: attachmentFileName,
-						labId: lab.id,
-					});
+					await db.insert(labAttachments).values(
+						attachments.map((a) => ({
+							name: a.name,
+							file: a.file,
+							labId: lab.id,
+						})),
+					);
 				}
 			} else {
 				// Insert new lab: requires a topology block and an existing instructor
@@ -507,12 +546,14 @@ export async function runSyncModules() {
 
 				logger.info(`Created new lab: ${title}`);
 
-				if (attachmentFileName && newLab) {
-					await db.insert(labAttachments).values({
-						name: title,
-						file: attachmentFileName,
-						labId: newLab.id,
-					});
+				if (attachments.length > 0 && newLab) {
+					await db.insert(labAttachments).values(
+						attachments.map((a) => ({
+							name: a.name,
+							file: a.file,
+							labId: newLab.id,
+						})),
+					);
 				}
 			}
 		}

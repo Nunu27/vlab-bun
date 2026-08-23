@@ -33,23 +33,13 @@ export const MIKROTIK_GUARD_CONTENT = [
 
 // Name resolution on Linux lab nodes. Applied as startup execs.
 //
-// Lab nodes deliberately have no default route (the modules have students add
-// their own gateway), so whatever nameserver is configured is unreachable.
-// glibc reports that as a *temporary* failure, and on a temporary failure
-// `tracepath` prints `???` for the hop instead of falling back to the numeric
-// address — which makes the trace steps in the routing modules unreadable,
-// even when the student's config is perfectly correct.
-//
-// Dropping `dns` from nsswitch's `hosts:` line turns those lookups into an
-// immediate permanent failure, so tracepath prints the IP. Nothing in a lab
-// needs DNS: there is no route off the topology to reach one.
-//
-// resolv.conf is still overwritten. Once `hosts:` is `files` nothing consults
-// it, but leaving Docker's embedded resolver in place would point a lab node
-// at a nameserver that only answers for container names.
+// resolv.conf is overwritten so a lab node never inherits Docker's embedded
+// resolver, which only answers for container names and would otherwise leak
+// container-internal name resolution into a lab session. Some labs (module
+// 1's DNS/DHCP section) then point it at a real, reachable resolver inside
+// the topology as part of the lab itself.
 export const LINUX_NAME_RESOLUTION_EXECS = [
 	`sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'`,
-	`sh -c 'sed -i "s/^hosts:.*/hosts: files/" /etc/nsswitch.conf'`,
 ];
 
 // Auto-heal tuning: debounce flapping healthchecks, and give up loudly

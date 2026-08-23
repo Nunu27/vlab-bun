@@ -3,6 +3,12 @@ import mikrotik, {
 	type BGPConnectionSchema,
 	type BGPInstanceSchema,
 	type BGPSessionSchema,
+	type DHCPLeaseSchema,
+	type DHCPNetworkSchema,
+	type DHCPPoolSchema,
+	type DHCPServerSchema,
+	type DNSSettingsSchema,
+	type DNSStaticSchema,
 	gatewayMatches,
 	type IPRouteSchema,
 	type IPServiceSchema,
@@ -526,5 +532,233 @@ describe("mikrotik.user-exist group", () => {
 
 	test("fails when the user exists but in the wrong group", () => {
 		expect(run({ username: "siswa", group: "full" }, users)).toBe(false);
+	});
+});
+
+describe("mikrotik.dns-static-exist", () => {
+	const check = mikrotik._checks["dns-static-exist"];
+	const run = (
+		params: { name: string; address: string; flag?: string },
+		data: typeof DNSStaticSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	const entries: typeof DNSStaticSchema.static = [
+		{ ".id": "*1", name: "r1.lab", address: "192.168.10.1", disabled: "false" },
+		{ ".id": "*2", name: "old.lab", address: "10.0.0.9", disabled: "true" },
+	];
+
+	test("matches an enabled entry by name and address", () => {
+		expect(run({ name: "r1.lab", address: "192.168.10.1" }, entries)).toBe(
+			true,
+		);
+	});
+
+	test("fails when the address differs", () => {
+		expect(run({ name: "r1.lab", address: "10.0.0.1" }, entries)).toBe(false);
+	});
+
+	test("fails when an enabled entry is expected but it's disabled", () => {
+		expect(run({ name: "old.lab", address: "10.0.0.9" }, entries)).toBe(false);
+	});
+
+	test("respects an explicit disabled flag", () => {
+		expect(
+			run({ name: "old.lab", address: "10.0.0.9", flag: "X" }, entries),
+		).toBe(true);
+	});
+});
+
+describe("mikrotik.dns-allow-remote-requests", () => {
+	const check = mikrotik._checks["dns-allow-remote-requests"];
+	const run = (data: typeof DNSSettingsSchema.static) =>
+		check.handler(ctx, {}, data) as boolean;
+
+	test("passes when remote requests are allowed", () => {
+		expect(run([{ "allow-remote-requests": "true" }])).toBe(true);
+	});
+
+	test("fails when remote requests are not allowed", () => {
+		expect(run([{ "allow-remote-requests": "false" }])).toBe(false);
+	});
+
+	test("fails when there is no settings data at all", () => {
+		expect(run([])).toBe(false);
+	});
+});
+
+describe("mikrotik.dhcp-pool-exist", () => {
+	const check = mikrotik._checks["dhcp-pool-exist"];
+	const run = (
+		params: { name: string; ranges?: string },
+		data: typeof DHCPPoolSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	const pools: typeof DHCPPoolSchema.static = [
+		{ ".id": "*1", name: "dhcp-pool", ranges: "192.168.20.10-192.168.20.20" },
+	];
+
+	test("matches by name alone", () => {
+		expect(run({ name: "dhcp-pool" }, pools)).toBe(true);
+	});
+
+	test("respects an explicit ranges param", () => {
+		expect(
+			run({ name: "dhcp-pool", ranges: "192.168.20.10-192.168.20.20" }, pools),
+		).toBe(true);
+	});
+
+	test("fails when the ranges differ", () => {
+		expect(
+			run({ name: "dhcp-pool", ranges: "10.0.0.10-10.0.0.20" }, pools),
+		).toBe(false);
+	});
+
+	test("fails when the pool does not exist", () => {
+		expect(run({ name: "other-pool" }, pools)).toBe(false);
+	});
+});
+
+describe("mikrotik.dhcp-server-exist", () => {
+	const check = mikrotik._checks["dhcp-server-exist"];
+	const run = (
+		params: {
+			name: string;
+			interface: string;
+			addressPool?: string;
+			flag?: string;
+		},
+		data: typeof DHCPServerSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	const servers: typeof DHCPServerSchema.static = [
+		{
+			".id": "*1",
+			name: "dhcp1",
+			interface: "ether3",
+			"address-pool": "dhcp-pool",
+			disabled: "false",
+		},
+	];
+
+	test("matches by name and interface", () => {
+		expect(run({ name: "dhcp1", interface: "ether3" }, servers)).toBe(true);
+	});
+
+	test("respects an explicit addressPool param", () => {
+		expect(
+			run(
+				{ name: "dhcp1", interface: "ether3", addressPool: "dhcp-pool" },
+				servers,
+			),
+		).toBe(true);
+	});
+
+	test("fails when the address pool differs", () => {
+		expect(
+			run(
+				{ name: "dhcp1", interface: "ether3", addressPool: "other-pool" },
+				servers,
+			),
+		).toBe(false);
+	});
+
+	test("fails when the interface differs", () => {
+		expect(run({ name: "dhcp1", interface: "ether4" }, servers)).toBe(false);
+	});
+
+	test("respects an explicit disabled flag", () => {
+		expect(
+			run({ name: "dhcp1", interface: "ether3", flag: "X" }, servers),
+		).toBe(false);
+	});
+});
+
+describe("mikrotik.dhcp-network-exist", () => {
+	const check = mikrotik._checks["dhcp-network-exist"];
+	const run = (
+		params: { address: string; gateway?: string; dnsServer?: string },
+		data: typeof DHCPNetworkSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	const networks: typeof DHCPNetworkSchema.static = [
+		{
+			".id": "*1",
+			address: "192.168.20.0/24",
+			gateway: "192.168.20.1",
+			"dns-server": "192.168.20.1,8.8.8.8",
+		},
+	];
+
+	test("matches by address alone", () => {
+		expect(run({ address: "192.168.20.0/24" }, networks)).toBe(true);
+	});
+
+	test("respects an explicit gateway param", () => {
+		expect(
+			run({ address: "192.168.20.0/24", gateway: "192.168.20.1" }, networks),
+		).toBe(true);
+	});
+
+	test("fails when the gateway differs", () => {
+		expect(
+			run({ address: "192.168.20.0/24", gateway: "10.0.0.1" }, networks),
+		).toBe(false);
+	});
+
+	test("matches one of several comma-separated dns servers", () => {
+		expect(
+			run({ address: "192.168.20.0/24", dnsServer: "8.8.8.8" }, networks),
+		).toBe(true);
+	});
+
+	test("fails when the dns server is not in the list", () => {
+		expect(
+			run({ address: "192.168.20.0/24", dnsServer: "1.1.1.1" }, networks),
+		).toBe(false);
+	});
+});
+
+describe("mikrotik.dhcp-lease-bound", () => {
+	const check = mikrotik._checks["dhcp-lease-bound"];
+	const run = (
+		params: { server?: string; address?: string },
+		data: typeof DHCPLeaseSchema.static,
+	) => check.handler(ctx, params, data) as boolean;
+
+	const leases: typeof DHCPLeaseSchema.static = [
+		{
+			".id": "*1",
+			address: "192.168.20.10",
+			server: "dhcp1",
+			status: "bound",
+		},
+		{
+			".id": "*2",
+			address: "192.168.20.11",
+			server: "dhcp1",
+			status: "waiting",
+		},
+	];
+
+	test("passes when some lease is bound", () => {
+		expect(run({}, leases)).toBe(true);
+	});
+
+	test("passes when a bound lease matches the server name", () => {
+		expect(run({ server: "dhcp1" }, leases)).toBe(true);
+	});
+
+	test("passes when a bound lease matches the address", () => {
+		expect(run({ address: "192.168.20.10" }, leases)).toBe(true);
+	});
+
+	test("fails when only a waiting/offered lease matches the address", () => {
+		expect(run({ address: "192.168.20.11" }, leases)).toBe(false);
+	});
+
+	test("fails when nothing is bound at all", () => {
+		expect(
+			run({}, [{ ".id": "*1", address: "192.168.20.11", status: "waiting" }]),
+		).toBe(false);
 	});
 });

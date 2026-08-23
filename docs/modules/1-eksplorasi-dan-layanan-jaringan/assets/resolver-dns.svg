@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" width="760" height="340" role="img" aria-label="R1 sebagai resolver DNS dengan entri statis, dan pengaruh opsi allow-remote-requests terhadap permintaan dari PC1"><style>
+    .box    { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .okbox  { fill: #dafbe1; stroke: #1a7f37; stroke-width: 2; }
+    .badbox { fill: #ffebe9; stroke: #cf222e; stroke-width: 2; }
+    .tbl    { fill: #ddf4ff; stroke: #0969da; stroke-width: 1.5; }
+    .hd     { font: 600 18px sans-serif; fill: #24292f; }
+    .name   { font: 600 16px sans-serif; fill: #24292f; }
+    .mono   { font: 14px ui-monospace, monospace; fill: #24292f; }
+    .mut    { font: 14px sans-serif; fill: #57606a; }
+    .lbl    { font: 600 15px sans-serif; }
+    .qarr   { stroke: #57606a; stroke-width: 2.5; fill: none; }
+  </style>
+  <defs>
+    <marker id="aq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#57606a"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="26">R1 sebagai resolver DNS dengan entri statis</text>
+
+  <rect class="box" x="20" y="70" width="140" height="54" rx="7"/>
+  <text class="name" x="90" y="102" text-anchor="middle">PC1</text>
+
+  <rect class="box" x="420" y="50" width="320" height="94" rx="7"/>
+  <text class="name" x="440" y="76">R1 (Resolver)</text>
+  <rect class="tbl" x="440" y="86" width="120" height="26" rx="3"/>
+  <text class="mono" x="450" y="103" style="font-size:13px">r1.lab</text>
+  <rect class="tbl" x="560" y="86" width="160" height="26" rx="3"/>
+  <text class="mono" x="570" y="103" style="font-size:13px">192.168.10.1</text>
+  <text class="mut" x="440" y="130" style="font-size:13px">entri statis (/ip dns static)</text>
+
+  <path class="qarr" d="M160,86 H420" marker-end="url(#aq)"/>
+  <text class="mut" x="290" y="78" text-anchor="middle">nslookup r1.lab / ping r1.lab</text>
+
+  <path class="qarr" d="M420,112 H160" marker-end="url(#aq)"/>
+  <text class="mono" x="290" y="128" text-anchor="middle">192.168.10.1</text>
+
+  <rect class="okbox" x="20" y="180" width="345" height="94" rx="8"/>
+  <text class="lbl" x="40" y="206" style="fill:#1a7f37">allow-remote-requests = yes</text>
+  <text class="mut" x="40" y="230">R1 bersedia menjawab permintaan DNS</text>
+  <text class="mut" x="40" y="250">dari PC1 dan perangkat lain di jaringan.</text>
+
+  <rect class="badbox" x="395" y="180" width="345" height="94" rx="8"/>
+  <text class="lbl" x="415" y="206" style="fill:#cf222e">allow-remote-requests = no (bawaan)</text>
+  <text class="mut" x="415" y="230">R1 hanya menjawab pertanyaan DNS</text>
+  <text class="mut" x="415" y="250">untuk dirinya sendiri, mengabaikan PC1.</text>
+
+  <text class="mut" x="20" y="310" style="font-size:13px">Di internet, resolusi nama melibatkan banyak server; lab ini menyederhanakannya dengan satu entri statis di R1.</text>
+</svg>

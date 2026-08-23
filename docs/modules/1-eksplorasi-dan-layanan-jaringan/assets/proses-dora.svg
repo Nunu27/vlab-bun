@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" width="760" height="430" role="img" aria-label="Empat langkah DORA antara PC2 sebagai klien dan R1 sebagai DHCP server, diakhiri lease berstatus bound">
+  <style>
+    .box    { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .life   { stroke: #d0d7de; stroke-width: 2; stroke-dasharray: 3 4; }
+    .hd     { font: 600 18px sans-serif; fill: #24292f; }
+    .name   { font: 600 16px sans-serif; fill: #24292f; }
+    .lbl    { font: 600 15px sans-serif; fill: #24292f; }
+    .mut    { font: 14px sans-serif; fill: #57606a; }
+    .bcast  { stroke: #0969da; stroke-width: 2.5; fill: none; stroke-dasharray: 7 5; }
+    .uni    { stroke: #57606a; stroke-width: 2.5; fill: none; }
+    .bclb   { font: 600 14px sans-serif; fill: #0969da; }
+  </style>
+  <defs>
+    <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0969da"/></marker>
+    <marker id="au" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#57606a"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="28">Empat langkah DORA antara klien dan DHCP server</text>
+
+  <!-- lifeline headers -->
+  <rect class="box" x="60"  y="46" width="160" height="46" rx="7"/>
+  <text class="name" x="140" y="74" text-anchor="middle">PC2 (Klien)</text>
+  <rect class="box" x="540" y="46" width="160" height="46" rx="7"/>
+  <text class="name" x="620" y="74" text-anchor="middle">R1 (DHCP Server)</text>
+
+  <line class="life" x1="140" y1="92" x2="140" y2="386"/>
+  <line class="life" x1="620" y1="92" x2="620" y2="386"/>
+
+  <!-- 1: Discover -->
+  <path class="bcast" d="M140,120 H620" marker-end="url(#ab)"/>
+  <text class="lbl"  x="140" y="112">1. Discover</text>
+  <text class="bclb" x="620" y="112" text-anchor="end">broadcast</text>
+  <text class="mut"  x="140" y="140">PC2 belum punya alamat IP, menyiarkan ke seluruh segmen.</text>
+
+  <!-- 2: Offer -->
+  <path class="uni" d="M620,178 H140" marker-end="url(#au)"/>
+  <text class="lbl" x="620" y="170" text-anchor="end">2. Offer</text>
+  <text class="mut" x="140" y="198">R1 menawarkan sebuah alamat dari <tspan font-family="ui-monospace, monospace">dhcp-pool</tspan>.</text>
+
+  <!-- 3: Request -->
+  <path class="bcast" d="M140,236 H620" marker-end="url(#ab)"/>
+  <text class="lbl"  x="140" y="228">3. Request</text>
+  <text class="bclb" x="620" y="228" text-anchor="end">broadcast</text>
+  <text class="mut"  x="140" y="256">PC2 memilih tawaran R1; DHCP server lain tahu tawarannya tidak dipakai.</text>
+
+  <!-- 4: Acknowledge -->
+  <path class="uni" d="M620,294 H140" marker-end="url(#au)"/>
+  <text class="lbl" x="620" y="286" text-anchor="end">4. Acknowledge</text>
+  <text class="mut" x="140" y="314">R1 mengonfirmasi alamat tersebut resmi milik PC2.</text>
+
+  <!-- hasil -->
+  <rect x="60" y="346" width="640" height="52" rx="8" fill="#dafbe1" stroke="#1a7f37" stroke-width="2"/>
+  <text class="lbl" x="80" y="378" style="fill:#1a7f37">status: bound</text>
+  <text class="mut" x="220" y="378">Lease tercatat di <tspan font-family="ui-monospace, monospace">/ip dhcp-server lease</tspan>, proses DORA selesai.</text>
+</svg>

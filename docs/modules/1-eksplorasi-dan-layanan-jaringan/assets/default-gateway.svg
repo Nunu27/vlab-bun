@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" width="760" height="340" role="img" aria-label="Perbandingan tujuan di segmen yang sama, yang tidak butuh gateway, dengan tujuan di luar segmen, yang dikirim melalui default gateway">
+  <style>
+    .box    { fill: #f6f8fa; stroke: #57606a; stroke-width: 2; }
+    .okbox  { fill: #dafbe1; stroke: #1a7f37; stroke-width: 2; }
+    .hd     { font: 600 18px sans-serif; fill: #24292f; }
+    .name   { font: 600 16px sans-serif; fill: #24292f; }
+    .mono   { font: 14px ui-monospace, monospace; fill: #57606a; }
+    .mut    { font: 14px sans-serif; fill: #57606a; }
+    .lbl    { font: 600 15px sans-serif; }
+    .okarr  { stroke: #1a7f37; stroke-width: 2.5; fill: none; }
+    .gwarr  { stroke: #0969da; stroke-width: 2.5; fill: none; }
+    .farr   { stroke: #8c959f; stroke-width: 2; fill: none; stroke-dasharray: 6 5; }
+  </style>
+  <defs>
+    <marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0969da"/></marker>
+    <marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8c959f"/></marker>
+  </defs>
+
+  <text class="hd" x="20" y="26">Ke mana paket dikirim menentukan apakah gateway dipakai</text>
+
+  <!-- skenario A: satu segmen -->
+  <text class="lbl" x="20" y="60" style="fill:#1a7f37">Tujuan di segmen yang sama</text>
+  <rect class="box" x="20"  y="72" width="150" height="54" rx="7"/>
+  <text class="name" x="95" y="94" text-anchor="middle">PC1</text>
+  <text class="mono" x="95" y="114" text-anchor="middle">192.168.10.2</text>
+
+  <rect class="box" x="570" y="72" width="170" height="54" rx="7"/>
+  <text class="name" x="655" y="94" text-anchor="middle">Perangkat lain</text>
+  <text class="mono" x="655" y="114" text-anchor="middle">192.168.10.50</text>
+
+  <path class="okarr" d="M170,99 H570" marker-end="url(#ao)"/>
+  <text class="mut" x="355" y="90" text-anchor="middle">langsung melalui ARP</text>
+
+  <rect class="okbox" x="20" y="140" width="720" height="34" rx="6"/>
+  <text class="lbl" x="40" y="163" style="fill:#1a7f37; font-size:14px">Gateway tidak dipakai, karena tujuannya masih di dalam segmen yang sama.</text>
+
+  <!-- skenario B: beda segmen -->
+  <text class="lbl" x="20" y="212" style="fill:#0969da">Tujuan di luar segmen</text>
+  <rect class="box" x="20"  y="224" width="150" height="54" rx="7"/>
+  <text class="name" x="95" y="246" text-anchor="middle">PC1</text>
+  <text class="mono" x="95" y="266" text-anchor="middle">192.168.10.2</text>
+
+  <rect class="box" x="300" y="224" width="180" height="54" rx="7"/>
+  <text class="name" x="390" y="246" text-anchor="middle">R1 (Default Gateway)</text>
+  <text class="mono" x="390" y="266" text-anchor="middle">192.168.10.1</text>
+
+  <rect class="box" x="580" y="224" width="160" height="54" rx="7"/>
+  <text class="name" x="660" y="246" text-anchor="middle">Jaringan lain</text>
+  <text class="mono" x="660" y="266" text-anchor="middle">di luar segmen ini</text>
+
+  <path class="gwarr" d="M170,251 H300" marker-end="url(#ag)"/>
+  <path class="farr"  d="M480,251 H580" marker-end="url(#af)"/>
+  <text class="mut" x="235" y="242" text-anchor="middle">melalui gateway</text>
+  <text class="mut" x="530" y="242" text-anchor="middle">diteruskan</text>
+
+  <text class="mut" x="20" y="312" style="font-size:13px">Pada topologi lab ini, PC1 hanya berkomunikasi dengan R1 yang satu segmen dengannya, sehingga skenario ini</text>
+  <text class="mut" x="20" y="330" style="font-size:13px">belum benar-benar teruji di sini. Cara R1 meneruskan paket ke jaringan lain dibahas pada modul berikutnya.</text>
+</svg>

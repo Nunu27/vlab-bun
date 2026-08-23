@@ -16,8 +16,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import evaluator from "@vlab/evaluator";
 import {
+	buildCombinedReference,
 	END,
-	extractReference,
 	START,
 } from "../../../scripts/sync-command-reference";
 import { parseModule } from "./module-parser";
@@ -148,17 +148,13 @@ for (const mod of parsedModules) {
 			expect(questions).toBeGreaterThan(0);
 		});
 
-		it("mirrors the material's command reference in instructions.md", () => {
+		it("mirrors the material's command reference in instructions.md", async () => {
 			// A student runs the lab from instructions.md while the reference
-			// tables live in material.md, which ships as a separate PDF. The
-			// tables are copied in so both sit in one pane; material.md remains
-			// the source. Fix a failure here with:
+			// tables live in the module's material file(s), which ship as
+			// separate PDFs. The tables are copied in so both sit in one pane;
+			// the material file(s) remain the source. Fix a failure here with:
 			//   bun scripts/sync-command-reference.ts
-			const material = readFileSync(
-				join(DOCS_DIR, mod.name, "material.md"),
-				"utf-8",
-			);
-			const reference = extractReference(material);
+			const reference = await buildCombinedReference(join(DOCS_DIR, mod.name));
 			expect(reference).toBeString();
 
 			const instructions = readFileSync(

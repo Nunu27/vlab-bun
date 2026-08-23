@@ -206,6 +206,65 @@ export const UserSchema = t.Array(
 	}),
 );
 
+// DNS Schema
+
+export const DNSStaticSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		address: t.Optional(t.String()),
+		disabled: t.Optional(t.String()),
+	}),
+);
+
+// /ip/dns/print reports allow-remote-requests as "true"/"false", even though
+// it is set with yes/no — same quirk as SystemNoteSchema's show-at-login.
+export const DNSSettingsSchema = t.Array(
+	t.Object({
+		servers: t.Optional(t.String()),
+		"allow-remote-requests": t.Optional(t.String()),
+	}),
+);
+
+// DHCP Schema
+
+export const DHCPPoolSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		ranges: t.String(),
+	}),
+);
+
+export const DHCPServerSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		name: t.String(),
+		interface: t.String(),
+		"address-pool": t.Optional(t.String()),
+		disabled: t.Optional(t.String()),
+	}),
+);
+
+export const DHCPNetworkSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		address: t.String(),
+		gateway: t.Optional(t.String()),
+		"dns-server": t.Optional(t.String()),
+	}),
+);
+
+export const DHCPLeaseSchema = t.Array(
+	t.Object({
+		".id": t.String(),
+		address: t.String(),
+		"mac-address": t.Optional(t.String()),
+		server: t.Optional(t.String()),
+		status: t.Optional(t.String()),
+	}),
+);
+
 export default new EvaluationHandler("mikrotik")
 	.kinds(["mikrotik_ros"])
 	.withContext(
@@ -1071,6 +1130,295 @@ export default new EvaluationHandler("mikrotik")
 				(user) =>
 					user.name === params.username &&
 					(!params.group || user.group === params.group),
+			);
+		},
+	})
+
+	// DNS
+	.addSource({
+		id: "dns-static",
+		data: DNSStaticSchema,
+		listen: async ({ client }, { notify, reportError }) => {
+			const list: typeof DNSStaticSchema.static = await client.runQuery(
+				"/ip/dns/static/print",
+			);
+
+			const listener = await client.stream("/ip/dns/static/listen");
+
+			listener.on("data", (data) => {
+				applyRosListEvent(list, data, (item) => item[".id"]);
+				notify(list);
+			});
+			listener.on("error", reportError);
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/ip/dns/static/print");
+		},
+	})
+	.addCheck({
+		id: "dns-static-exist",
+		name: "DNS Static Entry Exist",
+		text: "DNS static entry '{name}' should resolve to {address}",
+		source: "dns-static",
+		params: {
+			name: t.String({
+				title: "Name",
+			}),
+			address: t.String({
+				title: "Address",
+			}),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description: "X - DISABLED",
+				}),
+			),
+		},
+		handler: (_, params, data) => {
+			const flags = new Set(params.flag?.split("") ?? []);
+
+			return data.some(
+				(entry) =>
+					entry.name === params.name &&
+					entry.address === params.address &&
+					compareFlag(flags, "X", entry.disabled),
+			);
+		},
+	})
+	.addSource({
+		id: "dns-settings",
+		data: DNSSettingsSchema,
+		listen: async ({ client }, { notify, subscribe }) => {
+			const doUpdate = throttle(async () => {
+				const data = await client.runQuery("/ip/dns/print");
+				notify(data);
+			}, 100);
+
+			return subscribe("log", async (data) => {
+				// Confirmed against a real RouterOS instance: "/ip dns set ..."
+				// logs a line like "dns changed by api:admin@... (/ip dns set
+				// allow-remote-requests=yes)".
+				if (!data.includes("dns changed")) return;
+				doUpdate();
+			});
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/ip/dns/print");
+		},
+	})
+	.addCheck({
+		id: "dns-allow-remote-requests",
+		name: "DNS Allow Remote Requests",
+		text: "R1 should accept DNS requests from other hosts (allow-remote-requests=yes)",
+		source: "dns-settings",
+		params: {},
+		handler: (_, __, data) => {
+			return data[0]?.["allow-remote-requests"] === "true";
+		},
+	})
+
+	// DHCP
+	.addSource({
+		id: "dhcp-pool",
+		data: DHCPPoolSchema,
+		listen: async ({ client }, { notify, reportError }) => {
+			const list: typeof DHCPPoolSchema.static =
+				await client.runQuery("/ip/pool/print");
+
+			const listener = await client.stream("/ip/pool/listen");
+
+			listener.on("data", (data) => {
+				applyRosListEvent(list, data, (item) => item[".id"]);
+				notify(list);
+			});
+			listener.on("error", reportError);
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/ip/pool/print");
+		},
+	})
+	.addCheck({
+		id: "dhcp-pool-exist",
+		name: "DHCP Pool Exist",
+		text: "DHCP pool '{name}' should cover {ranges}",
+		source: "dhcp-pool",
+		params: {
+			name: t.String({
+				title: "Pool Name",
+			}),
+			ranges: t.Optional(
+				t.String({
+					title: "Ranges",
+				}),
+			),
+		},
+		handler: (_, params, data) => {
+			return data.some(
+				(pool) =>
+					pool.name === params.name &&
+					(!params.ranges || pool.ranges === params.ranges),
+			);
+		},
+	})
+	.addSource({
+		id: "dhcp-server",
+		data: DHCPServerSchema,
+		listen: async ({ client }, { notify, reportError }) => {
+			const list: typeof DHCPServerSchema.static = await client.runQuery(
+				"/ip/dhcp-server/print",
+			);
+
+			const listener = await client.stream("/ip/dhcp-server/listen");
+
+			listener.on("data", (data) => {
+				applyRosListEvent(list, data, (item) => item[".id"]);
+				notify(list);
+			});
+			listener.on("error", reportError);
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/ip/dhcp-server/print");
+		},
+	})
+	.addCheck({
+		id: "dhcp-server-exist",
+		name: "DHCP Server Exist",
+		text: "DHCP server '{name}' should be bound to {interface}",
+		source: "dhcp-server",
+		params: {
+			name: t.String({
+				title: "Name",
+			}),
+			interface: t.String({
+				title: "Interface",
+			}),
+			addressPool: t.Optional(
+				t.String({
+					title: "Address Pool",
+				}),
+			),
+			flag: t.Optional(
+				t.String({
+					title: "Flag",
+					description: "X - DISABLED",
+				}),
+			),
+		},
+		handler: (_, params, data) => {
+			const flags = new Set(params.flag?.split("") ?? []);
+
+			return data.some(
+				(srv) =>
+					srv.name === params.name &&
+					srv.interface === params.interface &&
+					(!params.addressPool || srv["address-pool"] === params.addressPool) &&
+					compareFlag(flags, "X", srv.disabled),
+			);
+		},
+	})
+	.addSource({
+		id: "dhcp-network",
+		data: DHCPNetworkSchema,
+		listen: async ({ client }, { notify, reportError }) => {
+			const list: typeof DHCPNetworkSchema.static = await client.runQuery(
+				"/ip/dhcp-server/network/print",
+			);
+
+			const listener = await client.stream("/ip/dhcp-server/network/listen");
+
+			listener.on("data", (data) => {
+				applyRosListEvent(list, data, (item) => item[".id"]);
+				notify(list);
+			});
+			listener.on("error", reportError);
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/ip/dhcp-server/network/print");
+		},
+	})
+	.addCheck({
+		id: "dhcp-network-exist",
+		name: "DHCP Network Exist",
+		text: "DHCP network {address} should hand out gateway {gateway}",
+		source: "dhcp-network",
+		params: {
+			address: t.String({
+				title: "Network",
+			}),
+			gateway: t.Optional(
+				t.String({
+					title: "Gateway",
+				}),
+			),
+			dnsServer: t.Optional(
+				t.String({
+					title: "DNS Server",
+				}),
+			),
+		},
+		handler: (_, params, data) => {
+			return data.some(
+				(net) =>
+					net.address === params.address &&
+					(!params.gateway || net.gateway === params.gateway) &&
+					(!params.dnsServer ||
+						(net["dns-server"] ?? "").split(",").includes(params.dnsServer)),
+			);
+		},
+	})
+	.addSource({
+		id: "dhcp-lease",
+		data: DHCPLeaseSchema,
+		listen: async ({ client }, { notify, reportError }) => {
+			const list: typeof DHCPLeaseSchema.static = await client.runQuery(
+				"/ip/dhcp-server/lease/print",
+			);
+
+			const listener = await client.stream("/ip/dhcp-server/lease/listen");
+
+			listener.on("data", (data) => {
+				applyRosListEvent(list, data, (item) => item[".id"]);
+				notify(list);
+			});
+			listener.on("error", reportError);
+
+			return listener.cancel;
+		},
+		read: async ({ client }) => {
+			return await client.runQuery("/ip/dhcp-server/lease/print");
+		},
+	})
+	.addCheck({
+		id: "dhcp-lease-bound",
+		name: "DHCP Lease Bound",
+		text: "DHCP server {server} should have a bound lease",
+		source: "dhcp-lease",
+		params: {
+			server: t.Optional(
+				t.String({
+					title: "Server Name",
+				}),
+			),
+			address: t.Optional(
+				t.String({
+					title: "Address",
+				}),
+			),
+		},
+		handler: (_, params, data) => {
+			return data.some(
+				(lease) =>
+					lease.status === "bound" &&
+					(!params.server || lease.server === params.server) &&
+					(!params.address || lease.address === params.address),
 			);
 		},
 	});

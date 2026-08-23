@@ -3,6 +3,7 @@ import { mkdir, readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { intro, log, outro, spinner } from "@clack/prompts";
 import { $ } from "bun";
+import { listMaterialFiles, materialSlug } from "./lib/module-materials";
 
 const docsDir = "docs/modules";
 const outDir = "out/materials";
@@ -67,21 +68,36 @@ async function main() {
 	log.info(`Found ${modules.length} modules. Generating PDFs...`);
 
 	for (const mod of modules) {
-		const materialPath = join(docsDir, mod, "material.md");
-		if (existsSync(materialPath)) {
+		const moduleDir = join(docsDir, mod);
+		const materialFiles = await listMaterialFiles(moduleDir);
+
+		if (materialFiles.length === 0) {
+			log.warn(`No material.md found in ${mod}, skipping...`);
+			continue;
+		}
+
+		// A module with exactly one material file keeps today's plain
+		// `${mod}.pdf` name; a module split into several materials (e.g.
+		// material-1-eksplorasi.md, material-2-dns.md) gets one PDF per file,
+		// named after its own slug so they don't collide.
+		const single = materialFiles.length === 1;
+
+		for (const materialFile of materialFiles) {
+			const materialPath = join(moduleDir, materialFile);
+			const label = single ? mod : `${mod} (${materialSlug(materialFile)})`;
+
 			const s = spinner();
-			s.start(`Generating PDF for module: ${mod}...`);
+			s.start(`Generating PDF for module: ${label}...`);
 			try {
 				const content = await readFile(materialPath, "utf-8");
 				const titleMatch = content.match(/^#\s+(.+)$/m);
-				const title = titleMatch ? titleMatch[1].trim() : mod;
+				const title = titleMatch?.[1]?.trim() ?? mod;
 
-				const moduleDir = join(docsDir, mod);
 				const missing = findMissingImages(content, moduleDir);
 				if (missing.length > 0) {
-					s.stop(`Missing images in ${mod}`);
+					s.stop(`Missing images in ${label}`);
 					log.error(
-						`${mod}: image not found, would render as a broken icon:\n  ${missing.join("\n  ")}`,
+						`${label}: image not found, would render as a broken icon:\n  ${missing.join("\n  ")}`,
 					);
 					continue;
 				}
@@ -89,16 +105,20 @@ async function main() {
 				// pdf-config.cjs carries the stylesheet, page size, margins and the
 				// running header/footer. --document-title feeds the header's title.
 				await $`bunx md-to-pdf --config-file ${configFile} --basedir ${moduleDir} --document-title ${title} ${materialPath}`.quiet();
-				const generatedPdfPath = join(docsDir, mod, "material.pdf");
-				const targetPdfPath = join(outDir, `${mod}.pdf`);
+
+				// md-to-pdf writes its output next to the input, replacing .md with
+				// .pdf (e.g. material-2-dns.md -> material-2-dns.pdf).
+				const generatedPdfPath = materialPath.replace(/\.md$/, ".pdf");
+				const targetPdfPath = join(
+					outDir,
+					single ? `${mod}.pdf` : `${mod}--${materialSlug(materialFile)}.pdf`,
+				);
 				await $`mv ${generatedPdfPath} ${targetPdfPath}`;
 				s.stop(`Saved successfully to ${targetPdfPath}`);
 			} catch (err) {
-				s.stop(`Failed to generate PDF for ${mod}`);
+				s.stop(`Failed to generate PDF for ${label}`);
 				console.error(err);
 			}
-		} else {
-			log.warn(`No material.md found in ${mod}, skipping...`);
 		}
 	}
 

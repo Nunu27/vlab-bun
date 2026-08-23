@@ -45,9 +45,9 @@ export function getDeviceType(
  *    production deletes it so a student's `ip route add default via <gateway>`
  *    succeeds.
  * 2. Name resolution, imported from the worker's own constants. Deleting the
- *    default route makes every nameserver unreachable, which is what turns
- *    `tracepath` output into `???`; the worker's nsswitch exec is what stops
- *    it. A harness without this shows different trace output than a real lab.
+ *    default route makes every nameserver unreachable; the modules that use
+ *    `tracepath` run it with `-n` for that reason (a reachable-nameserver
+ *    check would otherwise make it print `???` instead of the hop's IP).
  *
  * The remaining production execs (guacd host route, shutdown hardening) are
  * deliberately omitted: they need worker config and do not affect routing.
