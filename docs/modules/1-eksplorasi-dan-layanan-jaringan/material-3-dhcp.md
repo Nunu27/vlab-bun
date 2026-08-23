@@ -26,6 +26,8 @@ Setiap alamat yang berhasil dipinjamkan tercatat di `/ip dhcp-server lease`, len
 ## DHCP Client pada Linux
 Di sisi klien, `dhcpcd` adalah program yang menjalankan proses DORA: menyiarkan Discover, menerima Offer, mengirim Request, lalu menerapkan alamat, gateway, dan DNS server yang didapat pada interface yang diminta. Setelah berhasil, `ip addr show` akan menampilkan alamat dengan penanda `dynamic` (berbeda dari alamat statis yang dipasang manual), dan `/etc/resolv.conf` terisi secara otomatis oleh `dhcpcd` sesuai DNS server yang dikirim DHCP server.
 
+> **Catatan:** Pada sistem modern, permintaan DHCP ini biasanya dikelola otomatis oleh **NetworkManager**, bukan dijalankan manual seperti pada lab ini.
+
 ## Referensi Perintah
 ### MikroTik RouterOS
 

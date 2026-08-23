@@ -255,18 +255,35 @@ export async function runSyncModules() {
 			// that material's own H1 so multiple attachments aren't
 			// indistinguishable in the student UI.
 			const materialsDir = path.resolve(process.cwd(), "../../out/materials");
-			let materialPdfNames: string[] = [];
-			try {
-				materialPdfNames = (await fs.readdir(materialsDir))
-					.filter((f) => f === `${mod}.pdf` || f.startsWith(`${mod}--`))
-					.sort();
-			} catch (_e) {
-				logger.warn(`No materials directory found at ${materialsDir}`);
-			}
 
-			const materialFiles = (await fs.readdir(modPath)).filter((f) =>
-				/^material(-\d+-.+)?\.md$/.test(f),
-			);
+			const materialFiles = (await fs.readdir(modPath))
+				.filter((f) => /^material(-\d+-.+)?\.md$/.test(f))
+				.sort();
+
+			// Ordered from the source material files (material-1-*, material-2-*,
+			// ...), not from listing out/materials/ directly: the generated PDF
+			// filenames only keep the slug ("--dns.pdf"), so sorting those
+			// alphabetically would put "dhcp" before "dns" before "eksplorasi"
+			// instead of the intended reading order.
+			const expectedPdfNames =
+				materialFiles.length > 1
+					? materialFiles.map(
+							(f) =>
+								`${mod}--${f.replace(/^material-\d+-/, "").replace(/\.md$/, "")}.pdf`,
+						)
+					: materialFiles.length === 1
+						? [`${mod}.pdf`]
+						: [];
+
+			const materialPdfNames: string[] = [];
+			for (const pdfName of expectedPdfNames) {
+				try {
+					await fs.access(path.join(materialsDir, pdfName));
+					materialPdfNames.push(pdfName);
+				} catch (_e) {
+					logger.warn(`Expected material PDF not found: ${pdfName}`);
+				}
+			}
 
 			const titleForMaterialPdf = async (pdfName: string): Promise<string> => {
 				const slug =
