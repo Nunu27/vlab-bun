@@ -45,6 +45,7 @@ async function shutdown() {
 	await storageCleanupQueue.close();
 
 	await redis.client.quit();
+	await redis.subscriber.quit();
 	await db.$client.end();
 
 	logger.info("Cleanup complete, exiting");

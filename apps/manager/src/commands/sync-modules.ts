@@ -565,5 +565,6 @@ export async function runSyncModules() {
 	} finally {
 		await db.$client.end();
 		await redis.client.quit();
+		await redis.subscriber.quit();
 	}
 }
