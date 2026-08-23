@@ -65,8 +65,8 @@ Perhatikan bahwa link antar-router memakai prefix `/30`, seperti yang dibahas pa
 #### Tahap I: Konfigurasi IP dan Gateway
 1. **Router R1:** Pasang IP `192.168.10.1/24` pada **ether2** dan `10.10.10.1/30` pada **ether3**. <LabCheck node="R1" id="node-interface.check-ip" /> <LabCheck node="R1" id="node-interface.check-ip" />
 2. **Router R2:** Pasang IP `192.168.20.1/24` pada **ether2** dan `10.10.10.2/30` pada **ether3**. <LabCheck node="R2" id="node-interface.check-ip" /> <LabCheck node="R2" id="node-interface.check-ip" />
-3. **Klien PC1:** Pasang IP `192.168.10.2/24` pada **eth1**, aktifkan interface-nya, lalu atur *default gateway* ke `192.168.10.1`. <LabCheck node="PC1" id="node-interface.check-ip" /> <LabCheck node="PC1" id="linux.route-exist" />
-4. **Klien PC2:** Pasang IP `192.168.20.2/24` pada **eth1**, aktifkan interface-nya, lalu atur *default gateway* ke `192.168.20.1`. <LabCheck node="PC2" id="node-interface.check-ip" /> <LabCheck node="PC2" id="linux.route-exist" />
+3. **Klien PC1:** Pasang IP `192.168.10.2/24` pada **eth1**, lalu atur *default gateway* ke `192.168.10.1`. <LabCheck node="PC1" id="node-interface.check-ip" /> <LabCheck node="PC1" id="linux.route-exist" />
+4. **Klien PC2:** Pasang IP `192.168.20.2/24` pada **eth1**, lalu atur *default gateway* ke `192.168.20.1`. <LabCheck node="PC2" id="node-interface.check-ip" /> <LabCheck node="PC2" id="linux.route-exist" />
 5. **Uji link antar-router:** Dari R1, ping ke `10.10.10.2` untuk memastikan segmen WAN sudah hidup. Tahap berikutnya bergantung pada link ini.
 
 #### Tahap II: Membuktikan Bahwa Routing Bersifat Satu Arah

@@ -50,17 +50,12 @@ Jalankan perintah berikut pada terminal konsol **R2**:
 
 Jalankan perintah berikut pada terminal **PC1**:
 
-1. **Aktifkan interface eth1**
-   ```bash
-   sudo ip link set eth1 up
-   ```
-
-2. **Pasang IP address pada eth1**
+1. **Pasang IP address pada eth1**
    ```bash
    sudo ip addr add 192.168.10.2/24 dev eth1
    ```
 
-3. **Atur default gateway ke R1**
+2. **Atur default gateway ke R1**
    ```bash
    sudo ip route add default via 192.168.10.1
    ```
@@ -71,17 +66,12 @@ Jalankan perintah berikut pada terminal **PC1**:
 
 Jalankan perintah berikut pada terminal **PC2**:
 
-1. **Aktifkan interface eth1**
-   ```bash
-   sudo ip link set eth1 up
-   ```
-
-2. **Pasang IP address pada eth1**
+1. **Pasang IP address pada eth1**
    ```bash
    sudo ip addr add 192.168.20.2/24 dev eth1
    ```
 
-3. **Atur default gateway ke R2**
+2. **Atur default gateway ke R2**
    ```bash
    sudo ip route add default via 192.168.20.1
    ```
