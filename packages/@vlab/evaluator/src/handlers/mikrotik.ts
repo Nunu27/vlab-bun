@@ -418,7 +418,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-instance-exist",
 		name: "OSPF Instance Exist",
-		text: "OSPF instance '{name}' should have Router ID {routerId}",
+		text: "OSPF instance {name} should have Router ID {routerId}",
 		source: "ospf-instance",
 		params: {
 			name: t.String({
@@ -502,7 +502,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "ospf-area-exist",
 		name: "OSPF Area Exist",
-		text: "OSPF area '{name}' should exist in instance {instance}",
+		text: "OSPF area {name} should exist in instance {instance}",
 		source: "ospf-area",
 		params: {
 			name: t.String({
@@ -706,7 +706,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "rip-instance-exist",
 		name: "RIP Instance Exist",
-		text: "RIP instance '{name}' should be configured",
+		text: "RIP instance {name} should be configured",
 		source: "rip-instance",
 		params: {
 			name: t.String({
@@ -821,7 +821,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "bgp-instance-exist",
 		name: "BGP Instance Exist",
-		text: "BGP instance '{name}' should have Router ID {routerId}",
+		text: "BGP instance {name} should have Router ID {routerId}",
 		source: "bgp-instance",
 		params: {
 			name: t.String({
@@ -880,7 +880,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "bgp-connection-exist",
 		name: "BGP Connection Exist",
-		text: "BGP connection '{name}' should be configured",
+		text: "BGP connection {name} should be configured",
 		source: "bgp-connection",
 		params: {
 			name: t.String({
@@ -991,7 +991,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "system-identity",
 		name: "System Identity",
-		text: "System identity should be set to '{name}'",
+		text: "System identity should be set to {name}",
 		source: "system-identity",
 		params: {
 			name: t.String({
@@ -1023,7 +1023,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "system-note",
 		name: "System Note (Banner)",
-		text: "Login banner should be set to '{note}'",
+		text: "Login banner should be set to {note}",
 		source: "system-note",
 		params: {
 			note: t.String({
@@ -1112,7 +1112,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "user-exist",
 		name: "User Exist",
-		text: "User '{username}' should exist",
+		text: "User {username} should exist",
 		source: "users",
 		params: {
 			username: t.String({
@@ -1160,7 +1160,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "dns-static-exist",
 		name: "DNS Static Entry Exist",
-		text: "DNS static entry '{name}' should resolve to {address}",
+		text: "DNS static entry {name} should resolve to {address}",
 		source: "dns-static",
 		params: {
 			name: t.String({
@@ -1244,7 +1244,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "dhcp-pool-exist",
 		name: "DHCP Pool Exist",
-		text: "DHCP pool '{name}' should cover {ranges}",
+		text: "DHCP pool {name} should cover {ranges}",
 		source: "dhcp-pool",
 		params: {
 			name: t.String({
@@ -1289,7 +1289,7 @@ export default new EvaluationHandler("mikrotik")
 	.addCheck({
 		id: "dhcp-server-exist",
 		name: "DHCP Server Exist",
-		text: "DHCP server '{name}' should be bound to {interface}",
+		text: "DHCP server {name} should be bound to {interface}",
 		source: "dhcp-server",
 		params: {
 			name: t.String({

@@ -483,7 +483,7 @@ export default new EvaluationHandler("linux")
 	.addCheck({
 		id: "user-exist",
 		name: "User Exist",
-		text: "User '{username}' should exist",
+		text: "User {username} should exist",
 		source: "users",
 		params: {
 			username: t.String({
