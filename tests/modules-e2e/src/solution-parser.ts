@@ -54,6 +54,12 @@ const ACTION_VERBS = new Set([
 	"unset",
 ]);
 
+// Bare property names RouterOS accepts as boolean flags, equivalent to
+// "<name>=yes" (e.g. "... interfaces=ether2 passive"). Anything else bare
+// after a key=value pair is treated as a misplaced item name (see the
+// "positional argument after parameters" check below).
+const BOOLEAN_FLAG_WORDS = new Set(["passive"]);
+
 const SHELL_LANGUAGES = new Set(["bash", "sh", "shell", "console"]);
 const ROUTEROS_LANGUAGES = new Set(["routeros", "mikrotik", "ros"]);
 
@@ -148,6 +154,10 @@ export function toRouterOSCall(command: string): RouterOSCall {
 			continue;
 		}
 		if (seenParam) {
+			if (BOOLEAN_FLAG_WORDS.has(token)) {
+				params[token] = "yes";
+				continue;
+			}
 			throw new Error(
 				`Unsupported positional argument "${token}" after parameters: ${trimmed}`,
 			);
