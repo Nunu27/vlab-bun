@@ -28,6 +28,9 @@ export const studentColumns: ColumnDef<StudentItem>[] = [
 	{
 		accessorKey: "name",
 		enableHiding: false,
+		// Joined from the `user` relation, not a native `students` column —
+		// the pagination endpoint can't sort by it.
+		enableSorting: false,
 		meta: {
 			label: "Name",
 			isGrow: true,
@@ -45,7 +48,6 @@ export const studentColumns: ColumnDef<StudentItem>[] = [
 	},
 	{
 		accessorKey: "year",
-		enableSorting: false,
 		meta: {
 			label: "Year",
 			center: true,
@@ -53,7 +55,6 @@ export const studentColumns: ColumnDef<StudentItem>[] = [
 	},
 	{
 		accessorKey: "degreeLevel",
-		enableSorting: false,
 		meta: {
 			label: "Degree",
 			center: true,

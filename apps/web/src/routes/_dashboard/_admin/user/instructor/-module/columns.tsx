@@ -29,6 +29,9 @@ export const instructorColumns: ColumnDef<InstructorItem>[] = [
 		accessorKey: "name",
 		id: "name",
 		enableHiding: false,
+		// Joined from the `user` relation, not a native `instructors` column —
+		// the pagination endpoint can't sort by it.
+		enableSorting: false,
 		meta: {
 			label: "Name",
 			isGrow: true,
@@ -36,6 +39,9 @@ export const instructorColumns: ColumnDef<InstructorItem>[] = [
 	},
 	{
 		accessorKey: "email",
+		// Joined from the `user` relation, not a native `instructors` column —
+		// the pagination endpoint can't sort by it.
+		enableSorting: false,
 		meta: {
 			label: "Email",
 			isGrow: true,
