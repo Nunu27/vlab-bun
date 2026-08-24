@@ -8,6 +8,22 @@
 @custom-variant dark (&:is(.dark *));
 @plugin "@tailwindcss/typography";
 
+/* Radix ScrollArea (components/ui/scroll-area.tsx) wraps its children in an
+ * inline-styled `display: table` box so it can measure the content's
+ * natural size for the scrollbar thumb. That shrink-to-fit sizing means one
+ * unbreakable-width child (a wide table, a long inline code span) forces
+ * the *entire* box wider than the viewport, dragging every sibling
+ * paragraph along with it instead of just that one element overflowing.
+ * Force it back to a normal block box so children wrap against the
+ * viewport's actual width; `!important` is required since it's an inline
+ * style set by Radix itself. */
+[data-radix-scroll-area-viewport] > div {
+	/* biome-ignore lint/complexity/noImportantStyles: overriding a Radix inline style, see comment above */
+	display: block !important;
+	/* biome-ignore lint/complexity/noImportantStyles: overriding a Radix inline style, see comment above */
+	min-width: 0 !important;
+}
+
 @theme {
 	--font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
