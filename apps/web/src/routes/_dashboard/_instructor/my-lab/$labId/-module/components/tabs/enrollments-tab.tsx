@@ -5,26 +5,34 @@ import { Button } from "@web/components/ui/button";
 import type { UseApiPaginationReturn } from "@web/hooks/pagination/use-api-pagination";
 import { useWSEvent } from "@web/hooks/ws";
 import api from "@web/lib/api";
+import type { PaginationQuery, SortOrder } from "@web/types";
 import { DownloadIcon } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import type { LabEnrollmentItem } from "../../../../-module/types";
 import { enrollmentColumns } from "../../columns";
 
+type EnrollmentFilters = NonNullable<PaginationQuery["filters"]>;
+
+// The enrollment list has no server-side pagination endpoint (it's fetched
+// whole and kept live over WebSocket), so this adapts that plain array to
+// the same shape `DataTable` expects from `useApiPagination` — field names
+// (perPage/setPerPage/setSort, not limit/setLimit/setSortBy+setSortOrder)
+// have to match exactly, since `DataTable`/`DataTablePagination`/
+// `DataTableColumnHeader` all read straight from this object.
 function useClientPagination(
 	data: LabEnrollmentItem[],
 	isLoading: boolean,
 	isFetching: boolean,
 	refresh: () => void,
 ): UseApiPaginationReturn<LabEnrollmentItem> {
-	const [page, setPage] = useState(1);
-	const [limit, setLimit] = useState(10);
-	const [search, setSearch] = useState("");
-	const [sortBy, setSortBy] = useState<string | undefined>(undefined);
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+	const [page, setPageState] = useState(1);
+	const [perPage, setPerPageState] = useState(10);
+	const [search, setSearchState] = useState("");
+	const [sortBy, setSortByState] = useState<string | undefined>(undefined);
+	const [sortOrder, setSortOrderState] = useState<SortOrder>("asc");
+	const [filters, setFiltersState] = useState<EnrollmentFilters | undefined>(
 		undefined,
 	);
-	// biome-ignore lint/suspicious/noExplicitAny: mock adapter
-	const [filters, setFilters] = useState<any | undefined>(undefined);
 
 	const filteredData = useMemo(() => {
 		if (!search) return data;
@@ -37,11 +45,11 @@ function useClientPagination(
 	}, [data, search]);
 
 	const paginatedData = useMemo(() => {
-		const start = (page - 1) * limit;
-		return filteredData.slice(start, start + limit);
-	}, [filteredData, page, limit]);
+		const start = (page - 1) * perPage;
+		return filteredData.slice(start, start + perPage);
+	}, [filteredData, page, perPage]);
 
-	const totalPages = Math.max(1, Math.ceil(filteredData.length / limit));
+	const totalPages = Math.max(1, Math.ceil(filteredData.length / perPage));
 
 	const mockPromise = () => Promise.resolve(new URLSearchParams());
 
@@ -50,7 +58,7 @@ function useClientPagination(
 			items: paginatedData,
 			pageInfo: {
 				page,
-				perPage: limit,
+				perPage,
 				total: filteredData.length,
 				totalPages,
 			},
@@ -61,37 +69,36 @@ function useClientPagination(
 		refresh,
 		page,
 		setPage: (p: number) => {
-			setPage(p);
+			setPageState(p);
 			return mockPromise();
 		},
-		limit,
-		setLimit: (l: number) => {
-			setLimit(l);
+		perPage,
+		setPerPage: (pp: number) => {
+			setPerPageState(pp);
+			setPageState(1);
 			return mockPromise();
 		},
 		search,
 		setSearch: (s: string) => {
-			setSearch(s);
+			setSearchState(s);
+			setPageState(1);
 			return mockPromise();
 		},
 		sortBy,
-		// biome-ignore lint/suspicious/noExplicitAny: mock adapter
-		setSortBy: (s: any) => {
-			setSortBy(s);
-			return mockPromise();
-		},
 		sortOrder,
-		// biome-ignore lint/suspicious/noExplicitAny: mock adapter
-		setSortOrder: (s: any) => {
-			setSortOrder(s);
+		setSort: (by: string | undefined, order: SortOrder) => {
+			setSortByState(by);
+			setSortOrderState(order);
+			setPageState(1);
 			return mockPromise();
 		},
 		filters,
-		// biome-ignore lint/suspicious/noExplicitAny: mock adapter
-		setFilters: (f: any) => setFilters(f),
-		// biome-ignore lint/suspicious/noExplicitAny: mock adapter
-		params: { page, limit, search, sortBy, sortOrder } as any,
-	} as unknown as UseApiPaginationReturn<LabEnrollmentItem>;
+		setFilters: (f: EnrollmentFilters | null) => {
+			setFiltersState(f ?? undefined);
+			setPageState(1);
+		},
+		params: { page, perPage, search, sortBy, sortOrder },
+	};
 }
 
 function EnrollmentsTabContent({ labId }: { labId: string }) {
