@@ -23,6 +23,7 @@ type CASResponse = typeof CASResponseSchema.static;
 const CASResponseValidator = compile(CASResponseSchema);
 const parser = new XMLParser({
 	transformTagName: (tagName) => tagName.slice(4),
+	parseTagValue: false,
 });
 
 export default createRouter()
@@ -65,8 +66,7 @@ export default createRouter()
 							})
 							.returning({ id: users.id });
 
-						const nrpStr = userInfo.NRP.toString();
-						const parsedNRP = parseNRP(nrpStr);
+						const parsedNRP = parseNRP(userInfo.NRP);
 
 						if (!parsedNRP) {
 							throw new CASError("Invalid NRP");
@@ -87,7 +87,7 @@ export default createRouter()
 
 						await tx.insert(students).values({
 							id: user.id,
-							nrp: nrpStr,
+							nrp: userInfo.NRP,
 							year: parsedNRP.year,
 							degreeLevel: parsedNRP.degreeLevel,
 							studyProgramId: studyProgram.id,

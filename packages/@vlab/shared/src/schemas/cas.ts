@@ -14,7 +14,7 @@ export const CASResponseSchema = t.Object({
 					Name: t.String(),
 					mail: t.String(),
 					Status: t.String(),
-					NRP: t.Number(),
+					NRP: t.String(),
 					Jurusan: t.String(),
 					netid: t.String(),
 				}),
