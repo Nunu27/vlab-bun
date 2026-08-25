@@ -1,9 +1,10 @@
 import { success } from "@jawit/common";
 import db from "@manager/db";
 import { workers } from "@manager/db/schema";
+import { staleCutoff } from "@manager/services/grpc";
 import auth from "@manager/services/http/middlewares/auth";
 import { createRouter } from "@manager/services/http/plugins/system";
-import { asc } from "drizzle-orm";
+import { asc, sql } from "drizzle-orm";
 
 export default createRouter()
 	.use(auth)
@@ -14,7 +15,9 @@ export default createRouter()
 				.select({
 					id: workers.id,
 					managerId: workers.managerId,
-					status: workers.status,
+					status: sql<
+						"online" | "offline"
+					>`CASE WHEN ${workers.status} = 'online' AND ${workers.lastSeen} > ${staleCutoff()} THEN 'online' ELSE 'offline' END`,
 					lastSeen: workers.lastSeen,
 					cpuCores: workers.cpuCores,
 					memoryMB: workers.memoryMB,

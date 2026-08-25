@@ -13,6 +13,13 @@ import { sendCommandToWorker } from "./worker-registry";
 
 const logger = baseLogger.child({ service: "worker-grpc" });
 
+// Matches the worker's METRICS_INTERVAL_MS: one missed heartbeat and it's stale.
+export const WORKER_STALE_MS = 10_000;
+
+export function staleCutoff(): Date {
+	return new Date(Date.now() - WORKER_STALE_MS);
+}
+
 export async function resetStaleWorkers() {
 	await db
 		.update(workers)

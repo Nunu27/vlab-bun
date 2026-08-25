@@ -14,7 +14,7 @@ export * from "./monitor";
 export * from "./worker";
 export * from "./worker-capacity";
 export * from "./worker-capacity-events";
-export { resetStaleWorkers } from "./worker-reconcile";
+export { resetStaleWorkers, staleCutoff } from "./worker-reconcile";
 export * from "./worker-registry";
 
 type DecodedAction = {

@@ -5,8 +5,9 @@ import {
 	DEFAULT_CPU_COST_CORES,
 	DEFAULT_MEMORY_COST_MB,
 } from "@vlab/shared/resource-cost";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { capacityEvents } from "./worker-capacity-events";
+import { staleCutoff } from "./worker-reconcile";
 
 export { DEFAULT_CPU_COST_CORES, DEFAULT_MEMORY_COST_MB };
 
@@ -21,12 +22,17 @@ function fitsAtAll(cpuCostCores: number, memoryCostMB: number) {
 	);
 }
 
+/** Online per the stored flag *and* seen recently enough to trust it. */
+function isWorkerOnline() {
+	return and(eq(workers.status, "online"), gt(workers.lastSeen, staleCutoff()));
+}
+
 /**
  * Whether a worker has enough available capacity right now.
  */
 function hasRoomNow(cpuCostCores: number, memoryCostMB: number) {
 	return and(
-		eq(workers.status, "online"),
+		isWorkerOnline(),
 		fitsAtAll(cpuCostCores, memoryCostMB),
 		sql`(1 - ${workers.cpuUsagePercent} / 100.0) * ${workers.cpuCores} >= ${cpuCostCores}`,
 		sql`(1 - ${workers.memoryUsagePercent} / 100.0) * ${workers.memoryMB} >= ${memoryCostMB}`,
@@ -72,9 +78,9 @@ async function summarizeFleet(cpuCostCores: number, memoryCostMB: number) {
 	const [summary] = await db
 		.select({
 			total: sql<number>`count(*)::int`,
-			online: sql<number>`(count(*) filter (where ${workers.status} = 'online'))::int`,
+			online: sql<number>`(count(*) filter (where ${isWorkerOnline()}))::int`,
 			couldEverFit: sql<number>`(count(*) filter (where ${fitsAtAll(cpuCostCores, memoryCostMB)}))::int`,
-			activeLabs: sql<number>`coalesce(sum(${workers.activeLabs}) filter (where ${workers.status} = 'online'), 0)::int`,
+			activeLabs: sql<number>`coalesce(sum(${workers.activeLabs}) filter (where ${isWorkerOnline()}), 0)::int`,
 		})
 		.from(workers);
 
