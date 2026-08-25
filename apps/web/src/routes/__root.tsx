@@ -1,3 +1,6 @@
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { formDevtoolsPlugin } from "@tanstack/react-form-devtools";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
 	createRootRoute,
 	HeadContent,
@@ -5,6 +8,7 @@ import {
 	Outlet,
 	useRouterState,
 } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import type { ToastItem } from "@vlab/shared/schemas/toast";
 import AppLoadingPage from "@web/components/pages/app-loading-page";
 import { TooltipProvider } from "@web/components/ui/tooltip";
@@ -68,7 +72,7 @@ function RouteComponent() {
 				<TooltipProvider>
 					<Outlet />
 
-					{/*					<TanStackDevtools
+					<TanStackDevtools
 						config={{
 							position: "bottom-right",
 						}}
@@ -82,13 +86,8 @@ function RouteComponent() {
 								render: <ReactQueryDevtoolsPanel />,
 							},
 							formDevtoolsPlugin(),
-							{
-								name: "Jawit WS",
-								render: <JawitWSDevtoolsPanel client={wsClient} />,
-							},
 						]}
 					/>
-					*/}
 				</TooltipProvider>
 			</NuqsAdapter>
 		</>
