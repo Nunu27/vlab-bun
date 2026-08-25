@@ -8,8 +8,8 @@ import toast from "@manager/services/http/middlewares/toast";
 import { createRouter } from "@manager/services/http/plugins/system";
 import { parseNRP } from "@manager/utils/nrp";
 import { CASResponseSchema } from "@vlab/shared/schemas/cas";
+import { XML } from "bun";
 import { compile } from "elysia/type-system/utils";
-import { XMLParser } from "fast-xml-parser";
 
 class CASError extends Error {}
 
@@ -21,10 +21,19 @@ const CAS_VALIDATE = `${CAS_BASE_URL}/cas/serviceValidate?service=${encodeURICom
 type CASResponse = typeof CASResponseSchema.static;
 
 const CASResponseValidator = compile(CASResponseSchema);
-const parser = new XMLParser({
-	transformTagName: (tagName) => tagName.slice(4),
-	parseTagValue: false,
-});
+
+// CAS responses namespace every tag under "cas:"; strip that fixed-length prefix from element names.
+function stripCasPrefix(value: unknown): unknown {
+	if (typeof value !== "object" || value === null) return value;
+	if (Array.isArray(value)) return value.map(stripCasPrefix);
+
+	return Object.fromEntries(
+		Object.entries(value).map(([key, val]) => [
+			key.startsWith("@") || key === "#text" ? key : key.slice(4),
+			stripCasPrefix(val),
+		]),
+	);
+}
 
 export default createRouter()
 	.use(toast)
@@ -39,7 +48,7 @@ export default createRouter()
 				const res = await fetch(CAS_VALIDATE + encodeURIComponent(ticket), {
 					signal: AbortSignal.timeout(10000),
 				});
-				const data = parser.parse(await res.text()) as CASResponse;
+				const data = stripCasPrefix(XML.parse(await res.text())) as CASResponse;
 
 				logger.info({ ticket, data }, "CAS response");
 

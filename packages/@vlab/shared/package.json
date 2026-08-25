@@ -2,7 +2,7 @@
 	"name": "@vlab/shared",
 	"module": "src/index.ts",
 	"devDependencies": {
-		"@types/bun": "1.3.11"
+		"@types/bun": "1.4.0"
 	},
 	"dependencies": {
 		"@sinclair/typebox": "^0.34.49",
