@@ -7,6 +7,7 @@ import api from "@web/lib/api";
 import { PlusIcon } from "lucide-react";
 import { labColumns } from "./-module/columns";
 import { DeleteLabModal } from "./-module/components/modals/delete-lab-modal";
+import { DuplicateLabModal } from "./-module/components/modals/duplicate-lab-modal";
 import { LabModalProvider } from "./-module/stores/lab-modal-store";
 
 export const Route = createFileRoute("/_dashboard/_instructor/my-lab/")({
@@ -42,6 +43,7 @@ function RouteComponent() {
 			</div>
 
 			<DeleteLabModal />
+			<DuplicateLabModal />
 		</LabModalProvider>
 	);
 }

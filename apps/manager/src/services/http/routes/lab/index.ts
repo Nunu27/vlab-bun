@@ -3,6 +3,7 @@ import { createRouter } from "@manager/services/http/plugins/system";
 import create from "./create";
 import _delete from "./delete";
 import detail from "./detail";
+import duplicate from "./duplicate";
 import labEnrollmentRoutes from "./enrollment";
 import pagination from "./pagination";
 import labSessionRoutes from "./session";
@@ -16,6 +17,7 @@ const labRoutes = createRouter({
 	.use(detail)
 	.use(update)
 	.use(_delete)
+	.use(duplicate)
 	.use(pagination)
 	.use(labEnrollmentRoutes)
 	.use(labSessionRoutes);

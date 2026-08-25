@@ -13,8 +13,10 @@ import api from "@web/lib/api";
 import { queryClient } from "@web/lib/query";
 import { useMemo } from "react";
 import DeleteLabButton from "../-module/components/buttons/delete-lab-button";
+import DuplicateLabButton from "../-module/components/buttons/duplicate-lab-button";
 import EditLabButton from "../-module/components/buttons/edit-lab-button";
 import { DeleteLabModal } from "../-module/components/modals/delete-lab-modal";
+import { DuplicateLabModal } from "../-module/components/modals/duplicate-lab-modal";
 import { LabModalProvider } from "../-module/stores/lab-modal-store";
 import EnrollmentsTab from "./-module/components/tabs/enrollments-tab";
 import { InstructionsTab } from "./-module/components/tabs/instructions-tab";
@@ -95,6 +97,7 @@ function RouteComponent() {
 						actions={
 							<div className="flex gap-2">
 								<EditLabButton labId={labId} />
+								<DuplicateLabButton lab={lab} />
 								<DeleteLabButton lab={lab} />
 							</div>
 						}
@@ -127,6 +130,7 @@ function RouteComponent() {
 				</div>
 
 				<DeleteLabModal />
+				<DuplicateLabModal />
 			</LabModalProvider>
 		</LabChecksEditorProvider>
 	);
